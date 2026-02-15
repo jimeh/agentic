@@ -26,100 +26,25 @@ Supports [Claude Code], [Codex], and any tool that reads `AGENTS.md`.
 ```bash
 git clone <repo-url> ~/.config/agentic
 cd ~/.config/agentic
-./setup.sh
+./setup.sh            # create symlinks (skips existing)
+./setup.sh --force    # replace existing (backs up to .bak)
 ```
 
 This creates symlinks from the repo into `~/.claude/`, `~/.agents/`, and
-`~/.codex/`. Existing files are skipped unless you pass `--force` (which
-backs up originals to `.bak`).
+`~/.codex/`. Run `./setup.sh --help` for details.
 
-```bash
-./setup.sh --force  # replace existing configs (backs up to .bak)
-```
+## What's Inside
 
-## How It Works
+- **`RULES.md`** — Single source of truth for all agent behavior rules.
+  Symlinked as the global rules file for each supported agent. Edit this
+  file directly — never edit the symlink targets.
+- **`claude/`** — Claude Code settings, statusline script, and slash commands.
+- **`codex/`** — OpenAI Codex config.
+- **`skills/`** — Custom skills (auto-discovered by `setup.sh`).
+- **`docs/references/`** — External articles and guides.
 
-`setup.sh` auto-discovers content and symlinks it into place:
-
-| Source | Target(s) |
-|---|---|
-| `RULES.md` | `~/.claude/CLAUDE.md`, `~/.agents/AGENTS.md`, `~/.codex/AGENTS.md` |
-| `claude/settings.json` | `~/.claude/settings.json` |
-| `claude/statusline.sh` | `~/.claude/statusline.sh` |
-| `codex/config.toml` | `~/.codex/config.toml` |
-| `claude/commands/*.md` | `~/.claude/commands/` |
-| `skills/*/` | `~/.claude/skills/`, `~/.agents/skills/` |
-
-Stale symlinks (pointing to deleted sources) are cleaned up automatically on
-each run.
-
-## Structure
-
-```
-.
-├── setup.sh                 # Installer — discovers and symlinks everything
-├── RULES.md                 # Single source of truth for agent behavior
-├── claude/
-│   ├── settings.json        # Claude Code permissions and plugins
-│   ├── statusline.sh        # Git status for Claude Code's status bar
-│   └── commands/            # Slash commands (auto-discovered)
-│       ├── commit.md
-│       ├── commit-push-pr.md
-│       ├── clean-gone-branches.md
-│       ├── rebase.md
-│       ├── claude-to-agents.md
-│       ├── generate-agents.md.md
-│       └── refactor-agents.md.md
-├── codex/
-│   └── config.toml          # Codex model, features, MCP servers
-├── skills/                  # Custom skills (auto-discovered)
-│   └── frontend-design-systems/
-│       └── SKILL.md
-└── docs/
-    └── references/          # External articles and guides
-```
-
-## Key Concepts
-
-### RULES.md — Single Source of Truth
-
-All agent behavior rules live in one file. `setup.sh` symlinks it as each
-tool's native instruction file (`CLAUDE.md` for Claude Code, `AGENTS.md` for
-Codex and others). Edit `RULES.md` directly — never edit the symlink targets.
-
-Covers: communication style, code style, comments, quality, git commits, PR
-descriptions, dependencies, discovery documentation, and plan mode.
-
-### Auto-Discovery
-
-Drop a new `.md` file into `claude/commands/` or a new directory with a
-`SKILL.md` into `skills/`, then re-run `setup.sh`. No manifest to update.
-
-### Slash Commands
-
-| Command | What it does |
-|---|---|
-| `/commit` | Stage and commit with conventional commit message |
-| `/commit-push-pr` | Commit, push, and open a PR (renames branch if needed) |
-| `/rebase` | Rebase onto upstream main/master with conflict handling |
-| `/clean-gone-branches` | Delete local branches whose remote is gone |
-| `/claude-to-agents` | Convert a project's `CLAUDE.md` to `AGENTS.md` |
-| `/generate-agents.md` | Auto-generate hierarchical `AGENTS.md` for a repo |
-| `/refactor-agents.md` | Refactor an existing `AGENTS.md` with progressive disclosure |
-
-### Skills
-
-| Skill | Description |
-|---|---|
-| `frontend-design-systems` | System-level visual decision rules for color ratios, typography, geometry, hierarchy, and constraints |
-
-## Adding Your Own
-
-**Command:** Create `claude/commands/my-command.md` with YAML frontmatter
-and instructions, then run `setup.sh`.
-
-**Skill:** Create `skills/my-skill/SKILL.md` with the skill definition,
-then run `setup.sh`.
+Commands and skills are auto-discovered — drop a file in the right place,
+re-run `setup.sh`, done.
 
 ## Requirements
 

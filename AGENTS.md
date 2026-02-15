@@ -33,6 +33,11 @@ never edit the symlink targets directly.
 - `claude/` — Claude Code settings, slash commands, statusline script
 - `codex/` — OpenAI Codex config (TOML)
 
+## Before Committing
+
+Check if `README.md` or this `AGENTS.md` file need updates to reflect your
+changes (new commands, skills, structural changes, conventions, etc.).
+
 ## Shell Conventions
 
 2-space indent, `bash` variant, switch case indent, space redirects (`> file`
