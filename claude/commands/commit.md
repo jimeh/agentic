@@ -2,6 +2,7 @@
 allowed-tools: Bash(git add:*), Bash(git diff:*), Bash(git status:*), Bash(git commit:*)
 description: Create a git commit
 source: https://github.com/anthropics/claude-plugins-official/blob/main/plugins/commit-commands/commands/commit.md
+notes: Heavily modified from the original.
 ---
 
 ## Context
