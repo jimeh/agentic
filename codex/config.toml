@@ -1,0 +1,33 @@
+model = "gpt-5.3-codex"
+model_reasoning_effort = "xhigh"
+personality = "pragmatic"
+
+web_search = "live"
+
+# Leave room for native compaction near the 272–273k context window.
+# Formula: 273000 - (tool_output_token_limit + 15000)
+# With tool_output_token_limit=25000 ⇒ 273000 - (25000 + 15000) = 233000
+model_auto_compact_token_limit = 233000
+tool_output_token_limit = 25000
+
+suppress_unstable_features_warning = true
+
+[features]
+unified_exec = true
+apply_patch_freeform = true
+shell_snapshot = true
+runtime_metrics = true
+
+[notice.model_migrations]
+"gpt-5.2" = "gpt-5.2-codex"
+
+[mcp_servers.deepwiki]
+enabled = true
+url = "https://mcp.deepwiki.com/mcp"
+
+[mcp_servers.context7]
+enabled = true
+url = "https://mcp.context7.com/mcp"
+
+[mcp_servers.context7.env_http_headers]
+CONTEXT7_API_KEY = "CONTEXT7_API_KEY"
