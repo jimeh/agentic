@@ -114,18 +114,5 @@
     "typescript-lsp@claude-plugins-official": true
   },
   "autoUpdatesChannel": "latest",
-  "teammateMode": "auto",
-  "hooks": {
-    "Notification": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "jq -r .message | xargs -I{} osascript -e 'display notification \"{}\" with title \"Claude Code\"'"
-          }
-        ]
-      }
-    ]
-  }
+  "teammateMode": "auto"
 }
