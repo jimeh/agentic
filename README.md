@@ -49,8 +49,10 @@ re-run `setup.sh`, done.
 ## Requirements
 
 - Bash 3.2+ (macOS default works)
-- `realpath`, `python3`, or `perl` for symlink resolution (at least one is
-  typically available)
+- For symlink resolution, `setup.sh` tries `realpath` first, then
+  platform-specific fallbacks:
+  - **macOS**: `python3`, `python`, `perl`, or `readlink`
+  - **Linux**: `readlink -f` (part of coreutils)
 
 ## License
 
