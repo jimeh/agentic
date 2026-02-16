@@ -24,7 +24,7 @@ Supports [Claude Code], [Codex], and any tool that reads `AGENTS.md`.
 ## Quick Start
 
 ```bash
-git clone <repo-url> ~/.config/agentic
+git clone https://github.com/jimeh/agentic.git ~/.config/agentic
 cd ~/.config/agentic
 ./setup.sh            # create symlinks (skips existing)
 ./setup.sh --force    # replace existing (backs up to .bak)
