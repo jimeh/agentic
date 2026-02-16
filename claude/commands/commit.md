@@ -14,13 +14,17 @@ notes: Heavily modified from the original.
 
 ## Your task
 
-Based on the above changes, create a single git commit.
+Based on the above changes:
 
-If asked to commit only staged changes, run `git diff --staged` to see exactly
-what is staged, and base the commit message solely on those changes. Do NOT
-stage additional files.
-
-Otherwise, stage all relevant changes and create the commit.
+1. **Check agent docs**: If the project has an AGENTS.md or CLAUDE.md, review
+   it against the current changes. If the changes introduce new conventions,
+   commands, architecture, or patterns that should be documented (or invalidate
+   existing docs), update the relevant file as part of this commit. Only update
+   if clearly warranted — don't add noise.
+2. Create a single git commit. If asked to commit only staged changes, run
+   `git diff --staged` to see exactly what is staged, and base the commit
+   message solely on those changes. Do NOT stage additional files. Otherwise,
+   stage all relevant changes and create the commit.
 
 You have the capability to call multiple tools in a single response. Do not use
 any other tools or do anything else. Do not send any other text or messages
