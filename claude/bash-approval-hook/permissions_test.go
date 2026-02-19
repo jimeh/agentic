@@ -446,7 +446,9 @@ func TestLoadPermissionsFromPaths(t *testing.T) {
 	}
 	data1, _ := json.Marshal(sf1)
 	f1 := filepath.Join(dir, "global.json")
-	os.WriteFile(f1, data1, 0o644)
+	if err := os.WriteFile(f1, data1, 0o644); err != nil {
+		t.Fatal(err)
+	}
 
 	// Second file with more allow and deny patterns.
 	sf2 := settingsFile{}
@@ -458,7 +460,9 @@ func TestLoadPermissionsFromPaths(t *testing.T) {
 	}
 	data2, _ := json.Marshal(sf2)
 	f2 := filepath.Join(dir, "project.json")
-	os.WriteFile(f2, data2, 0o644)
+	if err := os.WriteFile(f2, data2, 0o644); err != nil {
+		t.Fatal(err)
+	}
 
 	// Third file doesn't exist — should be skipped.
 	f3 := filepath.Join(dir, "missing.json")

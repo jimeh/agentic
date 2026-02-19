@@ -568,6 +568,20 @@ func TestMainE(t *testing.T) {
 			wantOutput: "approve",
 		},
 
+		// ---- Quoting (shellJoin) ----
+		{
+			name: "git -C with spaces in path approved",
+			input: func(cwd string) string {
+				cmd := `git -C '` + cwd +
+					`' commit -m 'fix: add spaces'`
+				return hookJSON(cmd, cwd)
+			},
+			allow: []string{
+				"Bash(git commit -m 'fix: add spaces')",
+			},
+			wantOutput: "approve",
+		},
+
 		// ---- Edge cases ----
 		{
 			name:    "invalid JSON returns error",

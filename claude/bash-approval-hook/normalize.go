@@ -152,17 +152,17 @@ func wordToString(w *syntax.Word) (string, bool) {
 
 // normalizeGitCommand strips -C, --git-dir, and --work-tree
 // flags from a git command's argument list when the paths
-// resolve to cwd. Returns the normalized args and true if
-// normalization was applied, or nil and false otherwise.
+// resolve to cwd. Returns the normalized args and true if all
+// path flags pointed at cwd, or nil and false if any path
+// pointed elsewhere or a flag value was missing.
+//
+// Precondition: args must be a git command (args[0] == "git")
+// containing at least one path flag. The caller
+// (normalizeCommand) enforces both.
 func normalizeGitCommand(
 	args []string, cwd string,
 ) ([]string, bool) {
-	if len(args) == 0 || args[0] != "git" {
-		return nil, false
-	}
-
 	result := []string{"git"}
-	hadPathFlag := false
 	pathsOK := true
 
 	for i := 1; i < len(args); i++ {
@@ -170,7 +170,6 @@ func normalizeGitCommand(
 
 		// -C <path>
 		if arg == "-C" {
-			hadPathFlag = true
 			if i+1 >= len(args) {
 				return nil, false
 			}
@@ -183,7 +182,6 @@ func normalizeGitCommand(
 
 		// --git-dir=<path> or --git-dir <path>
 		if arg == "--git-dir" {
-			hadPathFlag = true
 			if i+1 >= len(args) {
 				return nil, false
 			}
@@ -194,7 +192,6 @@ func normalizeGitCommand(
 			continue
 		}
 		if strings.HasPrefix(arg, "--git-dir=") {
-			hadPathFlag = true
 			p := strings.TrimPrefix(arg, "--git-dir=")
 			if !gitDirMatchesCWD(p, cwd) {
 				pathsOK = false
@@ -204,7 +201,6 @@ func normalizeGitCommand(
 
 		// --work-tree=<path> or --work-tree <path>
 		if arg == "--work-tree" {
-			hadPathFlag = true
 			if i+1 >= len(args) {
 				return nil, false
 			}
@@ -215,7 +211,6 @@ func normalizeGitCommand(
 			continue
 		}
 		if strings.HasPrefix(arg, "--work-tree=") {
-			hadPathFlag = true
 			p := strings.TrimPrefix(arg, "--work-tree=")
 			if !pathMatchesCWD(p, cwd) {
 				pathsOK = false
@@ -227,7 +222,7 @@ func normalizeGitCommand(
 		result = append(result, arg)
 	}
 
-	if !hadPathFlag || !pathsOK {
+	if !pathsOK {
 		return nil, false
 	}
 	return result, true
@@ -247,12 +242,12 @@ func normalizeCommand(
 	}
 
 	if args[0] != "git" {
-		return joinTokens(args), true
+		return shellJoin(args), true
 	}
 
 	// Git command without path flags — pass through as-is.
 	if !containsGitPathFlag(args) {
-		return joinTokens(args), true
+		return shellJoin(args), true
 	}
 
 	// Git command with path flags — normalize.
@@ -260,7 +255,7 @@ func normalizeCommand(
 	if !ok {
 		return "", false
 	}
-	return joinTokens(norm), true
+	return shellJoin(norm), true
 }
 
 // containsGitPathFlag reports whether args contains any of the
@@ -279,9 +274,21 @@ func containsGitPathFlag(args []string) bool {
 	return false
 }
 
-// joinTokens reassembles tokens into a single command string.
-func joinTokens(tokens []string) string {
-	return strings.Join(tokens, " ")
+// shellJoin reassembles tokens into a shell command string,
+// quoting tokens that contain special characters.
+func shellJoin(tokens []string) string {
+	parts := make([]string, 0, len(tokens))
+	for _, t := range tokens {
+		q, err := syntax.Quote(t, syntax.LangBash)
+		if err != nil {
+			// Shouldn't happen with literal strings,
+			// but fall back to the raw token.
+			parts = append(parts, t)
+			continue
+		}
+		parts = append(parts, q)
+	}
+	return strings.Join(parts, " ")
 }
 
 // pathMatchesCWD returns true when path resolves to cwd.

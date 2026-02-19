@@ -43,10 +43,12 @@ Permission patterns support three matching styles (plus legacy):
 - `Bash(npm run compile)` — no wildcards: exact match
 - `Bash(git status:*)` — legacy `:*` suffix: word-boundary prefix (deprecated)
 
-Build the binary:
+Build and validate:
 
 ```bash
-cd claude/bash-approval-hook && make
+cd claude/bash-approval-hook
+make              # build the binary
+make check        # run vet + lint + tests
 ```
 
 ### Agent-Specific Config

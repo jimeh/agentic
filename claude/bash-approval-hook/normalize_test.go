@@ -302,6 +302,9 @@ func TestWordToString(t *testing.T) {
 func TestNormalizeGitCommand(t *testing.T) {
 	cwd := "/home/user/project"
 
+	// Precondition: all inputs must be git commands with at
+	// least one path flag. The caller (normalizeCommand)
+	// enforces this.
 	tests := []struct {
 		name     string
 		args     []string
@@ -330,24 +333,6 @@ func TestNormalizeGitCommand(t *testing.T) {
 			args: []string{
 				"git", "-C", "/other/project", "status",
 			},
-			wantNorm: nil,
-			wantOK:   false,
-		},
-		{
-			name:     "no path flags",
-			args:     []string{"git", "status"},
-			wantNorm: nil,
-			wantOK:   false,
-		},
-		{
-			name:     "non-git command",
-			args:     []string{"ls", "-la"},
-			wantNorm: nil,
-			wantOK:   false,
-		},
-		{
-			name:     "empty args",
-			args:     []string{},
 			wantNorm: nil,
 			wantOK:   false,
 		},
@@ -511,7 +496,7 @@ func TestNormalizeGitCommand(t *testing.T) {
 	}
 }
 
-func TestJoinTokens(t *testing.T) {
+func TestShellJoin(t *testing.T) {
 	tests := []struct {
 		name   string
 		tokens []string
@@ -534,14 +519,33 @@ func TestJoinTokens(t *testing.T) {
 			tokens: []string{"git"},
 			want:   "git",
 		},
+		{
+			name: "token with spaces is quoted",
+			tokens: []string{
+				"git", "commit", "-m", "fix: add spaces",
+			},
+			want: "git commit -m 'fix: add spaces'",
+		},
+		{
+			name: "token with single quotes",
+			tokens: []string{
+				"echo", "it's alive",
+			},
+			want: `echo "it's alive"`,
+		},
+		{
+			name:   "empty string token",
+			tokens: []string{"echo", ""},
+			want:   "echo ''",
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := joinTokens(tt.tokens)
+			got := shellJoin(tt.tokens)
 			if got != tt.want {
 				t.Errorf(
-					"joinTokens(%v) = %q, want %q",
+					"shellJoin(%v) = %q, want %q",
 					tt.tokens, got, tt.want,
 				)
 			}
