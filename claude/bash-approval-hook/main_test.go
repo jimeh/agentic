@@ -582,6 +582,18 @@ func TestMainE(t *testing.T) {
 			wantOutput: "approve",
 		},
 
+		// ---- End-of-options (--) ----
+		{
+			name: "git -C CWD diff -- -C approved",
+			input: func(cwd string) string {
+				cmd := "git -C " + cwd +
+					" diff -- -C"
+				return hookJSON(cmd, cwd)
+			},
+			allow:      []string{"Bash(git diff *)"},
+			wantOutput: "approve",
+		},
+
 		// ---- Edge cases ----
 		{
 			name:    "invalid JSON returns error",

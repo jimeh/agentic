@@ -478,6 +478,29 @@ func TestNormalizeGitCommand(t *testing.T) {
 			wantNorm: nil,
 			wantOK:   false,
 		},
+		{
+			name: "-C before -- with files after",
+			args: []string{
+				"git", "-C", "/home/user/project",
+				"status", "--", "-C",
+			},
+			wantNorm: []string{
+				"git", "status", "--", "-C",
+			},
+			wantOK: true,
+		},
+		{
+			name: "--work-tree before -- with --git-dir file",
+			args: []string{
+				"git",
+				"--work-tree=/home/user/project",
+				"diff", "--", "--git-dir=foo",
+			},
+			wantNorm: []string{
+				"git", "diff", "--", "--git-dir=foo",
+			},
+			wantOK: true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -719,6 +742,28 @@ func TestContainsGitPathFlag(t *testing.T) {
 			name: "empty args",
 			args: []string{},
 			want: false,
+		},
+		{
+			name: "-C after -- is not a flag",
+			args: []string{
+				"git", "status", "--", "-C",
+			},
+			want: false,
+		},
+		{
+			name: "--git-dir= after -- is not a flag",
+			args: []string{
+				"git", "log", "--", "--git-dir=/x",
+			},
+			want: false,
+		},
+		{
+			name: "-C before -- is a flag",
+			args: []string{
+				"git", "-C", "/p", "status",
+				"--", "file",
+			},
+			want: true,
 		},
 	}
 

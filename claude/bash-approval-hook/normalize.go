@@ -168,6 +168,12 @@ func normalizeGitCommand(
 	for i := 1; i < len(args); i++ {
 		arg := args[i]
 
+		// Everything after "--" is a positional argument.
+		if arg == "--" {
+			result = append(result, args[i:]...)
+			break
+		}
+
 		// -C <path>
 		if arg == "-C" {
 			if i+1 >= len(args) {
@@ -262,6 +268,9 @@ func normalizeCommand(
 // git path flags: -C, --git-dir, or --work-tree.
 func containsGitPathFlag(args []string) bool {
 	for _, a := range args {
+		if a == "--" {
+			break
+		}
 		switch {
 		case a == "-C",
 			a == "--git-dir",
