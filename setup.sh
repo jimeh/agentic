@@ -109,6 +109,7 @@ discover_symlinks() {
   SYMLINKS+=(
     "claude/settings.json|${HOME}/.claude/settings.json"
     "claude/statusline.sh|${HOME}/.claude/statusline.sh"
+    "claude/hooks/bash-approval.sh|${HOME}/.claude/hooks/bash-approval.sh"
   )
 
   # Codex config files.
@@ -186,9 +187,26 @@ cleanup_stale() {
   _cleanup_stale_links \
     "${SCRIPT_DIR}/claude/commands" "${HOME}/.claude/commands"
   _cleanup_stale_links \
+    "${SCRIPT_DIR}/claude/hooks" "${HOME}/.claude/hooks"
+  _cleanup_stale_links \
     "${SCRIPT_DIR}/skills" "${HOME}/.claude/skills"
   _cleanup_stale_links \
     "${SCRIPT_DIR}/skills" "${HOME}/.agents/skills"
+}
+
+# ==============================================================================
+# Build
+# ==============================================================================
+
+build_bash_approval_hook() {
+  local hook_dir="${SCRIPT_DIR}/claude/bash-approval-hook"
+  if command -v go > /dev/null 2>&1; then
+    info "Building bash-approval-hook..."
+    make -C "${hook_dir}" > /dev/null 2>&1 \
+      || warn "Failed to build bash-approval-hook"
+  else
+    warn "Go not installed; skipping bash-approval-hook build"
+  fi
 }
 
 # ==============================================================================
@@ -209,6 +227,7 @@ Creates symlinks for Claude Code and agents configuration:
   RULES.md           → ~/.codex/AGENTS.md
   claude/settings    → ~/.claude/settings.json
   claude/statusline  → ~/.claude/statusline.sh
+  claude/hooks/*     → ~/.claude/hooks/
   codex/config.toml  → ~/.codex/config.toml
   claude/commands/*  → ~/.claude/commands/
   skills/*           → ~/.claude/skills/
@@ -244,6 +263,7 @@ main() {
 
   info "Setting up symlinks..."
   discover_symlinks
+  build_bash_approval_hook
   create_symlinks
   cleanup_stale
 

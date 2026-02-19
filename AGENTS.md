@@ -28,9 +28,30 @@ Single source of truth for agent instructions. Symlinked as the global
 `CLAUDE.md` and `AGENTS.md` for all supported agents. Always edit this file —
 never edit the symlink targets directly.
 
+### Hooks
+
+`claude/hooks/` contains hook shell wrappers symlinked into `~/.claude/hooks/`.
+`claude/bash-approval-hook/` is a Go project that auto-approves git commands
+using `-C`, `--git-dir`, or `--work-tree` flags pointing at the current project
+directory. It normalizes those commands by stripping the path flags and checks
+the result against the Bash allow/deny patterns in Claude Code settings.
+
+Permission patterns support three matching styles (plus legacy):
+
+- `Bash(npm run lint *)` — space+star suffix: word-boundary prefix match
+- `Bash(ls*)` — bare-star / star anywhere: glob match (`*` = any chars)
+- `Bash(npm run compile)` — no wildcards: exact match
+- `Bash(git status:*)` — legacy `:*` suffix: word-boundary prefix (deprecated)
+
+Build the binary:
+
+```bash
+cd claude/bash-approval-hook && make
+```
+
 ### Agent-Specific Config
 
-- `claude/` — Claude Code settings, slash commands, statusline script
+- `claude/` — Claude Code settings, slash commands, statusline script, hooks
 - `codex/` — OpenAI Codex config (TOML)
 
 ## Before Committing
