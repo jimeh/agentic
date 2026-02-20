@@ -161,7 +161,6 @@ func normalizeGitCommand(
 	args []string, cwd string,
 ) ([]string, bool) {
 	result := []string{"git"}
-	pathsOK := true
 	sawPathFlag := false
 
 	cmdIdx := gitSubcommandIndex(args)
@@ -181,7 +180,7 @@ func normalizeGitCommand(
 				return nil, false
 			}
 			if !pathMatchesCWD(args[i+1], cwd) {
-				pathsOK = false
+				return nil, false
 			}
 			i++
 			continue
@@ -191,7 +190,7 @@ func normalizeGitCommand(
 			len(arg) > 2 {
 			sawPathFlag = true
 			if !pathMatchesCWD(arg[2:], cwd) {
-				pathsOK = false
+				return nil, false
 			}
 			continue
 		}
@@ -203,7 +202,7 @@ func normalizeGitCommand(
 				return nil, false
 			}
 			if !gitDirMatchesCWD(args[i+1], cwd) {
-				pathsOK = false
+				return nil, false
 			}
 			i++
 			continue
@@ -212,7 +211,7 @@ func normalizeGitCommand(
 			sawPathFlag = true
 			p := strings.TrimPrefix(arg, "--git-dir=")
 			if !gitDirMatchesCWD(p, cwd) {
-				pathsOK = false
+				return nil, false
 			}
 			continue
 		}
@@ -224,7 +223,7 @@ func normalizeGitCommand(
 				return nil, false
 			}
 			if !pathMatchesCWD(args[i+1], cwd) {
-				pathsOK = false
+				return nil, false
 			}
 			i++
 			continue
@@ -233,7 +232,7 @@ func normalizeGitCommand(
 			sawPathFlag = true
 			p := strings.TrimPrefix(arg, "--work-tree=")
 			if !pathMatchesCWD(p, cwd) {
-				pathsOK = false
+				return nil, false
 			}
 			continue
 		}
@@ -251,9 +250,6 @@ func normalizeGitCommand(
 
 	if !sawPathFlag {
 		return args, true
-	}
-	if !pathsOK {
-		return nil, false
 	}
 	result = append(result, args[cmdIdx:]...)
 	return result, true
