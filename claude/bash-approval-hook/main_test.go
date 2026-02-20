@@ -16,6 +16,18 @@ func writeSettingsFile(
 	allow, deny []string,
 ) {
 	t.Helper()
+	writeSettingsFileWithRules(
+		t, path, allow, nil, deny, false,
+	)
+}
+
+func writeSettingsFileWithRules(
+	t *testing.T,
+	path string,
+	allow, ask, deny []string,
+	managedOnly bool,
+) {
+	t.Helper()
 	dir := filepath.Dir(path)
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		t.Fatal(err)
@@ -23,7 +35,9 @@ func writeSettingsFile(
 
 	sf := settingsFile{}
 	sf.Permissions.Allow = allow
+	sf.Permissions.Ask = ask
 	sf.Permissions.Deny = deny
+	sf.AllowManagedPermissionRulesOnly = managedOnly
 
 	data, err := json.Marshal(sf)
 	if err != nil {
@@ -62,6 +76,17 @@ func writeLocalSettings(
 		),
 		allow, deny,
 	)
+}
+
+func writeRawSettingsFile(t *testing.T, path, content string) {
+	t.Helper()
+	dir := filepath.Dir(path)
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
+		t.Fatal(err)
+	}
 }
 
 // hookJSON builds a JSON hook input from command and cwd.
@@ -985,8 +1010,8 @@ func TestMainE(t *testing.T) {
 					"git add file.txt", cwd,
 				)
 			},
-			allow: []string{"Bash(git add:*)"},
-			deny:  []string{"Bash(git add:*)"},
+			allow:      []string{"Bash(git add:*)"},
+			deny:       []string{"Bash(git add:*)"},
 			wantOutput: "",
 		},
 		{
@@ -1017,8 +1042,8 @@ func TestMainE(t *testing.T) {
 					"git status && npm test", cwd,
 				)
 			},
-			allow:     []string{"Bash(npm test)"},
-			homeAllow: []string{"Bash(git status:*)"},
+			allow:      []string{"Bash(npm test)"},
+			homeAllow:  []string{"Bash(git status:*)"},
 			wantOutput: "approve",
 		},
 		{
@@ -1026,8 +1051,8 @@ func TestMainE(t *testing.T) {
 			input: func(cwd string) string {
 				return hookJSON("npm test", cwd)
 			},
-			allow:    []string{"Bash(npm test)"},
-			homeDeny: []string{"Bash(npm test)"},
+			allow:      []string{"Bash(npm test)"},
+			homeDeny:   []string{"Bash(npm test)"},
 			wantOutput: "",
 		},
 
@@ -1050,12 +1075,45 @@ func TestMainE(t *testing.T) {
 			},
 			wantOutput: "",
 		},
+		{
+			name: "stateful symlink chain no output",
+			input: func(cwd string) string {
+				return hookJSON(
+					"ln -s /tmp escape && "+
+						"git -C escape/.. status",
+					cwd,
+				)
+			},
+			allow: []string{
+				"Bash(ln:*)",
+				"Bash(git status:*)",
+			},
+			wantOutput: "",
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			managedPath := filepath.Join(
+				t.TempDir(), "managed-settings.json",
+			)
+			prevManagedResolver := managedSettingsPathResolver
+			managedSettingsPathResolver = func(
+				_ string,
+			) (string, bool) {
+				return managedPath, true
+			}
+			t.Cleanup(func() {
+				managedSettingsPathResolver = prevManagedResolver
+			})
+
 			// Set up project dir with settings.
 			cwd := t.TempDir()
+			if err := os.Mkdir(
+				filepath.Join(cwd, ".git"), 0o755,
+			); err != nil {
+				t.Fatal(err)
+			}
 			allow := tt.allow
 			if allow == nil {
 				allow = defaultAllow
@@ -1127,6 +1185,364 @@ func TestMainE(t *testing.T) {
 					"expected no output, got %q",
 					output,
 				)
+			}
+		})
+	}
+}
+
+func TestMainEManagedAndAskRules(t *testing.T) {
+	tests := []struct {
+		name       string
+		setup      func(t *testing.T, cwd, home, managedPath string)
+		wantOutput string // "approve" or "" (no output)
+	}{
+		{
+			name: "ask rule match returns no output",
+			setup: func(
+				t *testing.T, cwd, home, managedPath string,
+			) {
+				writeSettingsFileWithRules(
+					t,
+					filepath.Join(cwd, ".claude", "settings.json"),
+					[]string{"Bash(git status:*)"},
+					nil,
+					nil,
+					false,
+				)
+				writeSettingsFileWithRules(
+					t,
+					filepath.Join(
+						cwd,
+						".claude",
+						"settings.local.json",
+					),
+					nil,
+					[]string{"Bash(git status:*)"},
+					nil,
+					false,
+				)
+			},
+			wantOutput: "",
+		},
+		{
+			name: "managed allow permits command",
+			setup: func(
+				t *testing.T, cwd, home, managedPath string,
+			) {
+				writeSettingsFileWithRules(
+					t,
+					managedPath,
+					[]string{"Bash(git status:*)"},
+					nil,
+					nil,
+					false,
+				)
+			},
+			wantOutput: "approve",
+		},
+		{
+			name: "managed deny blocks lower-scope allow",
+			setup: func(
+				t *testing.T, cwd, home, managedPath string,
+			) {
+				writeSettingsFileWithRules(
+					t,
+					managedPath,
+					nil,
+					nil,
+					[]string{"Bash(git status:*)"},
+					false,
+				)
+				writeSettingsFileWithRules(
+					t,
+					filepath.Join(cwd, ".claude", "settings.json"),
+					[]string{"Bash(git status:*)"},
+					nil,
+					nil,
+					false,
+				)
+			},
+			wantOutput: "",
+		},
+		{
+			name: "managed-only ignores lower allow deny and ask",
+			setup: func(
+				t *testing.T, cwd, home, managedPath string,
+			) {
+				writeSettingsFileWithRules(
+					t,
+					managedPath,
+					[]string{"Bash(git status:*)"},
+					nil,
+					nil,
+					true,
+				)
+				writeSettingsFileWithRules(
+					t,
+					filepath.Join(cwd, ".claude", "settings.json"),
+					nil,
+					nil,
+					[]string{"Bash(git status:*)"},
+					false,
+				)
+				writeSettingsFileWithRules(
+					t,
+					filepath.Join(
+						cwd,
+						".claude",
+						"settings.local.json",
+					),
+					nil,
+					[]string{"Bash(git status:*)"},
+					nil,
+					false,
+				)
+				writeSettingsFileWithRules(
+					t,
+					filepath.Join(
+						home,
+						".claude",
+						"settings.json",
+					),
+					nil,
+					nil,
+					[]string{"Bash(git status:*)"},
+					false,
+				)
+			},
+			wantOutput: "approve",
+		},
+		{
+			name: "managed-only without managed allow returns no output",
+			setup: func(
+				t *testing.T, cwd, home, managedPath string,
+			) {
+				writeSettingsFileWithRules(
+					t,
+					managedPath,
+					nil,
+					nil,
+					nil,
+					true,
+				)
+				writeSettingsFileWithRules(
+					t,
+					filepath.Join(cwd, ".claude", "settings.json"),
+					[]string{"Bash(git status:*)"},
+					nil,
+					nil,
+					false,
+				)
+			},
+			wantOutput: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cwd := t.TempDir()
+			if err := os.Mkdir(
+				filepath.Join(cwd, ".git"), 0o755,
+			); err != nil {
+				t.Fatal(err)
+			}
+
+			home := t.TempDir()
+			t.Setenv("HOME", home)
+
+			managedPath := filepath.Join(
+				t.TempDir(), "managed-settings.json",
+			)
+			prevManagedResolver := managedSettingsPathResolver
+			managedSettingsPathResolver = func(
+				_ string,
+			) (string, bool) {
+				return managedPath, true
+			}
+			t.Cleanup(func() {
+				managedSettingsPathResolver = prevManagedResolver
+			})
+
+			tt.setup(t, cwd, home, managedPath)
+
+			var buf bytes.Buffer
+			err := mainE(
+				strings.NewReader(hookJSON("git status", cwd)),
+				&buf,
+			)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+
+			output := strings.TrimSpace(buf.String())
+			if tt.wantOutput == "approve" {
+				if output == "" {
+					t.Fatal("expected approval output, got empty")
+				}
+				var out hookOutput
+				if err := json.Unmarshal(
+					[]byte(output), &out,
+				); err != nil {
+					t.Fatalf("invalid JSON output: %v", err)
+				}
+				if out.Decision != "allow" {
+					t.Fatalf(
+						"decision = %q, want %q",
+						out.Decision, "allow",
+					)
+				}
+				return
+			}
+
+			if output != "" {
+				t.Fatalf("expected no output, got %q", output)
+			}
+		})
+	}
+}
+
+func TestMainEFailClosedOnSettingsErrors(t *testing.T) {
+	tests := []struct {
+		name  string
+		setup func(
+			t *testing.T, cwd, home, managedPath string,
+		)
+	}{
+		{
+			name: "invalid managed settings JSON no output",
+			setup: func(
+				t *testing.T, cwd, home, managedPath string,
+			) {
+				writeSettings(
+					t,
+					cwd,
+					[]string{"Bash(git status:*)"},
+					nil,
+				)
+				writeRawSettingsFile(
+					t,
+					managedPath,
+					"{bad json",
+				)
+			},
+		},
+		{
+			name: "invalid home settings JSON no output",
+			setup: func(
+				t *testing.T, cwd, home, managedPath string,
+			) {
+				writeSettings(
+					t,
+					cwd,
+					[]string{"Bash(git status:*)"},
+					nil,
+				)
+				writeRawSettingsFile(
+					t,
+					filepath.Join(home, ".claude", "settings.json"),
+					"{bad json",
+				)
+			},
+		},
+		{
+			name: "invalid project settings JSON no output",
+			setup: func(
+				t *testing.T, cwd, home, managedPath string,
+			) {
+				writeSettings(
+					t,
+					home,
+					[]string{"Bash(git status:*)"},
+					nil,
+				)
+				writeRawSettingsFile(
+					t,
+					filepath.Join(cwd, ".claude", "settings.json"),
+					"{bad json",
+				)
+			},
+		},
+		{
+			name: "existing unreadable settings path no output",
+			setup: func(
+				t *testing.T, cwd, home, managedPath string,
+			) {
+				writeSettings(
+					t,
+					cwd,
+					[]string{"Bash(git status:*)"},
+					nil,
+				)
+				// Directory at file path forces read error.
+				if err := os.MkdirAll(
+					filepath.Join(
+						cwd,
+						".claude",
+						"settings.local.json",
+					),
+					0o755,
+				); err != nil {
+					t.Fatal(err)
+				}
+			},
+		},
+		{
+			name: "malformed Bash pattern no output",
+			setup: func(
+				t *testing.T, cwd, home, managedPath string,
+			) {
+				writeSettings(
+					t,
+					home,
+					[]string{"Bash(git status:*)"},
+					nil,
+				)
+				writeRawSettingsFile(
+					t,
+					filepath.Join(cwd, ".claude", "settings.json"),
+					`{"permissions":{"allow":["Bash()"],"deny":[]}}`,
+				)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cwd := t.TempDir()
+			if err := os.Mkdir(
+				filepath.Join(cwd, ".git"), 0o755,
+			); err != nil {
+				t.Fatal(err)
+			}
+
+			home := t.TempDir()
+			t.Setenv("HOME", home)
+
+			managedPath := filepath.Join(
+				t.TempDir(), "managed-settings.json",
+			)
+			prevManagedResolver := managedSettingsPathResolver
+			managedSettingsPathResolver = func(
+				_ string,
+			) (string, bool) {
+				return managedPath, true
+			}
+			t.Cleanup(func() {
+				managedSettingsPathResolver = prevManagedResolver
+			})
+
+			tt.setup(t, cwd, home, managedPath)
+
+			var out bytes.Buffer
+			err := mainE(
+				strings.NewReader(hookJSON("git status", cwd)),
+				&out,
+			)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if got := strings.TrimSpace(out.String()); got != "" {
+				t.Fatalf("expected no output, got %q", got)
 			}
 		})
 	}

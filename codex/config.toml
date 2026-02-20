@@ -1,5 +1,5 @@
 model = "gpt-5.3-codex"
-model_reasoning_effort = "xhigh"
+model_reasoning_effort = "high"
 personality = "pragmatic"
 
 web_search = "live"
@@ -18,9 +18,11 @@ apply_patch_freeform = true
 shell_snapshot = true
 runtime_metrics = true
 
+[notice]
 [notice.model_migrations]
 "gpt-5.2" = "gpt-5.2-codex"
 
+[mcp_servers]
 [mcp_servers.deepwiki]
 enabled = true
 url = "https://mcp.deepwiki.com/mcp"

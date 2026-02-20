@@ -2,8 +2,10 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 )
 
@@ -12,64 +14,206 @@ import (
 type settingsFile struct {
 	Permissions struct {
 		Allow []string `json:"allow"`
+		Ask   []string `json:"ask"`
 		Deny  []string `json:"deny"`
 	} `json:"permissions"`
+	AllowManagedPermissionRulesOnly bool `json:"allowManagedPermissionRulesOnly"`
 }
 
-// loadPermissions merges allow/deny patterns from all relevant
-// Claude Code settings files.
-func loadPermissions(cwd string) (
-	allow, deny []string, err error,
-) {
-	return loadPermissionsFromPaths(settingsPaths(cwd))
+type settingsScope string
+
+const (
+	scopeManaged settingsScope = "managed"
+	scopeLocal   settingsScope = "local"
+	scopeProject settingsScope = "project"
+	scopeUser    settingsScope = "user"
+)
+
+type settingsSource struct {
+	path  string
+	scope settingsScope
 }
 
-// settingsPaths returns the ordered list of settings files to
-// check for permission patterns.
-func settingsPaths(cwd string) []string {
+type permissionRules struct {
+	allow       []string
+	ask         []string
+	deny        []string
+	managedOnly bool
+}
+
+var managedSettingsPathResolver = managedSettingsPathByOS
+
+// loadPermissions merges permission patterns from all relevant Claude Code
+// settings files, failing closed on any active-source uncertainty.
+func loadPermissions(cwd string) (permissionRules, error) {
+	sources, err := settingsPaths(cwd)
+	if err != nil {
+		return permissionRules{}, err
+	}
+	return loadPermissionsFromPaths(sources)
+}
+
+// settingsPaths returns the ordered list of settings sources to check for
+// permission patterns.
+func settingsPaths(cwd string) ([]settingsSource, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
-		return nil
+		return nil, fmt.Errorf("resolve home directory: %w", err)
 	}
-	return []string{
-		filepath.Join(home, ".claude", "settings.json"),
-		filepath.Join(cwd, ".claude", "settings.json"),
-		filepath.Join(
-			cwd, ".claude", "settings.local.json",
-		),
+
+	return settingsPathsFor(cwd, home, runtime.GOOS), nil
+}
+
+func settingsPathsFor(
+	cwd, home, goos string,
+) []settingsSource {
+	paths := make([]settingsSource, 0, 4)
+	if managedPath, ok := managedSettingsPathResolver(goos); ok {
+		paths = append(paths, settingsSource{
+			path:  managedPath,
+			scope: scopeManaged,
+		})
+	}
+
+	return append(paths,
+		settingsSource{
+			path: filepath.Join(
+				cwd, ".claude", "settings.local.json",
+			),
+			scope: scopeLocal,
+		},
+		settingsSource{
+			path: filepath.Join(
+				cwd, ".claude", "settings.json",
+			),
+			scope: scopeProject,
+		},
+		settingsSource{
+			path: filepath.Join(
+				home, ".claude", "settings.json",
+			),
+			scope: scopeUser,
+		},
+	)
+}
+
+func managedSettingsPathByOS(goos string) (string, bool) {
+	switch goos {
+	case "darwin":
+		return filepath.Join(
+			"/Library", "Application Support", "ClaudeCode",
+			"managed-settings.json",
+		), true
+	case "linux":
+		return filepath.Join(
+			"/etc", "claude-code", "managed-settings.json",
+		), true
+	case "windows":
+		return `C:\Program Files\ClaudeCode\managed-settings.json`, true
+	default:
+		return "", false
 	}
 }
 
-// loadPermissionsFromPaths reads and merges permissions from the
-// given settings file paths. Missing or invalid files are
-// silently skipped.
-func loadPermissionsFromPaths(paths []string) (
-	allow, deny []string, err error,
-) {
-	for _, p := range paths {
-		a, d, ferr := readSettingsFile(p)
-		if ferr != nil {
+// loadPermissionsFromPaths reads and merges permissions from the given
+// settings sources. Missing files are skipped. Any active-source read, parse,
+// or validation error fails closed.
+func loadPermissionsFromPaths(
+	paths []settingsSource,
+) (permissionRules, error) {
+	var merged permissionRules
+
+	for _, src := range paths {
+		if merged.managedOnly &&
+			src.scope != scopeManaged {
+			// Managed-only mode disables lower scopes for permission rules.
 			continue
 		}
-		allow = append(allow, a...)
-		deny = append(deny, d...)
+
+		rules, ferr := readSettingsFile(src.path)
+		if ferr != nil {
+			if os.IsNotExist(ferr) {
+				continue
+			}
+			return permissionRules{}, fmt.Errorf(
+				"read %s settings %q: %w",
+				src.scope, src.path, ferr,
+			)
+		}
+
+		if ferr := validatePatterns(rules.allow); ferr != nil {
+			return permissionRules{}, fmt.Errorf(
+				"validate allow patterns in %q: %w",
+				src.path, ferr,
+			)
+		}
+		if ferr := validatePatterns(rules.ask); ferr != nil {
+			return permissionRules{}, fmt.Errorf(
+				"validate ask patterns in %q: %w",
+				src.path, ferr,
+			)
+		}
+		if ferr := validatePatterns(rules.deny); ferr != nil {
+			return permissionRules{}, fmt.Errorf(
+				"validate deny patterns in %q: %w",
+				src.path, ferr,
+			)
+		}
+
+		if src.scope == scopeManaged &&
+			rules.managedOnly {
+			merged.managedOnly = true
+		}
+
+		merged.allow = append(merged.allow, rules.allow...)
+		merged.ask = append(merged.ask, rules.ask...)
+		merged.deny = append(merged.deny, rules.deny...)
 	}
-	return allow, deny, nil
+
+	return merged, nil
 }
 
-func readSettingsFile(path string) (
-	allow, deny []string, err error,
-) {
+func validatePatterns(patterns []string) error {
+	for _, p := range patterns {
+		if err := validatePattern(p); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func validatePattern(pattern string) error {
+	if !strings.HasPrefix(pattern, "Bash(") {
+		return nil
+	}
+
+	inner, ok := extractBashPattern(pattern)
+	if !ok {
+		return fmt.Errorf("invalid Bash pattern %q", pattern)
+	}
+	if strings.TrimSpace(inner) == "" {
+		return fmt.Errorf("empty Bash pattern %q", pattern)
+	}
+	return nil
+}
+
+func readSettingsFile(path string) (permissionRules, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
-		return nil, nil, err
+		return permissionRules{}, err
 	}
 
 	var sf settingsFile
 	if err := json.Unmarshal(data, &sf); err != nil {
-		return nil, nil, err
+		return permissionRules{}, err
 	}
-	return sf.Permissions.Allow, sf.Permissions.Deny, nil
+
+	return permissionRules{
+		allow:       sf.Permissions.Allow,
+		ask:         sf.Permissions.Ask,
+		deny:        sf.Permissions.Deny,
+		managedOnly: sf.AllowManagedPermissionRulesOnly,
+	}, nil
 }
 
 // matchesAnyPattern returns true if command matches at least one

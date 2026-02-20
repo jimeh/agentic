@@ -72,18 +72,26 @@ func mainE(r io.Reader, w io.Writer) error {
 		normalized = append(normalized, cmd)
 	}
 
-	// Load allow/deny patterns from settings files.
-	allow, deny, err := loadPermissions(cwd)
-	if err != nil || len(allow) == 0 {
+	// Load permission patterns from settings files.
+	// Fail closed on any uncertainty (read/parse/validation errors or an
+	// empty allow set) by returning no opinion.
+	rules, err := loadPermissions(cwd)
+	if err != nil || len(rules.allow) == 0 {
 		return nil
 	}
 
-	// All normalized commands must be allowed and none denied.
+	// All normalized commands must satisfy deny -> ask -> allow:
+	// - deny match: no opinion
+	// - ask match: no opinion
+	// - allow match required
 	for _, cmd := range normalized {
-		if matchesAnyPattern(cmd, deny) {
+		if matchesAnyPattern(cmd, rules.deny) {
 			return nil
 		}
-		if !matchesAnyPattern(cmd, allow) {
+		if matchesAnyPattern(cmd, rules.ask) {
+			return nil
+		}
+		if !matchesAnyPattern(cmd, rules.allow) {
 			return nil
 		}
 	}

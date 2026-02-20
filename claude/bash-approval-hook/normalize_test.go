@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+	"path/filepath"
 	"reflect"
 	"strings"
 	"testing"
@@ -300,7 +302,43 @@ func TestWordToString(t *testing.T) {
 }
 
 func TestNormalizeGitCommand(t *testing.T) {
-	cwd := "/home/user/project"
+	cwd := t.TempDir()
+	var err error
+	cwd, err = filepath.EvalSymlinks(cwd)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Mkdir(filepath.Join(cwd, ".git"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	other := t.TempDir()
+	other, err = filepath.EvalSymlinks(other)
+	if err != nil {
+		t.Fatal(err)
+	}
+	otherGitDir := filepath.Join(other, ".git")
+	if err := os.Mkdir(otherGitDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	rewriteArg := func(arg string) string {
+		arg = strings.ReplaceAll(
+			arg,
+			"/home/user/project/.git",
+			filepath.Join(cwd, ".git"),
+		)
+		arg = strings.ReplaceAll(
+			arg,
+			"/home/user/project/",
+			cwd+string(filepath.Separator),
+		)
+		arg = strings.ReplaceAll(arg, "/home/user/project", cwd)
+		arg = strings.ReplaceAll(arg, "/other/project", other)
+		arg = strings.ReplaceAll(arg, "/other/.git", otherGitDir)
+		arg = strings.ReplaceAll(arg, "/other", other)
+		return arg
+	}
 
 	tests := []struct {
 		name     string
@@ -310,8 +348,8 @@ func TestNormalizeGitCommand(t *testing.T) {
 	}{
 		// ---- No global path flags (pass-through) ----
 		{
-			name: "no path flags passes through",
-			args: []string{"git", "status"},
+			name:     "no path flags passes through",
+			args:     []string{"git", "status"},
 			wantNorm: []string{"git", "status"},
 			wantOK:   true,
 		},
@@ -549,7 +587,12 @@ func TestNormalizeGitCommand(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			norm, ok := normalizeGitCommand(tt.args, cwd)
+			args := make([]string, 0, len(tt.args))
+			for _, arg := range tt.args {
+				args = append(args, rewriteArg(arg))
+			}
+
+			norm, ok := normalizeGitCommand(args, cwd)
 			if ok != tt.wantOK {
 				t.Errorf("ok = %v, want %v", ok, tt.wantOK)
 			}
@@ -621,19 +664,41 @@ func TestShellJoin(t *testing.T) {
 }
 
 func TestPathMatchesCWD(t *testing.T) {
-	cwd := "/home/user/project"
+	cwd := t.TempDir()
+	var err error
+	cwd, err = filepath.EvalSymlinks(cwd)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	other := t.TempDir()
+	other, err = filepath.EvalSymlinks(other)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	subdir := filepath.Join(cwd, "sub")
+	if err := os.Mkdir(subdir, 0o755); err != nil {
+		t.Fatal(err)
+	}
 
 	tests := []struct {
 		name string
 		path string
 		want bool
 	}{
-		{"exact match", "/home/user/project", true},
-		{"trailing slash", "/home/user/project/", true},
-		{"different path", "/other/project", false},
-		{"subdirectory", "/home/user/project/sub", false},
-		{"parent", "/home/user", false},
+		{"exact match", cwd, true},
+		{"trailing slash", cwd + "/", true},
+		{"different path", other, false},
+		{"subdirectory", subdir, false},
+		{"parent", filepath.Dir(cwd), false},
 		{"relative dot", ".", true},
+		{
+			"unresolved symlink traversal path",
+			cwd + string(filepath.Separator) + "escape" +
+				string(filepath.Separator) + "..",
+			false,
+		},
 	}
 
 	for _, tt := range tests {
@@ -650,7 +715,37 @@ func TestPathMatchesCWD(t *testing.T) {
 }
 
 func TestNormalizeCommand(t *testing.T) {
-	cwd := "/home/user/project"
+	cwd := t.TempDir()
+	var err error
+	cwd, err = filepath.EvalSymlinks(cwd)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Mkdir(filepath.Join(cwd, ".git"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	other := t.TempDir()
+	other, err = filepath.EvalSymlinks(other)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rewriteArg := func(arg string) string {
+		arg = strings.ReplaceAll(
+			arg,
+			"/home/user/project/.git",
+			filepath.Join(cwd, ".git"),
+		)
+		arg = strings.ReplaceAll(
+			arg,
+			"/home/user/project/",
+			cwd+string(filepath.Separator),
+		)
+		arg = strings.ReplaceAll(arg, "/home/user/project", cwd)
+		arg = strings.ReplaceAll(arg, "/other", other)
+		return arg
+	}
 
 	tests := []struct {
 		name    string
@@ -752,7 +847,12 @@ func TestNormalizeCommand(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cmd, ok := normalizeCommand(tt.args, cwd)
+			args := make([]string, 0, len(tt.args))
+			for _, arg := range tt.args {
+				args = append(args, rewriteArg(arg))
+			}
+
+			cmd, ok := normalizeCommand(args, cwd)
 			if ok != tt.wantOK {
 				t.Errorf("ok = %v, want %v", ok, tt.wantOK)
 			}
@@ -767,32 +867,45 @@ func TestNormalizeCommand(t *testing.T) {
 }
 
 func TestGitDirMatchesCWD(t *testing.T) {
-	cwd := "/home/user/project"
+	cwd := t.TempDir()
+	var err error
+	cwd, err = filepath.EvalSymlinks(cwd)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	gitDir := filepath.Join(cwd, ".git")
+	if err := os.Mkdir(gitDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	other := t.TempDir()
+	other, err = filepath.EvalSymlinks(other)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	otherGitDir := filepath.Join(other, ".git")
+	if err := os.Mkdir(otherGitDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
 
 	tests := []struct {
 		name string
 		path string
 		want bool
 	}{
+		{"exact .git match", gitDir, true},
+		{"trailing slash", gitDir + "/", true},
+		{"wrong dir", otherGitDir, false},
+		{"cwd not .git", cwd, false},
+		{"relative .git", ".git", true},
 		{
-			"exact .git match",
-			"/home/user/project/.git", true,
-		},
-		{
-			"trailing slash",
-			"/home/user/project/.git/", true,
-		},
-		{
-			"wrong dir",
-			"/other/project/.git", false,
-		},
-		{
-			"cwd not .git",
-			"/home/user/project", false,
-		},
-		{
-			"relative .git",
-			".git", true,
+			"unresolved traversal to .git path",
+			cwd + string(filepath.Separator) + "escape" +
+				string(filepath.Separator) + ".." +
+				string(filepath.Separator) + ".git",
+			false,
 		},
 	}
 
@@ -807,5 +920,175 @@ func TestGitDirMatchesCWD(t *testing.T) {
 				)
 			}
 		})
+	}
+}
+
+func TestPathMatchesCWD_Symlinks(t *testing.T) {
+	// Create real directory structure for symlink tests.
+	realCWD := t.TempDir()
+	outside := t.TempDir()
+
+	// Resolve any symlinks in the temp dirs themselves
+	// (macOS /tmp -> /private/tmp).
+	realCWD, err := filepath.EvalSymlinks(realCWD)
+	if err != nil {
+		t.Fatal(err)
+	}
+	outside, err = filepath.EvalSymlinks(outside)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Create symlink inside cwd pointing outside.
+	link := filepath.Join(realCWD, "escape")
+	if err := os.Symlink(outside, link); err != nil {
+		t.Fatal(err)
+	}
+
+	// Create symlink pointing directly to cwd.
+	cwdLink := filepath.Join(t.TempDir(), "to-cwd")
+	if err := os.Symlink(realCWD, cwdLink); err != nil {
+		t.Fatal(err)
+	}
+
+	tests := []struct {
+		name string
+		path string
+		cwd  string
+		want bool
+	}{
+		{
+			name: "symlink/.. resolves outside cwd",
+			path: realCWD + "/escape/..",
+			cwd:  realCWD,
+			want: false,
+		},
+		{
+			name: "symlink pointing to cwd matches",
+			path: cwdLink,
+			cwd:  realCWD,
+			want: true,
+		},
+		{
+			name: "cwd given as symlinked path resolves",
+			path: realCWD,
+			cwd:  cwdLink,
+			want: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := pathMatchesCWD(tt.path, tt.cwd)
+			if got != tt.want {
+				t.Errorf(
+					"pathMatchesCWD(%q, %q) = %v, "+
+						"want %v",
+					tt.path, tt.cwd, got, tt.want,
+				)
+			}
+		})
+	}
+}
+
+func TestGitDirMatchesCWD_Symlinks(t *testing.T) {
+	realCWD := t.TempDir()
+	outside := t.TempDir()
+
+	realCWD, err := filepath.EvalSymlinks(realCWD)
+	if err != nil {
+		t.Fatal(err)
+	}
+	outside, err = filepath.EvalSymlinks(outside)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Create .git dir inside cwd.
+	realGitDir := filepath.Join(realCWD, ".git")
+	if err := os.Mkdir(realGitDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	// Symlink inside cwd pointing outside.
+	link := filepath.Join(realCWD, "escape")
+	if err := os.Symlink(outside, link); err != nil {
+		t.Fatal(err)
+	}
+
+	// Symlink pointing directly to the real .git dir.
+	gitLink := filepath.Join(t.TempDir(), "link-git")
+	if err := os.Symlink(realGitDir, gitLink); err != nil {
+		t.Fatal(err)
+	}
+
+	tests := []struct {
+		name string
+		path string
+		cwd  string
+		want bool
+	}{
+		{
+			name: "symlink/../.git resolves outside cwd",
+			path: realCWD + "/escape/../.git",
+			cwd:  realCWD,
+			want: false,
+		},
+		{
+			name: "symlink to real .git matches",
+			path: gitLink,
+			cwd:  realCWD,
+			want: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := gitDirMatchesCWD(tt.path, tt.cwd)
+			if got != tt.want {
+				t.Errorf(
+					"gitDirMatchesCWD(%q, %q) = %v, "+
+						"want %v",
+					tt.path, tt.cwd, got, tt.want,
+				)
+			}
+		})
+	}
+}
+
+func TestNormalizeCommand_SymlinkBypass(t *testing.T) {
+	realCWD := t.TempDir()
+	outside := t.TempDir()
+
+	realCWD, err := filepath.EvalSymlinks(realCWD)
+	if err != nil {
+		t.Fatal(err)
+	}
+	outside, err = filepath.EvalSymlinks(outside)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Create symlink inside cwd pointing outside.
+	link := filepath.Join(realCWD, "escape")
+	if err := os.Symlink(outside, link); err != nil {
+		t.Fatal(err)
+	}
+
+	// git -C symlink/.. status should be rejected because
+	// symlink/.. resolves to outside's parent, not cwd.
+	args := []string{
+		"git", "-C",
+		realCWD + "/escape/..",
+		"status",
+	}
+
+	cmd, ok := normalizeCommand(args, realCWD)
+	if ok {
+		t.Errorf(
+			"normalizeCommand should reject symlink "+
+				"traversal, got %q",
+			cmd,
+		)
 	}
 }

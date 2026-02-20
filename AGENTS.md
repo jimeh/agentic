@@ -37,6 +37,9 @@ directory. It normalizes those commands by stripping the path flags and checks
 the result against the Bash allow/deny patterns in Claude Code settings.
 Only treat these as git global flags before the subcommand; after the
 subcommand they can be command-local flags (for example `git log -C`).
+Tests that exercise main hook permission loading should override the managed
+settings path resolver to a temp path so machine-global managed settings do not
+leak into test results.
 
 Permission patterns support three matching styles (plus legacy):
 
@@ -44,6 +47,13 @@ Permission patterns support three matching styles (plus legacy):
 - `Bash(ls*)` — bare-star / star anywhere: glob match (`*` = any chars)
 - `Bash(npm run compile)` — no wildcards: exact match
 - `Bash(git status:*)` — legacy `:*` suffix: word-boundary prefix (deprecated)
+
+Path validation gotcha:
+
+- Avoid `filepath.Join`/`filepath.Abs` before symlink-sensitive checks. Both
+  lexically collapse `..`, which can hide traversal patterns like
+  `symlink/..`. Preserve raw relative segments and resolve components in order
+  with `EvalSymlinks`, failing closed on resolution errors.
 
 Build and validate:
 

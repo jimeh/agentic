@@ -348,21 +348,68 @@ func shellJoin(tokens []string) string {
 	return strings.Join(parts, " ")
 }
 
+// canonicalize returns the fully-resolved absolute path, resolving
+// each path component in order. Returns false when resolution fails.
+func canonicalize(path string) (string, bool) {
+	if !filepath.IsAbs(path) {
+		return "", false
+	}
+	sep := string(filepath.Separator)
+	parts := strings.Split(path, sep)
+	resolvedPath := sep
+
+	for _, p := range parts {
+		switch p {
+		case "", ".":
+			continue
+		case "..":
+			resolvedPath = filepath.Dir(resolvedPath)
+		default:
+			next := filepath.Join(resolvedPath, p)
+			evalPath, err := filepath.EvalSymlinks(next)
+			if err != nil {
+				return "", false
+			}
+			resolvedPath = filepath.Clean(evalPath)
+		}
+	}
+
+	return filepath.Clean(resolvedPath), true
+}
+
 // pathMatchesCWD returns true when path resolves to cwd.
 func pathMatchesCWD(path, cwd string) bool {
-	return filepath.Clean(resolvePath(path, cwd)) ==
-		filepath.Clean(cwd)
+	canonPath, ok := canonicalize(resolvePath(path, cwd))
+	if !ok {
+		return false
+	}
+	canonCWD, ok := canonicalize(cwd)
+	if !ok {
+		return false
+	}
+	return canonPath == canonCWD
 }
 
 // gitDirMatchesCWD returns true when path resolves to cwd/.git.
 func gitDirMatchesCWD(path, cwd string) bool {
-	return filepath.Clean(resolvePath(path, cwd)) ==
-		filepath.Clean(filepath.Join(cwd, ".git"))
+	canonPath, ok := canonicalize(resolvePath(path, cwd))
+	if !ok {
+		return false
+	}
+	canonGitDir, ok := canonicalize(filepath.Join(cwd, ".git"))
+	if !ok {
+		return false
+	}
+	return canonPath == canonGitDir
 }
 
 func resolvePath(path, cwd string) string {
 	if filepath.IsAbs(path) {
 		return path
 	}
-	return filepath.Join(cwd, path)
+	sep := string(filepath.Separator)
+	if strings.HasSuffix(cwd, sep) {
+		return cwd + path
+	}
+	return cwd + sep + path
 }
