@@ -41,6 +41,10 @@ The hook's git-prefix parser is fail-closed: unknown or malformed
 pre-subcommand global options are rejected (no opinion) rather than passed
 through. For safety, some value options are accepted only in `--opt=value`
 form (for example `--list-cmds`).
+The command extractor is also fail-closed for dynamic shell constructs:
+command substitution, heredocs, redirections, variable expansion, and similar
+features return no opinion even when the outer command is otherwise allowed.
+Example: `gh pr create --body "$(cat <<'EOF' ... EOF)"` is rejected.
 Tests that exercise main hook permission loading should override the managed
 settings path resolver to a temp path so machine-global managed settings do not
 leak into test results.
@@ -64,6 +68,7 @@ Build and validate:
 ```bash
 cd claude/bash-approval-hook
 make              # build the binary
+make debug-build  # build debug binary with file logging enabled
 make check        # run vet + lint + tests
 ```
 
