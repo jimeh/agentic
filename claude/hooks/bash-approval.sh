@@ -4,27 +4,8 @@
 # If the compiled binary exists, exec it; otherwise exit
 # silently so the normal permission flow proceeds.
 
-# Resolve through symlinks to find the real script location,
-# then locate the binary relative to it.
-resolve_link() {
-  "$(command -v greadlink || command -v readlink)" "$1"
-}
-
-abs_dirname() {
-  local path="$1"
-  local name
-  local cwd
-  cwd="$(pwd)"
-  while [ -n "$path" ]; do
-    cd "${path%/*}" || exit 1
-    name="${path##*/}"
-    path="$(resolve_link "$name" || true)"
-  done
-  pwd
-  cd "$cwd" || exit 1
-}
-
-SCRIPT_DIR="$(abs_dirname "$0")"
+SCRIPT_DIR="$(cd "$(dirname "$(realpath "$0")")" && pwd)"
 BINARY="${SCRIPT_DIR}/../bash-approval-hook/bash-approval-hook"
 
-[[ -x "$BINARY" ]] && exec "$BINARY" || exit 0
+if [[ -x "$BINARY" ]]; then exec "$BINARY"; fi
+exit 0
