@@ -150,119 +150,290 @@ func wordToString(w *syntax.Word) (string, bool) {
 	return sb.String(), true
 }
 
-// normalizeGitCommand strips git global path flags (-C,
-// --git-dir, --work-tree) from a git command's argument list
-// when their paths resolve to cwd. Only flags in git's
-// top-level global option segment (before the subcommand) are
-// considered path flags. Returns the original args unchanged
-// when no global path flags are present. Returns nil and false
-// if any path flag pointed elsewhere or a value was missing.
-func normalizeGitCommand(
-	args []string, cwd string,
-) ([]string, bool) {
-	result := []string{"git"}
-	sawPathFlag := false
+type normalizeContext struct {
+	cwd         string
+	canonCWD    string
+	canonGitDir string
+	hasCanonGit bool
+}
 
-	cmdIdx := gitSubcommandIndex(args)
-	for i := 1; i < cmdIdx; i++ {
+func newNormalizeContext(cwd string) (normalizeContext, bool) {
+	canonCWD, ok := canonicalize(cwd)
+	if !ok {
+		return normalizeContext{}, false
+	}
+
+	ctx := normalizeContext{
+		cwd:      cwd,
+		canonCWD: canonCWD,
+	}
+	if canonGitDir, ok := canonicalize(
+		filepath.Join(cwd, ".git"),
+	); ok {
+		ctx.canonGitDir = canonGitDir
+		ctx.hasCanonGit = true
+	}
+
+	return ctx, true
+}
+
+type gitPathPolicy int
+
+const (
+	gitPathPolicyNone gitPathPolicy = iota
+	gitPathPolicyCWD
+	gitPathPolicyGitDir
+)
+
+type gitGlobalOptionSpec struct {
+	pathPolicy    gitPathPolicy
+	allowSeparate bool
+	allowEquals   bool
+	allowAttached bool
+}
+
+type parsedGitGlobalOption struct {
+	consumed   int
+	keepTokens []string
+	pathPolicy gitPathPolicy
+	pathValue  string
+}
+
+type gitPrefixParseResult struct {
+	keepPrefix []string
+	pathChecks []parsedGitGlobalOption
+	subcommand int
+	sawPath    bool
+}
+
+var gitNoValueGlobalOptions = map[string]struct{}{
+	"--help":               {},
+	"--version":            {},
+	"-p":                   {},
+	"--paginate":           {},
+	"-P":                   {},
+	"--no-pager":           {},
+	"--bare":               {},
+	"--no-replace-objects": {},
+	"--literal-pathspecs":  {},
+	"--glob-pathspecs":     {},
+	"--noglob-pathspecs":   {},
+	"--icase-pathspecs":    {},
+	"--no-lazy-fetch":      {},
+	"--no-optional-locks":  {},
+}
+
+var gitValueGlobalOptions = map[string]gitGlobalOptionSpec{
+	"-C": {
+		pathPolicy:    gitPathPolicyCWD,
+		allowSeparate: true,
+		allowAttached: true,
+	},
+	"-c": {
+		pathPolicy:    gitPathPolicyNone,
+		allowSeparate: true,
+		allowAttached: true,
+	},
+	"--git-dir": {
+		pathPolicy:    gitPathPolicyGitDir,
+		allowSeparate: true,
+		allowEquals:   true,
+	},
+	"--work-tree": {
+		pathPolicy:    gitPathPolicyCWD,
+		allowSeparate: true,
+		allowEquals:   true,
+	},
+	"--namespace": {
+		pathPolicy:  gitPathPolicyNone,
+		allowEquals: true,
+	},
+	"--config-env": {
+		pathPolicy:  gitPathPolicyNone,
+		allowEquals: true,
+	},
+	"--super-prefix": {
+		pathPolicy:  gitPathPolicyNone,
+		allowEquals: true,
+	},
+	"--exec-path": {
+		pathPolicy:  gitPathPolicyNone,
+		allowEquals: true,
+	},
+	"--list-cmds": {
+		pathPolicy:  gitPathPolicyNone,
+		allowEquals: true,
+	},
+	"--attr-source": {
+		pathPolicy:  gitPathPolicyNone,
+		allowEquals: true,
+	},
+}
+
+func parseGitPrefix(args []string) (gitPrefixParseResult, bool) {
+	result := gitPrefixParseResult{
+		subcommand: len(args),
+	}
+	for i := 1; i < len(args); {
 		arg := args[i]
-
-		// Preserve "--" if used to terminate global options.
 		if arg == "--" {
-			result = append(result, arg)
-			continue
+			result.keepPrefix = append(result.keepPrefix, arg)
+			if i+1 < len(args) {
+				result.subcommand = i + 1
+			}
+			return result, true
 		}
 
-		// -C <path>
-		if arg == "-C" {
-			sawPathFlag = true
-			if i+1 >= cmdIdx {
-				return nil, false
-			}
-			if !pathMatchesCWD(args[i+1], cwd) {
-				return nil, false
-			}
-			i++
-			continue
-		}
-		// -C<path>
-		if strings.HasPrefix(arg, "-C") &&
-			len(arg) > 2 {
-			sawPathFlag = true
-			if !pathMatchesCWD(arg[2:], cwd) {
-				return nil, false
-			}
-			continue
+		if arg == "-" || !strings.HasPrefix(arg, "-") {
+			result.subcommand = i
+			return result, true
 		}
 
-		// --git-dir=<path> or --git-dir <path>
-		if arg == "--git-dir" {
-			sawPathFlag = true
-			if i+1 >= cmdIdx {
-				return nil, false
-			}
-			if !gitDirMatchesCWD(args[i+1], cwd) {
-				return nil, false
-			}
-			i++
-			continue
+		parsed, ok := parseGitGlobalOption(args, i)
+		if !ok {
+			return gitPrefixParseResult{}, false
 		}
-		if strings.HasPrefix(arg, "--git-dir=") {
-			sawPathFlag = true
-			p := strings.TrimPrefix(arg, "--git-dir=")
-			if !gitDirMatchesCWD(p, cwd) {
-				return nil, false
-			}
-			continue
+		if parsed.pathPolicy == gitPathPolicyNone {
+			result.keepPrefix = append(
+				result.keepPrefix, parsed.keepTokens...,
+			)
+		} else {
+			result.sawPath = true
+			result.pathChecks = append(
+				result.pathChecks, parsed,
+			)
 		}
-
-		// --work-tree=<path> or --work-tree <path>
-		if arg == "--work-tree" {
-			sawPathFlag = true
-			if i+1 >= cmdIdx {
-				return nil, false
-			}
-			if !pathMatchesCWD(args[i+1], cwd) {
-				return nil, false
-			}
-			i++
-			continue
-		}
-		if strings.HasPrefix(arg, "--work-tree=") {
-			sawPathFlag = true
-			p := strings.TrimPrefix(arg, "--work-tree=")
-			if !pathMatchesCWD(p, cwd) {
-				return nil, false
-			}
-			continue
-		}
-
-		// Preserve non-path global options.
-		result = append(result, arg)
-		if gitGlobalOptionNeedsValue(arg) {
-			if i+1 >= cmdIdx {
-				return nil, false
-			}
-			result = append(result, args[i+1])
-			i++
-		}
+		i += parsed.consumed
 	}
 
-	if !sawPathFlag {
-		return args, true
-	}
-	result = append(result, args[cmdIdx:]...)
 	return result, true
 }
 
-// normalizeCommand returns a normalized string representation of
-// a command for permission checking. Non-git commands are returned
-// as-is. Git commands with path flags pointing at cwd are
-// normalized by stripping those flags. Git commands with path
-// flags pointing elsewhere are rejected (returns "", false).
-// Git commands without path flags are returned as-is.
+func parseGitGlobalOption(
+	args []string, idx int,
+) (parsedGitGlobalOption, bool) {
+	arg := args[idx]
+	if _, ok := gitNoValueGlobalOptions[arg]; ok {
+		return parsedGitGlobalOption{
+			consumed:   1,
+			keepTokens: []string{arg},
+			pathPolicy: gitPathPolicyNone,
+		}, true
+	}
+
+	if spec, ok := gitValueGlobalOptions[arg]; ok {
+		if !spec.allowSeparate || idx+1 >= len(args) {
+			return parsedGitGlobalOption{}, false
+		}
+		value := args[idx+1]
+		if value == "" {
+			return parsedGitGlobalOption{}, false
+		}
+		return parsedGitGlobalOption{
+			consumed:   2,
+			keepTokens: []string{arg, value},
+			pathPolicy: spec.pathPolicy,
+			pathValue:  value,
+		}, true
+	}
+
+	if strings.HasPrefix(arg, "--") {
+		name, value, ok := strings.Cut(arg, "=")
+		if !ok || value == "" {
+			return parsedGitGlobalOption{}, false
+		}
+		spec, ok := gitValueGlobalOptions[name]
+		if !ok || !spec.allowEquals {
+			return parsedGitGlobalOption{}, false
+		}
+		return parsedGitGlobalOption{
+			consumed:   1,
+			keepTokens: []string{arg},
+			pathPolicy: spec.pathPolicy,
+			pathValue:  value,
+		}, true
+	}
+
+	if strings.HasPrefix(arg, "-") && len(arg) > 2 {
+		name := arg[:2]
+		value := arg[2:]
+		spec, ok := gitValueGlobalOptions[name]
+		if !ok || !spec.allowAttached || value == "" {
+			return parsedGitGlobalOption{}, false
+		}
+		return parsedGitGlobalOption{
+			consumed:   1,
+			keepTokens: []string{arg},
+			pathPolicy: spec.pathPolicy,
+			pathValue:  value,
+		}, true
+	}
+
+	return parsedGitGlobalOption{}, false
+}
+
+func validatePathChecks(
+	checks []parsedGitGlobalOption, ctx normalizeContext,
+) bool {
+	for _, check := range checks {
+		switch check.pathPolicy {
+		case gitPathPolicyCWD:
+			if !pathMatchesCanonical(
+				check.pathValue, ctx, ctx.canonCWD,
+			) {
+				return false
+			}
+		case gitPathPolicyGitDir:
+			if !ctx.hasCanonGit ||
+				!pathMatchesCanonical(
+					check.pathValue, ctx, ctx.canonGitDir,
+				) {
+				return false
+			}
+		default:
+			return false
+		}
+	}
+	return true
+}
+
+func rewriteGitCommand(
+	args []string, parsed gitPrefixParseResult,
+) []string {
+	if !parsed.sawPath {
+		return args
+	}
+	result := make([]string, 0, len(args))
+	result = append(result, "git")
+	result = append(result, parsed.keepPrefix...)
+	result = append(result, args[parsed.subcommand:]...)
+	return result
+}
+
+// normalizeGitCommand strips recognized git global path flags
+// (-C, --git-dir, --work-tree) only when their values resolve to
+// cwd/cwd/.git. Unknown or malformed pre-subcommand global options
+// are rejected to fail closed.
+func normalizeGitCommand(
+	args []string, ctx normalizeContext,
+) ([]string, bool) {
+	parsed, ok := parseGitPrefix(args)
+	if !ok {
+		return nil, false
+	}
+	if !validatePathChecks(parsed.pathChecks, ctx) {
+		return nil, false
+	}
+	return rewriteGitCommand(args, parsed), true
+}
+
+// normalizeCommand returns a normalized string representation of a
+// command for permission checking. Non-git commands are returned
+// as-is. Git commands are parsed strictly in their pre-subcommand
+// global-option prefix and fail closed on unknown or malformed
+// options.
 func normalizeCommand(
-	args []string, cwd string,
+	args []string, ctx normalizeContext,
 ) (string, bool) {
 	if len(args) == 0 {
 		return "", false
@@ -272,63 +443,11 @@ func normalizeCommand(
 		return shellJoin(args), true
 	}
 
-	// Normalize git command (strips path flags or passes
-	// through unchanged if none are present).
-	norm, ok := normalizeGitCommand(args, cwd)
+	norm, ok := normalizeGitCommand(args, ctx)
 	if !ok {
 		return "", false
 	}
 	return shellJoin(norm), true
-}
-
-// gitSubcommandIndex returns the index where git's subcommand
-// begins. The scan consumes git global options (including options
-// that require a separate value) and stops at the first
-// non-option token or token after a global "--".
-func gitSubcommandIndex(args []string) int {
-	if len(args) <= 1 {
-		return len(args)
-	}
-
-	for i := 1; i < len(args); i++ {
-		arg := args[i]
-
-		if arg == "--" {
-			if i+1 < len(args) {
-				return i + 1
-			}
-			return len(args)
-		}
-
-		if arg == "-" || !strings.HasPrefix(arg, "-") {
-			return i
-		}
-
-		if gitGlobalOptionNeedsValue(arg) {
-			if i+1 >= len(args) {
-				return len(args)
-			}
-			i++
-		}
-	}
-	return len(args)
-}
-
-func gitGlobalOptionNeedsValue(arg string) bool {
-	switch arg {
-	case "-C",
-		"-c",
-		"--git-dir",
-		"--work-tree",
-		"--namespace",
-		"--config-env",
-		"--super-prefix",
-		"--exec-path",
-		"--attr-source":
-		return true
-	default:
-		return false
-	}
 }
 
 // shellJoin reassembles tokens into a shell command string,
@@ -377,30 +496,33 @@ func canonicalize(path string) (string, bool) {
 	return filepath.Clean(resolvedPath), true
 }
 
+// pathMatchesCanonical returns true when path resolves to expected.
+func pathMatchesCanonical(
+	path string, ctx normalizeContext, expected string,
+) bool {
+	canonPath, ok := canonicalize(resolvePath(path, ctx.cwd))
+	if !ok {
+		return false
+	}
+	return canonPath == expected
+}
+
 // pathMatchesCWD returns true when path resolves to cwd.
 func pathMatchesCWD(path, cwd string) bool {
-	canonPath, ok := canonicalize(resolvePath(path, cwd))
+	ctx, ok := newNormalizeContext(cwd)
 	if !ok {
 		return false
 	}
-	canonCWD, ok := canonicalize(cwd)
-	if !ok {
-		return false
-	}
-	return canonPath == canonCWD
+	return pathMatchesCanonical(path, ctx, ctx.canonCWD)
 }
 
 // gitDirMatchesCWD returns true when path resolves to cwd/.git.
 func gitDirMatchesCWD(path, cwd string) bool {
-	canonPath, ok := canonicalize(resolvePath(path, cwd))
-	if !ok {
+	ctx, ok := newNormalizeContext(cwd)
+	if !ok || !ctx.hasCanonGit {
 		return false
 	}
-	canonGitDir, ok := canonicalize(filepath.Join(cwd, ".git"))
-	if !ok {
-		return false
-	}
-	return canonPath == canonGitDir
+	return pathMatchesCanonical(path, ctx, ctx.canonGitDir)
 }
 
 func resolvePath(path, cwd string) string {

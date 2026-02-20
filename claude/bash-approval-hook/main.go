@@ -1,9 +1,9 @@
 // bash-approval-hook auto-approves shell commands that match the
 // Bash allow/deny patterns in Claude Code settings files. Git
-// commands with -C, --git-dir, or --work-tree flags pointing at
-// the current project directory are normalized by stripping those
-// flags before pattern matching. Non-git commands and git
-// commands without path flags are checked as-is.
+// commands with recognized global path flags (-C, --git-dir,
+// --work-tree) pointing at the current project directory are
+// normalized by stripping only those path flags before pattern
+// matching. Unknown or malformed git global options fail closed.
 package main
 
 import (
@@ -52,6 +52,10 @@ func mainE(r io.Reader, w io.Writer) error {
 	if cwd == "" {
 		return nil
 	}
+	nctx, ok := newNormalizeContext(cwd)
+	if !ok {
+		return nil
+	}
 
 	// Parse into individual commands via shell AST.
 	cmds := extractCommands(input.ToolInput.Command)
@@ -59,13 +63,13 @@ func mainE(r io.Reader, w io.Writer) error {
 		return nil
 	}
 
-	// Normalize every sub-command. Git commands with path
-	// flags are stripped; non-git commands pass through as-is.
-	// Any git command with path flags pointing outside cwd
-	// causes the entire input to be rejected.
+	// Normalize every sub-command. Git path flags are stripped
+	// only when they resolve to cwd; non-git commands pass
+	// through as-is. Unknown or malformed pre-subcommand git
+	// global options fail closed.
 	normalized := make([]string, 0, len(cmds))
 	for _, args := range cmds {
-		cmd, ok := normalizeCommand(args, cwd)
+		cmd, ok := normalizeCommand(args, nctx)
 		if !ok {
 			return nil
 		}
@@ -75,7 +79,7 @@ func mainE(r io.Reader, w io.Writer) error {
 	// Load permission patterns from settings files.
 	// Fail closed on any uncertainty (read/parse/validation errors or an
 	// empty allow set) by returning no opinion.
-	rules, err := loadPermissions(cwd)
+	rules, err := loadPermissions(nctx.cwd)
 	if err != nil || len(rules.allow) == 0 {
 		return nil
 	}
