@@ -582,6 +582,27 @@ func TestMainE(t *testing.T) {
 			wantOutput: "approve",
 		},
 
+		// ---- Local git flags on subcommand ----
+		{
+			name: "git rev-parse --git-dir approved",
+			input: func(cwd string) string {
+				return hookJSON(
+					"git rev-parse --git-dir", cwd,
+				)
+			},
+			allow:      []string{"Bash(git rev-parse:*)"},
+			wantOutput: "approve",
+		},
+		{
+			name: "git -C CWD log -C -1 approved",
+			input: func(cwd string) string {
+				cmd := "git -C " + cwd + " log -C -1"
+				return hookJSON(cmd, cwd)
+			},
+			allow:      []string{"Bash(git log:*)"},
+			wantOutput: "approve",
+		},
+
 		// ---- End-of-options (--) ----
 		{
 			name: "git -C CWD diff -- -C approved",

@@ -35,6 +35,8 @@ never edit the symlink targets directly.
 using `-C`, `--git-dir`, or `--work-tree` flags pointing at the current project
 directory. It normalizes those commands by stripping the path flags and checks
 the result against the Bash allow/deny patterns in Claude Code settings.
+Only treat these as git global flags before the subcommand; after the
+subcommand they can be command-local flags (for example `git log -C`).
 
 Permission patterns support three matching styles (plus legacy):
 

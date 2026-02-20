@@ -302,15 +302,39 @@ func TestWordToString(t *testing.T) {
 func TestNormalizeGitCommand(t *testing.T) {
 	cwd := "/home/user/project"
 
-	// Precondition: all inputs must be git commands with at
-	// least one path flag. The caller (normalizeCommand)
-	// enforces this.
 	tests := []struct {
 		name     string
 		args     []string
 		wantNorm []string
 		wantOK   bool
 	}{
+		// ---- No global path flags (pass-through) ----
+		{
+			name: "no path flags passes through",
+			args: []string{"git", "status"},
+			wantNorm: []string{"git", "status"},
+			wantOK:   true,
+		},
+		{
+			name: "local -C is not a global path flag",
+			args: []string{"git", "log", "-C", "-1"},
+			wantNorm: []string{
+				"git", "log", "-C", "-1",
+			},
+			wantOK: true,
+		},
+		{
+			name: "local --git-dir is not a global path flag",
+			args: []string{
+				"git", "rev-parse", "--git-dir",
+			},
+			wantNorm: []string{
+				"git", "rev-parse", "--git-dir",
+			},
+			wantOK: true,
+		},
+
+		// ---- Global path flags ----
 		{
 			name: "strip -C matching cwd",
 			args: []string{
@@ -477,6 +501,26 @@ func TestNormalizeGitCommand(t *testing.T) {
 			},
 			wantNorm: nil,
 			wantOK:   false,
+		},
+		{
+			name: "global -C keeps local -C on subcommand",
+			args: []string{
+				"git", "-C", "/home/user/project",
+				"log", "-C", "-1",
+			},
+			wantNorm: []string{"git", "log", "-C", "-1"},
+			wantOK:   true,
+		},
+		{
+			name: "global -c value before -C is preserved",
+			args: []string{
+				"git", "-c", "foo.bar=baz", "-C",
+				"/home/user/project", "status",
+			},
+			wantNorm: []string{
+				"git", "-c", "foo.bar=baz", "status",
+			},
+			wantOK: true,
 		},
 		{
 			name: "-C before -- with files after",
@@ -679,6 +723,31 @@ func TestNormalizeCommand(t *testing.T) {
 			wantCmd: "",
 			wantOK:  false,
 		},
+		{
+			name: "local --git-dir after subcommand passes through",
+			args: []string{
+				"git", "rev-parse", "--git-dir",
+			},
+			wantCmd: "git rev-parse --git-dir",
+			wantOK:  true,
+		},
+		{
+			name: "local -C after subcommand passes through",
+			args: []string{
+				"git", "log", "-C", "-1",
+			},
+			wantCmd: "git log -C -1",
+			wantOK:  true,
+		},
+		{
+			name: "global -C with local -C keeps local flag",
+			args: []string{
+				"git", "-C", "/home/user/project",
+				"log", "-C", "-1",
+			},
+			wantCmd: "git log -C -1",
+			wantOK:  true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -691,90 +760,6 @@ func TestNormalizeCommand(t *testing.T) {
 				t.Errorf(
 					"cmd = %q, want %q",
 					cmd, tt.wantCmd,
-				)
-			}
-		})
-	}
-}
-
-func TestContainsGitPathFlag(t *testing.T) {
-	tests := []struct {
-		name string
-		args []string
-		want bool
-	}{
-		{
-			name: "has -C",
-			args: []string{"git", "-C", "/path", "status"},
-			want: true,
-		},
-		{
-			name: "has --git-dir=",
-			args: []string{"git", "--git-dir=/p/.git", "log"},
-			want: true,
-		},
-		{
-			name: "has --git-dir space",
-			args: []string{"git", "--git-dir", "/p/.git"},
-			want: true,
-		},
-		{
-			name: "has --work-tree=",
-			args: []string{"git", "--work-tree=/p", "status"},
-			want: true,
-		},
-		{
-			name: "has --work-tree space",
-			args: []string{"git", "--work-tree", "/p"},
-			want: true,
-		},
-		{
-			name: "no path flags",
-			args: []string{"git", "status"},
-			want: false,
-		},
-		{
-			name: "non-git no flags",
-			args: []string{"cat", "file.txt"},
-			want: false,
-		},
-		{
-			name: "empty args",
-			args: []string{},
-			want: false,
-		},
-		{
-			name: "-C after -- is not a flag",
-			args: []string{
-				"git", "status", "--", "-C",
-			},
-			want: false,
-		},
-		{
-			name: "--git-dir= after -- is not a flag",
-			args: []string{
-				"git", "log", "--", "--git-dir=/x",
-			},
-			want: false,
-		},
-		{
-			name: "-C before -- is a flag",
-			args: []string{
-				"git", "-C", "/p", "status",
-				"--", "file",
-			},
-			want: true,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := containsGitPathFlag(tt.args)
-			if got != tt.want {
-				t.Errorf(
-					"containsGitPathFlag(%v) = %v, "+
-						"want %v",
-					tt.args, got, tt.want,
 				)
 			}
 		})

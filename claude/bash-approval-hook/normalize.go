@@ -150,33 +150,34 @@ func wordToString(w *syntax.Word) (string, bool) {
 	return sb.String(), true
 }
 
-// normalizeGitCommand strips -C, --git-dir, and --work-tree
-// flags from a git command's argument list when the paths
-// resolve to cwd. Returns the normalized args and true if all
-// path flags pointed at cwd, or nil and false if any path
-// pointed elsewhere or a flag value was missing.
-//
-// Precondition: args must be a git command (args[0] == "git")
-// containing at least one path flag. The caller
-// (normalizeCommand) enforces both.
+// normalizeGitCommand strips git global path flags (-C,
+// --git-dir, --work-tree) from a git command's argument list
+// when their paths resolve to cwd. Only flags in git's
+// top-level global option segment (before the subcommand) are
+// considered path flags. Returns the original args unchanged
+// when no global path flags are present. Returns nil and false
+// if any path flag pointed elsewhere or a value was missing.
 func normalizeGitCommand(
 	args []string, cwd string,
 ) ([]string, bool) {
 	result := []string{"git"}
 	pathsOK := true
+	sawPathFlag := false
 
-	for i := 1; i < len(args); i++ {
+	cmdIdx := gitSubcommandIndex(args)
+	for i := 1; i < cmdIdx; i++ {
 		arg := args[i]
 
-		// Everything after "--" is a positional argument.
+		// Preserve "--" if used to terminate global options.
 		if arg == "--" {
-			result = append(result, args[i:]...)
-			break
+			result = append(result, arg)
+			continue
 		}
 
 		// -C <path>
 		if arg == "-C" {
-			if i+1 >= len(args) {
+			sawPathFlag = true
+			if i+1 >= cmdIdx {
 				return nil, false
 			}
 			if !pathMatchesCWD(args[i+1], cwd) {
@@ -185,10 +186,20 @@ func normalizeGitCommand(
 			i++
 			continue
 		}
+		// -C<path>
+		if strings.HasPrefix(arg, "-C") &&
+			len(arg) > 2 {
+			sawPathFlag = true
+			if !pathMatchesCWD(arg[2:], cwd) {
+				pathsOK = false
+			}
+			continue
+		}
 
 		// --git-dir=<path> or --git-dir <path>
 		if arg == "--git-dir" {
-			if i+1 >= len(args) {
+			sawPathFlag = true
+			if i+1 >= cmdIdx {
 				return nil, false
 			}
 			if !gitDirMatchesCWD(args[i+1], cwd) {
@@ -198,6 +209,7 @@ func normalizeGitCommand(
 			continue
 		}
 		if strings.HasPrefix(arg, "--git-dir=") {
+			sawPathFlag = true
 			p := strings.TrimPrefix(arg, "--git-dir=")
 			if !gitDirMatchesCWD(p, cwd) {
 				pathsOK = false
@@ -207,7 +219,8 @@ func normalizeGitCommand(
 
 		// --work-tree=<path> or --work-tree <path>
 		if arg == "--work-tree" {
-			if i+1 >= len(args) {
+			sawPathFlag = true
+			if i+1 >= cmdIdx {
 				return nil, false
 			}
 			if !pathMatchesCWD(args[i+1], cwd) {
@@ -217,6 +230,7 @@ func normalizeGitCommand(
 			continue
 		}
 		if strings.HasPrefix(arg, "--work-tree=") {
+			sawPathFlag = true
 			p := strings.TrimPrefix(arg, "--work-tree=")
 			if !pathMatchesCWD(p, cwd) {
 				pathsOK = false
@@ -224,13 +238,24 @@ func normalizeGitCommand(
 			continue
 		}
 
-		// Anything else passes through.
+		// Preserve non-path global options.
 		result = append(result, arg)
+		if gitGlobalOptionNeedsValue(arg) {
+			if i+1 >= cmdIdx {
+				return nil, false
+			}
+			result = append(result, args[i+1])
+			i++
+		}
 	}
 
+	if !sawPathFlag {
+		return args, true
+	}
 	if !pathsOK {
 		return nil, false
 	}
+	result = append(result, args[cmdIdx:]...)
 	return result, true
 }
 
@@ -251,12 +276,8 @@ func normalizeCommand(
 		return shellJoin(args), true
 	}
 
-	// Git command without path flags — pass through as-is.
-	if !containsGitPathFlag(args) {
-		return shellJoin(args), true
-	}
-
-	// Git command with path flags — normalize.
+	// Normalize git command (strips path flags or passes
+	// through unchanged if none are present).
 	norm, ok := normalizeGitCommand(args, cwd)
 	if !ok {
 		return "", false
@@ -264,23 +285,54 @@ func normalizeCommand(
 	return shellJoin(norm), true
 }
 
-// containsGitPathFlag reports whether args contains any of the
-// git path flags: -C, --git-dir, or --work-tree.
-func containsGitPathFlag(args []string) bool {
-	for _, a := range args {
-		if a == "--" {
-			break
+// gitSubcommandIndex returns the index where git's subcommand
+// begins. The scan consumes git global options (including options
+// that require a separate value) and stops at the first
+// non-option token or token after a global "--".
+func gitSubcommandIndex(args []string) int {
+	if len(args) <= 1 {
+		return len(args)
+	}
+
+	for i := 1; i < len(args); i++ {
+		arg := args[i]
+
+		if arg == "--" {
+			if i+1 < len(args) {
+				return i + 1
+			}
+			return len(args)
 		}
-		switch {
-		case a == "-C",
-			a == "--git-dir",
-			a == "--work-tree",
-			strings.HasPrefix(a, "--git-dir="),
-			strings.HasPrefix(a, "--work-tree="):
-			return true
+
+		if arg == "-" || !strings.HasPrefix(arg, "-") {
+			return i
+		}
+
+		if gitGlobalOptionNeedsValue(arg) {
+			if i+1 >= len(args) {
+				return len(args)
+			}
+			i++
 		}
 	}
-	return false
+	return len(args)
+}
+
+func gitGlobalOptionNeedsValue(arg string) bool {
+	switch arg {
+	case "-C",
+		"-c",
+		"--git-dir",
+		"--work-tree",
+		"--namespace",
+		"--config-env",
+		"--super-prefix",
+		"--exec-path",
+		"--attr-source":
+		return true
+	default:
+		return false
+	}
 }
 
 // shellJoin reassembles tokens into a shell command string,
