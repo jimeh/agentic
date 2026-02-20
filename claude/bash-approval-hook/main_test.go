@@ -9,15 +9,15 @@ import (
 	"testing"
 )
 
-// writeSettings creates a .claude/settings.json under dir with
-// the given allow/deny patterns.
-func writeSettings(
-	t *testing.T, dir string,
+// writeSettingsFile creates a settings file at the given path
+// with the given allow/deny patterns.
+func writeSettingsFile(
+	t *testing.T, path string,
 	allow, deny []string,
 ) {
 	t.Helper()
-	claudeDir := filepath.Join(dir, ".claude")
-	if err := os.MkdirAll(claudeDir, 0o755); err != nil {
+	dir := filepath.Dir(path)
+	if err := os.MkdirAll(dir, 0o755); err != nil {
 		t.Fatal(err)
 	}
 
@@ -29,10 +29,39 @@ func writeSettings(
 	if err != nil {
 		t.Fatal(err)
 	}
-	path := filepath.Join(claudeDir, "settings.json")
 	if err := os.WriteFile(path, data, 0o644); err != nil {
 		t.Fatal(err)
 	}
+}
+
+// writeSettings creates a .claude/settings.json under dir with
+// the given allow/deny patterns.
+func writeSettings(
+	t *testing.T, dir string,
+	allow, deny []string,
+) {
+	t.Helper()
+	writeSettingsFile(
+		t,
+		filepath.Join(dir, ".claude", "settings.json"),
+		allow, deny,
+	)
+}
+
+// writeLocalSettings creates a .claude/settings.local.json under
+// dir with the given allow/deny patterns.
+func writeLocalSettings(
+	t *testing.T, dir string,
+	allow, deny []string,
+) {
+	t.Helper()
+	writeSettingsFile(
+		t,
+		filepath.Join(
+			dir, ".claude", "settings.local.json",
+		),
+		allow, deny,
+	)
 }
 
 // hookJSON builds a JSON hook input from command and cwd.
@@ -84,6 +113,10 @@ func TestMainE(t *testing.T) {
 		input      func(cwd string) string
 		allow      []string
 		deny       []string
+		homeAllow  []string
+		homeDeny   []string
+		localAllow []string
+		localDeny  []string
 		wantOutput string // "approve" or "" (no output)
 		wantErr    bool
 	}{
@@ -659,6 +692,364 @@ func TestMainE(t *testing.T) {
 			},
 			wantOutput: "",
 		},
+
+		// ---- Git path flag variants ----
+		{
+			name: "-Cpath adjacent form approved",
+			input: func(cwd string) string {
+				cmd := "git -C" + cwd + " status"
+				return hookJSON(cmd, cwd)
+			},
+			wantOutput: "approve",
+		},
+		{
+			name: "--git-dir separate form approved",
+			input: func(cwd string) string {
+				cmd := "git --git-dir " + cwd +
+					"/.git status"
+				return hookJSON(cmd, cwd)
+			},
+			wantOutput: "approve",
+		},
+		{
+			name: "--work-tree= equals form approved",
+			input: func(cwd string) string {
+				cmd := "git --work-tree=" + cwd +
+					" status"
+				return hookJSON(cmd, cwd)
+			},
+			wantOutput: "approve",
+		},
+		{
+			name: "--work-tree separate form approved",
+			input: func(cwd string) string {
+				cmd := "git --work-tree " + cwd +
+					" status"
+				return hookJSON(cmd, cwd)
+			},
+			wantOutput: "approve",
+		},
+		{
+			name: "multiple -C flags approved",
+			input: func(cwd string) string {
+				cmd := "git -C " + cwd +
+					" -C " + cwd + " status"
+				return hookJSON(cmd, cwd)
+			},
+			wantOutput: "approve",
+		},
+		{
+			name: "mixed -C and --work-tree approved",
+			input: func(cwd string) string {
+				cmd := "git -C " + cwd +
+					" --work-tree=" + cwd +
+					" status"
+				return hookJSON(cmd, cwd)
+			},
+			wantOutput: "approve",
+		},
+		{
+			name: "-C missing value at end no output",
+			input: func(cwd string) string {
+				return hookJSON("git -C", cwd)
+			},
+			wantOutput: "",
+		},
+		{
+			name: "--git-dir missing value no output",
+			input: func(cwd string) string {
+				return hookJSON("git --git-dir", cwd)
+			},
+			wantOutput: "",
+		},
+		{
+			name: "--work-tree missing value no output",
+			input: func(cwd string) string {
+				return hookJSON(
+					"git --work-tree", cwd,
+				)
+			},
+			wantOutput: "",
+		},
+		{
+			name: "-C relative dot approved",
+			input: func(cwd string) string {
+				return hookJSON(
+					"git -C . status", cwd,
+				)
+			},
+			wantOutput: "approve",
+		},
+		{
+			name: "-C trailing slash approved",
+			input: func(cwd string) string {
+				cmd := "git -C " + cwd + "/ status"
+				return hookJSON(cmd, cwd)
+			},
+			wantOutput: "approve",
+		},
+
+		// ---- Git global options preserved ----
+		{
+			name: "--no-pager preserved after strip",
+			input: func(cwd string) string {
+				cmd := "git -C " + cwd +
+					" --no-pager log"
+				return hookJSON(cmd, cwd)
+			},
+			allow: []string{
+				"Bash(git --no-pager log:*)",
+			},
+			wantOutput: "approve",
+		},
+		{
+			name: "-c key val preserved after strip",
+			input: func(cwd string) string {
+				cmd := "git -C " + cwd +
+					" -c core.pager=less log"
+				return hookJSON(cmd, cwd)
+			},
+			allow: []string{
+				"Bash(git -c 'core.pager=less' log:*)",
+			},
+			wantOutput: "approve",
+		},
+		{
+			name: "path + non-path flags combined",
+			input: func(cwd string) string {
+				cmd := "git -C " + cwd +
+					" --no-pager status"
+				return hookJSON(cmd, cwd)
+			},
+			allow: []string{
+				"Bash(git --no-pager status:*)",
+			},
+			wantOutput: "approve",
+		},
+
+		// ---- Git subcommand edge cases ----
+		{
+			name: "git alone no subcommand approved",
+			input: func(cwd string) string {
+				return hookJSON("git", cwd)
+			},
+			allow:      []string{"Bash(git)"},
+			wantOutput: "approve",
+		},
+		{
+			name: "git --version approved",
+			input: func(cwd string) string {
+				return hookJSON("git --version", cwd)
+			},
+			allow:      []string{"Bash(git --version)"},
+			wantOutput: "approve",
+		},
+		{
+			name: "git -C cwd no subcommand approved",
+			input: func(cwd string) string {
+				cmd := "git -C " + cwd
+				return hookJSON(cmd, cwd)
+			},
+			allow:      []string{"Bash(git)"},
+			wantOutput: "approve",
+		},
+
+		// ---- Shell constructs ----
+		{
+			name: "pipe-all operator approved",
+			input: func(cwd string) string {
+				cmd := "git -C " + cwd +
+					" log |& head -5"
+				return hookJSON(cmd, cwd)
+			},
+			wantOutput: "approve",
+		},
+		{
+			name: "double-quoted commit message",
+			input: func(cwd string) string {
+				cmd := `git commit -m "hello world"`
+				return hookJSON(cmd, cwd)
+			},
+			allow: []string{
+				"Bash(git commit *)",
+			},
+			wantOutput: "approve",
+		},
+		{
+			name: "for loop rejected",
+			input: func(cwd string) string {
+				cmd := "for i in 1 2; do " +
+					"echo $i; done"
+				return hookJSON(cmd, cwd)
+			},
+			wantOutput: "",
+		},
+		{
+			name: "function definition rejected",
+			input: func(cwd string) string {
+				return hookJSON(
+					"foo() { echo bar; }", cwd,
+				)
+			},
+			wantOutput: "",
+		},
+		{
+			name: "here-string rejected",
+			input: func(cwd string) string {
+				return hookJSON(
+					"cat <<< hello", cwd,
+				)
+			},
+			wantOutput: "",
+		},
+		{
+			name: "process substitution rejected",
+			input: func(cwd string) string {
+				return hookJSON(
+					"cat <(echo hello)", cwd,
+				)
+			},
+			wantOutput: "",
+		},
+		{
+			name: "backtick substitution rejected",
+			input: func(cwd string) string {
+				return hookJSON(
+					"echo `pwd`", cwd,
+				)
+			},
+			wantOutput: "",
+		},
+		{
+			name: "nested subshells approved",
+			input: func(cwd string) string {
+				cmd := "( (git -C " + cwd +
+					" status) )"
+				return hookJSON(cmd, cwd)
+			},
+			wantOutput: "approve",
+		},
+		{
+			name: "empty subshell rejected",
+			input: func(cwd string) string {
+				return hookJSON("()", cwd)
+			},
+			wantOutput: "",
+		},
+		{
+			name: "heredoc rejected",
+			input: func(cwd string) string {
+				cmd := "cat <<EOF\nhello\nEOF"
+				return hookJSON(cmd, cwd)
+			},
+			wantOutput: "",
+		},
+
+		// ---- Pattern matching ----
+		{
+			name: "non-Bash pattern prefix no match",
+			input: func(cwd string) string {
+				return hookJSON("git status", cwd)
+			},
+			allow:      []string{"Read(git status:*)"},
+			wantOutput: "",
+		},
+		{
+			name: "missing closing paren no match",
+			input: func(cwd string) string {
+				return hookJSON("git status", cwd)
+			},
+			allow:      []string{"Bash(git status"},
+			wantOutput: "",
+		},
+		{
+			name: "legacy colon-star exact prefix",
+			input: func(cwd string) string {
+				return hookJSON("git status", cwd)
+			},
+			allow:      []string{"Bash(git status:*)"},
+			wantOutput: "approve",
+		},
+		{
+			name: "space-star exact prefix match",
+			input: func(cwd string) string {
+				return hookJSON("npm run lint", cwd)
+			},
+			allow:      []string{"Bash(npm run lint *)"},
+			wantOutput: "approve",
+		},
+		{
+			name: "deny with legacy colon-star",
+			input: func(cwd string) string {
+				return hookJSON(
+					"git add file.txt", cwd,
+				)
+			},
+			allow: []string{"Bash(git add:*)"},
+			deny:  []string{"Bash(git add:*)"},
+			wantOutput: "",
+		},
+		{
+			name: "multiple stars in glob",
+			input: func(cwd string) string {
+				return hookJSON(
+					"xfooybarz", cwd,
+				)
+			},
+			allow:      []string{"Bash(*foo*bar*)"},
+			wantOutput: "approve",
+		},
+
+		// ---- Settings loading ----
+		{
+			name: "settings.local.json patterns used",
+			input: func(cwd string) string {
+				return hookJSON("npm test", cwd)
+			},
+			allow:      []string{},
+			localAllow: []string{"Bash(npm test)"},
+			wantOutput: "approve",
+		},
+		{
+			name: "home and project allow merge",
+			input: func(cwd string) string {
+				return hookJSON(
+					"git status && npm test", cwd,
+				)
+			},
+			allow:     []string{"Bash(npm test)"},
+			homeAllow: []string{"Bash(git status:*)"},
+			wantOutput: "approve",
+		},
+		{
+			name: "home deny blocks project allow",
+			input: func(cwd string) string {
+				return hookJSON("npm test", cwd)
+			},
+			allow:    []string{"Bash(npm test)"},
+			homeDeny: []string{"Bash(npm test)"},
+			wantOutput: "",
+		},
+
+		// ---- Chain edge cases ----
+		{
+			name: "wrong -C path in chain rejects all",
+			input: func(cwd string) string {
+				cmd := "git -C " + cwd +
+					" status && git -C /wrong diff"
+				return hookJSON(cmd, cwd)
+			},
+			wantOutput: "",
+		},
+		{
+			name: "semicolon with disallowed no output",
+			input: func(cwd string) string {
+				return hookJSON(
+					"git status; rm -rf /", cwd,
+				)
+			},
+			wantOutput: "",
+		},
 	}
 
 	for _, tt := range tests {
@@ -673,7 +1064,23 @@ func TestMainE(t *testing.T) {
 
 			// Isolate HOME so ~/.claude/settings.json
 			// doesn't leak in.
-			t.Setenv("HOME", t.TempDir())
+			home := t.TempDir()
+			t.Setenv("HOME", home)
+
+			if tt.homeAllow != nil ||
+				tt.homeDeny != nil {
+				writeSettings(
+					t, home,
+					tt.homeAllow, tt.homeDeny,
+				)
+			}
+			if tt.localAllow != nil ||
+				tt.localDeny != nil {
+				writeLocalSettings(
+					t, cwd,
+					tt.localAllow, tt.localDeny,
+				)
+			}
 
 			input := tt.input(cwd)
 			r := strings.NewReader(input)
