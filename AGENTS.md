@@ -37,6 +37,10 @@ directory. It normalizes those commands by stripping the path flags and checks
 the result against the Bash allow/deny patterns in Claude Code settings.
 Only treat these as git global flags before the subcommand; after the
 subcommand they can be command-local flags (for example `git log -C`).
+The hook's git-prefix parser is fail-closed: unknown or malformed
+pre-subcommand global options are rejected (no opinion) rather than passed
+through. For safety, some value options are accepted only in `--opt=value`
+form (for example `--list-cmds`).
 Tests that exercise main hook permission loading should override the managed
 settings path resolver to a temp path so machine-global managed settings do not
 leak into test results.
