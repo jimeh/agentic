@@ -72,11 +72,29 @@ func mainE(r io.Reader, w io.Writer) error {
 	}
 
 	// Parse into individual commands via shell AST.
-	cmds := extractCommands(input.ToolInput.Command)
-	if len(cmds) == 0 {
-		debug.logf("no opinion: command extraction failed")
+	extract := extractCommandsWithReason(
+		input.ToolInput.Command,
+	)
+	if extract.reason != extractFailureNone {
+		switch extract.reason {
+		case extractFailureParseError:
+			debug.logf(
+				"no opinion: command extraction parse error: %v",
+				extract.parseErr,
+			)
+		case extractFailureUnsupported:
+			debug.logf(
+				"no opinion: command extraction " +
+					"unsupported shell construct",
+			)
+		default:
+			debug.logf(
+				"no opinion: command extraction failed",
+			)
+		}
 		return nil
 	}
+	cmds := extract.commands
 	debug.logf("extracted %d command(s)", len(cmds))
 
 	// Normalize every sub-command. Git path flags are stripped

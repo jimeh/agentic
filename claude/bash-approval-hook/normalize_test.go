@@ -246,6 +246,63 @@ func TestExtractCommands(t *testing.T) {
 	}
 }
 
+func TestExtractCommandsWithReason(t *testing.T) {
+	tests := []struct {
+		name       string
+		input      string
+		wantReason extractFailureReason
+		wantCmds   [][]string
+	}{
+		{
+			name:       "valid command extracts",
+			input:      "git status",
+			wantReason: extractFailureNone,
+			wantCmds:   [][]string{{"git", "status"}},
+		},
+		{
+			name:       "parse error classified",
+			input:      "echo 'unterminated",
+			wantReason: extractFailureParseError,
+		},
+		{
+			name:       "unsupported construct classified",
+			input:      "git -C $(pwd) status",
+			wantReason: extractFailureUnsupported,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := extractCommandsWithReason(tt.input)
+			if got.reason != tt.wantReason {
+				t.Fatalf(
+					"reason = %q, want %q",
+					got.reason, tt.wantReason,
+				)
+			}
+			if !reflect.DeepEqual(got.commands, tt.wantCmds) {
+				t.Fatalf(
+					"commands = %v, want %v",
+					got.commands, tt.wantCmds,
+				)
+			}
+			if tt.wantReason == extractFailureParseError &&
+				got.parseErr == nil {
+				t.Fatal(
+					"expected parseErr for parse error reason",
+				)
+			}
+			if tt.wantReason != extractFailureParseError &&
+				got.parseErr != nil {
+				t.Fatalf(
+					"parseErr = %v, want nil",
+					got.parseErr,
+				)
+			}
+		})
+	}
+}
+
 func TestWordToString(t *testing.T) {
 	tests := []struct {
 		name   string

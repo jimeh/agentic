@@ -1,37 +1,74 @@
 package main
 
 import (
+	"fmt"
 	"path/filepath"
 	"strings"
 
 	"mvdan.cc/sh/v3/syntax"
 )
 
+type extractFailureReason string
+
+const (
+	extractFailureNone        extractFailureReason = ""
+	extractFailureParseError  extractFailureReason = "parse_error"
+	extractFailureUnsupported extractFailureReason = "unsupported_construct"
+)
+
+type extractResult struct {
+	commands [][]string
+	reason   extractFailureReason
+	parseErr error
+}
+
 // extractCommands parses a shell command string and returns each
 // simple command's arguments as a string slice. Returns nil if
 // the input is unparseable or contains unsupported constructs
 // (redirections, variable expansions, etc.).
 func extractCommands(input string) [][]string {
+	res := extractCommandsWithReason(input)
+	if res.reason != extractFailureNone {
+		return nil
+	}
+	return res.commands
+}
+
+// extractCommandsWithReason parses a shell command string and
+// returns parsed simple commands or a fail-closed reason.
+func extractCommandsWithReason(input string) extractResult {
 	f, err := syntax.NewParser(
 		syntax.KeepComments(false),
 		syntax.Variant(syntax.LangBash),
 	).Parse(strings.NewReader(input), "")
 	if err != nil {
-		return nil
+		return extractResult{
+			reason: extractFailureParseError,
+			parseErr: fmt.Errorf(
+				"shell parse error: %w", err,
+			),
+		}
 	}
 
 	var cmds [][]string
 	for _, stmt := range f.Stmts {
 		sc := collectSimpleCommands(stmt)
 		if sc == nil {
-			return nil
+			return extractResult{
+				reason: extractFailureUnsupported,
+			}
 		}
 		cmds = append(cmds, sc...)
 	}
 	if len(cmds) == 0 {
-		return nil
+		return extractResult{
+			reason: extractFailureUnsupported,
+		}
 	}
-	return cmds
+	return extractResult{
+		commands: cmds,
+		reason:   extractFailureNone,
+	}
 }
 
 // collectSimpleCommands recursively extracts simple commands

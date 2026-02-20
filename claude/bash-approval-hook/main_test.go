@@ -1238,6 +1238,84 @@ func TestMainE(t *testing.T) {
 	}
 }
 
+func TestMainELogsCommandExtractionReason(t *testing.T) {
+	tests := []struct {
+		name        string
+		command     string
+		wantLogPart string
+	}{
+		{
+			name:        "parse error",
+			command:     "echo 'unterminated",
+			wantLogPart: "command extraction parse error:",
+		},
+		{
+			name:        "unsupported construct",
+			command:     "git -C $(pwd) status",
+			wantLogPart: "command extraction unsupported shell construct",
+		},
+	}
+
+	origEnabled := debugLogEnabled
+	origLogName := debugLogFileName
+	origExecResolver := executablePathResolver
+	t.Cleanup(func() {
+		debugLogEnabled = origEnabled
+		debugLogFileName = origLogName
+		executablePathResolver = origExecResolver
+	})
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			debugDir := t.TempDir()
+			debugPath := filepath.Join(
+				debugDir, "hook-debug.log",
+			)
+			execPath := filepath.Join(
+				debugDir, "bash-approval-hook",
+			)
+
+			debugLogEnabled = "true"
+			debugLogFileName = filepath.Base(debugPath)
+			executablePathResolver = func() (string, error) {
+				return execPath, nil
+			}
+
+			cwd := t.TempDir()
+			input := hookJSON(tt.command, cwd)
+			r := strings.NewReader(input)
+			var out bytes.Buffer
+
+			err := mainE(r, &out)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if strings.TrimSpace(out.String()) != "" {
+				t.Fatalf(
+					"expected no output, got %q",
+					out.String(),
+				)
+			}
+
+			logData, err := os.ReadFile(debugPath)
+			if err != nil {
+				t.Fatalf(
+					"failed to read debug log: %v",
+					err,
+				)
+			}
+			logText := string(logData)
+			if !strings.Contains(logText, tt.wantLogPart) {
+				t.Fatalf(
+					"log missing %q\nlog:\n%s",
+					tt.wantLogPart,
+					logText,
+				)
+			}
+		})
+	}
+}
+
 func TestMainEManagedAndAskRules(t *testing.T) {
 	tests := []struct {
 		name       string
