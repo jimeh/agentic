@@ -797,6 +797,43 @@ func TestMainE(t *testing.T) {
 			wantOutput: "",
 		},
 		{
+			name: "unknown global long option no output",
+			input: func(cwd string) string {
+				return hookJSON(
+					"git --unknown-global status", cwd,
+				)
+			},
+			wantOutput: "",
+		},
+		{
+			name: "unknown global short option no output",
+			input: func(cwd string) string {
+				return hookJSON("git -Z status", cwd)
+			},
+			wantOutput: "",
+		},
+		{
+			name: "unsupported split form no output",
+			input: func(cwd string) string {
+				return hookJSON(
+					"git --namespace foo status", cwd,
+				)
+			},
+			wantOutput: "",
+		},
+		{
+			name: "equals-only global option approved",
+			input: func(cwd string) string {
+				return hookJSON(
+					"git --namespace=foo status", cwd,
+				)
+			},
+			allow: []string{
+				"Bash(git '--namespace=foo' status)",
+			},
+			wantOutput: "approve",
+		},
+		{
 			name: "-C relative dot approved",
 			input: func(cwd string) string {
 				return hookJSON(
@@ -848,6 +885,17 @@ func TestMainE(t *testing.T) {
 			},
 			allow: []string{
 				"Bash(git --no-pager status:*)",
+			},
+			wantOutput: "approve",
+		},
+		{
+			name: "global -- preserved after strip",
+			input: func(cwd string) string {
+				cmd := "git -C " + cwd + " -- status"
+				return hookJSON(cmd, cwd)
+			},
+			allow: []string{
+				"Bash(git -- status)",
 			},
 			wantOutput: "approve",
 		},

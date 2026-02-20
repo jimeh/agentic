@@ -311,6 +311,10 @@ func TestNormalizeGitCommand(t *testing.T) {
 	if err := os.Mkdir(filepath.Join(cwd, ".git"), 0o755); err != nil {
 		t.Fatal(err)
 	}
+	ctx, ok := newNormalizeContext(cwd)
+	if !ok {
+		t.Fatal("newNormalizeContext should succeed")
+	}
 
 	other := t.TempDir()
 	other, err = filepath.EvalSymlinks(other)
@@ -368,6 +372,74 @@ func TestNormalizeGitCommand(t *testing.T) {
 			},
 			wantNorm: []string{
 				"git", "rev-parse", "--git-dir",
+			},
+			wantOK: true,
+		},
+		{
+			name: "unknown pre-subcommand long option rejects",
+			args: []string{
+				"git", "--unknown-global", "status",
+			},
+			wantNorm: nil,
+			wantOK:   false,
+		},
+		{
+			name: "unknown pre-subcommand short option rejects",
+			args: []string{
+				"git", "-Z", "status",
+			},
+			wantNorm: nil,
+			wantOK:   false,
+		},
+		{
+			name: "unknown short cluster rejects",
+			args: []string{
+				"git", "-Pq", "status",
+			},
+			wantNorm: nil,
+			wantOK:   false,
+		},
+		{
+			name: "known no-value option with equals rejects",
+			args: []string{
+				"git", "--version=2", "status",
+			},
+			wantNorm: nil,
+			wantOK:   false,
+		},
+		{
+			name: "known value option unsupported split form rejects",
+			args: []string{
+				"git", "--namespace", "foo", "status",
+			},
+			wantNorm: nil,
+			wantOK:   false,
+		},
+		{
+			name: "known value option equals form passes through",
+			args: []string{
+				"git", "--namespace=foo", "status",
+			},
+			wantNorm: []string{
+				"git", "--namespace=foo", "status",
+			},
+			wantOK: true,
+		},
+		{
+			name: "known equals-only option split form rejects",
+			args: []string{
+				"git", "--list-cmds", "main", "status",
+			},
+			wantNorm: nil,
+			wantOK:   false,
+		},
+		{
+			name: "known equals-only option equals form passes through",
+			args: []string{
+				"git", "--list-cmds=main", "status",
+			},
+			wantNorm: []string{
+				"git", "--list-cmds=main", "status",
 			},
 			wantOK: true,
 		},
@@ -572,6 +644,17 @@ func TestNormalizeGitCommand(t *testing.T) {
 			wantOK: true,
 		},
 		{
+			name: "global -- is preserved after stripping path flags",
+			args: []string{
+				"git", "-C", "/home/user/project",
+				"--", "status",
+			},
+			wantNorm: []string{
+				"git", "--", "status",
+			},
+			wantOK: true,
+		},
+		{
 			name: "--work-tree before -- with --git-dir file",
 			args: []string{
 				"git",
@@ -592,7 +675,7 @@ func TestNormalizeGitCommand(t *testing.T) {
 				args = append(args, rewriteArg(arg))
 			}
 
-			norm, ok := normalizeGitCommand(args, cwd)
+			norm, ok := normalizeGitCommand(args, ctx)
 			if ok != tt.wantOK {
 				t.Errorf("ok = %v, want %v", ok, tt.wantOK)
 			}
@@ -724,6 +807,10 @@ func TestNormalizeCommand(t *testing.T) {
 	if err := os.Mkdir(filepath.Join(cwd, ".git"), 0o755); err != nil {
 		t.Fatal(err)
 	}
+	ctx, ok := newNormalizeContext(cwd)
+	if !ok {
+		t.Fatal("newNormalizeContext should succeed")
+	}
 
 	other := t.TempDir()
 	other, err = filepath.EvalSymlinks(other)
@@ -763,6 +850,30 @@ func TestNormalizeCommand(t *testing.T) {
 			name:    "git without path flags passes through",
 			args:    []string{"git", "status"},
 			wantCmd: "git status",
+			wantOK:  true,
+		},
+		{
+			name: "git with unknown global option is rejected",
+			args: []string{
+				"git", "--unknown-global", "status",
+			},
+			wantCmd: "",
+			wantOK:  false,
+		},
+		{
+			name: "git with unsupported split form is rejected",
+			args: []string{
+				"git", "--namespace", "foo", "status",
+			},
+			wantCmd: "",
+			wantOK:  false,
+		},
+		{
+			name: "git with equals-only form passes through",
+			args: []string{
+				"git", "--namespace=foo", "status",
+			},
+			wantCmd: "git '--namespace=foo' status",
 			wantOK:  true,
 		},
 		{
@@ -843,6 +954,15 @@ func TestNormalizeCommand(t *testing.T) {
 			wantCmd: "git log -C -1",
 			wantOK:  true,
 		},
+		{
+			name: "global -- is preserved when path flags stripped",
+			args: []string{
+				"git", "-C", "/home/user/project",
+				"--", "status",
+			},
+			wantCmd: "git -- status",
+			wantOK:  true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -852,7 +972,7 @@ func TestNormalizeCommand(t *testing.T) {
 				args = append(args, rewriteArg(arg))
 			}
 
-			cmd, ok := normalizeCommand(args, cwd)
+			cmd, ok := normalizeCommand(args, ctx)
 			if ok != tt.wantOK {
 				t.Errorf("ok = %v, want %v", ok, tt.wantOK)
 			}
@@ -1083,7 +1203,11 @@ func TestNormalizeCommand_SymlinkBypass(t *testing.T) {
 		"status",
 	}
 
-	cmd, ok := normalizeCommand(args, realCWD)
+	ctx, ok := newNormalizeContext(realCWD)
+	if !ok {
+		t.Fatal("newNormalizeContext should succeed")
+	}
+	cmd, ok := normalizeCommand(args, ctx)
 	if ok {
 		t.Errorf(
 			"normalizeCommand should reject symlink "+
