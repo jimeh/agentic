@@ -30,6 +30,7 @@
       "Bash(git diff:*)",
       "Bash(git fetch:*)",
       "Bash(git log:*)",
+      "Bash(git ls-files:*)",
       "Bash(git rev-parse:*)",
       "Bash(git show:*)",
       "Bash(git status:*)",
@@ -41,6 +42,7 @@
       "Bash(go test:*)",
       "Bash(golangci-lint run:*)",
       "Bash(grep:*)",
+      "Bash(head:*)",
       "Bash(helm create:*)",
       "Bash(helm lint:*)",
       "Bash(helm template:*)",
@@ -103,6 +105,7 @@
     "padding": 0
   },
   "enabledPlugins": {
+    "claude-md-management@claude-plugins-official": true,
     "code-review@claude-plugins-official": true,
     "code-simplifier@claude-plugins-official": true,
     "commit-commands@claude-plugins-official": false,
