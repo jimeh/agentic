@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  shellcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run shellcheck
+        run: |
+          shopt -s globstar
+          shellcheck **/*.sh
+
+  plugin-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Discover and run plugin tests
+        run: |
+          failed=0
+          found=0
+
+          while IFS= read -r test_file; do
+            found=$((found + 1))
+            echo "::group::${test_file}"
+            if bash "$test_file"; then
+              echo "::endgroup::"
+            else
+              echo "::endgroup::"
+              echo "::error file=${test_file}::Test failed"
+              failed=$((failed + 1))
+            fi
+          done < <(find plugins/*/tests -name '*.test.sh' -type f | sort)
+
+          if [[ "$found" -eq 0 ]]; then
+            echo "No plugin tests found."
+            exit 0
+          fi
+
+          echo ""
+          echo "Ran ${found} test file(s), ${failed} failed."
+          if [[ "$failed" -gt 0 ]]; then
+            exit 1
+          fi
