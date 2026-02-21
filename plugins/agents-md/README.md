@@ -10,3 +10,20 @@ Claude Code plugin for managing AGENTS.md files.
   AGENTS.md with progressive disclosure.
 - `/refactor-agents-md` -- Refactor an existing AGENTS.md to follow
   progressive disclosure principles.
+
+## Install
+
+```bash
+# Add the marketplace (once)
+claude plugin marketplace add jimeh/agentic
+
+# Install the plugin
+claude plugin install agents-md@jimeh-agentic
+```
+
+Or from within Claude Code:
+
+```text
+/plugin marketplace add jimeh/agentic
+/plugin install agents-md@jimeh-agentic
+```

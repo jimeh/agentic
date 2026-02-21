@@ -27,5 +27,16 @@ Compound commands (`&&`, `||`, `;`) are handled — all occurrences are replaced
 ## Install
 
 ```bash
-claude --plugin-dir /path/to/strip-git-cwd
+# Add the marketplace (once)
+claude plugin marketplace add jimeh/agentic
+
+# Install the plugin
+claude plugin install strip-git-cwd@jimeh-agentic
+```
+
+Or from within Claude Code:
+
+```text
+/plugin marketplace add jimeh/agentic
+/plugin install strip-git-cwd@jimeh-agentic
 ```

@@ -13,6 +13,23 @@ Claude Code plugin providing git workflow slash commands.
 - `/clean-gone-branches` -- Remove local branches marked [gone] (deleted on
   remote), including associated worktrees.
 
+## Install
+
+```bash
+# Add the marketplace (once)
+claude plugin marketplace add jimeh/agentic
+
+# Install the plugin
+claude plugin install git-commands@jimeh-agentic
+```
+
+Or from within Claude Code:
+
+```text
+/plugin marketplace add jimeh/agentic
+/plugin install git-commands@jimeh-agentic
+```
+
 ## Origins
 
 `commit`, `commit-push-pr`, and `clean-gone-branches` are derived from the
