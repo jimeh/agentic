@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Tests for the strip-git-cwd hook script.
-# Run from the plugin root: bash tests/test-strip-git-cwd.sh
+# Run: bash tests/strip-git-cwd.test.sh
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

@@ -35,6 +35,11 @@ never edit the symlink targets directly.
 - `claude/` — Claude Code settings, slash commands, statusline script
 - `codex/` — OpenAI Codex config (TOML)
 
+## Testing
+
+Plugin tests live in `plugins/*/tests/*.test.sh`. CI auto-discovers and runs
+them. Tests must be self-contained bash scripts that exit 0 on success.
+
 ## Before Committing
 
 Check if `README.md` or this `AGENTS.md` file need updates to reflect your
