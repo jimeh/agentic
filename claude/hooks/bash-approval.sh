@@ -5,7 +5,12 @@
 # silently so the normal permission flow proceeds.
 
 SCRIPT_DIR="$(cd "$(dirname "$(realpath "$0")")" && pwd)"
-BINARY="${SCRIPT_DIR}/../bash-approval-hook/bash-approval-hook"
+HOOK_DIR="${SCRIPT_DIR}/../bash-approval-hook"
 
-if [[ -x "$BINARY" ]]; then exec "$BINARY"; fi
+if [[ -x "${HOOK_DIR}/bash-approval-hook" ]]; then
+  exec "${HOOK_DIR}/bash-approval-hook"
+fi
+if [[ -x "${HOOK_DIR}/bash-approval-hook-debug" ]]; then
+  exec "${HOOK_DIR}/bash-approval-hook-debug"
+fi
 exit 0
