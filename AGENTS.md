@@ -31,46 +31,9 @@ never edit the symlink targets directly.
 ### Hooks
 
 `claude/hooks/` contains hook shell wrappers symlinked into `~/.claude/hooks/`.
-`claude/bash-approval-hook/` is a Go project that auto-approves git commands
-using `-C`, `--git-dir`, or `--work-tree` flags pointing at the current project
-directory. It normalizes those commands by stripping the path flags and checks
-the result against the Bash allow/deny patterns in Claude Code settings.
-Only treat these as git global flags before the subcommand; after the
-subcommand they can be command-local flags (for example `git log -C`).
-The hook's git-prefix parser is fail-closed: unknown or malformed
-pre-subcommand global options are rejected (no opinion) rather than passed
-through. For safety, some value options are accepted only in `--opt=value`
-form (for example `--list-cmds`).
-The command extractor is also fail-closed for dynamic shell constructs:
-command substitution, heredocs, redirections, variable expansion, and similar
-features return no opinion even when the outer command is otherwise allowed.
-Example: `gh pr create --body "$(cat <<'EOF' ... EOF)"` is rejected.
-Tests that exercise main hook permission loading should override the managed
-settings path resolver to a temp path so machine-global managed settings do not
-leak into test results.
-
-Permission patterns support three matching styles (plus legacy):
-
-- `Bash(npm run lint *)` — space+star suffix: word-boundary prefix match
-- `Bash(ls*)` — bare-star / star anywhere: glob match (`*` = any chars)
-- `Bash(npm run compile)` — no wildcards: exact match
-- `Bash(git status:*)` — legacy `:*` suffix: word-boundary prefix (deprecated)
-
-Path validation gotcha:
-
-- Avoid `filepath.Join`/`filepath.Abs` before symlink-sensitive checks. Both
-  lexically collapse `..`, which can hide traversal patterns like
-  `symlink/..`. Preserve raw relative segments and resolve components in order
-  with `EvalSymlinks`, failing closed on resolution errors.
-
-Build and validate:
-
-```bash
-cd claude/bash-approval-hook
-make              # build the binary
-make debug-build  # build debug binary with file logging enabled
-make check        # run vet + lint + tests
-```
+`claude/bash-approval-hook/` is a Go hook that auto-approves normalized git
+commands. See its own AGENTS.md for conventions, fail-closed rules, and build
+instructions.
 
 ### Agent-Specific Config
 
