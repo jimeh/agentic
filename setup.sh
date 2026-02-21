@@ -139,6 +139,18 @@ discover_symlinks() {
       "skills/${name}|${HOME}/.agents/skills/${name}"
     )
   done
+
+  # Discover plugins: plugins/*/.claude-plugin/plugin.json
+  local plugin_dir
+  for plugin_dir in "${SCRIPT_DIR}/plugins/"*/; do
+    [[ -d "${plugin_dir}" ]] || continue
+    [[ -f "${plugin_dir}/.claude-plugin/plugin.json" ]] || continue
+    local name
+    name="$(basename "${plugin_dir}")"
+    SYMLINKS+=(
+      "plugins/${name}|${HOME}/.claude/plugins/${name}"
+    )
+  done
 }
 
 # ==============================================================================
@@ -189,6 +201,8 @@ cleanup_stale() {
     "${SCRIPT_DIR}/skills" "${HOME}/.claude/skills"
   _cleanup_stale_links \
     "${SCRIPT_DIR}/skills" "${HOME}/.agents/skills"
+  _cleanup_stale_links \
+    "${SCRIPT_DIR}/plugins" "${HOME}/.claude/plugins"
 }
 
 # ==============================================================================
@@ -213,8 +227,9 @@ Creates symlinks for Claude Code and agents configuration:
   claude/commands/*  → ~/.claude/commands/
   skills/*           → ~/.claude/skills/
   skills/*           → ~/.agents/skills/
+  plugins/*          → ~/.claude/plugins/
 
-Also removes stale command and skill symlinks.
+Also removes stale command, skill, and plugin symlinks.
 EOF
 }
 

@@ -13,14 +13,16 @@ shellcheck **/*.sh  # lint all shell scripts
 
 ## Architecture
 
-`setup.sh` auto-discovers and symlinks two types of content:
+`setup.sh` auto-discovers and symlinks three types of content:
 
 - **Commands**: any `.md` in `claude/commands/` → `~/.claude/commands/`
 - **Skills**: any `skills/*/` dir with a `SKILL.md` → `~/.claude/skills/` and
   `~/.agents/skills/`
+- **Plugins**: any `plugins/*/` dir with a `.claude-plugin/plugin.json` →
+  `~/.claude/plugins/`
 
-To add a new command or skill, just create the file — `setup.sh` picks it up
-automatically. Stale symlinks are cleaned up on each run.
+To add a new command, skill, or plugin, just create the file — `setup.sh`
+picks it up automatically. Stale symlinks are cleaned up on each run.
 
 ### RULES.md
 
