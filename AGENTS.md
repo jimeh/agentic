@@ -31,9 +31,16 @@ never edit the symlink targets directly.
 ### Hooks
 
 `claude/hooks/` contains hook shell wrappers symlinked into `~/.claude/hooks/`.
-`claude/bash-approval-hook/` is a Go hook that auto-approves normalized git
-commands. See its own AGENTS.md for conventions, fail-closed rules, and build
-instructions.
+`claude/bash-approval-hook/` is a Go hook that rewrites git path flags in Bash
+commands using `hookSpecificOutput.updatedInput` (instead of permission
+approvals). See its own AGENTS.md for conventions, fail-closed rules, and
+build instructions.
+
+## Discoveries
+
+- For Claude `PreToolUse` hooks, returning `permissionDecision: allow` still
+  falls through to Claude's normal permission checks. Use `updatedInput` if you
+  need to transform command text before permission evaluation.
 
 ### Agent-Specific Config
 

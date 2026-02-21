@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"mvdan.cc/sh/v3/syntax"
@@ -20,6 +22,24 @@ type extractResult struct {
 	commands [][]string
 	reason   extractFailureReason
 	parseErr error
+}
+
+type rewriteFailureReason string
+
+const (
+	rewriteFailureNone          rewriteFailureReason = ""
+	rewriteFailureParseError    rewriteFailureReason = "parse_error"
+	rewriteFailureUnsupported   rewriteFailureReason = "unsupported_construct"
+	rewriteFailureNormalization rewriteFailureReason = "normalization_failed"
+	rewriteFailurePrintError    rewriteFailureReason = "print_error"
+)
+
+type rewriteResult struct {
+	command  string
+	changed  bool
+	reason   rewriteFailureReason
+	parseErr error
+	printErr error
 }
 
 // extractCommands parses a shell command string and returns each
@@ -141,6 +161,213 @@ func collectFromStmts(stmts []*syntax.Stmt) [][]string {
 		return nil
 	}
 	return cmds
+}
+
+type rewriteStatus int
+
+const (
+	rewriteStatusOK rewriteStatus = iota
+	rewriteStatusUnsupported
+	rewriteStatusNormalization
+)
+
+// rewriteCommandString rewrites git global path flags in a shell command when
+// they resolve to the current cwd context. The rewrite is all-or-nothing:
+// unsupported shell constructs or normalization failures return no rewrite.
+func rewriteCommandString(
+	input string, ctx normalizeContext,
+) rewriteResult {
+	file, err := syntax.NewParser(
+		syntax.KeepComments(false),
+		syntax.Variant(syntax.LangBash),
+	).Parse(strings.NewReader(input), "")
+	if err != nil {
+		return rewriteResult{
+			reason: rewriteFailureParseError,
+			parseErr: fmt.Errorf(
+				"shell parse error: %w", err,
+			),
+		}
+	}
+	if len(file.Stmts) == 0 {
+		return rewriteResult{
+			reason: rewriteFailureUnsupported,
+		}
+	}
+
+	changed := false
+	for _, stmt := range file.Stmts {
+		stmtChanged, status := rewriteStatement(stmt, ctx)
+		if status != rewriteStatusOK {
+			return rewriteResult{
+				reason: mapRewriteFailure(status),
+			}
+		}
+		changed = changed || stmtChanged
+	}
+	if !changed {
+		return rewriteResult{
+			changed: false,
+			reason:  rewriteFailureNone,
+		}
+	}
+
+	var buf bytes.Buffer
+	if err := syntax.NewPrinter().Print(&buf, file); err != nil {
+		return rewriteResult{
+			reason:   rewriteFailurePrintError,
+			printErr: err,
+		}
+	}
+
+	return rewriteResult{
+		command: strings.TrimRight(buf.String(), "\n"),
+		changed: true,
+		reason:  rewriteFailureNone,
+	}
+}
+
+func mapRewriteFailure(status rewriteStatus) rewriteFailureReason {
+	switch status {
+	case rewriteStatusUnsupported:
+		return rewriteFailureUnsupported
+	case rewriteStatusNormalization:
+		return rewriteFailureNormalization
+	default:
+		return rewriteFailureUnsupported
+	}
+}
+
+func rewriteStatement(
+	stmt *syntax.Stmt, ctx normalizeContext,
+) (bool, rewriteStatus) {
+	if stmt == nil || stmt.Cmd == nil {
+		return false, rewriteStatusUnsupported
+	}
+	if stmt.Negated || stmt.Background || stmt.Coprocess {
+		return false, rewriteStatusUnsupported
+	}
+	if len(stmt.Redirs) > 0 {
+		return false, rewriteStatusUnsupported
+	}
+
+	switch cmd := stmt.Cmd.(type) {
+	case *syntax.CallExpr:
+		return rewriteCallExpr(cmd, ctx)
+	case *syntax.BinaryCmd:
+		switch cmd.Op {
+		case syntax.AndStmt, syntax.OrStmt,
+			syntax.Pipe, syntax.PipeAll:
+			// supported operators
+		default:
+			return false, rewriteStatusUnsupported
+		}
+		leftChanged, status := rewriteStatement(cmd.X, ctx)
+		if status != rewriteStatusOK {
+			return false, status
+		}
+		rightChanged, status := rewriteStatement(cmd.Y, ctx)
+		if status != rewriteStatusOK {
+			return false, status
+		}
+		return leftChanged || rightChanged, rewriteStatusOK
+	case *syntax.Subshell:
+		return rewriteStmtList(cmd.Stmts, ctx)
+	case *syntax.Block:
+		return rewriteStmtList(cmd.Stmts, ctx)
+	default:
+		return false, rewriteStatusUnsupported
+	}
+}
+
+func rewriteStmtList(
+	stmts []*syntax.Stmt, ctx normalizeContext,
+) (bool, rewriteStatus) {
+	if len(stmts) == 0 {
+		return false, rewriteStatusUnsupported
+	}
+
+	changed := false
+	for _, stmt := range stmts {
+		stmtChanged, status := rewriteStatement(stmt, ctx)
+		if status != rewriteStatusOK {
+			return false, status
+		}
+		changed = changed || stmtChanged
+	}
+	return changed, rewriteStatusOK
+}
+
+func rewriteCallExpr(
+	call *syntax.CallExpr, ctx normalizeContext,
+) (bool, rewriteStatus) {
+	if call == nil {
+		return false, rewriteStatusUnsupported
+	}
+	if len(call.Assigns) > 0 {
+		return false, rewriteStatusUnsupported
+	}
+
+	args := wordsToStrings(call.Args)
+	if args == nil {
+		return false, rewriteStatusUnsupported
+	}
+	if len(args) == 0 {
+		return false, rewriteStatusUnsupported
+	}
+	if args[0] != "git" {
+		return false, rewriteStatusOK
+	}
+
+	rewritten, ok := normalizeGitCommand(args, ctx)
+	if !ok {
+		return false, rewriteStatusNormalization
+	}
+	if slices.Equal(rewritten, args) {
+		return false, rewriteStatusOK
+	}
+
+	rewrittenWords, ok := wordsFromTokens(rewritten)
+	if !ok {
+		return false, rewriteStatusNormalization
+	}
+	call.Args = rewrittenWords
+	return true, rewriteStatusOK
+}
+
+func wordsFromTokens(tokens []string) ([]*syntax.Word, bool) {
+	if len(tokens) == 0 {
+		return nil, false
+	}
+
+	file, err := syntax.NewParser(
+		syntax.KeepComments(false),
+		syntax.Variant(syntax.LangBash),
+	).Parse(strings.NewReader(shellJoin(tokens)), "")
+	if err != nil || len(file.Stmts) != 1 {
+		return nil, false
+	}
+
+	stmt := file.Stmts[0]
+	if stmt == nil || stmt.Cmd == nil {
+		return nil, false
+	}
+	if stmt.Negated || stmt.Background || stmt.Coprocess {
+		return nil, false
+	}
+	if len(stmt.Redirs) > 0 {
+		return nil, false
+	}
+
+	call, ok := stmt.Cmd.(*syntax.CallExpr)
+	if !ok || len(call.Assigns) > 0 {
+		return nil, false
+	}
+	if len(call.Args) != len(tokens) {
+		return nil, false
+	}
+
+	return call.Args, true
 }
 
 // wordsToStrings converts syntax words into plain strings.
@@ -465,10 +692,9 @@ func normalizeGitCommand(
 }
 
 // normalizeCommand returns a normalized string representation of a
-// command for permission checking. Non-git commands are returned
-// as-is. Git commands are parsed strictly in their pre-subcommand
-// global-option prefix and fail closed on unknown or malformed
-// options.
+// command. Non-git commands are returned as-is. Git commands are
+// parsed strictly in their pre-subcommand global-option prefix and
+// fail closed on unknown or malformed options.
 func normalizeCommand(
 	args []string, ctx normalizeContext,
 ) (string, bool) {
