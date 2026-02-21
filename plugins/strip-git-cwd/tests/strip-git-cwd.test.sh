@@ -45,17 +45,72 @@ run_test() {
       FAIL=$((FAIL + 1))
     fi
   else
-    # Expect JSON output with updated command
-    local actual
+    # Expect valid JSON with correct shape and updated command
+    local actual keys event_name
+    if ! echo "$output" | jq empty 2>/dev/null; then
+      echo "  FAIL: ${desc}"
+      echo "    expected: valid JSON"
+      echo "    got:      ${output:-<empty>}"
+      FAIL=$((FAIL + 1))
+      return
+    fi
+
+    # Verify top-level has exactly one key: hookSpecificOutput
+    keys=$(echo "$output" | jq -r 'keys | join(",")' 2>/dev/null)
+    if [[ "$keys" != "hookSpecificOutput" ]]; then
+      echo "  FAIL: ${desc}"
+      echo "    expected top-level keys: hookSpecificOutput"
+      echo "    got: ${keys}"
+      FAIL=$((FAIL + 1))
+      return
+    fi
+
+    # Verify hookSpecificOutput has exactly: hookEventName, updatedInput
+    keys=$(echo "$output" | jq -r \
+      '.hookSpecificOutput | keys | join(",")' 2>/dev/null)
+    if [[ "$keys" != "hookEventName,updatedInput" ]]; then
+      echo "  FAIL: ${desc}"
+      echo "    expected hookSpecificOutput keys:" \
+        "hookEventName,updatedInput"
+      echo "    got: ${keys}"
+      FAIL=$((FAIL + 1))
+      return
+    fi
+
+    # Verify hookEventName is "PreToolUse"
+    event_name=$(echo "$output" | jq -r \
+      '.hookSpecificOutput.hookEventName' 2>/dev/null)
+    if [[ "$event_name" != "PreToolUse" ]]; then
+      echo "  FAIL: ${desc}"
+      echo "    expected hookEventName: PreToolUse"
+      echo "    got: ${event_name}"
+      FAIL=$((FAIL + 1))
+      return
+    fi
+
+    # Verify updatedInput has exactly: command
+    keys=$(echo "$output" | jq -r \
+      '.hookSpecificOutput.updatedInput | keys | join(",")' \
+      2>/dev/null)
+    if [[ "$keys" != "command" ]]; then
+      echo "  FAIL: ${desc}"
+      echo "    expected updatedInput keys: command"
+      echo "    got: ${keys}"
+      FAIL=$((FAIL + 1))
+      return
+    fi
+
+    # Verify the command value
     actual=$(echo "$output" | jq -r \
-      '.hookSpecificOutput.updatedInput.command // empty' 2>/dev/null)
+      '.hookSpecificOutput.updatedInput.command // empty' \
+      2>/dev/null)
     if [[ "$actual" == "$expect" ]]; then
       echo "  PASS: ${desc}"
       PASS=$((PASS + 1))
     else
       echo "  FAIL: ${desc}"
-      echo "    expected: ${expect}"
-      echo "    got:      ${actual:-<empty>}"
+      echo "    expected command: ${expect}"
+      echo "    got:             ${actual:-<empty>}"
       FAIL=$((FAIL + 1))
     fi
   fi
