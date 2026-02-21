@@ -14,6 +14,26 @@
       },
       "source": "./plugins/strip-git-cwd",
       "category": "productivity"
+    },
+    {
+      "name": "git-commands",
+      "description": "Git workflow slash commands: commit, push, PR, rebase, and branch cleanup",
+      "version": "0.1.0",
+      "author": {
+        "name": "jimeh"
+      },
+      "source": "./plugins/git-commands",
+      "category": "productivity"
+    },
+    {
+      "name": "agents-md",
+      "description": "AGENTS.md management: generate, refactor, and convert from CLAUDE.md",
+      "version": "0.1.0",
+      "author": {
+        "name": "jimeh"
+      },
+      "source": "./plugins/agents-md",
+      "category": "productivity"
     }
   ]
 }

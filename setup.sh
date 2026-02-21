@@ -10,6 +10,8 @@ FORCE="false"
 # Marketplace name is read from .claude-plugin/marketplace.json.
 CLAUDE_PLUGINS=(
   "strip-git-cwd"
+  "git-commands"
+  "agents-md"
 )
 
 # ==============================================================================
@@ -35,17 +37,6 @@ discover_symlinks() {
   SYMLINKS+=(
     "codex/config.toml|${HOME}/.codex/config.toml"
   )
-
-  # Discover commands: claude/commands/*.md
-  local cmd_file
-  for cmd_file in "${SCRIPT_DIR}/claude/commands/"*.md; do
-    [[ -f "${cmd_file}" ]] || continue
-    local name
-    name="$(basename "${cmd_file}")"
-    SYMLINKS+=(
-      "claude/commands/${name}|${HOME}/.claude/commands/${name}"
-    )
-  done
 
   # Discover skills: skills/*/SKILL.md → both ~/.claude and ~/.agents
   local skill_dir
@@ -323,14 +314,13 @@ Creates symlinks for Claude Code and agents configuration:
   claude/settings    → ~/.claude/settings.json
   claude/statusline  → ~/.claude/statusline.sh
   codex/config.toml  → ~/.codex/config.toml
-  claude/commands/*  → ~/.claude/commands/
   skills/*           → ~/.claude/skills/
   skills/*           → ~/.agents/skills/
 
 Registers the local plugin marketplace and installs plugins
 via the Claude CLI (skipped if claude or jq is not available).
 
-Also removes stale command and skill symlinks.
+Also removes stale skill symlinks (and legacy command symlinks).
 EOF
 }
 

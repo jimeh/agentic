@@ -39,15 +39,16 @@ the Claude CLI. Run `./setup.sh --help` for details.
 - **`RULES.md`** — Single source of truth for all agent behavior rules.
   Symlinked as the global rules file for each supported agent. Edit this
   file directly — never edit the symlink targets.
-- **`claude/`** — Claude Code settings, statusline script, and slash commands.
+- **`claude/`** — Claude Code settings and statusline script.
 - **`codex/`** — OpenAI Codex config.
 - **`skills/`** — Custom skills (auto-discovered by `setup.sh`).
 - **`plugins/`** — Claude Code plugins, published via a local marketplace.
 - **`docs/references/`** — External articles and guides.
 
-Commands and skills are auto-discovered — drop a file in the right place,
-re-run `setup.sh`, done. Plugins are registered and installed via the Claude
-CLI (`claude plugin marketplace add` / `claude plugin install`).
+Skills are auto-discovered — drop a directory in the right place, re-run
+`setup.sh`, done. Commands live in plugins. Plugins are registered and
+installed via the Claude CLI (`claude plugin marketplace add` /
+`claude plugin install`).
 
 ## Plugins
 
@@ -62,7 +63,49 @@ string enough that pre-approved git commands no longer match the allowlist
 Handles all `-C` syntax variants (space, `=`, bare, quoted) and compound
 commands (`&&`, `;`).
 
-### Plugin Installation
+### git-commands
+
+Slash commands for common git workflows:
+
+- `/commit` — Stage changes, create a well-formed commit.
+- `/commit-push-pr` — Commit, push, and open a PR.
+- `/rebase` — Rebase onto upstream main/master.
+- `/clean-gone-branches` — Clean up branches deleted on remote.
+
+Derived from the official `commit-commands` plugin, heavily modified.
+
+### agents-md
+
+Slash commands for managing AGENTS.md files:
+
+- `/claude-md-to-agents-md` — Convert CLAUDE.md to AGENTS.md.
+- `/generate-agents-md` — Generate AGENTS.md from codebase analysis.
+- `/refactor-agents-md` — Refactor AGENTS.md for progressive disclosure.
+
+### Standalone Installation
+
+You can install individual plugins directly without cloning the repo.
+First add the marketplace, then install whichever plugins you want:
+
+```bash
+# CLI
+claude plugin marketplace add jimeh/agentic
+
+# Or from within Claude Code
+/plugin marketplace add jimeh/agentic
+```
+
+Then install plugins:
+
+```bash
+# CLI
+claude plugin install git-commands@jimeh-agentic
+
+# Or from within Claude Code
+/plugin install git-commands@jimeh-agentic
+```
+
+### Installation via setup.sh
 
 `setup.sh` ensures both the official `claude-plugins-official` marketplace
 and this repo's local marketplace are registered, then installs plugins

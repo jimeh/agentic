@@ -84,7 +84,7 @@
       "Bash(tail:*)",
       "Bash(tree:*)",
       "Bash(wc:*)",
-      "Skill(commit-commands:commit:*)",
+      "Skill(git-commands:commit:*)",
       "WebSearch",
       "mcp__claude_ai_DeepWiki__ask_question",
       "mcp__claude_ai_DeepWiki__read_wiki_contents",
@@ -125,6 +125,8 @@
     "security-guidance@claude-plugins-official": false,
     "sentry@claude-plugins-official": false,
     "strip-git-cwd@jimeh-agentic": true,
+    "git-commands@jimeh-agentic": true,
+    "agents-md@jimeh-agentic": true,
     "swift-lsp@claude-plugins-official": false,
     "typescript-lsp@claude-plugins-official": true
   },

@@ -1,0 +1,5 @@
+{
+  "name": "git-commands",
+  "version": "0.1.0",
+  "description": "Git workflow slash commands: commit, push, PR, rebase, and branch cleanup"
+}

@@ -13,14 +13,16 @@ shellcheck **/*.sh  # lint all shell scripts
 
 ## Architecture
 
-`setup.sh` auto-discovers and symlinks two types of content:
+`setup.sh` auto-discovers and symlinks skills:
 
-- **Commands**: any `.md` in `claude/commands/` → `~/.claude/commands/`
 - **Skills**: any `skills/*/` dir with a `SKILL.md` → `~/.claude/skills/` and
   `~/.agents/skills/`
 
-To add a new command or skill, just create the file — `setup.sh` picks it up
+To add a new skill, just create the directory — `setup.sh` picks it up
 automatically. Stale symlinks are cleaned up on each run.
+
+**Commands** live in plugins under `plugins/*/commands/`. Each plugin has a
+`.claude-plugin/plugin.json` manifest and auto-discovered `.md` command files.
 
 **Plugins** are installed via the Claude CLI, not symlinks. `setup.sh`
 ensures the official `claude-plugins-official` marketplace and the local
@@ -41,13 +43,28 @@ never edit the symlink targets directly.
 
 ### Agent-Specific Config
 
-- `claude/` — Claude Code settings, slash commands, statusline script
+- `claude/` — Claude Code settings, statusline script
 - `codex/` — OpenAI Codex config (TOML)
 
 ## Testing
 
 Plugin tests live in `plugins/*/tests/*.test.sh`. CI auto-discovers and runs
 them. Tests must be self-contained bash scripts that exit 0 on success.
+
+## Plugin Versioning
+
+Plugins use semantic versioning (MAJOR.MINOR.PATCH). When committing changes
+to a plugin, bump the version based on the change type:
+
+- **patch** (0.1.0 → 0.1.1): bug fixes, wording tweaks, minor adjustments
+- **minor** (0.1.1 → 0.2.0): new commands, new features, non-breaking changes
+- **major** (0.2.0 → 1.0.0): breaking changes (renamed commands, removed
+  functionality, changed behavior)
+
+Update the version in **both** files:
+
+1. `plugins/<name>/.claude-plugin/plugin.json`
+2. `.claude-plugin/marketplace.json`
 
 ## Before Committing
 
