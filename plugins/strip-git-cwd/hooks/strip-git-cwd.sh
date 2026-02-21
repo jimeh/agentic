@@ -26,17 +26,18 @@ ESCAPED_CWD=$(printf '%s\n' "$CWD" | sed 's/[.[\/*^$()+?{|\\]/\\&/g')
 # Each pattern allows an optional trailing slash on the path.
 # Mid-string patterns (followed by whitespace) replace with "git ".
 # End-of-string patterns replace with "git".
-UPDATED=$(printf '%s' "$COMMAND" | sed -E \
-  -e "s|git[[:space:]]+-C[[:space:]]+\"${ESCAPED_CWD}/?\"[[:space:]]+|git |g" \
-  -e "s|git[[:space:]]+-C[[:space:]]+'${ESCAPED_CWD}/?'[[:space:]]+|git |g" \
-  -e "s|git[[:space:]]+-C=${ESCAPED_CWD}/?[[:space:]]+|git |g" \
-  -e "s|git[[:space:]]+-C${ESCAPED_CWD}/?[[:space:]]+|git |g" \
-  -e "s|git[[:space:]]+-C[[:space:]]+${ESCAPED_CWD}/?[[:space:]]+|git |g" \
-  -e "s|git[[:space:]]+-C[[:space:]]+\"${ESCAPED_CWD}/?\"$|git|g" \
-  -e "s|git[[:space:]]+-C[[:space:]]+'${ESCAPED_CWD}/?'$|git|g" \
-  -e "s|git[[:space:]]+-C=${ESCAPED_CWD}/?$|git|g" \
-  -e "s|git[[:space:]]+-C${ESCAPED_CWD}/?$|git|g" \
-  -e "s|git[[:space:]]+-C[[:space:]]+${ESCAPED_CWD}/?$|git|g" \
+UPDATED=$(
+  printf '%s' "$COMMAND" | sed -E \
+    -e "s|git[[:space:]]+-C[[:space:]]+\"${ESCAPED_CWD}/?\"[[:space:]]+|git |g" \
+    -e "s|git[[:space:]]+-C[[:space:]]+'${ESCAPED_CWD}/?'[[:space:]]+|git |g" \
+    -e "s|git[[:space:]]+-C=${ESCAPED_CWD}/?[[:space:]]+|git |g" \
+    -e "s|git[[:space:]]+-C${ESCAPED_CWD}/?[[:space:]]+|git |g" \
+    -e "s|git[[:space:]]+-C[[:space:]]+${ESCAPED_CWD}/?[[:space:]]+|git |g" \
+    -e "s|git[[:space:]]+-C[[:space:]]+\"${ESCAPED_CWD}/?\"$|git|g" \
+    -e "s|git[[:space:]]+-C[[:space:]]+'${ESCAPED_CWD}/?'$|git|g" \
+    -e "s|git[[:space:]]+-C=${ESCAPED_CWD}/?$|git|g" \
+    -e "s|git[[:space:]]+-C${ESCAPED_CWD}/?$|git|g" \
+    -e "s|git[[:space:]]+-C[[:space:]]+${ESCAPED_CWD}/?$|git|g"
 )
 
 # If nothing changed, allow as-is
@@ -45,5 +46,11 @@ if [[ "$COMMAND" == "$UPDATED" ]]; then
 fi
 
 # Return the modified command
-jq -n --arg cmd "$UPDATED" \
-  '{ "hookSpecificOutput": { "updatedInput": { "command": $cmd } } }'
+jq -n --arg cmd "$UPDATED" '{
+  "hookSpecificOutput": {
+    "hookEventName": "PreToolUse",
+    "updatedInput": {
+      "command": $cmd
+    }
+  }
+}'

@@ -1,0 +1,19 @@
+{
+  "name": "jimeh/agentic",
+  "description": "Plugins for agentic things.",
+  "owner": {
+    "name": "jimeh"
+  },
+  "plugins": [
+    {
+      "name": "strip-git-cwd",
+      "description": "Strips redundant git -C flags when the path matches the current working directory",
+      "version": "0.1.1",
+      "author": {
+        "name": "jimeh"
+      },
+      "source": "./plugins/strip-git-cwd",
+      "category": "productivity"
+    }
+  ]
+}

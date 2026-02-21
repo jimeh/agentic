@@ -24,6 +24,11 @@ shellcheck **/*.sh  # lint all shell scripts
 To add a new command, skill, or plugin, just create the file — `setup.sh`
 picks it up automatically. Stale symlinks are cleaned up on each run.
 
+### Marketplace Manifest
+
+`.claude-plugin/marketplace.json` at the repo root lists all publishable
+plugins with metadata (name, version, description, source path, category).
+
 ### RULES.md
 
 Single source of truth for agent instructions. Symlinked as the global
