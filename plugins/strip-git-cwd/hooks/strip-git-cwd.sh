@@ -18,6 +18,7 @@ fi
 CWD="${CWD%/}"
 
 # Escape CWD for use in sed extended regex
+# shellcheck disable=SC2016
 ESCAPED_CWD=$(printf '%s\n' "$CWD" | sed 's/[.[\/*^$()+?{|\\]/\\&/g')
 
 # Replace all forms of git -C <cwd> with just "git".
