@@ -31,7 +31,8 @@ cd ~/.config/agentic
 ```
 
 This creates symlinks from the repo into `~/.claude/`, `~/.agents/`, and
-`~/.codex/`. Run `./setup.sh --help` for details.
+`~/.codex/`, and registers plugin marketplaces and installs plugins via
+the Claude CLI. Run `./setup.sh --help` for details.
 
 ## What's Inside
 
@@ -41,10 +42,35 @@ This creates symlinks from the repo into `~/.claude/`, `~/.agents/`, and
 - **`claude/`** — Claude Code settings, statusline script, and slash commands.
 - **`codex/`** — OpenAI Codex config.
 - **`skills/`** — Custom skills (auto-discovered by `setup.sh`).
+- **`plugins/`** — Claude Code plugins, published via a local marketplace.
 - **`docs/references/`** — External articles and guides.
 
 Commands and skills are auto-discovered — drop a file in the right place,
-re-run `setup.sh`, done.
+re-run `setup.sh`, done. Plugins are registered and installed via the Claude
+CLI (`claude plugin marketplace add` / `claude plugin install`).
+
+## Plugins
+
+### strip-git-cwd
+
+A `PreToolUse` hook that strips redundant `git -C <cwd>` flags from Bash
+commands when the path matches the current working directory. Claude Code
+tends to add these unnecessarily, and the `-C` flag changes the command
+string enough that pre-approved git commands no longer match the allowlist
+— causing repeated permission prompts.
+
+Handles all `-C` syntax variants (space, `=`, bare, quoted) and compound
+commands (`&&`, `;`).
+
+### Plugin Installation
+
+`setup.sh` ensures both the official `claude-plugins-official` marketplace
+and this repo's local marketplace are registered, then installs plugins
+listed in the `CLAUDE_PLUGINS` array at the top of the script. To add or
+remove auto-installed plugins, edit that array.
+
+Requires the `claude` CLI and `jq`. Skipped gracefully if either is
+missing.
 
 ## Requirements
 

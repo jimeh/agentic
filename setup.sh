@@ -6,6 +6,61 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SYMLINKS=()
 FORCE="false"
 
+# Plugins to auto-install (plugin@marketplace format).
+# Marketplace name is read from .claude-plugin/marketplace.json.
+CLAUDE_PLUGINS=(
+  "strip-git-cwd"
+)
+
+# ==============================================================================
+# Symlink Discovery
+# ==============================================================================
+
+# Populate SYMLINKS array with all source|target pairs.
+discover_symlinks() {
+  # Rules file → multiple targets.
+  SYMLINKS+=(
+    "RULES.md|${HOME}/.claude/CLAUDE.md"
+    "RULES.md|${HOME}/.agents/AGENTS.md"
+    "RULES.md|${HOME}/.codex/AGENTS.md"
+  )
+
+  # Claude config files.
+  SYMLINKS+=(
+    "claude/settings.json|${HOME}/.claude/settings.json"
+    "claude/statusline.sh|${HOME}/.claude/statusline.sh"
+  )
+
+  # Codex config files.
+  SYMLINKS+=(
+    "codex/config.toml|${HOME}/.codex/config.toml"
+  )
+
+  # Discover commands: claude/commands/*.md
+  local cmd_file
+  for cmd_file in "${SCRIPT_DIR}/claude/commands/"*.md; do
+    [[ -f "${cmd_file}" ]] || continue
+    local name
+    name="$(basename "${cmd_file}")"
+    SYMLINKS+=(
+      "claude/commands/${name}|${HOME}/.claude/commands/${name}"
+    )
+  done
+
+  # Discover skills: skills/*/SKILL.md → both ~/.claude and ~/.agents
+  local skill_dir
+  for skill_dir in "${SCRIPT_DIR}/skills/"*/; do
+    [[ -d "${skill_dir}" ]] || continue
+    [[ -f "${skill_dir}/SKILL.md" ]] || continue
+    local name
+    name="$(basename "${skill_dir}")"
+    SYMLINKS+=(
+      "skills/${name}|${HOME}/.claude/skills/${name}"
+      "skills/${name}|${HOME}/.agents/skills/${name}"
+    )
+  done
+}
+
 # ==============================================================================
 # Logging
 # ==============================================================================
@@ -93,67 +148,6 @@ backup_and_link() {
 }
 
 # ==============================================================================
-# Discovery
-# ==============================================================================
-
-# Populate SYMLINKS array with all source|target pairs.
-discover_symlinks() {
-  # Rules file → multiple targets.
-  SYMLINKS+=(
-    "RULES.md|${HOME}/.claude/CLAUDE.md"
-    "RULES.md|${HOME}/.agents/AGENTS.md"
-    "RULES.md|${HOME}/.codex/AGENTS.md"
-  )
-
-  # Claude config files.
-  SYMLINKS+=(
-    "claude/settings.json|${HOME}/.claude/settings.json"
-    "claude/statusline.sh|${HOME}/.claude/statusline.sh"
-  )
-
-  # Codex config files.
-  SYMLINKS+=(
-    "codex/config.toml|${HOME}/.codex/config.toml"
-  )
-
-  # Discover commands: claude/commands/*.md
-  local cmd_file
-  for cmd_file in "${SCRIPT_DIR}/claude/commands/"*.md; do
-    [[ -f "${cmd_file}" ]] || continue
-    local name
-    name="$(basename "${cmd_file}")"
-    SYMLINKS+=(
-      "claude/commands/${name}|${HOME}/.claude/commands/${name}"
-    )
-  done
-
-  # Discover skills: skills/*/SKILL.md → both ~/.claude and ~/.agents
-  local skill_dir
-  for skill_dir in "${SCRIPT_DIR}/skills/"*/; do
-    [[ -d "${skill_dir}" ]] || continue
-    [[ -f "${skill_dir}/SKILL.md" ]] || continue
-    local name
-    name="$(basename "${skill_dir}")"
-    SYMLINKS+=(
-      "skills/${name}|${HOME}/.claude/skills/${name}"
-      "skills/${name}|${HOME}/.agents/skills/${name}"
-    )
-  done
-
-  # Discover plugins: plugins/*/.claude-plugin/plugin.json
-  local plugin_dir
-  for plugin_dir in "${SCRIPT_DIR}/plugins/"*/; do
-    [[ -d "${plugin_dir}" ]] || continue
-    [[ -f "${plugin_dir}/.claude-plugin/plugin.json" ]] || continue
-    local name
-    name="$(basename "${plugin_dir}")"
-    SYMLINKS+=(
-      "plugins/${name}|${HOME}/.claude/plugins/${name}"
-    )
-  done
-}
-
-# ==============================================================================
 # Symlink Creation
 # ==============================================================================
 
@@ -201,8 +195,113 @@ cleanup_stale() {
     "${SCRIPT_DIR}/skills" "${HOME}/.claude/skills"
   _cleanup_stale_links \
     "${SCRIPT_DIR}/skills" "${HOME}/.agents/skills"
-  _cleanup_stale_links \
-    "${SCRIPT_DIR}/plugins" "${HOME}/.claude/plugins"
+}
+
+# ==============================================================================
+# Claude Plugin Setup
+# ==============================================================================
+
+# Ensure a single marketplace is configured.
+# Usage: _ensure_marketplace <name> <type> <source>
+#   type: "github" or "directory"
+#   source: GitHub "owner/repo" or local directory path
+_ensure_marketplace() {
+  local name="$1"
+  local type="$2"
+  local source="$3"
+
+  local match
+  match="$(
+    echo "${_MARKETPLACES}" |
+      jq -r ".[] | select(.name == \"${name}\") | .name // empty"
+  )" || true
+
+  if [[ -n "${match}" ]]; then
+    # For directory marketplaces, warn if the path doesn't match.
+    if [[ "${type}" == "directory" ]]; then
+      local current_path
+      current_path="$(
+        echo "${_MARKETPLACES}" |
+          jq -r ".[] | select(.name == \"${name}\") | .path // empty"
+      )" || true
+      if [[ -n "${current_path}" && "${current_path}" != "${source}" ]]; then
+        warn "marketplace ${name} points to ${current_path}" \
+          "(expected ${source})"
+      fi
+    fi
+    info "skip marketplace ${name} (already configured)"
+    return
+  fi
+
+  info "add marketplace ${name}"
+  claude plugin marketplace add "${source}"
+
+  # Refresh cached list after adding.
+  _MARKETPLACES="$(claude plugin marketplace list --json 2> /dev/null)" || true
+}
+
+# Ensure a single plugin is installed.
+# Usage: _ensure_plugin <plugin_id>
+#   plugin_id: "name@marketplace" format
+_ensure_plugin() {
+  local plugin_id="$1"
+
+  if echo "${_PLUGINS}" |
+    jq -e ".[] | select(.id == \"${plugin_id}\")" \
+      > /dev/null 2>&1; then
+    info "skip plugin ${plugin_id} (already installed)"
+    return
+  fi
+
+  info "install plugin ${plugin_id}"
+  claude plugin install "${plugin_id}"
+
+  # Refresh cached list after installing.
+  _PLUGINS="$(claude plugin list --json 2> /dev/null)" || true
+}
+
+setup_claude_plugins() {
+  if ! command -v claude > /dev/null 2>&1; then
+    info "claude CLI not found, skipping plugin setup"
+    return
+  fi
+
+  if ! command -v jq > /dev/null 2>&1; then
+    warn "jq not found, skipping plugin setup"
+    return
+  fi
+
+  # Read marketplace name from manifest.
+  local manifest="${SCRIPT_DIR}/.claude-plugin/marketplace.json"
+  if [[ ! -f "${manifest}" ]]; then
+    warn "marketplace manifest not found, skipping plugin setup"
+    return
+  fi
+
+  local marketplace
+  marketplace="$(jq -r '.name' "${manifest}")"
+  if [[ -z "${marketplace}" || "${marketplace}" == "null" ]]; then
+    warn "marketplace name not found in manifest, skipping"
+    return
+  fi
+
+  # Cache marketplace list for _ensure_marketplace calls.
+  _MARKETPLACES="$(claude plugin marketplace list --json 2> /dev/null)" || true
+
+  _ensure_marketplace \
+    "claude-plugins-official" "github" "anthropics/claude-plugins-official"
+  _ensure_marketplace \
+    "${marketplace}" "directory" "${SCRIPT_DIR}"
+
+  # Install plugins from CLAUDE_PLUGINS list.
+  _PLUGINS="$(claude plugin list --json 2> /dev/null)" || true
+
+  local plugin
+  for plugin in "${CLAUDE_PLUGINS[@]}"; do
+    _ensure_plugin "${plugin}@${marketplace}"
+  done
+
+  unset _MARKETPLACES _PLUGINS
 }
 
 # ==============================================================================
@@ -227,9 +326,11 @@ Creates symlinks for Claude Code and agents configuration:
   claude/commands/*  → ~/.claude/commands/
   skills/*           → ~/.claude/skills/
   skills/*           → ~/.agents/skills/
-  plugins/*          → ~/.claude/plugins/
 
-Also removes stale command, skill, and plugin symlinks.
+Registers the local plugin marketplace and installs plugins
+via the Claude CLI (skipped if claude or jq is not available).
+
+Also removes stale command and skill symlinks.
 EOF
 }
 
@@ -261,6 +362,9 @@ main() {
   discover_symlinks
   create_symlinks
   cleanup_stale
+
+  info "Setting up Claude plugins..."
+  setup_claude_plugins
 
   info "Done!"
 }
