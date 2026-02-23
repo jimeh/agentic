@@ -68,6 +68,13 @@ you:   /implement
        → agent executes the full plan
 ```
 
+## Snippets
+
+Not using Claude Code? See [snippets.md](snippets.md) for agent-agnostic
+prompt snippets you can paste into any AI coding assistant. Works well
+with text expansion apps (Raycast, TextExpander, Alfred, Espanso, etc.) — set up
+a short trigger for each phase and append your context at the end.
+
 ## Install
 
 ```bash
