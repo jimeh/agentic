@@ -1,0 +1,86 @@
+# phased-work
+
+A Claude Code plugin that enforces a disciplined research-plan-implement
+workflow. Instead of jumping straight to code, you move through distinct
+phases — each with its own slash command — so that every decision is made
+and reviewed before implementation begins.
+
+Inspired by Boris Tane's
+[How I Use Claude Code](https://boristane.com/blog/how-i-use-claude-code/).
+
+## Workflow
+
+```
+/research → /plan → /refine (repeat) → /todo → /implement
+```
+
+### `/research <area>`
+
+Deep-read a codebase area and write structured findings to `research.md`.
+The agent reads deeply — tracing data flows, checking tests, using git
+history — and produces a review surface you can verify before planning.
+
+### `/plan <feature or change>`
+
+Create a detailed implementation plan in `plan.md`. Includes code snippets,
+file paths, and trade-offs. If `research.md` exists, it's used as context.
+
+### `/refine [guidance]`
+
+Address inline notes you've added to `plan.md`. Open the plan in your
+editor, add corrections or directions as inline notes, then run `/refine`.
+Repeat 1-6 times until the plan is right. The agent will not implement
+anything during this phase.
+
+### `/todo [filename]`
+
+Add a granular task breakdown with checkboxes to the plan document. Review
+and refine the todo list before starting implementation.
+
+### `/implement [constraints]`
+
+Execute everything in the plan, marking tasks as completed. The agent
+follows the plan mechanically, runs type checkers and relevant tests, and
+doesn't stop until all tasks are done.
+
+## Example Session
+
+```
+you:   /research the notification system
+       → agent writes research.md
+
+you:   [review research.md]
+
+you:   /plan add email digest support for notifications
+       → agent writes plan.md
+
+you:   [add inline notes to plan.md in your editor]
+
+you:   /refine
+       → agent addresses all notes, updates plan.md
+
+you:   [add more notes if needed, /refine again]
+
+you:   /todo
+       → agent adds task breakdown to plan.md
+
+you:   /implement
+       → agent executes the full plan
+```
+
+## Install
+
+```bash
+# Add the marketplace (once)
+claude plugin marketplace add jimeh/agentic
+
+# Install the plugin
+claude plugin install phased-work@jimeh-agentic
+```
+
+Or from within Claude Code:
+
+```text
+/plugin marketplace add jimeh/agentic
+/plugin install phased-work@jimeh-agentic
+```
