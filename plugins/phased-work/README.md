@@ -27,8 +27,9 @@ file paths, and trade-offs. If `research.md` exists, it's used as context.
 
 ### `/refine [guidance]`
 
-Address inline notes you've added to `plan.md`. Open the plan in your
-editor, add corrections or directions as inline notes, then run `/refine`.
+Address inline notes you've added to `plan.md` (or `research.md`). Open
+the document in your editor, add corrections or directions as inline
+notes, then run `/refine`.
 Repeat 1-6 times until the plan is right. The agent will not implement
 anything during this phase.
 
