@@ -45,11 +45,14 @@ Append the feature or change description after the snippet.
 
 > If research.md exists, read it first. Read all source files relevant to
 > the change — base the plan on the actual codebase, not assumptions. Write
-> a detailed plan.md outlining how to implement this. Include code snippets
-> showing the proposed changes (real code, not pseudocode), file paths to
-> modify, and trade-offs. The plan should be specific enough that
-> implementation becomes mechanical. Do not implement any changes — write
-> only the plan document. Here's what I want to build:
+> a detailed plan.md outlining how to implement this. For each file, describe
+> the conceptual changes: what to add, remove, or restructure, and why.
+> Include short code snippets only where they clarify non-obvious changes
+> (new signatures, key logic, tricky expressions) — never dump full files or
+> classes. The plan should be specific enough that implementation becomes
+> mechanical, but a reviewer should be able to understand every change
+> without diffing against the original source. Do not implement any changes
+> — write only the plan document. Here's what I want to build:
 
 ## Refine (`/pwf`)
 
