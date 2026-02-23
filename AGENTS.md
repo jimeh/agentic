@@ -71,6 +71,14 @@ Update the version in **both** files:
 Check if `README.md` or this `AGENTS.md` file need updates to reflect your
 changes (new commands, skills, structural changes, conventions, etc.).
 
+## phased-work Plugin
+
+When changing any command in `plugins/phased-work/commands/`, always update
+the corresponding snippet in `plugins/phased-work/snippets.md` to stay
+aligned in spirit. Snippets are intentionally shorter than commands (no
+frontmatter, no tool constraints, no context blocks), but the core
+instructional intent should match.
+
 ## Shell Conventions
 
 2-space indent, `bash` variant, switch case indent, space redirects (`> file`
