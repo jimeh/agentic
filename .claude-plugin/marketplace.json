@@ -34,6 +34,16 @@
       },
       "source": "./plugins/agents-md",
       "category": "productivity"
+    },
+    {
+      "name": "phased-work",
+      "description": "Research-plan-implement workflow: phased commands for disciplined AI-assisted development",
+      "version": "0.1.0",
+      "author": {
+        "name": "jimeh"
+      },
+      "source": "./plugins/phased-work",
+      "category": "productivity"
     }
   ]
 }
