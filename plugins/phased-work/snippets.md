@@ -16,11 +16,12 @@ etc.) where a short trigger expands into the full prompt.
 | `/pwf`  | Refine    |
 | `/pwt`  | Todo      |
 | `/pwi`  | Implement |
+| `/pwv`  | Review    |
 
 ## Workflow
 
 ```
-/pwr → /pwp → /pwf (repeat) → /pwt → /pwi
+/pwr → /pwp → /pwf (repeat) → /pwt → /pwi [→ /pwv]
 ```
 
 ## Research (`/pwr`)
@@ -87,3 +88,15 @@ Execute the plan mechanically. Every decision should already be made.
 > Fix issues immediately rather than accumulating them. Follow existing
 > codebase patterns and conventions. Don't add unnecessary comments or
 > refactor adjacent code unless the plan says to.
+
+## Review (`/pwv`)
+
+Optional post-implementation sanity check. Run after `/pwi` to verify the
+implementation.
+
+> Read plan.md (and research.md if it exists) and the changed source
+> files. Write review.md covering: (1) plan deviations and whether they
+> matter, (2) code concerns — edge cases, integration issues, error
+> handling, security, performance, or test coverage gaps, (3) recommended
+> next steps — areas to update, tests to add, docs to write, follow-up
+> work. Be specific, cite file paths. Do not make any code changes.

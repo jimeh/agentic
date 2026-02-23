@@ -11,7 +11,7 @@ Inspired by Boris Tane's
 ## Workflow
 
 ```
-/research → /plan → /refine (repeat) → /todo → /implement
+/research → /plan → /refine (repeat) → /todo → /implement [→ /review]
 ```
 
 ### `/research <area>`
@@ -43,6 +43,12 @@ Execute everything in the plan, marking tasks as completed. The agent
 follows the plan mechanically, runs type checkers and relevant tests, and
 doesn't stop until all tasks are done.
 
+### `/review [focus]`
+
+Optional post-implementation sanity check. Compares what was built against
+the plan, flags concerns about the final code state, and recommends next
+steps. Writes findings to `review.md`.
+
 ## Example Session
 
 ```
@@ -66,6 +72,9 @@ you:   /todo
 
 you:   /implement
        → agent executes the full plan
+
+you:   /review
+       → agent writes review.md with findings and next steps
 ```
 
 ## Snippets
