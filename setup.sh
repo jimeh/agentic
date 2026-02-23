@@ -12,6 +12,7 @@ CLAUDE_PLUGINS=(
   "strip-git-cwd"
   "git-commands"
   "agents-md"
+  "phased-work"
 )
 
 # ==============================================================================
