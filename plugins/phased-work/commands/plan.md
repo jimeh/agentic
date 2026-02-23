@@ -18,17 +18,12 @@ Read all source files relevant to the change — base the plan on the actual
 codebase, not assumptions. If the user provided a reference implementation,
 study it closely.
 
-The plan should list each file to modify and describe the conceptual
-changes: what to add, remove, or restructure, and why. Include short code
-snippets only where they clarify a non-obvious change — a new function
-signature, a tricky conditional, a key data structure. Never dump full
-files, classes, or long contiguous blocks; the implementing agent has full
-source access and doesn't need the plan to double as a copy-paste source.
-
-The plan should be specific enough that implementation becomes mechanical,
-but a reviewer should be able to skim it and immediately understand what
-changes without needing to diff against the original source. Structure the
-document however best fits the task at hand.
+The plan should include code snippets showing proposed changes (real code,
+not pseudocode), file paths to modify, and trade-offs. Describe each
+change in plain English too — what's changing and why — so a reviewer can
+follow the plan without diffing. It should be specific enough that
+implementation becomes mechanical. Structure the document however best
+fits the task at hand.
 
 Read source files before proposing changes. Never plan changes to code you
 haven't read.

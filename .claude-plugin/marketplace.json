@@ -38,7 +38,7 @@
     {
       "name": "phased-work",
       "description": "Research-plan-implement workflow: phased commands for disciplined AI-assisted development",
-      "version": "0.2.1",
+      "version": "0.2.2",
       "author": {
         "name": "jimeh"
       },
