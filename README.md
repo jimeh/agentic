@@ -52,7 +52,7 @@ installed via the Claude CLI (`claude plugin marketplace add` /
 
 ## Plugins
 
-### [strip-git-cwd](plugins/strip-git-cwd/README.md)
+### [strip-git-cwd](plugins/strip-git-cwd/)
 
 A `PreToolUse` hook that strips redundant `git -C <cwd>` flags from Bash
 commands when the path matches the current working directory. Claude Code
@@ -63,7 +63,7 @@ string enough that pre-approved git commands no longer match the allowlist
 Handles all `-C` syntax variants (space, `=`, bare, quoted) and compound
 commands (`&&`, `;`).
 
-### [git-commands](plugins/git-commands/README.md)
+### [git-commands](plugins/git-commands/)
 
 Slash commands for common git workflows:
 
@@ -74,7 +74,7 @@ Slash commands for common git workflows:
 
 Derived from the official `commit-commands` plugin, heavily modified.
 
-### [agents-md](plugins/agents-md/README.md)
+### [agents-md](plugins/agents-md/)
 
 Slash commands for managing AGENTS.md files:
 
@@ -82,7 +82,7 @@ Slash commands for managing AGENTS.md files:
 - `/generate-agents-md` — Generate AGENTS.md from codebase analysis.
 - `/refactor-agents-md` — Refactor AGENTS.md for progressive disclosure.
 
-### [phased-work](plugins/phased-work/README.md)
+### [phased-work](plugins/phased-work/)
 
 A disciplined research-plan-implement workflow. Instead of jumping straight
 to code, you move through distinct phases so every decision is reviewed
