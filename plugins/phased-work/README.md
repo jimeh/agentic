@@ -8,6 +8,19 @@ and reviewed before implementation begins.
 Inspired by Boris Tane's
 [How I Use Claude Code](https://boristane.com/blog/how-i-use-claude-code/).
 
+## Why This Workflow
+
+AI coding agents have limited context windows. On long-running tasks, older
+messages get compacted or dropped — and with them, decisions you made early
+on. By capturing research, plans, and task breakdowns in files on disk
+(`research.md`, `plan.md`), nothing essential is lost to compaction. The
+agent can re-read the plan at any point, pick up exactly where it left off,
+and keep working without drifting from what was agreed.
+
+This also means *you* have a reviewable artifact at every stage. You're not
+trusting the agent's memory — you're trusting a file you can read, edit, and
+even version-control if you so wish.
+
 ## Workflow
 
 ```
