@@ -10,16 +10,19 @@ Inspired by Boris Tane's
 
 ## Why This Workflow
 
-AI coding agents have limited context windows. On long-running tasks, older
-messages get compacted or dropped — and with them, decisions you made early
-on. By capturing research, plans, and task breakdowns in files on disk
-(`research.md`, `plan.md`), nothing essential is lost to compaction. The
-agent can re-read the plan at any point, pick up exactly where it left off,
-and keep working without drifting from what was agreed.
+The biggest risk with AI coding agents isn't bad syntax — it's
+implementations built on wrong assumptions. Deep research forces the agent to
+genuinely understand the codebase before proposing anything. The
+plan-review-refine cycle that follows is where *you* add the most value: you
+annotate the plan with corrections, constraints, and domain knowledge the
+agent doesn't have, then send it back to revise — repeating until every
+decision is right. By the time implementation starts, it's mechanical.
 
-This also means *you* have a reviewable artifact at every stage. You're not
-trusting the agent's memory — you're trusting a file you can read, edit, and
-even version-control if you so wish.
+Because research and plans live in files on disk (`research.md`, `plan.md`),
+they also survive context compaction. If the agent's context window fills up
+mid-session, the full plan can be re-read at any point. You always have a
+reviewable, editable specification — not a chat history you'd have to scroll
+through to reconstruct decisions.
 
 ## Workflow
 
