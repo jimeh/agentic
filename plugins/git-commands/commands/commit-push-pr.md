@@ -11,7 +11,8 @@ notes: Heavily modified from the original.
 - Current git diff (staged and unstaged changes): !`git diff HEAD`
 - Current branch: !`git branch --show-current`
 - Recent commits: !`git log --oneline -10`
-- PR template: !`find . -maxdepth 3 -iname 'pull_request_template*' -o -ipath '*pull_request_template/*' 2>/dev/null`
+- PR template:
+  !`find . -maxdepth 3 -iname 'pull_request_template*' -o -ipath '*pull_request_template/*' 2>/dev/null`
 
 ## Your Task
 
@@ -28,11 +29,11 @@ Based on the above changes:
 4. **Push** the branch to origin.
 5. **Understand full scope**: Run `git log` and `git diff main...HEAD` (or
    master) to see all changes since the base branch.
-6. **PR template**: If a PR template was found in the context above, use it
-   as the base for the PR body. If multiple templates were found, ask which
-   one to use.
-7. **Create PR** with `gh pr create`. Description should explain *what* changed
-   and *why*, covering the full scope. Do NOT list commits — the PR already
+6. **PR template**: If a PR template was found in the context above, use it as
+   the base for the PR body. If multiple templates were found, ask which one to
+   use.
+7. **Create PR** with `gh pr create`. Description should explain _what_ changed
+   and _why_, covering the full scope. Do NOT list commits — the PR already
    shows those. Append at the end:
    `🤖 Generated with [Claude Code](https://claude.ai/code)`
 

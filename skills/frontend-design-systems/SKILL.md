@@ -21,7 +21,7 @@ derived from practical graphic design heuristics. Focus on consistency,
 hierarchy, and scalable UI decision-making rather than aesthetic
 experimentation.
 
-Apply this skill *after* layout, accessibility, and interaction logic are
+Apply this skill _after_ layout, accessibility, and interaction logic are
 established by `frontend-design`.
 
 ## Core Principle

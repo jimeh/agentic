@@ -22,12 +22,11 @@ Rebase the current branch onto the upstream default branch (main or master).
    `git stash pop`.
 5. Show the result with `git log --oneline -10`.
 
-If the rebase fails due to conflicts, attempt to resolve them yourself.
-If you have low confidence in the resolution, abort the rebase with
-`git rebase --abort`, restore any stashed changes with `git stash pop`,
-and ask the user to resolve manually — leaving the working tree as it
-was found.
+If the rebase fails due to conflicts, attempt to resolve them yourself. If you
+have low confidence in the resolution, abort the rebase with
+`git rebase --abort`, restore any stashed changes with `git stash pop`, and ask
+the user to resolve manually — leaving the working tree as it was found.
 
-You have the capability to call multiple tools in a single response. Do not
-use any other tools or do anything else. Do not send any other text or
-messages besides these tool calls.
+You have the capability to call multiple tools in a single response. Do not use
+any other tools or do anything else. Do not send any other text or messages
+besides these tool calls.

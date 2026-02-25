@@ -10,10 +10,9 @@ argument-hint: "[optional: filename if not plan.md]"
 
 ## Your Task
 
-Read `plan.md` (or a filename specified by the user) and add a detailed
-todo list with all phases and individual tasks necessary to complete the
-plan. Use checkboxes (`- [ ]`) so progress can be tracked during
-implementation.
+Read `plan.md` (or a filename specified by the user) and add a detailed todo
+list with all phases and individual tasks necessary to complete the plan. Use
+checkboxes (`- [ ]`) so progress can be tracked during implementation.
 
 Tasks should be granular enough that completing each one represents a
 meaningful, verifiable step. Group them by phase or logical area.

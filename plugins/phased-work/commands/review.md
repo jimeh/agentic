@@ -20,15 +20,15 @@ Write findings to `review.md`, covering three areas:
 
 ### 1. Plan Adherence
 
-Did the implementation follow the plan? Call out any deviations — skipped
-tasks, changed approaches, or additions that weren't in the plan. Minor
-deviations that make sense in context are fine to note briefly; focus
-attention on anything that might have unintended consequences.
+Did the implementation follow the plan? Call out any deviations — skipped tasks,
+changed approaches, or additions that weren't in the plan. Minor deviations that
+make sense in context are fine to note briefly; focus attention on anything that
+might have unintended consequences.
 
 ### 2. Code Quality and Concerns
 
-Now that the changes are in place, does the final state of the code make
-sense? Look for:
+Now that the changes are in place, does the final state of the code make sense?
+Look for:
 
 - Logic that doesn't integrate well with surrounding code
 - Edge cases the plan didn't anticipate
@@ -38,8 +38,8 @@ sense? Look for:
 - Security concerns relevant to the changes (not generic checklists)
 - Performance bottlenecks introduced or exposed by the changes
 
-Be specific — cite file paths and line numbers. Don't nitpick style; focus
-on things that could cause bugs or maintenance headaches.
+Be specific — cite file paths and line numbers. Don't nitpick style; focus on
+things that could cause bugs or maintenance headaches.
 
 ### 3. Recommended Next Steps
 
@@ -52,7 +52,6 @@ suggest concrete follow-up work. This might include:
 - Performance considerations to revisit under load
 - Adjacent features or refactors that would pair well with this change
 
-Keep recommendations actionable and prioritized. Don't pad with generic
-advice.
+Keep recommendations actionable and prioritized. Don't pad with generic advice.
 
 Do NOT make any code changes. This is a read-only review phase.

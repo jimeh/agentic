@@ -16,8 +16,8 @@ notes: Heavily modified from the original.
 
 Based on the above changes:
 
-1. **Check agent docs**: If the project has an AGENTS.md or CLAUDE.md, review
-   it against the current changes. If the changes introduce new conventions,
+1. **Check agent docs**: If the project has an AGENTS.md or CLAUDE.md, review it
+   against the current changes. If the changes introduce new conventions,
    commands, architecture, or patterns that should be documented (or invalidate
    existing docs), update the relevant file as part of this commit. Only update
    if clearly warranted — don't add noise.

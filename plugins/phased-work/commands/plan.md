@@ -13,17 +13,16 @@ argument-hint: <feature or change to plan, e.g. "cursor-based pagination for the
 Create a detailed implementation plan in `plan.md` for the feature or change
 described by the user's arguments.
 
-If a research file exists (see context above), read it thoroughly first.
-Read all source files relevant to the change — base the plan on the actual
-codebase, not assumptions. If the user provided a reference implementation,
-study it closely.
+If a research file exists (see context above), read it thoroughly first. Read
+all source files relevant to the change — base the plan on the actual codebase,
+not assumptions. If the user provided a reference implementation, study it
+closely.
 
-The plan should include code snippets showing proposed changes (real code,
-not pseudocode), file paths to modify, and trade-offs. Describe each
-change in plain English too — what's changing and why — so a reviewer can
-follow the plan without diffing. It should be specific enough that
-implementation becomes mechanical. Structure the document however best
-fits the task at hand.
+The plan should include code snippets showing proposed changes (real code, not
+pseudocode), file paths to modify, and trade-offs. Describe each change in plain
+English too — what's changing and why — so a reviewer can follow the plan
+without diffing. It should be specific enough that implementation becomes
+mechanical. Structure the document however best fits the task at hand.
 
 Read source files before proposing changes. Never plan changes to code you
 haven't read.

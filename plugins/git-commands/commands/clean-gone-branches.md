@@ -10,23 +10,16 @@ that have been deleted from the remote repository.
 
 ## Commands to Execute
 
-1. **First, list branches to identify any with [gone] status** Execute this
-   command:
-   ```bash
-   git branch -v
-   ```
+1. **List branches to identify any with [gone] status:**
+   - Run `git branch -v`
+   - Note: Branches with a '+' prefix have associated worktrees and must have
+     their worktrees removed before deletion.
 
-   Note: Branches with a '+' prefix have associated worktrees and must have
-   their worktrees removed before deletion.
+2. **Identify worktrees that need to be removed for [gone] branches:**
+   - Run `git worktree list`
 
-2. **Next, identify worktrees that need to be removed for [gone] branches**
-   Execute this command:
-   ```bash
-   git worktree list
-   ```
-
-3. **Finally, remove worktrees and delete [gone] branches (handles both regular
-   and worktree branches)** Execute this command:
+3. **Remove worktrees and delete [gone] branches** (handles both regular and
+   worktree branches):
    ```bash
    # Process all [gone] branches, removing '+' prefix if present
    git branch -v | grep '\[gone\]' | sed 's/^[+* ]//' | awk '{print $1}' | while read branch; do

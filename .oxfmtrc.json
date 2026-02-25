@@ -1,0 +1,6 @@
+{
+  "proseWrap": "always",
+  "printWidth": 80,
+  "embeddedLanguageFormatting": "off",
+  "ignorePatterns": ["docs/references/"]
+}
