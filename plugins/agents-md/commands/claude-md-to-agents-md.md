@@ -56,11 +56,8 @@ Convert this project's `CLAUDE.md` into an `AGENTS.md` file, and replace
 
 4. **Write `AGENTS.md`** with the updated content.
 
-5. **Replace `CLAUDE.md`** contents with just:
-   ```
-   @AGENTS.md
-   ```
-   This makes Claude Code load `AGENTS.md` via the `@`-reference.
+5. **Replace `CLAUDE.md`** contents with just `@AGENTS.md` — this makes Claude
+   Code load `AGENTS.md` via the `@`-reference.
 
 6. **Summary**: Report what was done, including any references that were updated
    in step 3. Stop here.
@@ -81,5 +78,4 @@ Convert this project's `CLAUDE.md` into an `AGENTS.md` file, and replace
      ```
      @AGENTS.md
      ```
-   - Report that the symlink was replaced with an `@`-reference to
-     `AGENTS.md`.
+   - Report that the symlink was replaced with an `@`-reference to `AGENTS.md`.

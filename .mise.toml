@@ -1,0 +1,30 @@
+[tools]
+node = "lts"
+
+# --- Top-level tasks (run both tools) ---
+
+[tasks.format]
+description = "Format markdown files (oxfmt + markdownlint)"
+depends = ["format:oxfmt", "format:markdownlint"]
+
+[tasks.lint]
+description = "Lint markdown files (oxfmt + markdownlint)"
+depends = ["lint:oxfmt", "lint:markdownlint"]
+
+# --- Per-tool subtasks ---
+
+[tasks."format:oxfmt"]
+description = "Format markdown files with oxfmt"
+run = "npx --yes oxfmt '**/*.md'"
+
+[tasks."format:markdownlint"]
+description = "Auto-fix markdownlint issues"
+run = "npx --yes markdownlint-cli2 --fix '**/*.md'"
+
+[tasks."lint:oxfmt"]
+description = "Check markdown formatting with oxfmt"
+run = "npx --yes oxfmt --check '**/*.md'"
+
+[tasks."lint:markdownlint"]
+description = "Lint markdown files with markdownlint"
+run = "npx --yes markdownlint-cli2 '**/*.md'"

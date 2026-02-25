@@ -52,8 +52,8 @@ Below are rules to follow with everything you do.
   etc.
 - If commands fail due to a missing file you expect to exist, double check the
   current directory with `pwd`, and `cd` to the project root if needed.
-- Do not execute `git` with the `-C` flag. Instead, verify you're not already
-  in the target directory, then `cd` to it.
+- Do not execute `git` with the `-C` flag. Instead, verify you're not already in
+  the target directory, then `cd` to it.
 - When investigating third-party libraries, use deepwiki to look up information
   if available.
 
@@ -82,8 +82,8 @@ Below are rules to follow with everything you do.
 
 ## Documenting Discoveries
 
-When you encounter surprising, unexpected, or non-obvious findings while
-working on a project, document them in the project's agent instructions file:
+When you encounter surprising, unexpected, or non-obvious findings while working
+on a project, document them in the project's agent instructions file:
 
 - If `AGENTS.md` already exists, add findings there.
 - If only `CLAUDE.md` exists (project-level, not this global one), add there.
@@ -91,8 +91,8 @@ working on a project, document them in the project's agent instructions file:
 
 What to document:
 
-- Non-obvious project conventions or patterns that aren't apparent from the
-  code structure alone.
+- Non-obvious project conventions or patterns that aren't apparent from the code
+  structure alone.
 - Surprising behaviors, gotchas, or workarounds discovered during development.
 - Implicit dependencies or ordering constraints between components.
 - Environment-specific quirks (e.g., platform differences, tool version
@@ -100,8 +100,8 @@ What to document:
 - Undocumented requirements or constraints found through trial and error.
 
 Keep entries concise and actionable. Group them under a relevant existing
-section or create a new section like `## Discoveries` or `## Gotchas`. The
-goal is to prevent future agents (or yourself in a future session) from
+section or create a new section like `## Discoveries` or `## Gotchas`. The goal
+is to prevent future agents (or yourself in a future session) from
 re-discovering the same things the hard way.
 
 ## Plan Mode

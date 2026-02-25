@@ -10,7 +10,7 @@ where a short trigger expands into the full prompt.
 ## Suggested Triggers
 
 | Trigger | Phase     |
-|---------|-----------|
+| ------- | --------- |
 | `/pwr`  | Research  |
 | `/pwp`  | Plan      |
 | `/pwf`  | Refine    |
@@ -86,15 +86,14 @@ Execute the plan mechanically. Every decision should already be made.
 > made in the plan — this is the execution phase. If the plan has no task
 > breakdown, generate one first. Implement it all, don't cherry-pick. When you
 > complete a task or phase, mark it as done in the plan document. Don't forget
-> to regularly update the task list as you go. Do not stop
-> until all tasks are completed. Run the project's type checker and linter after
-> each logical group of changes. For tests, run only the subset relevant to the
-> code you just changed. Fix issues immediately rather than accumulating them.
-> Follow existing codebase patterns and conventions. Don't add unnecessary
-> comments or refactor adjacent code unless the plan says to. If a planned
-> change doesn't work as expected, resolve it within the spirit of the plan — if
-> the plan has a genuine flaw that blocks progress, stop and describe the issue
-> clearly.
+> to regularly update the task list as you go. Do not stop until all tasks are
+> completed. Run the project's type checker and linter after each logical group
+> of changes. For tests, run only the subset relevant to the code you just
+> changed. Fix issues immediately rather than accumulating them. Follow existing
+> codebase patterns and conventions. Don't add unnecessary comments or refactor
+> adjacent code unless the plan says to. If a planned change doesn't work as
+> expected, resolve it within the spirit of the plan — if the plan has a genuine
+> flaw that blocks progress, stop and describe the issue clearly.
 
 ## Review (`/pwv`)
 
