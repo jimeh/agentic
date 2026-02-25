@@ -18,7 +18,7 @@
     {
       "name": "git-commands",
       "description": "Git workflow slash commands: commit, push, PR, rebase, and branch cleanup",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "author": {
         "name": "jimeh"
       },
@@ -28,7 +28,7 @@
     {
       "name": "agents-md",
       "description": "AGENTS.md management: generate, refactor, and convert from CLAUDE.md",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "author": {
         "name": "jimeh"
       },
