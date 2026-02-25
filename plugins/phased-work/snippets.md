@@ -85,7 +85,8 @@ Execute the plan mechanically. Every decision should already be made.
 > Read plan.md and implement everything in it. Every decision has already been
 > made in the plan — this is the execution phase. If the plan has no task
 > breakdown, generate one first. Implement it all, don't cherry-pick. When you
-> complete a task or phase, mark it as done in the plan document. Do not stop
+> complete a task or phase, mark it as done in the plan document. Don't forget
+> to regularly update the task list as you go. Do not stop
 > until all tasks are completed. Run the project's type checker and linter after
 > each logical group of changes. For tests, run only the subset relevant to the
 > code you just changed. Fix issues immediately rather than accumulating them.

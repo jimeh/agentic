@@ -19,7 +19,9 @@ If the plan doesn't have a task breakdown (todo list with checkboxes),
 generate one first before starting implementation.
 
 Implement everything — don't cherry-pick. Mark each task or phase as done
-in the plan document as you complete it. Don't stop until all tasks are
+in the plan document as you complete it. Don't forget to regularly update
+the task list in plan.md as you go — don't let it fall behind. Don't stop
+until all tasks are
 completed. Don't pause for confirmation mid-flow unless you hit a genuine
 ambiguity the plan doesn't address.
 
