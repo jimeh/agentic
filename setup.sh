@@ -31,6 +31,7 @@ discover_symlinks() {
   # Claude config files.
   SYMLINKS+=(
     "claude/settings.json|${HOME}/.claude/settings.json"
+    "claude/keybindings.json|${HOME}/.claude/keybindings.json"
     "claude/statusline.sh|${HOME}/.claude/statusline.sh"
   )
 
