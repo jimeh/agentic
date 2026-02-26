@@ -88,20 +88,38 @@ token usage.
 
 ### Phase 1: Repository Analysis
 
-First, analyze the codebase and provide me with:
+First, thoroughly explore the codebase. Check config files, source directories,
+and documentation. Provide a structured analysis:
 
 1. **Repository type**: Monorepo, multi-package, or simple single project?
-2. **Primary technology stack**: Languages, frameworks, key tools
+2. **Primary technology stack**: Languages, frameworks (with versions), key
+   tools, CSS/styling approach
 3. **Major packages** that warrant their own AGENTS.md:
    - Only for areas with significantly different tech/patterns
    - Skip if root guidance suffices
    - Prefer fewer, more focused files over many small ones
-4. **Build system**: pnpm/npm/yarn workspaces? Turborepo? Or simple?
-5. **Testing conventions**: Framework and colocated vs separate?
-6. **Key patterns to document** (as grep-able hints):
-   - What conventions are used (not where files are)
-   - Domain terminology agents should understand
-   - Anti-patterns to avoid
+4. **Build system**: Package manager, workspaces, task runner (Turborepo,
+   Makefile, etc.), build scripts
+5. **Testing conventions**: Framework, config, colocated vs separate, how to run
+   tests
+6. **Linting & formatting**: Tools (ESLint, Prettier, Biome, etc.) and any
+   non-standard config worth noting
+7. **Deployment & infrastructure**: Docker, Kubernetes, CI/CD, or other
+   deployment config (skip if standard/absent)
+8. **Existing agent instruction files**: Check for CLAUDE.md, AGENTS.md,
+   .cursorrules, .github/copilot-instructions.md — note their contents. If an
+   AGENTS.md already exists, focus on updating it rather than replacing it
+   wholesale
+9. **Notable dependencies**: Key libraries that shape the codebase's patterns
+   (e.g., ORMs, state management, API clients, validation libraries)
+10. **Environment & config patterns**: How config/secrets are managed (env vars,
+    .env files, config services) — only if non-standard
+11. **Key patterns to document** (as grep-able hints):
+    - Architectural patterns (data fetching, routing, component structure)
+    - Domain terminology agents should understand
+    - Anti-patterns to avoid
+
+Also read README.md (if present) for additional project context.
 
 Present this as a **structured map** before generating any AGENTS.md files.
 
@@ -110,6 +128,13 @@ Present this as a **structured map** before generating any AGENTS.md files.
 ### Phase 2: Generate Root AGENTS.md
 
 Create a **minimal root AGENTS.md** (~50-100 lines max, ideally under 50).
+
+If an AGENTS.md already exists, update it rather than replacing it wholesale —
+preserve existing instructions that are still accurate and fill in gaps from the
+analysis. If other agent instruction files were found (CLAUDE.md, .cursorrules,
+etc.), incorporate their relevant content into AGENTS.md — it should be the
+single source of truth for all agent-relevant instructions. Do not remove or
+modify the other files.
 
 Per the guide, root AGENTS.md needs only:
 

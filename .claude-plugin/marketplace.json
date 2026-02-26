@@ -28,7 +28,7 @@
     {
       "name": "agents-md",
       "description": "AGENTS.md management: generate, refactor, and convert from CLAUDE.md",
-      "version": "0.1.2",
+      "version": "0.1.3",
       "author": {
         "name": "jimeh"
       },
