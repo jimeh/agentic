@@ -5,6 +5,10 @@ references:
   - https://www.aihero.dev/a-complete-guide-to-agents-md
 ---
 
+## Context
+
+- Agent instructions: !`ls -la CLAUDE.md AGENTS.md 2>&1`
+
 # Task: Analyze this codebase and generate a hierarchical AGENTS.md structure
 
 ## Important Caveats
@@ -314,3 +318,23 @@ Before generating, verify:
 - [ ] Commands are copy-paste ready?
 - [ ] No duplication between root and sub-files?
 - [ ] Not every directory gets its own file?
+
+---
+
+### Phase 5: Ensure CLAUDE.md Reference
+
+After generating `AGENTS.md`, ensure `CLAUDE.md` exists so Claude Code picks up
+the instructions:
+
+1. If `CLAUDE.md` already contains `@AGENTS.md` (or is a symlink to
+   `AGENTS.md`), no action needed.
+2. If `CLAUDE.md` does not exist, create it with just:
+   ```
+   @AGENTS.md
+   ```
+3. If `CLAUDE.md` exists with other content, warn the user and suggest they
+   either:
+   - Replace its contents with `@AGENTS.md`, or
+   - Manually add `@AGENTS.md` to the file.
+
+Do NOT overwrite an existing `CLAUDE.md` without the user's explicit approval.

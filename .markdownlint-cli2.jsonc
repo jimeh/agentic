@@ -17,5 +17,5 @@
     // Allow fenced code blocks without a language tag.
     "fenced-code-language": false
   },
-  "ignores": ["docs/references/"]
+  "ignores": ["docs/references/", "plan.md", "research.md", "review.md"]
 }

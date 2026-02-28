@@ -4,8 +4,7 @@ description: Convert a project's CLAUDE.md into an agent-agnostic AGENTS.md file
 
 ## Context
 
-- Check if `CLAUDE.md` and `AGENTS.md` exist in the project root.
-- Check if `CLAUDE.md` is a symlink (e.g., `ls -la CLAUDE.md`).
+- Agent instructions: !`ls -la CLAUDE.md AGENTS.md 2>&1`
 
 ## Your Task
 

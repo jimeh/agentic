@@ -3,6 +3,10 @@ description: Refactor an existing AGENTS.md to follow progressive disclosure pri
 source: https://www.aihero.dev/a-complete-guide-to-agents-md
 ---
 
+## Context
+
+- Agent instructions: !`ls -la CLAUDE.md AGENTS.md 2>&1`
+
 # Task: Refactor my AGENTS.md
 
 I want you to refactor my AGENTS.md file to follow progressive disclosure
@@ -32,3 +36,8 @@ Follow these steps:
    - Redundant (the agent already knows this)
    - Too vague to be actionable
    - Overly obvious (like "write clean code")
+
+6. **Ensure `CLAUDE.md` reference** (only when refactoring an `AGENTS.md` file,
+   not when refactoring a `CLAUDE.md`): If `CLAUDE.md` doesn't exist, create it
+   with just `@AGENTS.md`. If it exists but doesn't reference `AGENTS.md`, let
+   the user know they may want to add `@AGENTS.md` to it.

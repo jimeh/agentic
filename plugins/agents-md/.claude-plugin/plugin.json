@@ -1,5 +1,5 @@
 {
   "name": "agents-md",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "description": "AGENTS.md management: generate, refactor, and convert from CLAUDE.md"
 }

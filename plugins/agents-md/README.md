@@ -18,15 +18,18 @@ Analyze a codebase and generate a minimal, hierarchical AGENTS.md structure. The
 agent performs a multi-phase analysis — repo type, tech stack, patterns, domain
 concepts — then produces a root AGENTS.md (under ~100 lines) plus sub-folder
 files where warranted. Uses progressive disclosure: detailed rules go into
-`docs/agents/*.md` files rather than bloating the root. Treat the output as a
-starting point and trim aggressively.
+`docs/agents/*.md` files rather than bloating the root. Also ensures a
+`CLAUDE.md` exists with an `@AGENTS.md` reference so Claude Code picks up the
+generated instructions. Treat the output as a starting point and trim
+aggressively.
 
 ### `/refactor-agents-md`
 
 Refactor an existing AGENTS.md (or CLAUDE.md) to follow progressive disclosure
 principles. Finds contradictions, extracts essentials for the root file, groups
 the rest into separate docs under `docs/agents/`, and flags instructions that
-are redundant or too vague to be actionable.
+are redundant or too vague to be actionable. When refactoring an AGENTS.md,
+ensures a `CLAUDE.md` exists with an `@AGENTS.md` reference.
 
 ## Install
 
