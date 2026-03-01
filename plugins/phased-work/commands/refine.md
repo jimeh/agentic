@@ -4,6 +4,13 @@ description: Address inline notes in plan.md (or research.md) and update the doc
 argument-hint: "[optional additional guidance]"
 ---
 
+## Important
+
+Do NOT use EnterPlanMode or ExitPlanMode. This command manages planning through
+plan.md — Claude Code's built-in plan mode is separate and must not be used.
+When you finish updating the document, stop. Do not implement anything or
+transition to the next phase.
+
 ## Context
 
 - Plan file: !`find . -maxdepth 1 -name 'plan.md' 2>/dev/null`
@@ -25,4 +32,5 @@ document reads cleanly when you're done.
 If a note is ambiguous, make your best interpretation and flag it with a brief
 `[Interpreted as: X — correct me if wrong]`.
 
-Do NOT implement any changes. Only update the document.
+Do NOT implement any changes. Only update the document. When all notes are
+addressed, your job is done — stop and let the user review it.

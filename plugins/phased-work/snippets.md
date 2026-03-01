@@ -44,39 +44,47 @@ research after the snippet.
 Create a detailed implementation plan based on the actual codebase. Append the
 feature or change description after the snippet.
 
-> If research.md exists, read it first. Read all source files relevant to the
-> change — base the plan on the actual codebase, not assumptions. Never plan
-> changes to code you haven't read. Write a detailed plan.md outlining how to
-> implement this. Include code snippets showing the proposed changes (real code,
-> not pseudocode), file paths to modify, and trade-offs. Describe each change in
-> plain English too — what's changing and why — so a reviewer can follow without
-> diffing. The plan should be specific enough that implementation becomes
-> mechanical. Do not implement any changes — write only the plan document.
-> Here's what I want to build:
+> Do not use EnterPlanMode or ExitPlanMode — this workflow uses plan.md files,
+> not Claude Code's built-in plan mode. If research.md exists, read it first.
+> Read all source files relevant to the change — base the plan on the actual
+> codebase, not assumptions. Never plan changes to code you haven't read. Write
+> a detailed plan.md outlining how to implement this. Include code snippets
+> showing the proposed changes (real code, not pseudocode), file paths to
+> modify, and trade-offs. Describe each change in plain English too — what's
+> changing and why — so a reviewer can follow without diffing. The plan should
+> be specific enough that implementation becomes mechanical. Do not implement
+> any changes — write only the plan document. When plan.md is written, stop and
+> let me review it. Here's what I want to build:
 
 ## Refine (`/pwf`)
 
 Address inline notes you've added to plan.md or research.md. Open the document
 in your editor, add corrections or directions as inline notes, then paste this.
 
-> I added notes to the document (plan.md or research.md — whichever exists;
-> prefer plan.md if both do). Read it, find every note, address each one, and
-> update the document accordingly. Address all notes — don't skip any, even
-> minor ones. If a note requires restructuring a section, restructure it fully.
-> If it references code behavior, re-read the source to verify. Remove each note
-> after addressing it so the document reads cleanly. If a note is ambiguous,
-> flag it with `[Interpreted as: X — correct me if wrong]`. Do not implement any
-> changes — only update the document.
+> Do not use EnterPlanMode or ExitPlanMode — this workflow uses plan.md files,
+> not Claude Code's built-in plan mode. I added notes to the document (plan.md
+> or research.md — whichever exists; prefer plan.md if both do). Read it, find
+> every note, address each one, and update the document accordingly. Address all
+> notes — don't skip any, even minor ones. If a note requires restructuring a
+> section, restructure it fully. If it references code behavior, re-read the
+> source to verify. Remove each note after addressing it so the document reads
+> cleanly. If a note is ambiguous, flag it with
+> `[Interpreted as: X — correct me if wrong]`. Do not implement any changes —
+> only update the document. When all notes are addressed, stop and let me review
+> it.
 
 ## Todo (`/pwt`)
 
 Add a granular task breakdown to the plan before implementation begins.
 
-> Add a detailed todo list to plan.md with all the phases and individual tasks
-> necessary to complete the plan. Use checkboxes (`- [ ]`) so progress can be
-> tracked during implementation. Tasks should be granular enough that each one
-> represents a meaningful, verifiable step. Group them by phase or logical area.
-> Do not implement anything — only add the task breakdown.
+> Do not use EnterPlanMode or ExitPlanMode — this workflow uses plan.md files,
+> not Claude Code's built-in plan mode. Add a detailed todo list to plan.md with
+> all the phases and individual tasks necessary to complete the plan. Use
+> checkboxes (`- [ ]`) so progress can be tracked during implementation. Tasks
+> should be granular enough that each one represents a meaningful, verifiable
+> step. Group them by phase or logical area. Do not implement anything — only
+> add the task breakdown. When the todo list is written, stop and let me review
+> it.
 
 ## Implement (`/pwi`)
 

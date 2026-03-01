@@ -4,6 +4,13 @@ description: Create a detailed implementation plan in plan.md
 argument-hint: <feature or change to plan, e.g. "cursor-based pagination for the list endpoint">
 ---
 
+## Important
+
+Do NOT use EnterPlanMode or ExitPlanMode. This command manages planning through
+plan.md — Claude Code's built-in plan mode is separate and must not be used.
+When you finish writing plan.md, stop. Do not implement anything or transition
+to the next phase.
+
 ## Context
 
 - Research file: !`find . -maxdepth 1 -name 'research.md' 2>/dev/null`
@@ -27,4 +34,5 @@ mechanical. Structure the document however best fits the task at hand.
 Read source files before proposing changes. Never plan changes to code you
 haven't read.
 
-Do NOT implement any changes. Write only the plan document.
+Do NOT implement any changes. Write only the plan document. When plan.md is
+written, your job is done — stop and let the user review it.
