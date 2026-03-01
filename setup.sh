@@ -5,6 +5,7 @@ set -o pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SYMLINKS=()
 FORCE="false"
+DRY_RUN="false"
 
 # Plugins to auto-install (plugin@marketplace format).
 # Marketplace name is read from .claude-plugin/marketplace.json.
@@ -113,7 +114,9 @@ backup_and_link() {
   # Create target directory if it doesn't exist.
   local target_dir
   target_dir="$(dirname "${target}")"
-  mkdir -p "${target_dir}"
+  if [[ "${DRY_RUN}" != "true" ]]; then
+    mkdir -p "${target_dir}"
+  fi
 
   # Check if target already exists.
   if [[ -e "${target}" || -L "${target}" ]]; then
@@ -128,16 +131,24 @@ backup_and_link() {
     fi
 
     if [[ "${FORCE}" == "true" ]]; then
-      info "backup ${target} → ${target}.bak"
-      mv "${target}" "${target}.bak"
+      if [[ "${DRY_RUN}" == "true" ]]; then
+        info "would backup ${target} → ${target}.bak"
+      else
+        info "backup ${target} → ${target}.bak"
+        mv "${target}" "${target}.bak"
+      fi
     else
       warn "skip ${target} (already exists, use --force)"
       return
     fi
   fi
 
-  info "link ${source} → ${target}"
-  ln -s "${source}" "${target}"
+  if [[ "${DRY_RUN}" == "true" ]]; then
+    info "would link ${source} → ${target}"
+  else
+    info "link ${source} → ${target}"
+    ln -s "${source}" "${target}"
+  fi
 }
 
 # ==============================================================================
@@ -175,8 +186,12 @@ _cleanup_stale_links() {
 
     # Only touch symlinks pointing into our source tree.
     if [[ "${target}" == "${source_dir}/"* && ! -e "${target}" ]]; then
-      info "remove stale: ${link}"
-      rm -f "${link}"
+      if [[ "${DRY_RUN}" == "true" ]]; then
+        info "would remove stale: ${link}"
+      else
+        info "remove stale: ${link}"
+        rm -f "${link}"
+      fi
     fi
   done
 }
@@ -226,6 +241,11 @@ _ensure_marketplace() {
     return
   fi
 
+  if [[ "${DRY_RUN}" == "true" ]]; then
+    info "would add marketplace ${name}"
+    return
+  fi
+
   info "add marketplace ${name}"
   claude plugin marketplace add "${source}"
 
@@ -243,6 +263,11 @@ _ensure_plugin() {
     jq -e ".[] | select(.id == \"${plugin_id}\")" \
       > /dev/null 2>&1; then
     info "skip plugin ${plugin_id} (already installed)"
+    return
+  fi
+
+  if [[ "${DRY_RUN}" == "true" ]]; then
+    info "would install plugin ${plugin_id}"
     return
   fi
 
@@ -303,9 +328,10 @@ setup_claude_plugins() {
 
 show_help() {
   cat << 'EOF'
-Usage: setup.sh [--force] [--help]
+Usage: setup.sh [--dry-run] [--force] [--help]
 
 Options:
+  --dry-run  Preview what would be done without making changes
   --force    Replace existing files/symlinks (backs up to .bak)
 
 Creates symlinks for Claude Code and agents configuration:
@@ -341,6 +367,10 @@ main() {
         FORCE="true"
         shift
         ;;
+      --dry-run | -n)
+        DRY_RUN="true"
+        shift
+        ;;
       *)
         error "Unknown argument: $1"
         echo >&2
@@ -349,6 +379,10 @@ main() {
         ;;
     esac
   done
+
+  if [[ "${DRY_RUN}" == "true" ]]; then
+    info "Dry run mode (no changes will be made)"
+  fi
 
   info "Setting up symlinks..."
   discover_symlinks
