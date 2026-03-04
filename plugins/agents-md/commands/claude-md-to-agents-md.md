@@ -4,7 +4,10 @@ description: Convert a project's CLAUDE.md into an agent-agnostic AGENTS.md file
 
 ## Context
 
-- Agent instructions: !`ls -la CLAUDE.md AGENTS.md 2>/dev/null || true`
+- Agent instructions:
+  !`find . -maxdepth 1 -name 'CLAUDE.md' -o -name 'AGENTS.md'`
+- CLAUDE.md symlink check:
+  !`test -L CLAUDE.md && readlink CLAUDE.md || echo "not a symlink"`
 
 ## Your Task
 

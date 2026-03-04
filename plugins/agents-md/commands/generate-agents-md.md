@@ -7,7 +7,8 @@ references:
 
 ## Context
 
-- Agent instructions: !`ls -la CLAUDE.md AGENTS.md 2>/dev/null || true`
+- Agent instructions:
+  !`find . -maxdepth 1 -name 'CLAUDE.md' -o -name 'AGENTS.md'`
 
 # Task: Analyze this codebase and generate a hierarchical AGENTS.md structure
 
