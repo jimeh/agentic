@@ -1,0 +1,5 @@
+{
+  "name": "fd",
+  "version": "0.1.0",
+  "description": "Feature Design (FD) system: lightweight feature tracking with templates, index, and slash commands"
+}

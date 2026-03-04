@@ -44,6 +44,16 @@
       },
       "source": "./plugins/phased-work",
       "category": "productivity"
+    },
+    {
+      "name": "fd",
+      "description": "Feature Design (FD) system: lightweight feature tracking with templates, index, and slash commands",
+      "version": "0.1.0",
+      "author": {
+        "name": "manuelschipper"
+      },
+      "source": "./plugins/fd",
+      "category": "productivity"
     }
   ]
 }

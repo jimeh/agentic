@@ -97,6 +97,17 @@ implementation begins.
 Also includes [agent-agnostic prompt snippets](plugins/phased-work/snippets.md)
 for use with any AI coding assistant.
 
+### [fd](plugins/fd/)
+
+Initializes a lightweight Feature Design (FD) tracking system in any project.
+Scaffolds directory structure, templates, index, project-local slash commands,
+and CLAUDE.md conventions for the full FD lifecycle.
+
+- `/fd-init` — Set up the FD system in the current project.
+
+Based on the
+[Feature Design system by manuelschipper](https://gist.github.com/manuelschipper/149ebf6b2d150ccaccc84ee9a9df560f).
+
 ### Standalone Installation
 
 You can install individual plugins directly without cloning the repo. First add
