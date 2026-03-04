@@ -5,7 +5,7 @@ source: https://www.aihero.dev/a-complete-guide-to-agents-md
 
 ## Context
 
-- Agent instructions: !`ls -la CLAUDE.md AGENTS.md 2>&1`
+- Agent instructions: !`ls -la CLAUDE.md AGENTS.md 2>/dev/null || true`
 
 # Task: Refactor my AGENTS.md
 

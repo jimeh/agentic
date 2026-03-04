@@ -4,7 +4,7 @@ description: Convert a project's CLAUDE.md into an agent-agnostic AGENTS.md file
 
 ## Context
 
-- Agent instructions: !`ls -la CLAUDE.md AGENTS.md 2>&1`
+- Agent instructions: !`ls -la CLAUDE.md AGENTS.md 2>/dev/null || true`
 
 ## Your Task
 
