@@ -41,9 +41,9 @@ Things worth documenting:
 
 Stage all relevant changes and create a single commit with a conventional commit
 message (e.g., `feat:`, `fix:`, `refactor:`). Lead the message with why over
-what — the diff shows what changed; the message explains motivation and
-purpose. The commit body should start with the reason for the change; technical
-overview and implementation notes come after.
+what — the diff shows what changed; the message explains motivation and purpose.
+The commit body should start with the reason for the change; technical overview
+and implementation notes come after.
 
 If the reason behind a change is not clear from context, ask the user before
 committing.
