@@ -25,7 +25,23 @@ Run these commands to understand the current state:
 - `find . -maxdepth 3 -iname 'pull_request_template*' -o -ipath '*pull_request_template/*' 2>/dev/null`
   — locate PR templates
 
-### 2. Branch
+### 2. Check Agent Docs
+
+If the project has an AGENTS.md or CLAUDE.md, review it against the current
+changes. If changes introduce new conventions, commands, architecture, or
+patterns that should be documented (or invalidate existing docs), update the
+relevant file as part of this commit. Only update if clearly warranted — avoid
+adding noise.
+
+Things worth documenting:
+
+- Non-obvious conventions or patterns not apparent from code structure alone
+- Surprising behaviors, gotchas, or workarounds discovered during development
+- Implicit dependencies or ordering constraints between components
+- Environment-specific quirks (platform differences, tool version sensitivities)
+- Undocumented requirements or constraints found through trial and error
+
+### 3. Branch
 
 If on main/master, create a new branch named for the changes.
 
@@ -33,33 +49,40 @@ If already on a non-main branch, check if the name looks randomly generated
 (UUIDs, hex strings, meaningless sequences, or 1-3 random unrelated words like
 "brave-fox"). If so, rename with `git branch -m <descriptive-name>`.
 
-### 3. Commit
+### 4. Commit
 
 Stage all relevant changes and create a single commit with a conventional commit
-message. Lead with "why" over "what".
+message. Lead with "why" over "what". The commit body should start with the
+reason for the change; technical overview and implementation notes come after.
+
+If the "why" behind a change is not clear from context, ask the user before
+committing.
 
 When asked to commit only staged changes, run `git diff --staged` to see exactly
 what is staged, base the commit message solely on those changes, and do NOT
 stage additional files.
 
-### 4. Push
+### 5. Push
 
 Push the branch to origin with `git push -u origin <branch>`.
 
-### 5. Understand Full Scope
+### 6. Understand Full Scope
 
 Run `git log` and `git diff main...HEAD` (or master) to see all changes since
 the base branch. This ensures the PR description covers everything, not just the
 latest commit.
 
-### 6. Create PR
+### 7. Create PR
 
 Use `gh pr create` to open the pull request.
 
+- **Title**: use conventional commits format when the repo follows that
+  convention
 - **PR template**: if a template was found in step 1, use it as the base for the
   PR body. If multiple templates were found, ask which one to use.
-- **Description**: explain _what_ changed and _why_, covering the full scope of
-  all commits. Do NOT list individual commits — the PR already shows those.
+- **Description**: lead with "why" context — the motivation and purpose behind
+  the change — before technical details. Cover the full scope of all commits. Do
+  NOT list individual commits — the PR already shows those.
 - **Footer**: append at the end of the PR body:
   `Generated with [Claude Code](https://claude.ai/code)`
 

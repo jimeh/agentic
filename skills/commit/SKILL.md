@@ -29,12 +29,24 @@ patterns that should be documented (or invalidate existing docs), update the
 relevant file as part of this commit. Only update if clearly warranted — avoid
 adding noise.
 
+Things worth documenting:
+
+- Non-obvious conventions or patterns not apparent from code structure alone
+- Surprising behaviors, gotchas, or workarounds discovered during development
+- Implicit dependencies or ordering constraints between components
+- Environment-specific quirks (platform differences, tool version sensitivities)
+- Undocumented requirements or constraints found through trial and error
+
 ### 3. Create the Commit
 
 Stage all relevant changes and create a single commit with a conventional commit
 message (e.g., `feat:`, `fix:`, `refactor:`). Lead the message with "why" over
 "what" — the diff shows what changed; the message explains motivation and
-purpose.
+purpose. The commit body should start with the reason for the change; technical
+overview and implementation notes come after.
+
+If the "why" behind a change is not clear from context, ask the user before
+committing.
 
 ### Staged-Only Mode
 
