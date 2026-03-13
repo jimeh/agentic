@@ -61,16 +61,16 @@ Below are rules to follow with everything you do.
 
 - Prefer conventional commits format (e.g., `feat:`, `fix:`, `refactor:`), but
   defer to project conventions if they differ.
-- Lead with "why" over "what". The diff shows what changed; the message should
-  explain the motivation and purpose behind the change. If the "why" is not
+- Lead with why over what. The diff shows what changed; the message should
+  explain the motivation and purpose behind the change. If the reason is not
   clear, ask me before committing.
 - The commit body should start with the reason for the change. Technical
   overview/details and implementation notes come after.
 
 ## Pull Requests
 
-- PR descriptions should lead with "why" context, same as commits. Explain the
-  motivation and purpose before diving into technical details.
+- PR descriptions should lead with the motivation and purpose behind the change
+  before diving into technical details.
 - Use conventional commits format for PR titles when the repo follows
   conventional commits.
 

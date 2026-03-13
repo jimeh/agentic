@@ -52,10 +52,10 @@ If already on a non-main branch, check if the name looks randomly generated
 ### 4. Commit
 
 Stage all relevant changes and create a single commit with a conventional commit
-message. Lead with "why" over "what". The commit body should start with the
+message. Lead with why over what. The commit body should start with the
 reason for the change; technical overview and implementation notes come after.
 
-If the "why" behind a change is not clear from context, ask the user before
+If the reason behind a change is not clear from context, ask the user before
 committing.
 
 When asked to commit only staged changes, run `git diff --staged` to see exactly
@@ -80,7 +80,7 @@ Use `gh pr create` to open the pull request.
   convention
 - **PR template**: if a template was found in step 1, use it as the base for the
   PR body. If multiple templates were found, ask which one to use.
-- **Description**: lead with "why" context — the motivation and purpose behind
+- **Description**: lead with the motivation and purpose behind
   the change — before technical details. Cover the full scope of all commits. Do
   NOT list individual commits — the PR already shows those.
 - **Footer**: append at the end of the PR body:
