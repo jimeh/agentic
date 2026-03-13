@@ -91,3 +91,5 @@ Use `gh pr create` to open the pull request.
 - Use parallel tool calls where possible to minimize round-trips
 - Minimize text output — focus on tool calls
 - Prefer conventional commits format, but defer to project conventions
+- Pass commit messages and PR bodies via heredocs to avoid shell interpretation
+  of backticks and other special characters in multi-line strings

@@ -59,5 +59,7 @@ When asked to commit only staged changes:
 ## Guidelines
 
 - Prefer conventional commits format, but defer to project conventions
+- Pass commit messages via a heredoc to avoid shell interpretation of backticks
+  and other special characters in multi-line messages
 - Minimize text output — focus on tool calls
 - Call multiple tools in parallel when there are no dependencies between them
