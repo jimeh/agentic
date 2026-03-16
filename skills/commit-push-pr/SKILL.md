@@ -83,8 +83,6 @@ Use `gh pr create` to open the pull request.
 - **Description**: lead with the motivation and purpose behind the change —
   before technical details. Cover the full scope of all commits. Do NOT list
   individual commits — the PR already shows those.
-- **Footer**: append at the end of the PR body:
-  `Generated with [Claude Code](https://claude.ai/code)`
 
 ## Guidelines
 
