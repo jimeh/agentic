@@ -17,6 +17,7 @@ unified_exec = true
 apply_patch_freeform = true
 shell_snapshot = true
 runtime_metrics = true
+multi_agent = true
 
 [notice.model_migrations]
 "gpt-5.2" = "gpt-5.2-codex"
