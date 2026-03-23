@@ -97,3 +97,9 @@ Run `mise run format` before committing.
 
 2-space indent, `bash` variant, switch case indent, space redirects (`> file`
 not `>file`). See `.editorconfig` for shfmt flags.
+
+## Discoveries
+
+- The external `skill-creator` `quick_validate.py` helper requires `PyYAML`. If
+  that dependency is missing locally, rely on manual frontmatter checks plus
+  `mise run lint` for repo-local skill edits.
