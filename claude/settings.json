@@ -166,8 +166,18 @@
     "sentry@claude-plugins-official": false,
     "strip-git-cwd@jimeh-agentic": true,
     "swift-lsp@claude-plugins-official": false,
-    "typescript-lsp@claude-plugins-official": true
+    "typescript-lsp@claude-plugins-official": true,
+    "gitnexus@gitnexus-marketplace": true
   },
+  "extraKnownMarketplaces": {
+    "gitnexus-marketplace": {
+      "source": {
+        "source": "github",
+        "repo": "abhigyanpatwari/GitNexus"
+      }
+    }
+  },
+  "effortLevel": "high",
   "autoUpdatesChannel": "latest",
   "teammateMode": "auto"
 }
