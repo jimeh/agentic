@@ -179,5 +179,6 @@
   },
   "effortLevel": "high",
   "autoUpdatesChannel": "latest",
-  "teammateMode": "auto"
+  "teammateMode": "auto",
+  "commitCoAuthorship": false
 }
