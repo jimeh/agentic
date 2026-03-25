@@ -34,8 +34,7 @@ Based on the above changes:
    use.
 7. **Create PR** with `gh pr create`. Description should explain _what_ changed
    and _why_, covering the full scope. Do NOT list commits — the PR already
-   shows those. Append at the end:
-   `🤖 Generated with [Claude Code](https://claude.ai/code)`
+   shows those.
 
 Do all of the above in a single message using parallel tool calls where
 possible. Do not send any other text or messages besides tool calls.

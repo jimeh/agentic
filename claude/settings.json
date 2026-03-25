@@ -180,5 +180,8 @@
   "effortLevel": "high",
   "autoUpdatesChannel": "latest",
   "teammateMode": "auto",
-  "commitCoAuthorship": false
+  "attribution": {
+    "commit": "",
+    "pr": "🤖 Generated with [Claude Code](https://claude.ai/code)"
+  }
 }
