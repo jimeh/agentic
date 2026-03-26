@@ -1,6 +1,6 @@
 ---
 description: Implement a feature from its spec using parallel sub-agents where possible
-allowed-tools: Read, Write, Edit, Glob, Grep, LS, Bash, Task, NotebookEdit
+allowed-tools: Read, Write, Edit, Glob, Grep, LS, Bash(cat:*), Bash(git status:*), Bash(git log:*), Task, NotebookEdit
 argument-hint: <feature number>
 ---
 

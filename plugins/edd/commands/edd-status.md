@@ -1,6 +1,6 @@
 ---
 description: Show EDD feature index with status summary and actionable prompts
-allowed-tools: Read, Glob, Grep, LS
+allowed-tools: Read, Glob, Grep, LS, Bash(cat:*)
 argument-hint: ""
 ---
 

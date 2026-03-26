@@ -1,6 +1,6 @@
 ---
 description: Freeze evals and generate (or refine) product spec + task list
-allowed-tools: Read, Write, Glob, Grep, LS, Task
+allowed-tools: Read, Write, Glob, Grep, LS, Bash(cat:*), Task
 argument-hint: "<feature number> [optional feedback for refinement]"
 ---
 

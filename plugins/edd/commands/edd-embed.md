@@ -1,6 +1,6 @@
 ---
 description: Copy EDD commands, agents, and skill into the local project for portability
-allowed-tools: Bash
+allowed-tools: Bash(mkdir:*), Bash(cp:*), Bash(ln -s:*), Bash(ls:*)
 argument-hint: ""
 ---
 
@@ -49,8 +49,7 @@ from a previous embed). Then:
 ### Step 3: Copy Agents
 
 1. Create `.claude/agents/` with `mkdir -p`
-2. Copy all `.md` files from `${CLAUDE_PLUGIN_ROOT}/agents/` →
-   `.claude/agents/`
+2. Copy all `.md` files from `${CLAUDE_PLUGIN_ROOT}/agents/` → `.claude/agents/`
 
 ### Step 4: Report
 

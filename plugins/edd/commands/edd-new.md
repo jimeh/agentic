@@ -1,6 +1,6 @@
 ---
 description: Create a new EDD feature with scaffolded evals
-allowed-tools: Read, Write, Glob, Grep, LS, Task
+allowed-tools: Read, Write, Glob, Grep, LS, Bash(cat:*), Task
 argument-hint: <feature description or idea>
 ---
 

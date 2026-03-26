@@ -1,15 +1,13 @@
 ---
 name: Eval-Driven Development (EDD)
 description: >-
-  This skill should be used when the user asks to "build a new feature",
-  "implement a feature", "write acceptance criteria", "write evals", "create a
-  feature spec", "define what done looks like", "edd", "eval-driven
-  development", "feature evals", "acceptance tests", "verify a feature", or
-  when starting work on any non-trivial new feature. Guides the user through an
-  evals-first workflow where acceptance criteria are defined before code, the
-  agent derives specs from those criteria, implementation uses parallel
-  sub-agents, and verification is done by an independent agent with fresh
-  context.
+  Use when the user explicitly references the EDD workflow: "edd", "eval-driven
+  development", "write evals", "feature evals", "edd-spec", "edd-impl",
+  "edd-verify", or when working within an existing EDD feature directory
+  (docs/features/NNN-*/). Also use when the user asks to refine or continue
+  work on evals.md, spec.md, or tasks.md files that follow the EDD structure.
+  Do NOT trigger for general feature requests unless the user specifically asks
+  to use the EDD workflow.
 ---
 
 # Eval-Driven Development (EDD)
@@ -40,11 +38,13 @@ Three principles make this work:
 
 1. `/edd-init` — Bootstrap EDD into the repo (once per project)
 2. `/edd-new <description>` — Create a feature, scaffold evals
-3. Edit `evals.md` until acceptance criteria are solid
+3. `/edd-draft <number>` — Refine evals (iterate until criteria are solid)
 4. `/edd-spec <number>` — Freeze evals, generate spec and tasks
-5. Review spec and tasks, then `/edd-impl <number>` — Implement
-6. `/edd-verify <number>` — Independent verification against evals
-7. `/edd-close <number> complete` — Archive when done
+5. Review spec and tasks — iterate with `/edd-spec <number> <feedback>` or
+   inline notes until satisfied
+6. `/edd-impl <number>` — Implement
+7. `/edd-verify <number>` — Independent verification against evals
+8. `/edd-close <number> complete` — Archive when done
 
 ## Directory Structure
 
@@ -92,16 +92,17 @@ reverting, spec.md and tasks.md should be regenerated.
 
 ## Commands
 
-| Command                     | Purpose                                  |
-| --------------------------- | ---------------------------------------- |
-| `/edd-init`                 | Bootstrap EDD into the repo              |
-| `/edd-embed`                | Copy commands/agents/skill locally       |
-| `/edd-new <desc>`           | Create a new feature with evals scaffold |
-| `/edd-spec <num>`           | Freeze evals, generate spec + tasks      |
-| `/edd-impl <num>`           | Implement from spec with sub-agents      |
-| `/edd-verify <num> [URL]`   | Independent QA against evals             |
-| `/edd-status`               | Show feature index and status            |
-| `/edd-close <num> [status]` | Archive a feature                        |
+| Command                       | Purpose                                  |
+| ----------------------------- | ---------------------------------------- |
+| `/edd-init`                   | Bootstrap EDD into the repo              |
+| `/edd-embed`                  | Copy commands/agents/skill locally       |
+| `/edd-new <desc>`             | Create a new feature with evals scaffold |
+| `/edd-draft <num> [feedback]` | Refine evals during Draft phase          |
+| `/edd-spec <num> [feedback]`  | Freeze evals, generate/refine spec+tasks |
+| `/edd-impl <num>`             | Implement from spec with sub-agents      |
+| `/edd-verify <num> [URL]`     | Independent QA against evals             |
+| `/edd-status`                 | Show feature index and status            |
+| `/edd-close <num> [status]`   | Archive a feature                        |
 
 ## Agents
 
@@ -113,10 +114,12 @@ statement and codebase summary. Suggests edge cases, error scenarios, and
 constraints the user might have missed. Does NOT receive implementation details
 or source code.
 
-**spec-writer** — Derives spec and tasks from frozen evals. Receives evals.md
-and codebase context. Produces spec.md in its own voice (not reformatted evals)
-and tasks.md with dependency and parallelization annotations. Does NOT receive
-Draft-phase conversation history.
+**spec-writer** — Derives spec and tasks from frozen evals, or refines them
+based on feedback. Receives evals.md and codebase context. Produces spec.md in
+its own voice (not reformatted evals) and tasks.md with dependency and
+parallelization annotations. In refinement mode, also receives the existing
+spec/tasks and collected feedback (argument text and/or inline annotations).
+Does NOT receive Draft-phase conversation history.
 
 **implementer** — Implements a single task or batch. Receives evals.md
 (read-only), spec.md, and only its assigned tasks. Writes permanent tests and
@@ -185,11 +188,10 @@ CLAUDE.md/AGENTS.md.
 `/edd-embed` copies commands, agents, and the skill into the local project:
 
 - Commands → `.claude/commands/`
-- Skill + agents → `.agents/skills/edd/`
-- Symlink: `.claude/skills/edd` → `../../.agents/skills/edd`
+- Skill → `.claude/skills/edd/`
+- Agents → `.claude/agents/`
 
-This makes EDD available without the plugin installed and accessible to
-non-Claude agents that can read the skill and agent files directly.
+This makes EDD available without the plugin installed.
 
 ## Further Reading
 

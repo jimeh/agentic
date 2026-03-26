@@ -1,6 +1,6 @@
 ---
 description: Archive a completed, deferred, or dropped EDD feature
-allowed-tools: Read, Write, Glob, Grep, LS
+allowed-tools: Read, Write, Glob, Grep, LS, Bash(cat:*)
 argument-hint: <feature number> [complete|deferred|dropped]
 ---
 

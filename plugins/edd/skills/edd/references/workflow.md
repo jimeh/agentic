@@ -12,13 +12,12 @@ Detailed step-by-step reference for the Eval-Driven Development workflow.
 
 1. Run `/edd-new <description>` to create the feature directory and scaffold
    `evals.md`
-2. Write or refine the Problem section — who has this problem and why it matters
-3. Write acceptance criteria as checkboxes — each one a hard pass/fail gate
-4. Write test cases with concrete inputs and expected outputs
-5. Define constraints (performance, security, compatibility)
-6. Define out-of-scope items to prevent over-building
-7. Optionally run the eval-brainstormer agent for adversarial suggestions
-8. Cherry-pick useful suggestions into evals.md
+2. Iterate with `/edd-draft <number>` to refine evals:
+   - Pass feedback: `/edd-draft 3 add edge cases for concurrent access`
+   - Run with no feedback for a gap assessment or brainstorming
+   - The draft command can also spawn the eval-brainstormer agent
+3. Continue refining until the evals feel solid — when you could hand them to a
+   QA engineer and they'd know exactly what to test
 
 **Duration:** As long as needed. This is the most important phase.
 

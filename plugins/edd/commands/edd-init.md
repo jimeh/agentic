@@ -1,6 +1,6 @@
 ---
 description: Bootstrap the EDD (Eval-Driven Development) system into the current repo
-allowed-tools: Read, Write, Glob, Grep, LS, Bash(mkdir:*), Bash(git log:*)
+allowed-tools: Read, Write, Glob, Grep, LS, Bash(cat:*), Bash(ls:*), Bash(mkdir:*), Bash(git log:*)
 argument-hint: <optional project description>
 ---
 

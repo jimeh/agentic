@@ -1,6 +1,6 @@
 ---
 description: Verify implementation against evals with a strict, independent QA agent
-allowed-tools: Read, Write, Glob, Grep, LS, Task, Bash(npm:*), Bash(npx:*), Bash(pnpm:*), Bash(yarn:*), Bash(cargo:*), Bash(go:*), Bash(python:*), Bash(pytest:*), Bash(make:*)
+allowed-tools: Read, Write, Glob, Grep, LS, Task, Bash(cat:*), Bash(npm:*), Bash(npx:*), Bash(pnpm:*), Bash(yarn:*), Bash(cargo:*), Bash(go:*), Bash(python:*), Bash(pytest:*), Bash(make:*)
 argument-hint: <feature number> [optional URL]
 ---
 
