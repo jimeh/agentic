@@ -1,7 +1,7 @@
 ---
 description: Refine and iterate on evals for a Draft-phase EDD feature
 allowed-tools: Read, Write, Edit, Glob, Grep, LS, Bash(cat:*), Task
-argument-hint: "<feature number> [feedback or instructions]"
+argument-hint: "[feature number] [feedback or instructions]"
 ---
 
 ## Context
@@ -16,17 +16,18 @@ Draft. This is the iterative loop between `/edd-new` and `/edd-spec`.
 
 **Arguments:** `$ARGUMENTS`
 
-The first token is the feature number. Any remaining text is feedback or
-instructions for refinement (e.g.
+The first token is the feature number (if provided). Any remaining text is
+feedback or instructions for refinement (e.g.
 `/edd-draft 3 add edge cases for concurrent access`).
 
 ### Step 1: Find the Feature
 
 Parse the feature number from the first token (accept both `14` and `014`).
-Capture remaining text as **user feedback**. Find the feature directory:
-`docs/features/NNN-*/`.
+Capture remaining text as **user feedback**. If no feature number is provided,
+infer it from conversation context (e.g. a feature being actively discussed).
+Find the feature directory: `docs/features/NNN-*/`.
 
-If not found, report the error and stop.
+If the feature cannot be determined, ask the user which feature to work on.
 
 ### Step 2: Validate Status
 

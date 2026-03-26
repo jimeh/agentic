@@ -1,7 +1,7 @@
 ---
 description: Freeze evals and generate (or refine) product spec + task list
 allowed-tools: Read, Write, Glob, Grep, LS, Bash(cat:*), Task
-argument-hint: "<feature number> [optional feedback for refinement]"
+argument-hint: "[feature number] [optional feedback for refinement]"
 ---
 
 ## Context
@@ -24,10 +24,11 @@ refining an existing spec (e.g. `/edd-spec 3 split task 4 into smaller steps`).
 ### Step 1: Find the Feature
 
 Parse the feature number from the first token of arguments (accept both `14` and
-`014`). Capture any remaining text as **argument feedback**. Find the feature
+`014`). Capture any remaining text as **argument feedback**. If no feature
+number is provided, infer it from conversation context. Find the feature
 directory: `docs/features/NNN-*/`.
 
-If not found, report the error and stop.
+If the feature cannot be determined, ask the user which feature to work on.
 
 ### Step 2: Validate Status
 

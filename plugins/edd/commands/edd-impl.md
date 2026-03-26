@@ -1,7 +1,7 @@
 ---
 description: Implement a feature from its spec using parallel sub-agents where possible
 allowed-tools: Read, Write, Edit, Glob, Grep, LS, Bash(cat:*), Bash(git status:*), Bash(git log:*), Task, NotebookEdit
-argument-hint: <feature number>
+argument-hint: "[feature number]"
 ---
 
 ## Context
@@ -20,8 +20,10 @@ independent tasks where possible.
 
 ### Step 1: Find the Feature
 
-Parse the feature number from arguments. Find the feature directory:
-`docs/features/NNN-*/`.
+Parse the feature number from arguments. If not provided, infer it from
+conversation context. Find the feature directory: `docs/features/NNN-*/`.
+
+If the feature cannot be determined, ask the user which feature to work on.
 
 ### Step 2: Validate Status
 

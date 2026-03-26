@@ -1,7 +1,7 @@
 ---
 description: Verify implementation against evals with a strict, independent QA agent
 allowed-tools: Read, Write, Glob, Grep, LS, Task, Bash(cat:*), Bash(npm:*), Bash(npx:*), Bash(pnpm:*), Bash(yarn:*), Bash(cargo:*), Bash(go:*), Bash(python:*), Bash(pytest:*), Bash(make:*)
-argument-hint: <feature number> [optional URL]
+argument-hint: "[feature number] [optional URL]"
 ---
 
 ## Context
@@ -20,8 +20,10 @@ skeptical QA agent that has never seen the spec or task list.
 
 Extract:
 
-- Feature number (required)
+- Feature number — if not provided, infer from conversation context
 - URL (optional) — where the application is running for browser testing
+
+If the feature cannot be determined, ask the user which feature to verify.
 
 ### Step 2: Find the Feature
 

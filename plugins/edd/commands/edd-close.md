@@ -1,7 +1,7 @@
 ---
 description: Archive a completed, deferred, or dropped EDD feature
 allowed-tools: Read, Write, Glob, Grep, LS, Bash(cat:*)
-argument-hint: <feature number> [complete|deferred|dropped]
+argument-hint: "[feature number] [complete|deferred|dropped]"
 ---
 
 ## Context
@@ -17,8 +17,11 @@ Archive an EDD feature by updating the feature index.
 
 ### Step 1: Parse Arguments
 
-Extract the feature number and disposition from the arguments. The disposition
-defaults to "complete" if not specified.
+Extract the feature number and disposition from the arguments. If no feature
+number is provided, infer it from conversation context. The disposition defaults
+to "complete" if not specified.
+
+If the feature cannot be determined, ask the user which feature to close.
 
 - `complete` — Feature is done and verified
 - `deferred` — Feature is postponed for later

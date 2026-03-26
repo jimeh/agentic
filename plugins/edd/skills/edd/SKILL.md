@@ -104,6 +104,10 @@ reverting, spec.md and tasks.md should be regenerated.
 | `/edd-status`                 | Show feature index and status            |
 | `/edd-close <num> [status]`   | Archive a feature                        |
 
+The feature number is optional for all commands that accept one. When omitted,
+the agent infers it from conversation context (e.g. the feature being actively
+discussed). If ambiguous, the agent asks.
+
 ## Agents
 
 EDD uses sub-agents with clean context windows. Each agent receives only what it
