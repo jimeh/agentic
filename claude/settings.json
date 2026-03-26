@@ -103,6 +103,7 @@
       "Bash(pnpm install:*)",
       "Bash(pnpm lint:*)",
       "Bash(pnpm lint:fix:*)",
+      "Bash(pnpm list:*)",
       "Bash(pnpm ls:*)",
       "Bash(pnpm run build:*)",
       "Bash(pnpm run check-types:*)",
@@ -137,7 +138,8 @@
       "Read(./.env*)",
       "Read(./mcp.json)",
       "Read(./secrets/**)"
-    ]
+    ],
+    "defaultMode": "default"
   },
   "statusLine": {
     "type": "command",
