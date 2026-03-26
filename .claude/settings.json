@@ -1,6 +1,10 @@
 {
   "permissions": {
     "allow": [
+      "Bash(mise format)",
+      "Bash(mise lint)",
+      "Bash(mise run format)",
+      "Bash(mise run lint)",
       "Bash(shellcheck:*)"
     ]
   }
