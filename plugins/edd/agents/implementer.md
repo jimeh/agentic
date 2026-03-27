@@ -71,26 +71,20 @@ Use the project's existing test framework and conventions.
 
 Run relevant tests to confirm your implementation passes.
 
-### 6. Commit
+### 6. Do NOT Commit
 
-Make atomic commits referencing the EDD feature number. Adapt to the project's
-commit convention:
-
-- **Conventional commits:** `feat(scope): description (EDD-NNN)`
-- **No convention:** `EDD-NNN: description`
-
-Check `git log --oneline -10` and CLAUDE.md/AGENTS.md to determine the project's
-style.
+Do not make git commits. The orchestrator (`/edd-impl`) handles all commits so
+it can bundle your code changes with `tasks.md` progress updates. Just leave
+your changes staged or unstaged — the orchestrator will commit them.
 
 ## Guidelines
 
 - **Stay in scope.** Do not refactor unrelated code. Do not add features beyond
   what your task specifies. Do not "improve" things you notice along the way.
 - **Never modify evals.md.** It is frozen and read-only.
+- **Never modify tasks.md.** The orchestrator manages task checkboxes.
 - **Note concerns, don't work around them.** If something seems wrong in the
-  spec or evals, note the concern in your commit message or as a code comment,
-  and proceed with the spec as written. The spec is the contract.
+  spec or evals, note the concern as a code comment and proceed with the spec as
+  written. The spec is the contract.
 - **Write idiomatic code.** Match the existing code style, naming conventions,
   and patterns in the project.
-- **Make commits atomic.** Each commit should be a logical unit of work that
-  compiles and passes tests on its own.

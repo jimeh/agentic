@@ -1,6 +1,6 @@
 ---
 description: Implement a feature from its spec using parallel sub-agents where possible
-allowed-tools: Read, Write, Edit, Glob, Grep, LS, Bash(cat:*), Bash(git status:*), Bash(git log:*), Task, NotebookEdit
+allowed-tools: Read, Write, Edit, Glob, Grep, LS, Bash(cat:*), Bash(git status:*), Bash(git log:*), Bash(git add:*), Bash(git commit:*), Bash(git diff:*), Task, NotebookEdit
 argument-hint: "[feature number]"
 ---
 
@@ -61,29 +61,44 @@ Wait for user approval before proceeding.
 
 ### Step 6: Execute Batches
 
-For each batch:
+For each batch, spawn implementer sub-agent(s) via the Task tool, each with:
 
-1. **Spawn implementer sub-agent(s)** via the Task tool, each with:
-   - The feature's `evals.md` content (read-only reference)
-   - The feature's `spec.md` content
-   - Only the specific task(s) assigned to this agent
-   - Relevant source file paths for the task's scope
-   - The project's commit convention (from git log and CLAUDE.md)
-   - The EDD feature number for commit messages
+- The feature's `evals.md` content (read-only reference)
+- The feature's `spec.md` content
+- Only the specific task(s) assigned to this agent
+- Relevant source file paths for the task's scope
+- The EDD feature number
 
-2. **For parallel batches:** spawn multiple agents simultaneously. Each agent
-   works on its own task(s) independently.
+**Important:** Tell each implementer NOT to commit — you (the orchestrator)
+handle all commits to ensure `tasks.md` updates are bundled with code changes.
 
-3. **For sequential tasks:** spawn one agent at a time, waiting for completion
-   before starting the next.
+#### Sequential tasks
 
-4. **After each batch completes:**
-   - Update `tasks.md` — check off completed tasks
-   - Run the full test suite to catch integration issues
-   - If tests fail, determine whether the failure is from this batch or a
-     conflict between parallel tasks, and resolve before proceeding
+After each implementer finishes:
 
-5. **Update status** in `FEATURE_INDEX.md` to "In Progress" (if not already)
+1. Check off the task's checkbox in `tasks.md` (`- [ ]` → `- [x]`)
+2. Stage all changes (implementation code + `tasks.md`) and commit together,
+   following the project's commit convention (e.g.,
+   `feat(scope): implement Task N (EDD-NNN)`)
+3. Run the full test suite — if tests fail, fix before proceeding
+
+#### Parallel batches
+
+Spawn multiple agents simultaneously. After ALL agents in the batch finish:
+
+1. Check off each completed task's checkbox in `tasks.md`
+2. Run the full test suite to catch integration issues
+3. If tests pass, stage all changes and commit — one commit per task with its
+   code changes + `tasks.md` update if task boundaries are clear, otherwise one
+   commit for the whole batch
+4. If tests fail, determine whether the failure is from one task or a conflict
+   between parallel tasks, and resolve before proceeding
+
+#### Progress tracking
+
+- **Update status** in `FEATURE_INDEX.md` to "In Progress" (if not already)
+- Do NOT defer `tasks.md` updates to the end. Each task's checkbox MUST be
+  checked off and committed immediately after the task (or its batch) completes
 
 ### Step 7: Fallback (No Sub-Agents)
 
@@ -92,15 +107,18 @@ If the Task tool is not available or sub-agents fail to spawn:
 1. Read the implementer agent instructions from
    `${CLAUDE_PLUGIN_ROOT}/agents/implementer.md`
 2. Implement tasks sequentially, following those instructions yourself
-3. Between tasks, commit your work to create a natural context boundary
-4. Run tests after each task
+3. After completing each task:
+   - Check off the task's checkbox in `tasks.md`
+   - Stage and commit all changes (implementation code + `tasks.md`) together
+   - Run the full test suite before starting the next task
 
 ### Step 8: Completion
 
 When all tasks are complete:
 
 1. Run the full test suite one final time
-2. Update `tasks.md` — all tasks should be checked off
+2. Verify all checkboxes in `tasks.md` are checked off — if any were missed,
+   check them off and commit the fix now
 3. Update status in `FEATURE_INDEX.md` to "Verifying"
 4. Tell the user: "Implementation complete. Run `/edd-verify NNN` for
    independent verification against the evals."

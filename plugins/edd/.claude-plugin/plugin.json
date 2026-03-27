@@ -1,5 +1,5 @@
 {
   "name": "edd",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Eval-Driven Development: evals-first feature workflow with sub-agents for spec, implementation, and verification"
 }
