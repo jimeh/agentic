@@ -2,6 +2,10 @@
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
   },
+  "attribution": {
+    "commit": "",
+    "pr": "🤖 Generated with [Claude Code](https://claude.ai/code)"
+  },
   "permissions": {
     "allow": [
       "Bash(awk:*)",
@@ -141,44 +145,6 @@
     ],
     "defaultMode": "default"
   },
-  "statusLine": {
-    "type": "command",
-    "command": "~/.claude/statusline.sh",
-    "padding": 0
-  },
-  "enabledPlugins": {
-    "agents-md@jimeh-agentic": true,
-    "claude-md-management@claude-plugins-official": true,
-    "code-review@claude-plugins-official": true,
-    "code-simplifier@claude-plugins-official": true,
-    "commit-commands@claude-plugins-official": false,
-    "fd@jimeh-agentic": true,
-    "feature-dev@claude-plugins-official": true,
-    "frontend-design@claude-plugins-official": true,
-    "git-commands@jimeh-agentic": true,
-    "gopls-lsp@claude-plugins-official": true,
-    "lua-lsp@claude-plugins-official": false,
-    "phased-work@jimeh-agentic": true,
-    "playwright@claude-plugins-official": false,
-    "plugin-dev@claude-plugins-official": true,
-    "pr-review-toolkit@claude-plugins-official": false,
-    "ralph-loop@claude-plugins-official": false,
-    "rust-analyzer-lsp@claude-plugins-official": true,
-    "security-guidance@claude-plugins-official": false,
-    "sentry@claude-plugins-official": false,
-    "strip-git-cwd@jimeh-agentic": true,
-    "swift-lsp@claude-plugins-official": false,
-    "typescript-lsp@claude-plugins-official": true,
-    "gitnexus@gitnexus-marketplace": true
-  },
-  "extraKnownMarketplaces": {
-    "gitnexus-marketplace": {
-      "source": {
-        "source": "github",
-        "repo": "abhigyanpatwari/GitNexus"
-      }
-    }
-  },
   "hooks": {
     "UserPromptSubmit": [
       {
@@ -234,11 +200,46 @@
       }
     ]
   },
+  "statusLine": {
+    "type": "command",
+    "command": "~/.claude/statusline.sh",
+    "padding": 0
+  },
+  "enabledPlugins": {
+    "agents-md@jimeh-agentic": true,
+    "claude-md-management@claude-plugins-official": true,
+    "code-review@claude-plugins-official": true,
+    "code-simplifier@claude-plugins-official": true,
+    "commit-commands@claude-plugins-official": false,
+    "fd@jimeh-agentic": true,
+    "feature-dev@claude-plugins-official": true,
+    "frontend-design@claude-plugins-official": true,
+    "git-commands@jimeh-agentic": true,
+    "gopls-lsp@claude-plugins-official": true,
+    "lua-lsp@claude-plugins-official": false,
+    "phased-work@jimeh-agentic": true,
+    "playwright@claude-plugins-official": false,
+    "plugin-dev@claude-plugins-official": true,
+    "pr-review-toolkit@claude-plugins-official": false,
+    "ralph-loop@claude-plugins-official": false,
+    "rust-analyzer-lsp@claude-plugins-official": true,
+    "security-guidance@claude-plugins-official": false,
+    "sentry@claude-plugins-official": false,
+    "strip-git-cwd@jimeh-agentic": true,
+    "swift-lsp@claude-plugins-official": false,
+    "typescript-lsp@claude-plugins-official": true,
+    "gitnexus@gitnexus-marketplace": true,
+    "edd@jimeh-agentic": true
+  },
+  "extraKnownMarketplaces": {
+    "gitnexus-marketplace": {
+      "source": {
+        "source": "github",
+        "repo": "abhigyanpatwari/GitNexus"
+      }
+    }
+  },
   "effortLevel": "high",
   "autoUpdatesChannel": "latest",
-  "teammateMode": "auto",
-  "attribution": {
-    "commit": "",
-    "pr": "🤖 Generated with [Claude Code](https://claude.ai/code)"
-  }
+  "teammateMode": "auto"
 }
