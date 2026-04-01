@@ -58,8 +58,8 @@
 
 Prefer `rg` (ripgrep) over `grep` for all content searches — it's faster and
 handles recursive search, glob filtering, and file type filtering in a single
-approvable command. Avoid `find | xargs grep`, `find -exec grep`, and
-`grep -r`; piped commands and `-exec` require manual approval.
+approvable command. Avoid `find | xargs grep`, `find -exec grep`, and `grep -r`;
+piped commands and `-exec` require manual approval.
 
 ## Dependencies
 
