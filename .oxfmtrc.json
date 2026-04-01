@@ -2,5 +2,5 @@
   "proseWrap": "always",
   "printWidth": 80,
   "embeddedLanguageFormatting": "off",
-  "ignorePatterns": ["docs/references/"]
+  "ignorePatterns": ["node_modules/", "docs/references/"]
 }

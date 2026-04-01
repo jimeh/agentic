@@ -1,0 +1,9 @@
+{
+  "oxc.enable": true,
+  "oxc.enable.oxlint": false,
+  "[markdown]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode",
+    "editor.formatOnSave": true,
+    "editor.formatOnSaveMode": "file"
+  }
+}
