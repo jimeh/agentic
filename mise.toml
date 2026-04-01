@@ -1,5 +1,10 @@
 [tools]
-node = "lts"
+bun = "latest"
+markdownlint-cli2 = "latest"
+oxfmt = "latest"
+
+[settings.npm]
+bun = true
 
 # --- Top-level tasks (run both tools) ---
 
@@ -15,16 +20,16 @@ depends = ["lint:oxfmt", "lint:markdownlint"]
 
 [tasks."format:oxfmt"]
 description = "Format markdown files with oxfmt"
-run = "npx --yes oxfmt '**/*.md'"
+run = "oxfmt '**/*.md'"
 
 [tasks."format:markdownlint"]
 description = "Auto-fix markdownlint issues"
-run = "npx --yes markdownlint-cli2 --fix '**/*.md'"
+run = "markdownlint-cli2 --fix '**/*.md'"
 
 [tasks."lint:oxfmt"]
 description = "Check markdown formatting with oxfmt"
-run = "npx --yes oxfmt --check '**/*.md'"
+run = "oxfmt --check '**/*.md'"
 
 [tasks."lint:markdownlint"]
 description = "Lint markdown files with markdownlint"
-run = "npx --yes markdownlint-cli2 '**/*.md'"
+run = "markdownlint-cli2 '**/*.md'"
