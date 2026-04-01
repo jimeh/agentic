@@ -54,6 +54,13 @@
 - Lead PR descriptions with motivation and purpose before technical details.
 - Use conventional commits for PR titles when the repo follows that convention.
 
+## Shell Commands
+
+Prefer `rg` (ripgrep) over `grep` for all content searches — it's faster and
+handles recursive search, glob filtering, and file type filtering in a single
+approvable command. Avoid `find | xargs grep`, `find -exec grep`, and
+`grep -r`; piped commands and `-exec` require manual approval.
+
 ## Dependencies
 
 - If the work to implement it yourself is minimal, skip the dependency.
