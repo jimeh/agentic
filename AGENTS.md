@@ -103,3 +103,7 @@ not `>file`). See `.editorconfig` for shfmt flags.
 - The external `skill-creator` `quick_validate.py` helper requires `PyYAML`. If
   that dependency is missing locally, rely on manual frontmatter checks plus
   `mise run lint` for repo-local skill edits.
+- `codex/config.toml` supports the
+  `#:schema https://developers.openai.com/codex/config-schema.json` header for
+  editor autocomplete/validation in tools like VS Code or Cursor with Even
+  Better TOML.

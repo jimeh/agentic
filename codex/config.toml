@@ -1,3 +1,5 @@
+#:schema https://developers.openai.com/codex/config-schema.json
+
 model = "gpt-5.4"
 model_reasoning_effort = "high"
 personality = "pragmatic"
@@ -32,3 +34,7 @@ url = "https://mcp.context7.com/mcp"
 
 [mcp_servers.context7.env_http_headers]
 CONTEXT7_API_KEY = "CONTEXT7_API_KEY"
+
+[mcp_servers.gitnexus]
+command = "mise"
+args = ["x", "npm:gitnexus", "--", "gitnexus", "mcp"]
