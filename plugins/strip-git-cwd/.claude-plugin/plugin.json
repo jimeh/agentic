@@ -1,5 +1,5 @@
 {
   "name": "strip-git-cwd",
-  "version": "0.1.1",
-  "description": "Strips redundant git -C flags when the path matches the current working directory"
+  "version": "0.2.0",
+  "description": "Strips redundant git -C flags and cd prefixes when the path matches the current working directory"
 }

@@ -120,7 +120,59 @@ echo "strip-git-cwd hook tests"
 echo "========================"
 echo ""
 
-echo "Commands that should be stripped:"
+echo "cd prefix — commands that should be stripped:"
+run_test "cd && git" \
+  "cd /foo/bar && git status" "/foo/bar" \
+  "git status"
+
+run_test "cd with trailing slash && git" \
+  "cd /foo/bar/ && git status" "/foo/bar" \
+  "git status"
+
+run_test "cd && git (trailing slash on cwd)" \
+  "cd /foo/bar && git status" "/foo/bar/" \
+  "git status"
+
+run_test "cd double-quoted && git" \
+  'cd "/foo/bar" && git status' "/foo/bar" \
+  "git status"
+
+run_test "cd single-quoted && git" \
+  "cd '/foo/bar' && git status" "/foo/bar" \
+  "git status"
+
+run_test "cd ; git (semicolon)" \
+  "cd /foo/bar; git status" "/foo/bar" \
+  "git status"
+
+run_test "cd ; git with spaces" \
+  "cd /foo/bar ; git status" "/foo/bar" \
+  "git status"
+
+run_test "cd && non-git command (unchanged)" \
+  "cd /foo/bar && ls -la" "/foo/bar" \
+  "--unchanged"
+
+run_test "cd with dots in path" \
+  "cd /foo/bar.baz && git log" "/foo/bar.baz" \
+  "git log"
+
+run_test "cd && git -C (both patterns)" \
+  "cd /foo/bar && git -C /foo/bar status" "/foo/bar" \
+  "git status"
+
+echo ""
+echo "cd prefix — commands that should NOT be stripped:"
+run_test "cd to different path" \
+  "cd /other/dir && git status" "/foo/bar" \
+  "--unchanged"
+
+run_test "cd alone (no && or ;)" \
+  "cd /foo/bar" "/foo/bar" \
+  "--unchanged"
+
+echo ""
+echo "-C flag — commands that should be stripped:"
 run_test "basic -C <path>" \
   "git -C /foo/bar status" "/foo/bar" \
   "git status"
@@ -166,7 +218,7 @@ run_test "path with dots" \
   "git status"
 
 echo ""
-echo "Commands that should NOT be stripped:"
+echo "-C flag — commands that should NOT be stripped:"
 run_test "different path" \
   "git -C /other/dir status" "/foo/bar" \
   "--unchanged"

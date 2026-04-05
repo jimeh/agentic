@@ -1,5 +1,5 @@
 {
-  "description": "Strip redundant git -C <cwd> from Bash commands",
+  "description": "Strip redundant cd <cwd> and git -C <cwd> from Bash commands",
   "hooks": {
     "PreToolUse": [
       {
