@@ -30,6 +30,8 @@
 
 - Flag naming or structural issues in code you're already modifying — don't
   refactor unrelated code.
+- Read the relevant code before editing. Build context from the actual codebase,
+  not assumptions.
 - Include tests for new functionality when the project has an existing test
   suite.
 
