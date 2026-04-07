@@ -241,6 +241,7 @@
     }
   },
   "effortLevel": "high",
+  "showThinkingSummaries": true,
   "autoUpdatesChannel": "latest",
   "teammateMode": "auto"
 }
