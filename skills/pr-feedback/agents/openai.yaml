@@ -1,0 +1,4 @@
+interface:
+  display_name: "PR Feedback Review"
+  short_description: "Summarize and prioritize PR feedback"
+  default_prompt: "Use $pr-feedback to review the pull request feedback and produce an action plan."

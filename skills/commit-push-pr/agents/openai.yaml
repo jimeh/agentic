@@ -1,0 +1,4 @@
+interface:
+  display_name: "Git Commit, Push & PR"
+  short_description: "Commit changes, push, and open a PR"
+  default_prompt: "Use $commit-push-pr to commit the current changes, push the branch, and open a pull request."

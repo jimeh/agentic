@@ -43,7 +43,10 @@ Stage all relevant changes and create a single commit with a conventional commit
 message (e.g., `feat:`, `fix:`, `refactor:`). Lead the message with why over
 what — the diff shows what changed; the message explains motivation and purpose.
 The commit body should start with the reason for the change; technical overview
-and implementation notes come after.
+and implementation notes come after. Make the problem, context, or reason for
+the change clear before describing implementation details when that reason is
+supported by the available evidence. If the rationale is unclear, do not guess;
+ask the user.
 
 If the reason behind a change is not clear from context, ask the user before
 committing.

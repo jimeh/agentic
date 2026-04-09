@@ -1,0 +1,4 @@
+interface:
+  display_name: "Write PR Copy"
+  short_description: "Draft PR titles and descriptions"
+  default_prompt: "Use $write-pr-copy to draft a pull request title and description from my current branch changes."

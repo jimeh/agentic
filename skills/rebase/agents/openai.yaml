@@ -1,0 +1,4 @@
+interface:
+  display_name: "Git Rebase"
+  short_description: "Rebase the current branch onto upstream"
+  default_prompt: "Use $rebase to rebase the current branch onto the upstream default branch."

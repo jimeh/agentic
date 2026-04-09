@@ -1,0 +1,4 @@
+interface:
+  display_name: "Frontend Design Systems"
+  short_description: "Apply design-system rules to UI work"
+  default_prompt: "Use $frontend-design-systems to apply design-system constraints and hierarchy rules to this UI work."
