@@ -1,0 +1,4 @@
+interface:
+  display_name: "React High Performance"
+  short_description: "Build fast, responsive React UIs"
+  default_prompt: "Use $react-high-performance to build or review this React UI for responsiveness, rerender containment, list performance, and scroll stability."
