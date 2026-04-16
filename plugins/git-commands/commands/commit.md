@@ -24,7 +24,9 @@ Based on the above changes:
 2. Create a single git commit. If asked to commit only staged changes, run
    `git diff --staged` to see exactly what is staged, and base the commit
    message solely on those changes. Do NOT stage additional files. Otherwise,
-   stage all relevant changes and create the commit.
+   stage all relevant changes and create the commit. Never stage or commit
+   files ignored by git unless the user explicitly asks. Do not use
+   `git add -f`, `git add --force`, or equivalent to include ignored files.
 
 You have the capability to call multiple tools in a single response. Do not use
 any other tools or do anything else. Do not send any other text or messages

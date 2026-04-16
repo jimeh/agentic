@@ -10,7 +10,8 @@ Create a git commit with a conventional commit message. Before committing, the
 agent checks if the project's AGENTS.md or CLAUDE.md needs updates to reflect
 the changes (new conventions, architecture, patterns). If you have staged
 changes, pass that intent and only those changes are committed — otherwise all
-relevant changes are staged.
+relevant changes are staged. Files ignored by git are excluded unless the user
+explicitly asks to include them.
 
 ### `/commit-push-pr`
 
@@ -18,7 +19,8 @@ Commit, push, and open a pull request in one step. If on main/master, a new
 branch is created. If the current branch name looks randomly generated, it's
 renamed to something descriptive. After committing, the agent runs
 `git diff main...HEAD` to understand the full scope across all commits, uses any
-PR template found in the repo, and creates the PR via `gh`.
+PR template found in the repo, and creates the PR via `gh`. Files ignored by
+git are excluded unless the user explicitly asks to include them.
 
 ### `/rebase`
 

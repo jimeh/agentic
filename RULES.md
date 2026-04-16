@@ -50,6 +50,11 @@
 - Lead with why, not what. The diff shows what changed; the message explains
   motivation. Body starts with the reason, then technical details. If the reason
   is unclear, ask before committing.
+- Never stage or commit files ignored by git unless the user explicitly asks.
+- Do not use `git add -f`, `git add --force`, or equivalent to include ignored
+  files unless the user explicitly asks.
+- Treat `.gitignore` and other git exclude rules as authoritative when deciding
+  what belongs in a commit by default.
 
 ## Pull Requests
 

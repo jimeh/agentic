@@ -61,6 +61,10 @@ If the rationale is unclear, do not guess; ask the user.
 If the reason behind a change is not clear from context, ask the user before
 committing.
 
+Never stage or commit files ignored by git unless the user explicitly asks. Do
+not use `git add -f`, `git add --force`, or equivalent to include ignored
+files.
+
 When asked to commit only staged changes, run `git diff --staged` to see exactly
 what is staged, base the commit message solely on those changes, and do NOT
 stage additional files.
@@ -97,3 +101,5 @@ Use `gh pr create` to open the pull request.
 - Prefer conventional commits format, but defer to project conventions
 - Pass commit messages and PR bodies via heredocs to avoid shell interpretation
   of backticks and other special characters in multi-line strings
+- Treat `.gitignore` and other git exclude rules as authoritative for default
+  commit scope

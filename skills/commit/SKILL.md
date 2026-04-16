@@ -51,6 +51,10 @@ ask the user.
 If the reason behind a change is not clear from context, ask the user before
 committing.
 
+Never stage or commit files ignored by git unless the user explicitly asks. Do
+not use `git add -f`, `git add --force`, or equivalent to include ignored
+files.
+
 ### Staged-Only Mode
 
 When asked to commit only staged changes:
@@ -66,3 +70,5 @@ When asked to commit only staged changes:
   and other special characters in multi-line messages
 - Minimize text output — focus on tool calls
 - Call multiple tools in parallel when there are no dependencies between them
+- Treat `.gitignore` and other git exclude rules as authoritative for default
+  commit scope

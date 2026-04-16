@@ -25,7 +25,9 @@ Based on the above changes:
    `git branch -m <descriptive-name>`.
 3. **Commit**: Stage all relevant changes and create a single commit. If asked
    to commit only staged changes, run `git diff --staged` and base the message
-   solely on those — do NOT stage additional files.
+   solely on those — do NOT stage additional files. Never stage or commit files
+   ignored by git unless the user explicitly asks. Do not use `git add -f`,
+   `git add --force`, or equivalent to include ignored files.
 4. **Push** the branch to origin.
 5. **Understand full scope**: Run `git log` and `git diff main...HEAD` (or
    master) to see all changes since the base branch.
