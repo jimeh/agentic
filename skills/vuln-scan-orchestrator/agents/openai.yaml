@@ -1,4 +1,4 @@
 interface:
   display_name: "Vuln Scan Orchestrator"
-  short_description: "Plan and orchestrate repo security scans"
-  default_prompt: "Use $vuln-scan-orchestrator to analyze this project, create a security playbook, split it into focus areas, and coordinate sub-agents to review each area."
+  short_description: "Scan, verify, and hand off security findings"
+  default_prompt: "Use $vuln-scan-orchestrator to analyze this project, split the review into focus areas, produce findings-summary.md, and write fix-ready entries to verified-results.md."
