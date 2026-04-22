@@ -12,7 +12,7 @@ description: Orchestrate a defensive vulnerability scan of a local software
 Perform a repo-level defensive security review by decomposing the target project
 into a small number of meaningful focus areas, assigning each area to one
 reviewer, verifying each non-skipped finding, and keeping durable scan artifacts
-under the target project's `security/` directory.
+under the target project's `security/vuln-scan/` directory.
 
 Use the current working directory as the target project root unless the user
 explicitly points elsewhere.
@@ -24,7 +24,7 @@ follow-up mode in "Durable Skip Files".
 ## Workflow
 
 1. Inspect the target project at a high level.
-2. Read existing skip files from `security/vuln-scan-skips/` before planning.
+2. Read existing skip files from `security/vuln-scan/skips/` before planning.
 3. Identify security-relevant subsystems and collapse them into disjoint focus
    areas.
 4. Cap the area list at 6. Prefer 4-6 areas when the project is medium or large.
@@ -42,20 +42,20 @@ follow-up mode in "Durable Skip Files".
 
 ## Artifact Layout
 
-Write all outputs under the target project's top-level `security/` directory.
-Use timestamped run directories only. Do not overwrite prior runs.
+Write all outputs under the target project's top-level `security/vuln-scan/`
+directory. Use timestamped run directories only. Do not overwrite prior runs.
 
 Required files for each run:
 
-- `security/<run-id>/vuln-scan-playbook.md`
-- `security/<run-id>/findings/<area-slug>.md`
-- `security/<run-id>/findings-summary.md`
-- `security/<run-id>/verified-results.md`
-- `security/<run-id>/run-manifest.json`
+- `security/vuln-scan/<run-id>/vuln-scan-playbook.md`
+- `security/vuln-scan/<run-id>/findings/<area-slug>.md`
+- `security/vuln-scan/<run-id>/findings-summary.md`
+- `security/vuln-scan/<run-id>/verified-results.md`
+- `security/vuln-scan/<run-id>/run-manifest.json`
 
 Durable skip files live outside run directories:
 
-- `security/vuln-scan-skips/<issue-slug>.md`
+- `security/vuln-scan/skips/<issue-slug>.md`
 
 Use a sortable UTC timestamp for `<run-id>`, for example `2026-04-17T18-45-00Z`.
 
@@ -76,7 +76,7 @@ stable.
 
 ## Durable Skip Files
 
-Before planning a scan, read all skip files under `security/vuln-scan-skips/`,
+Before planning a scan, read all skip files under `security/vuln-scan/skips/`,
 if that directory exists.
 
 Use one Markdown file per canonical issue under a stable issue slug. Treat these
@@ -124,7 +124,7 @@ If the user later says a specific issue should be ignored by future scans or is
 a false positive, create or update the matching skip file instead of creating a
 new run. The skip file should describe the issue pattern itself well enough for
 future scans to recognize the same underlying finding without relying on
-run-local finding IDs or paths inside `security/<run-id>/...`.
+run-local finding IDs or paths inside `security/vuln-scan/<run-id>/...`.
 
 ## Focus-Area Planning
 
@@ -396,7 +396,7 @@ false positive or accepted risk:
 
 1. Find the matching issue from `verified-results.md` when present; otherwise
    fall back to `findings-summary.md`.
-2. Create or update `security/vuln-scan-skips/<issue-slug>.md`.
+2. Create or update `security/vuln-scan/skips/<issue-slug>.md`.
 3. Write a concise Markdown note that describes:
    - the issue title or close aliases
    - whether it is a false positive or accepted risk
@@ -418,7 +418,7 @@ Keep the workflow bounded and practical:
 - do not create one reviewer per file
 - prefer fewer, coherent areas over many tiny ones
 - keep reviewer ownership disjoint
-- preserve prior `security/<run-id>/` outputs
+- preserve prior `security/vuln-scan/<run-id>/` outputs
 - keep skip files outside run directories
 
 If the repo is too small for multiple meaningful areas, it is acceptable to use
