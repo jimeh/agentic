@@ -1,10 +1,10 @@
 #:schema https://developers.openai.com/codex/config-schema.json
 
-model = "gpt-5.4"
+model = "gpt-5.5"
 model_reasoning_effort = "high"
-personality = "pragmatic"
-
-web_search = "live"
+personality = 'pragmatic'
+suppress_unstable_features_warning = true
+web_search = 'live'
 
 # Leave room for native compaction near the 272–273k context window.
 # Formula: 273000 - (tool_output_token_limit + 15000)
@@ -12,29 +12,63 @@ web_search = "live"
 model_auto_compact_token_limit = 233000
 tool_output_token_limit = 25000
 
-suppress_unstable_features_warning = true
-
 [features]
-unified_exec = true
 apply_patch_freeform = true
-shell_snapshot = true
-runtime_metrics = true
 multi_agent = true
+runtime_metrics = true
+shell_snapshot = true
+unified_exec = true
 
+[notice]
 [notice.model_migrations]
 "gpt-5.2" = "gpt-5.2-codex"
 
+[marketplaces]
+[marketplaces.openai-bundled]
+last_updated = '2026-04-18T09:48:36Z'
+source = '/Applications/Codex.app/Contents/Resources/plugins/openai-bundled'
+source_type = 'local'
+
+[plugins]
+[plugins.'build-ios-apps@openai-curated']
+enabled = true
+
+[plugins.'build-macos-apps@openai-curated']
+enabled = true
+
+[plugins.'github@openai-curated']
+enabled = true
+
+[plugins."documents@openai-primary-runtime"]
+enabled = true
+
+[plugins."spreadsheets@openai-primary-runtime"]
+enabled = true
+
+[plugins."presentations@openai-primary-runtime"]
+enabled = true
+
+[plugins."browser-use@openai-bundled"]
+enabled = true
+
+[plugins."computer-use@openai-bundled"]
+enabled = true
+
+[mcp_servers]
 [mcp_servers.deepwiki]
 enabled = true
 url = "https://mcp.deepwiki.com/mcp"
 
-[mcp_servers.context7]
-enabled = true
-url = "https://mcp.context7.com/mcp"
-
-[mcp_servers.context7.env_http_headers]
-CONTEXT7_API_KEY = "CONTEXT7_API_KEY"
-
 [mcp_servers.gitnexus]
-command = "mise"
-args = ["x", "npm:gitnexus", "--", "gitnexus", "mcp"]
+command = 'mise'
+args = ['x', 'npm:gitnexus', '--', 'gitnexus', 'mcp']
+
+[mcp_servers.gitnexus.tools]
+[mcp_servers.gitnexus.tools.list_repos]
+approval_mode = "approve"
+
+[mcp_servers.gitnexus.tools.detect_changes]
+approval_mode = "approve"
+
+[mcp_servers.gitnexus.tools.query]
+approval_mode = "approve"
