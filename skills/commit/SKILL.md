@@ -52,8 +52,7 @@ If the reason behind a change is not clear from context, ask the user before
 committing.
 
 Never stage or commit files ignored by git unless the user explicitly asks. Do
-not use `git add -f`, `git add --force`, or equivalent to include ignored
-files.
+not use `git add -f`, `git add --force`, or equivalent to include ignored files.
 
 ### Staged-Only Mode
 
