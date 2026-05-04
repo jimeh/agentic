@@ -83,6 +83,10 @@
       "Bash(helm lint:*)",
       "Bash(helm template:*)",
       "Bash(ls:*)",
+      "Bash(mise format)",
+      "Bash(mise lint)",
+      "Bash(mise run format)",
+      "Bash(mise run lint)",
       "Bash(node --version:*)",
       "Bash(npm run build:*)",
       "Bash(npm run check-types:*)",
@@ -121,9 +125,11 @@
       "Bash(pnpm test:*)",
       "Bash(pnpm typecheck:*)",
       "Bash(rg:*)",
+      "Bash(shellcheck:*)",
       "Bash(tail:*)",
       "Bash(tree:*)",
       "Bash(wc:*)",
+      "Search",
       "Skill(git-commands:commit:*)",
       "WebFetch",
       "WebSearch",
@@ -143,7 +149,7 @@
       "Read(./mcp.json)",
       "Read(./secrets/**)"
     ],
-    "defaultMode": "default"
+    "defaultMode": "auto"
   },
   "hooks": {
     "UserPromptSubmit": [
@@ -240,8 +246,10 @@
       }
     }
   },
-  "effortLevel": "high",
-  "showThinkingSummaries": true,
+  "effortLevel": "xhigh",
   "autoUpdatesChannel": "latest",
-  "teammateMode": "auto"
+  "showThinkingSummaries": true,
+  "editorMode": "normal",
+  "teammateMode": "auto",
+  "skipAutoPermissionPrompt": true
 }
