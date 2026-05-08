@@ -1,5 +1,5 @@
 {
-  "oxc.enable": true,
+  "oxc.enable.oxfmt": true,
   "oxc.enable.oxlint": false,
   "[markdown]": {
     "editor.defaultFormatter": "oxc.oxc-vscode",
