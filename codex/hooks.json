@@ -1,0 +1,19 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": []
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": []
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": []
+      }
+    ]
+  }
+}

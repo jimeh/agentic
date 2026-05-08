@@ -40,6 +40,7 @@ discover_symlinks() {
   # Codex config files.
   SYMLINKS+=(
     "codex/config.toml|${HOME}/.codex/config.toml"
+    "codex/hooks.json|${HOME}/.codex/hooks.json"
   )
 
   # Discover skills: skills/*/SKILL.md → both ~/.claude and ~/.agents
@@ -343,6 +344,7 @@ Creates symlinks for Claude Code and agents configuration:
   claude/settings    → ~/.claude/settings.json
   claude/statusline  → ~/.claude/statusline.sh
   codex/config.toml  → ~/.codex/config.toml
+  codex/hooks.json   → ~/.codex/hooks.json
   skills/*           → ~/.claude/skills/
   skills/*           → ~/.agents/skills/
 
