@@ -251,5 +251,6 @@
   "showThinkingSummaries": true,
   "editorMode": "normal",
   "teammateMode": "auto",
-  "skipAutoPermissionPrompt": true
+  "skipAutoPermissionPrompt": true,
+  "preferredNotifChannel": "ghostty"
 }
