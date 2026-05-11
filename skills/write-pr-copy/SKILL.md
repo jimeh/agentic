@@ -5,7 +5,8 @@ description: >-
   creating, pushing, or submitting the pull request. Use when the user asks to
   write, draft, rewrite, polish, summarize, or fill in PR title/body text, or
   when a pull request template should be completed from the current branch
-  changes.
+  changes. Always detect and read repository pull request templates before
+  drafting the PR body.
 ---
 
 # Write PR Copy
@@ -25,8 +26,6 @@ Run these commands to understand the branch before writing:
 - `git status --short` — see changed files at a glance
 - `git branch --show-current` — confirm the working branch
 - `git log --oneline -10` — infer commit/title style from recent history
-- `find . -maxdepth 3 -iname 'pull_request_template*' -o -ipath '*pull_request_template/*' 2>/dev/null`
-  — locate PR templates
 
 Then inspect the full branch scope, not just the last commit:
 
@@ -35,13 +34,30 @@ Then inspect the full branch scope, not just the last commit:
 - If another base is clearly correct from local context, use it
 - If the base is still ambiguous, state the assumption briefly in the output
 
-### 2. Use the Template When Present
+### 2. Detect PR Template
 
-If a PR template exists, use it as the body structure.
+Always run a PR template search before writing the PR body, even if you do not
+expect one to exist.
+
+```bash
+find . -maxdepth 4 \
+  \( -path './.git' -o -path './node_modules' -o -path './vendor' \) -prune \
+  -o \( -iname 'pull_request_template*' \
+  -o -ipath '*/pull_request_template/*' \) -print 2>/dev/null
+```
+
+Record the result as one of:
+
+- `No PR template found`
+- `One PR template found: <path>`
+- `Multiple PR templates found: <paths>`
+
+If one template is found, read it and use it as the body structure. If multiple
+templates are found and no obvious default exists, ask which one to use.
+
+When using a template:
 
 - Preserve meaningful headings and checklists unless the user asks for a rewrite
-- If multiple templates exist and no obvious default stands out, ask which one
-  to use
 - Fill the template with concrete content from the branch instead of leaving
   generic placeholders
 
@@ -74,6 +90,8 @@ Produce PR copy only.
 - Include testing notes only when they are supported by local evidence
 - If testing is unknown or not run, say so plainly
 - Note important assumptions when the diff or base branch leaves room for doubt
+- Mention no template status only when it is useful context for the user; do not
+  include it as boilerplate in the PR body
 
 ## Output Format
 

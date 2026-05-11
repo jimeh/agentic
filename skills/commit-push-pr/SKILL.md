@@ -4,7 +4,8 @@ description: >-
   This skill should be used when the user asks to "create a pull request",
   "open a PR", "submit a PR", "send a PR", "make a PR for this", "PR these
   changes", or otherwise requests creating a pull request from current
-  changes.
+  changes. Always detect, read, and use repository pull request templates
+  before creating the PR body.
 ---
 
 # Git Commit, Push & PR
@@ -22,10 +23,31 @@ Run these commands to understand the current state:
 - `git diff HEAD` — see all staged and unstaged changes
 - `git branch --show-current` — identify current branch
 - `git log --oneline -10` — match existing commit message style
-- `find . -maxdepth 3 -iname 'pull_request_template*' -o -ipath '*pull_request_template/*' 2>/dev/null`
-  — locate PR templates
 
-### 2. Check Agent Docs
+### 2. Detect PR Template
+
+Always run a PR template search before writing the PR body, even if you do not
+expect one to exist.
+
+```bash
+find . -maxdepth 4 \
+  \( -path './.git' -o -path './node_modules' -o -path './vendor' \) -prune \
+  -o \( -iname 'pull_request_template*' \
+  -o -ipath '*/pull_request_template/*' \) -print 2>/dev/null
+```
+
+Record the result as one of:
+
+- `No PR template found`
+- `One PR template found: <path>`
+- `Multiple PR templates found: <paths>`
+
+If one template is found, read it before drafting the PR body. If multiple
+templates are found and no obvious default exists, ask which one to use.
+
+Do not run `gh pr create` until the template status is known.
+
+### 3. Check Agent Docs
 
 If the project has an AGENTS.md or CLAUDE.md, review it against the current
 changes. If changes introduce new conventions, commands, architecture, or
@@ -41,7 +63,7 @@ Things worth documenting:
 - Environment-specific quirks (platform differences, tool version sensitivities)
 - Undocumented requirements or constraints found through trial and error
 
-### 3. Branch
+### 4. Branch
 
 If on main/master, create a new branch named for the changes.
 
@@ -49,7 +71,7 @@ If already on a non-main branch, check if the name looks randomly generated
 (UUIDs, hex strings, meaningless sequences, or 1-3 random unrelated words like
 "brave-fox"). If so, rename with `git branch -m <descriptive-name>`.
 
-### 4. Commit
+### 5. Commit
 
 Stage all relevant changes and create a single commit with a conventional commit
 message. Lead with why over what. The commit body should start with the reason
@@ -68,30 +90,38 @@ When asked to commit only staged changes, run `git diff --staged` to see exactly
 what is staged, base the commit message solely on those changes, and do NOT
 stage additional files.
 
-### 5. Push
+### 6. Push
 
 Push the branch to origin with `git push -u origin <branch>`.
 
-### 6. Understand Full Scope
+### 7. Understand Full Scope
 
 Run `git log` and `git diff main...HEAD` (or master) to see all changes since
 the base branch. This ensures the PR description covers everything, not just the
 latest commit.
 
-### 7. Create PR
+### 8. Create PR
 
 Use `gh pr create` to open the pull request.
 
 - **Title**: use conventional commits format when the repo follows that
   convention
-- **PR template**: if a template was found in step 1, use it as the base for the
-  PR body. If multiple templates were found, ask which one to use.
+- **PR template**: use the template selected in step 2 as the PR body structure.
+  Preserve meaningful headings and checklists, replacing placeholders with
+  concrete branch-specific content. If no template was found, write a concise
+  body from the branch diff.
 - **Description**: lead with the motivation and purpose behind the change —
   before technical details. Start with the problem, context, or reason the
   change is needed when that can be supported by the available evidence, then
   cover the implementation. If the rationale is unclear, do not guess; stick to
   the confirmed scope of the branch or ask the user. Cover the full scope of all
   commits. Do NOT list individual commits — the PR already shows those.
+
+Before creating the PR, verify:
+
+- PR template search command was run
+- Any matched template file was read
+- PR body follows the selected template, or no template was found
 
 ## Guidelines
 
