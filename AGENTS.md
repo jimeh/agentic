@@ -9,6 +9,8 @@ Shared configuration and rules for AI coding agents (Claude Code, Codex, etc).
 ./setup.sh          # create symlinks (skips existing)
 ./setup.sh --force  # replace existing (backs up to .bak)
 shellcheck **/*.sh  # lint all shell scripts
+bun run prepare     # install Husky git hooks
+bun run lint-staged # lint staged files like the pre-commit hook
 ```
 
 ```bash

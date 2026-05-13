@@ -1,6 +1,18 @@
 {
+  "scripts": {
+    "lint-staged": "lint-staged",
+    "prepare": "husky"
+  },
   "dependencies": {},
   "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.4",
     "oxfmt": "^0.43.0"
+  },
+  "lint-staged": {
+    "*.md": [
+      "mise exec -- oxfmt --check",
+      "mise exec -- markdownlint-cli2"
+    ]
   }
 }
