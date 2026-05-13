@@ -37,7 +37,19 @@ Things worth documenting:
 - Environment-specific quirks (platform differences, tool version sensitivities)
 - Undocumented requirements or constraints found through trial and error
 
-### 3. Create the Commit
+### 3. Branch Safety
+
+If the user asks to commit on a new branch, first inspect the current branch.
+
+- If on `main`, `master`, or the repository's default/protected branch, create a
+  new branch with `git checkout -b <descriptive-name>`. Never rename these
+  branches.
+- Only use `git branch -m <descriptive-name>` when already on a non-main branch
+  whose name appears generated, random, or unrelated to the current work, such
+  as UUIDs, hex strings, meaningless sequences, or 1-3 unrelated words.
+- If the branch name is meaningful or user-provided, keep it.
+
+### 4. Create the Commit
 
 Stage all relevant changes and create a single commit with a conventional commit
 message (e.g., `feat:`, `fix:`, `refactor:`). Lead the message with why over

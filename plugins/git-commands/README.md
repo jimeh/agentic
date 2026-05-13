@@ -15,12 +15,13 @@ explicitly asks to include them.
 
 ### `/commit-push-pr`
 
-Commit, push, and open a pull request in one step. If on main/master, a new
-branch is created. If the current branch name looks randomly generated, it's
-renamed to something descriptive. After committing, the agent runs
-`git diff main...HEAD` to understand the full scope across all commits, uses any
-PR template found in the repo, and creates the PR via `gh`. Files ignored by git
-are excluded unless the user explicitly asks to include them.
+Commit, push, and open a pull request in one step. If on main/master or the
+default branch, a new branch is created and the default branch is never renamed.
+If an existing non-main branch name looks randomly generated, it's renamed to
+something descriptive. After committing, the agent runs `git diff main...HEAD`
+to understand the full scope across all commits, uses any PR template found in
+the repo, and creates the PR via `gh`. Files ignored by git are excluded unless
+the user explicitly asks to include them.
 
 ### `/rebase`
 

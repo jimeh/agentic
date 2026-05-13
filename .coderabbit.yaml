@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+inheritance: true
+
+reviews:
+  path_instructions:
+    - path: "**/*.md"
+      instructions: >-
+        Do not raise comments about Markdown line length, prose wrapping,
+        print width, hard-wrapped text, or other purely mechanical Markdown
+        formatting concerns. This repository already enforces Markdown
+        formatting with oxfmt and markdownlint in local checks, pre-commit
+        hooks, and CI. Still review the actual Markdown content: wording,
+        meaning, technical accuracy, broken examples, misleading instructions,
+        missing context, and other substantive documentation issues. Only skip
+        comments about the physical formatting of the Markdown document itself
+        when that concern is covered by the automated formatters and linters.
+
+  finishing_touches:
+    unit_tests:
+      enabled: false
+
+  tools:
+    markdownlint:
+      enabled: false
