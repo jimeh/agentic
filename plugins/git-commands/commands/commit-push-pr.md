@@ -18,11 +18,14 @@ notes: Heavily modified from the original.
 
 Based on the above changes:
 
-1. **Branch**: If on main/master, create a new branch named for the changes.
-2. **Branch name**: If already on a non-main branch, check if the name looks
-   randomly generated (UUIDs, hex strings, meaningless sequences, or 1-3 random
-   unrelated words like "brave-fox"). If so, rename with
-   `git branch -m <descriptive-name>`.
+1. **Branch**: If on `main`, `master`, or the repository's default/protected
+   branch, create a new branch named for the changes with
+   `git checkout -b <descriptive-name>`. Never rename these branches.
+2. **Branch name**: Only use `git branch -m <descriptive-name>` when already on
+   a non-main branch whose name appears generated, random, or unrelated to the
+   current work, such as UUIDs, hex strings, meaningless sequences, or 1-3
+   unrelated words like "brave-fox". If the branch name is meaningful or
+   user-provided, keep it.
 3. **Commit**: Stage all relevant changes and create a single commit. If asked
    to commit only staged changes, run `git diff --staged` and base the message
    solely on those — do NOT stage additional files. Never stage or commit files
