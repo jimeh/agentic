@@ -6,15 +6,27 @@ oxfmt = "latest"
 [settings.npm]
 bun = true
 
-# --- Top-level tasks (run both tools) ---
+# --- Top-level tasks ---
+
+[tasks.setup]
+description = "Create agent config symlinks and install configured plugins"
+run = "./setup.sh"
+
+[tasks."setup:force"]
+description = "Replace existing agent config symlinks after backing them up"
+run = "./setup.sh --force"
+
+[tasks."setup:dry-run"]
+description = "Preview setup changes without modifying files"
+run = "./setup.sh --dry-run"
 
 [tasks.format]
 description = "Format markdown files (oxfmt + markdownlint)"
 depends = ["format:oxfmt", "format:markdownlint"]
 
 [tasks.lint]
-description = "Lint markdown files (oxfmt + markdownlint)"
-depends = ["lint:oxfmt", "lint:markdownlint"]
+description = "Run all lint and harness checks"
+depends = ["lint:oxfmt", "lint:markdownlint", "lint:agent-harness"]
 
 # --- Per-tool subtasks ---
 
@@ -33,3 +45,7 @@ run = "oxfmt --check '**/*.md'"
 [tasks."lint:markdownlint"]
 description = "Lint markdown files with markdownlint"
 run = "markdownlint-cli2 '**/*.md'"
+
+[tasks."lint:agent-harness"]
+description = "Check agent skill and plugin metadata invariants"
+run = "bun run scripts/check-agent-harness.ts"

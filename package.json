@@ -3,7 +3,9 @@
     "lint-staged": "lint-staged",
     "prepare": "husky"
   },
-  "dependencies": {},
+  "dependencies": {
+    "gray-matter": "^4.0.3"
+  },
   "devDependencies": {
     "husky": "^9.1.7",
     "lint-staged": "^17.0.4",
