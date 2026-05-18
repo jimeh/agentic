@@ -17,7 +17,7 @@ type PluginManifest = {
   version?: string;
 };
 
-const slugPattern = /^[a-z0-9][a-z0-9-]*$/;
+const slugPattern = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 let failed = false;
 
 function reportError(message: string): void {
