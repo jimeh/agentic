@@ -1,5 +1,5 @@
 ---
-name: Eval-Driven Development (EDD)
+name: edd
 description: >-
   Use when the user explicitly references the EDD workflow: "edd", "eval-driven
   development", "write evals", "feature evals", "edd-spec", "edd-impl",

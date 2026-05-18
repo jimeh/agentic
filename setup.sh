@@ -108,6 +108,27 @@ resolve_symlink() {
   fi
 }
 
+# Cross-platform path normalization that does not require the final target to
+# exist. Useful for broken symlinks.
+normalize_path() {
+  local path="$1"
+  if command -v realpath > /dev/null 2>&1 &&
+    realpath "$path" > /dev/null 2>&1; then
+    realpath "$path"
+  elif command -v perl > /dev/null 2>&1; then
+    perl -MFile::Spec -e \
+      'print File::Spec->canonpath(File::Spec->rel2abs(shift))' -- "$path"
+  elif command -v python3 > /dev/null 2>&1; then
+    python3 -c \
+      "import os,sys; print(os.path.realpath(sys.argv[1]))" "$path"
+  elif command -v python > /dev/null 2>&1; then
+    python -c \
+      "import os,sys; print(os.path.realpath(sys.argv[1]))" "$path"
+  else
+    printf "%s\n" "$path"
+  fi
+}
+
 # Backup existing file/symlink and create a new symlink.
 backup_and_link() {
   local source="$1"
@@ -178,16 +199,26 @@ _cleanup_stale_links() {
 
   [[ -d "${target_dir}" ]] || return
 
+  local real_source_dir
+  real_source_dir="$(normalize_path "${source_dir}")"
+
   local link
   for link in "${target_dir}"/*; do
     [[ -e "${link}" || -L "${link}" ]] || continue
     [[ -L "${link}" ]] || continue
 
-    local target
+    local target target_path real_target
     target="$(readlink "${link}")"
+    if [[ "${target}" == /* ]]; then
+      target_path="${target}"
+    else
+      target_path="$(dirname "${link}")/${target}"
+    fi
+    real_target="$(normalize_path "${target_path}")"
 
     # Only touch symlinks pointing into our source tree.
-    if [[ "${target}" == "${source_dir}/"* && ! -e "${target}" ]]; then
+    if [[ "${real_target}" == "${real_source_dir}/"* &&
+      ! -e "${real_target}" ]]; then
       if [[ "${DRY_RUN}" == "true" ]]; then
         info "would remove stale: ${link}"
       else

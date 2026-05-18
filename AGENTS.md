@@ -109,3 +109,6 @@ not `>file`). See `.editorconfig` for shfmt flags.
   `#:schema https://developers.openai.com/codex/config-schema.json` header for
   editor autocomplete/validation in tools like VS Code or Cursor with Even
   Better TOML.
+- When testing `setup.sh` with a temporary `HOME`, tools resolved through mise
+  shims can fail trust checks. Prefer POSIX tools for setup helpers where
+  possible, and validate symlink cleanup before plugin setup side effects.

@@ -1,5 +1,5 @@
 ---
-name: Git Commit
+name: commit
 description: >-
   This skill should be used when the user asks to "commit my changes", "create
   a commit", "commit this", "make a commit", "git commit", or otherwise

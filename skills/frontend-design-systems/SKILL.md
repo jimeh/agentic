@@ -1,5 +1,5 @@
 ---
-name: Frontend Design Systems
+name: frontend-design-systems
 description: >-
   This skill should be used when the user asks to "build a design system",
   "create consistent UI", "define color ratios", "set up typography system",

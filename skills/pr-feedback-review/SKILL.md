@@ -1,5 +1,5 @@
 ---
-name: PR Feedback Review
+name: pr-feedback-review
 description: >-
   Analyze GitHub pull request review feedback and turn it into a deduplicated,
   prioritized action plan. Use when the user asks to review PR feedback, check

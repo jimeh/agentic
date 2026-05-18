@@ -1,5 +1,5 @@
 ---
-name: Git Commit, Push & PR
+name: commit-push-pr
 description: >-
   This skill should be used when the user asks to "create a pull request",
   "open a PR", "submit a PR", "send a PR", "make a PR for this", "PR these

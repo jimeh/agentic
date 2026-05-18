@@ -1,5 +1,5 @@
 ---
-name: Git Rebase
+name: rebase
 description: >-
   Rebases the current branch onto the upstream default branch. Triggers when the
   user says "rebase onto main", "rebase my branch", "update my branch from
