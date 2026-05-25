@@ -1,0 +1,3 @@
+[install]
+# Only install npm package versions published at least seven days ago.
+minimumReleaseAge = 604800

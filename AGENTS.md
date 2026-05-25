@@ -11,15 +11,20 @@ Shared configuration and rules for AI coding agents (Claude Code, Codex, etc).
 shellcheck **/*.sh  # lint all shell scripts
 bun run prepare     # install Husky git hooks
 bun run lint-staged # lint staged files like the pre-commit hook
+bun install         # install npm deps with seven-day minimum release age
 ```
 
 ```bash
+mise run setup              # run ./setup.sh via mise
+mise run setup:force        # run ./setup.sh --force
+mise run setup:dry-run      # preview setup changes
 mise run format              # format with oxfmt + markdownlint --fix
-mise run lint                # check with oxfmt + markdownlint
+mise run lint                # check formatting, markdown, agent metadata
 mise run format:oxfmt        # format with oxfmt only
 mise run format:markdownlint # auto-fix markdownlint issues only
 mise run lint:oxfmt          # check oxfmt formatting only
 mise run lint:markdownlint   # lint with markdownlint only
+mise run lint:agent-harness  # check skill/plugin metadata invariants
 ```
 
 ## Architecture
@@ -61,6 +66,10 @@ never edit the symlink targets directly.
 Plugin tests live in `plugins/*/tests/*.test.sh`. CI auto-discovers and runs
 them. Tests must be self-contained bash scripts that exit 0 on success.
 
+Agent harness checks live in `scripts/check-agent-harness.ts` and run as part of
+`mise run lint`. They verify that skill frontmatter names are slug-safe and
+match their directories, and that Claude plugin versions match the marketplace.
+
 ## Plugin Versioning
 
 Plugins use semantic versioning (MAJOR.MINOR.PATCH). When committing changes to
@@ -94,6 +103,12 @@ match.
 oxfmt (`proseWrap: "always"`, 80 chars) and markdownlint handle formatting.
 `embeddedLanguageFormatting: "off"` keeps oxfmt from touching YAML frontmatter.
 Run `mise run format` before committing.
+
+## Dependency Policy
+
+`bunfig.toml` sets Bun's `install.minimumReleaseAge` to seven days. Keep it in
+place so new direct and transitive npm dependency versions have had time to
+settle before installation.
 
 ## Shell Conventions
 
