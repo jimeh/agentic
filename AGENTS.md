@@ -127,3 +127,6 @@ not `>file`). See `.editorconfig` for shfmt flags.
 - When testing `setup.sh` with a temporary `HOME`, tools resolved through mise
   shims can fail trust checks. Prefer POSIX tools for setup helpers where
   possible, and validate symlink cleanup before plugin setup side effects.
+- For gone-branch cleanup, `git branch -v` shows `[gone]` and `git branch -vv`
+  adds the upstream ref. Prefer `git for-each-ref` for scripts that need stable
+  gone-branch detection.
