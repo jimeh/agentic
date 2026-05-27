@@ -1,0 +1,6 @@
+{
+  "id": "dot",
+  "displayName": "Dot",
+  "description": "A compact terminal-keycap companion for a pragmatic dotfiles-heavy macOS and Linux workflow.",
+  "spritesheetPath": "spritesheet.webp"
+}

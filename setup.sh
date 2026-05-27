@@ -41,6 +41,7 @@ discover_symlinks() {
   SYMLINKS+=(
     "codex/config.toml|${HOME}/.codex/config.toml"
     "codex/hooks.json|${HOME}/.codex/hooks.json"
+    "codex/pets|${HOME}/.codex/pets"
   )
 
   # Discover skills: skills/*/SKILL.md → both ~/.claude and ~/.agents
