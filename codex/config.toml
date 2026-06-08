@@ -9,8 +9,8 @@ web_search = 'live'
 # Leave room for native compaction near the 272–273k context window.
 # Formula: 273000 - (tool_output_token_limit + 15000)
 # With tool_output_token_limit=25000 ⇒ 273000 - (25000 + 15000) = 233000
-model_auto_compact_token_limit = 233000
-tool_output_token_limit = 25000
+# model_auto_compact_token_limit = 233000
+# tool_output_token_limit = 25000
 
 [features]
 apply_patch_freeform = true
@@ -18,25 +18,15 @@ multi_agent = true
 runtime_metrics = true
 shell_snapshot = true
 unified_exec = true
+memories = true
+js_repl = false
 
 [notice]
 [notice.model_migrations]
 "gpt-5.2" = "gpt-5.2-codex"
 
-[marketplaces]
-[marketplaces.openai-bundled]
-last_updated = '2026-04-18T09:48:36Z'
-source = '/Applications/Codex.app/Contents/Resources/plugins/openai-bundled'
-source_type = 'local'
 
-[plugins]
-[plugins.'build-ios-apps@openai-curated']
-enabled = true
-
-[plugins.'build-macos-apps@openai-curated']
-enabled = true
-
-[plugins.'github@openai-curated']
+[plugins."github@openai-curated"]
 enabled = true
 
 [plugins."documents@openai-primary-runtime"]
@@ -48,9 +38,6 @@ enabled = true
 [plugins."presentations@openai-primary-runtime"]
 enabled = true
 
-[plugins."browser-use@openai-bundled"]
-enabled = true
-
 [plugins."coderabbit@openai-curated"]
 enabled = true
 
@@ -60,8 +47,31 @@ enabled = true
 [plugins."computer-use@openai-bundled"]
 enabled = true
 
+[plugins."remotion@openai-curated"]
+enabled = true
+
+[plugins."cloudflare@openai-curated"]
+enabled = true
+
+[plugins."convex@openai-curated"]
+enabled = true
+
+[plugins."build-web-apps@openai-curated"]
+enabled = true
+
+[plugins."browser@openai-bundled"]
+enabled = true
+
 [plugins."chrome@openai-bundled"]
 enabled = true
+
+[[skills.config]]
+name = "build-web-apps:supabase-postgres-best-practices"
+enabled = false
+
+[[skills.config]]
+name = "build-web-apps:stripe-best-practices"
+enabled = false
 
 [mcp_servers]
 [mcp_servers.deepwiki]
@@ -81,3 +91,264 @@ approval_mode = "approve"
 
 [mcp_servers.gitnexus.tools.query]
 approval_mode = "approve"
+
+[desktop]
+appearanceDarkCodeThemeId = "codex"
+usePointerCursors = false
+followUpQueueMode = "queue"
+reviewDelivery = "inline"
+git-always-force-push = false
+git-show-sidebar-pr-icons = true
+git-commit-instructions = """
+# Git Commit
+
+Create a well-crafted git commit from the current working tree changes.
+
+## Workflow
+
+### 1. Gather Context
+
+Run all four commands to understand the current state:
+
+- `git status` — see tracked/untracked files
+- `git diff HEAD` — see all staged and unstaged changes
+- `git branch --show-current` — identify current branch
+- `git log --oneline -10` — match existing commit message style
+
+### 2. Check Agent Docs
+
+If the project has an AGENTS.md or CLAUDE.md, review it against the current
+changes. If changes introduce new conventions, commands, architecture, or
+patterns that should be documented (or invalidate existing docs), update the
+relevant file as part of this commit. Only update if clearly warranted — avoid
+adding noise.
+
+Things worth documenting:
+
+- Non-obvious conventions or patterns not apparent from code structure alone
+- Surprising behaviors, gotchas, or workarounds discovered during development
+- Implicit dependencies or ordering constraints between components
+- Environment-specific quirks (platform differences, tool version sensitivities)
+- Undocumented requirements or constraints found through trial and error
+
+### 3. Branch Safety
+
+If the user asks to commit on a new branch, first inspect the current branch.
+
+- If on `main`, `master`, or the repository's default/protected branch, create a
+  new branch with `git checkout -b <descriptive-name>`. Never rename these
+  branches.
+- Only use `git branch -m <descriptive-name>` when already on a non-main branch
+  whose name appears generated, random, or unrelated to the current work, such
+  as UUIDs, hex strings, meaningless sequences, or 1-3 unrelated words.
+- If the branch name is meaningful or user-provided, keep it.
+
+### 4. Create the Commit
+
+Stage all relevant changes and create a single commit with a conventional commit
+message (e.g., `feat:`, `fix:`, `refactor:`). Lead the message with why over
+what — the diff shows what changed; the message explains motivation and purpose.
+The commit body should start with the reason for the change; technical overview
+and implementation notes come after. Make the problem, context, or reason for
+the change clear before describing implementation details when that reason is
+supported by the available evidence. If the rationale is unclear, do not guess;
+ask the user.
+
+If the reason behind a change is not clear from context, ask the user before
+committing.
+
+Never stage or commit files ignored by git unless the user explicitly asks. Do
+not use `git add -f`, `git add --force`, or equivalent to include ignored files.
+
+### Staged-Only Mode
+
+When asked to commit only staged changes:
+
+1. Run `git diff --staged` to see exactly what is staged
+2. Base the commit message solely on those changes
+3. Do NOT stage additional files
+
+## Guidelines
+
+- Prefer conventional commits format, but defer to project conventions
+- Pass commit messages via a heredoc to avoid shell interpretation of backticks
+  and other special characters in multi-line messages
+- Minimize text output — focus on tool calls
+- Call multiple tools in parallel when there are no dependencies between them
+- Treat `.gitignore` and other git exclude rules as authoritative for default
+  commit scope
+"""
+git-pr-instructions = '''
+# Git Commit, Push & PR
+
+Commit current changes, push to remote, and open a pull request in a single
+workflow.
+
+## Workflow
+
+### 1. Gather Context
+
+Run these commands to understand the current state:
+
+- `git status` — see tracked/untracked files
+- `git diff HEAD` — see all staged and unstaged changes
+- `git branch --show-current` — identify current branch
+- `git log --oneline -10` — match existing commit message style
+
+### 2. Detect PR Template
+
+Always run a PR template search before writing the PR body, even if you do not
+expect one to exist.
+
+```bash
+find . -maxdepth 4 \
+  \( -path './.git' -o -path './node_modules' -o -path './vendor' \) -prune \
+  -o \( -iname 'pull_request_template*' \
+  -o -ipath '*/pull_request_template/*' \) -print 2>/dev/null
+```
+
+Record the result as one of:
+
+- `No PR template found`
+- `One PR template found: <path>`
+- `Multiple PR templates found: <paths>`
+
+If one template is found, read it before drafting the PR body. If multiple
+templates are found and no obvious default exists, ask which one to use.
+
+Do not run `gh pr create` until the template status is known.
+
+### 3. Check Agent Docs
+
+If the project has an AGENTS.md or CLAUDE.md, review it against the current
+changes. If changes introduce new conventions, commands, architecture, or
+patterns that should be documented (or invalidate existing docs), update the
+relevant file as part of this commit. Only update if clearly warranted — avoid
+adding noise.
+
+Things worth documenting:
+
+- Non-obvious conventions or patterns not apparent from code structure alone
+- Surprising behaviors, gotchas, or workarounds discovered during development
+- Implicit dependencies or ordering constraints between components
+- Environment-specific quirks (platform differences, tool version sensitivities)
+- Undocumented requirements or constraints found through trial and error
+
+### 4. Branch
+
+If on `main`, `master`, or the repository's default/protected branch, create a
+new branch named for the changes with `git checkout -b <descriptive-name>`.
+Never rename these branches.
+
+Only use `git branch -m <descriptive-name>` when already on a non-main branch
+whose name appears generated, random, or unrelated to the current work, such as
+UUIDs, hex strings, meaningless sequences, or 1-3 unrelated words like
+"brave-fox".
+
+If the branch name is meaningful or user-provided, keep it.
+
+### 5. Commit
+
+Stage all relevant changes and create a single commit with a conventional commit
+message. Lead with why over what. The commit body should start with the reason
+for the change; technical overview and implementation notes come after. Make the
+problem, context, or reason for the change clear before describing
+implementation details when that reason is supported by the available evidence.
+If the rationale is unclear, do not guess; ask the user.
+
+If the reason behind a change is not clear from context, ask the user before
+committing.
+
+Never stage or commit files ignored by git unless the user explicitly asks. Do
+not use `git add -f`, `git add --force`, or equivalent to include ignored files.
+
+When asked to commit only staged changes, run `git diff --staged` to see exactly
+what is staged, base the commit message solely on those changes, and do NOT
+stage additional files.
+
+### 6. Push
+
+Push the branch to origin with `git push -u origin <branch>`.
+
+### 7. Understand Full Scope
+
+Run `git log` and `git diff main...HEAD` (or master) to see all changes since
+the base branch. This ensures the PR description covers everything, not just the
+latest commit.
+
+### 8. Create PR
+
+Use `gh pr create` to open the pull request.
+
+- **Title**: use conventional commits format when the repo follows that
+  convention
+- **PR template**: use the template selected in step 2 as the PR body structure.
+  Preserve meaningful headings and checklists, replacing placeholders with
+  concrete branch-specific content. If no template was found, write a concise
+  body from the branch diff.
+- **Description**: lead with the motivation and purpose behind the change —
+  before technical details. Start with the problem, context, or reason the
+  change is needed when that can be supported by the available evidence, then
+  cover the implementation. If the rationale is unclear, do not guess; stick to
+  the confirmed scope of the branch or ask the user. Cover the full scope of all
+  commits. Do NOT list individual commits — the PR already shows those.
+
+Before creating the PR, verify:
+
+- PR template search command was run
+- Any matched template file was read
+- PR body follows the selected template, or no template was found
+
+## Guidelines
+
+- Use parallel tool calls where possible to minimize round-trips
+- Minimize text output — focus on tool calls
+- Prefer conventional commits format, but defer to project conventions
+- Pass commit messages and PR bodies via heredocs to avoid shell interpretation
+  of backticks and other special characters in multi-line strings
+- Treat `.gitignore` and other git exclude rules as authoritative for default
+  commit scope
+'''
+conversationDetailMode = "STEPS_EXECUTION"
+preventSleepWhileRunning = true
+selected-avatar-id = "rocky"
+
+[desktop.appearanceLightChromeTheme]
+accent = "#339cff"
+contrast = 45
+ink = "#1a1c1f"
+opaqueWindows = false
+surface = "#ffffff"
+
+[desktop.appearanceLightChromeTheme.fonts]
+code = """'Menlo Nerd Font Mono', "Geist Mono", ui-monospace, "SFMono-Regular""""
+ui = "Geist, Inter"
+
+[desktop.appearanceLightChromeTheme.semanticColors]
+diffAdded = "#00a240"
+diffRemoved = "#ba2623"
+skill = "#924ff7"
+
+[desktop.appearanceDarkChromeTheme]
+accent = "#339cff"
+contrast = 50
+ink = "#ffffff"
+opaqueWindows = false
+surface = "#181818"
+
+[desktop.appearanceDarkChromeTheme.fonts]
+code = """'Menlo Nerd Font Mono', "Geist Mono", ui-monospace, "SFMono-Regular""""
+ui = "Geist, Inter"
+
+[desktop.appearanceDarkChromeTheme.semanticColors]
+diffAdded = "#00a240"
+diffRemoved = "#e02e2a"
+skill = "#b06dff"
+
+[desktop.open-in-target-preferences]
+global = "vscode"
+
+[memories]
+generate_memories = true
+use_memories = true
+

@@ -22,6 +22,9 @@ agent validation or reduce repeated failures.
 - It points to deeper docs instead of duplicating them.
 - It explains non-obvious commands, package managers, and conventions.
 - It avoids stale path catalogs in favor of stable patterns and grep hints.
+- Detailed agent guidance lives in linked docs, not hidden instruction sprawl.
+- Claude Code compatibility is handled with a root `CLAUDE.md` containing only
+  `@AGENTS.md` when `AGENTS.md` is the source of truth.
 
 ### Repository Knowledge
 
@@ -30,6 +33,10 @@ agent validation or reduce repeated failures.
 - Docs have owners or refresh triggers when practical.
 - Generated references are marked as generated and can be regenerated.
 - External knowledge needed by agents is copied or summarized into the repo.
+- Procedural agent guides that became complex or heavily reused are promoted to
+  project-local skills.
+- Local project skills live under `.agents/skills`, with `.claude/skills`
+  symlinked there whenever local skills exist.
 
 ### Validation Surface
 
@@ -38,6 +45,16 @@ agent validation or reduce repeated failures.
 - UI apps expose browser automation paths, fixtures, seed data, or screenshots
   when needed.
 - CI failures are inspectable from local tooling or documented commands.
+
+### Task Surface
+
+- Standard tasks exist for setup, dev, build, format, format check, lint,
+  typecheck, check, test, verify, doctor, and cleanup where relevant.
+- Existing Make, Rake, package, or framework commands are wrapped rather than
+  replaced when that preserves local conventions.
+- `check` is fast and deterministic; `verify` is broader and used only when
+  appropriate for the change.
+- Task descriptions are discoverable through the task runner.
 
 ### Observability and Reproduction
 
@@ -55,6 +72,16 @@ agent validation or reduce repeated failures.
 - Review feedback that repeats becomes a lint, test, script, or doc update.
 - Boundaries are strict where they protect coherence and loose where local
   implementation freedom is cheap.
+
+### Supply-Chain and Automation
+
+- Dependency intake uses native package-manager cooldowns or equivalent policy
+  where supported.
+- GitHub Actions workflows are linted when present.
+- Third-party actions and reusable workflows are pinned and updateable through
+  documented tooling where practical.
+- CI permissions, secrets, lockfiles, and generated workflow artifacts have
+  explicit review or validation paths.
 
 ### Entropy Control
 
@@ -75,6 +102,8 @@ Overall: Level <n> - <one sentence>
 | Area | Level | Evidence | Next improvement |
 | --- | ---: | --- | --- |
 | Project map | 2 | ... | ... |
+| Task surface | 2 | ... | ... |
+| Supply-chain and automation | 1 | ... | ... |
 
 ## Priority Changes
 

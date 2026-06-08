@@ -23,6 +23,16 @@ Harness engineering is not prompt polishing. Treat repeated agent mistakes as
 missing harness capabilities: unclear maps, inaccessible signals, weak tests,
 unenforced boundaries, stale docs, or absent cleanup loops.
 
+Think in four parts:
+
+- **Guides**: docs, skills, task names, examples, templates, and maps that steer
+  agents before they act.
+- **Sensors**: tests, linters, type checks, logs, CI, screenshots, review
+  agents, and other feedback that lets agents self-correct after they act.
+- **Task surface**: stable commands agents can discover and run without
+  guessing.
+- **Cleanup**: recurring checks and small refactors that keep the harness fresh.
+
 ## Workflow
 
 ### 1. Classify the Request
@@ -36,11 +46,18 @@ Pick the smallest useful mode:
 - **Encode rules**: convert recurring review feedback into mechanical checks.
 - **Build feedback loops**: make app state, tests, logs, screenshots, or CI
   failures directly inspectable by agents.
+- **Standardize task surface**: expose setup, dev, build, format, lint,
+  typecheck, check, test, verify, doctor, and cleanup commands through existing
+  project tooling or `mise`.
+- **Harden dependency intake**: add package-manager cooldowns, lockfile policy,
+  GitHub Actions pinning, and workflow checks when the ecosystem supports them.
 - **Garbage collect**: find drift and create small cleanup work items.
 
 If the user asks to "make changes", "bootstrap", "add", "fix", or similar,
 implement the focused harness improvement. If they ask to "consider", "audit",
-"plan", or "explore", return a plan before editing.
+"plan", or "explore", return a plan before editing. If they explicitly ask to
+improve an agent harness setup, proceed without asking for more confirmation
+unless the change would be unusually broad or risky.
 
 ### 2. Read the Project as the Agent Will
 
@@ -52,10 +69,12 @@ Inspect, in this order:
    CI workflows, test configs.
 3. Architecture and product docs: `docs/`, `ARCHITECTURE.md`, design docs, ADRs,
    schemas, generated references.
-4. Agent affordances: browser automation, local dev boot scripts, log access,
-   fixtures, seed data, screenshots, traces, PR/CI tooling.
+4. Agent affordances: browser automation, local dev boot scripts, local skills,
+   log access, fixtures, seed data, screenshots, traces, PR/CI tooling.
 5. Mechanical constraints: linters, dependency rules, type checks, structural
    tests, naming checks, file size checks, custom diagnostics.
+6. Supply-chain controls: lockfiles, package-manager age gates, GitHub Actions
+   pins, action/workflow linting, dependency update policy.
 
 Prefer `rg` and existing project commands. Do not assume missing docs are the
 main problem; missing executable feedback often matters more.
@@ -69,6 +88,10 @@ For each recurring failure or desired autonomy level, ask:
   browser flows, logs, or observability entry points.
 - **Can the agent avoid forbidden designs?** If not, encode boundaries as tests
   or lints instead of prose.
+- **Can the agent run the obvious command?** If not, standardize task names or
+  wrap existing Make, Rake, package, or framework commands.
+- **Can the repo resist rushed dependency intake?** If not, recommend cooldowns,
+  pinned automation dependencies, and lockfile checks.
 - **Can the agent recover from drift?** If not, create cleanup checks, quality
   docs, or recurring maintenance prompts.
 - **Is this rule stable enough to document?** If not, leave it as task-local
@@ -80,7 +103,9 @@ Prefer durable repo-local artifacts:
 
 - Minimal root `AGENTS.md` as a map, not an encyclopedia.
 - Deeper docs under `docs/` for architecture, product, testing, operations,
-  quality, and execution plans.
+  quality, agent guidance, and execution plans.
+- Project-local skills for procedural, conditional, or frequently reused agent
+  workflows that should load only when triggered.
 - Scripts for repeatable setup, reproduction, validation, and cleanup.
 - Tests or custom lints for rules that must not depend on attention.
 - Diagnostic messages that explain how an agent should remediate the failure.
@@ -88,6 +113,19 @@ Prefer durable repo-local artifacts:
 
 Do not add large instruction blobs. Link to deeper sources and keep each source
 owned, refreshable, and narrow.
+
+Prefer `docs/agents/*.md` for detailed agent guidance. Add sub-folder
+`AGENTS.md` files only when local rules differ sharply and should be
+automatically loaded for edits in that subtree.
+
+For Claude Code compatibility, ensure a root `CLAUDE.md` exists next to
+`AGENTS.md` and contains only `@AGENTS.md`. If it contains unique guidance,
+migrate the relevant content into `AGENTS.md` or linked docs before replacing
+it.
+
+For project-local skills, prefer `.agents/skills`. If that directory exists,
+ensure `.claude/skills` is a symlink to `../.agents/skills` so Claude Code can
+discover the same skills.
 
 ### 5. Output or Implement
 
@@ -103,6 +141,10 @@ For implementation, keep the first pass narrow. Add one or two compounding
 affordances, run relevant formatting/tests, and document any surprising
 project-specific discovery in the project agent instructions.
 
+Respect local validation guidance. Use targeted tests and checks for narrow
+changes. Use full `verify`-style runs only when the change is broad, risky, or
+near handoff and local instructions do not discourage full-suite runs.
+
 ## Reference Files
 
 Read only what the current task needs:
@@ -113,6 +155,12 @@ Read only what the current task needs:
   checks.
 - `references/feedback-loops.md`: validation, observability, and recovery loops.
 - `references/entropy-cleanup.md`: recurring drift detection and cleanup.
+- `references/guides-and-sensors.md`: feed-forward guides, feedback sensors, and
+  computational vs inferential controls.
+- `references/tooling-patterns.md`: standard task surfaces, hooks, supply-chain
+  hardening, workflow checks, and optional GitNexus use.
+- `references/tooling-snippets.md`: concise config snippets for common harness
+  tooling.
 
 ## Guardrails
 
@@ -120,6 +168,15 @@ Read only what the current task needs:
   matters.
 - Favor maps over manuals: short entry points, linked deeper sources.
 - Keep guidance stable and grep-able; avoid brittle file path inventories.
+- Wrap existing project tooling instead of replacing it. If `make`, `rake`,
+  package scripts, or framework commands already exist, expose them through a
+  standard task surface when useful.
+- Use fast staged-file pre-commit hooks when helpful. Do not add pre-push hooks
+  by default; leave longer checks to explicit agent runs or CI.
+- Treat supply-chain hardening as a default audit category.
+- Recommend GitNexus only when codebase size, unfamiliarity, impact analysis, or
+  repeated navigation failures justify it; do not install or index it unless the
+  user asks.
 - Preserve existing project conventions unless they block agent legibility.
 - Do not introduce dependencies for simple scripts or checks.
 - Treat external chat/docs/tacit knowledge as invisible until encoded in repo.
