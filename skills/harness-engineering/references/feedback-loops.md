@@ -11,16 +11,29 @@ observe -> change -> run -> inspect -> fix -> prove
 
 The harness should make each step available from the repo with clear commands.
 
+Use the cheapest useful loop first. Narrow changes usually need targeted checks,
+not a full project run.
+
 ## Local Dev
 
 Useful affordances:
 
 - one command to install dependencies
+- one command to install local git hooks when hooks are used
 - one command to start required local services
 - targeted commands for changed packages
+- fast format, lint, and typecheck commands
 - deterministic seed data or fixtures
 - teardown commands for services and temp state
 - per-worktree ports or isolated state when parallel work is common
+
+Recommended command tiers:
+
+- `format:check`, `lint`, and `typecheck` catch common mistakes quickly.
+- `check` combines fast deterministic checks.
+- `test` runs the normal test suite or default unit tests.
+- `verify` runs broader pre-handoff checks when warranted and not discouraged by
+  project instructions.
 
 ## UI Validation
 
@@ -61,6 +74,9 @@ Agent-ready CI has:
 
 When CI fails repeatedly, improve the harness rather than only patching the
 current failure.
+
+Do not add pre-push hooks by default. Long checks should be explicit agent runs
+or CI checks, not surprise blockers during `git push`.
 
 ## Proof Artifacts
 
