@@ -102,6 +102,8 @@ Good candidates:
 - PR feedback triage with review-thread inspection and stale-comment handling
 - benchmark or performance workflows with repeatable setup and proof artifacts
 - incident or debugging workflows with logs, traces, fixtures, and teardown
+- long-running feature work with planner, implementer, evaluator, and handoff
+  artifacts
 
 Keep background knowledge in `references/` inside the skill. Move deterministic
 repeatable code into `scripts/`. Leave stable architecture, domain vocabulary,

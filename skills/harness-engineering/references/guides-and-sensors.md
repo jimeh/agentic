@@ -79,6 +79,21 @@ Poor sensors are:
 - hard to reproduce locally
 - written only for humans, with no actionable fix hint
 
+## Long-Running Workflows
+
+For long-running or high-risk work, consider a stronger workflow harness instead
+of only adding more docs:
+
+- a planner step that turns intent into a scoped plan or execution artifact
+- an agreement on what "done" means before implementation starts
+- a generator/implementer loop that works one coherent chunk at a time
+- an evaluator or review step that validates the result against the plan
+- handoff artifacts that preserve decisions, progress, evidence, and next steps
+
+Use this when work spans many sessions, requires subjective judgment, or needs
+independent verification. Keep it lightweight for normal changes; every workflow
+component encodes an assumption about what the agent cannot yet do reliably.
+
 ## Harness Evolution
 
 Treat harness controls as assumptions that can expire. When models, tooling, or

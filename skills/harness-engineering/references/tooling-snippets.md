@@ -6,6 +6,9 @@ runner, and project conventions.
 ## mise Task Wrapper
 
 ```toml
+[settings]
+minimum_release_age = "7d"
+
 [tasks.setup]
 description = "Install dependencies and local git hooks"
 run = [
@@ -46,6 +49,9 @@ depends = ["check", "test"]
 If the repo already has `make check`, `rake test`, or package scripts, wrap
 those commands instead of duplicating their internals.
 
+Use a 3-7 day dependency cooldown by default. Prefer 7 days unless the project
+has high-churn internal tooling or time-sensitive security tooling.
+
 ## mise Idiomatic Version Files
 
 Use this when the repo already has files such as `.node-version`,
@@ -53,6 +59,7 @@ Use this when the repo already has files such as `.node-version`,
 
 ```toml
 [settings]
+minimum_release_age = "7d"
 idiomatic_version_file_enable_tools = ["node", "ruby", "python"]
 ```
 
@@ -170,6 +177,9 @@ Keep pre-commit fast. Avoid pre-push hooks by default.
 
 ## pnpm Release Age
 
+Default to 7 days. Use 3 days only when project constraints justify faster
+intake.
+
 ```yaml
 minimumReleaseAge: 10080 # 7 days
 minimumReleaseAgeExclude:
@@ -180,6 +190,8 @@ Use a shorter window when the project depends on high-churn internal tooling.
 
 ## Bun Release Age
 
+Default to 7 days.
+
 ```toml
 [install]
 minimumReleaseAge = 604800 # 7 days, seconds
@@ -187,6 +199,8 @@ minimumReleaseAgeExcludes = ["@types/bun", "typescript"]
 ```
 
 ## Bundler Cooldown
+
+Default to 7 days.
 
 ```ruby
 source "https://rubygems.org", cooldown: 7

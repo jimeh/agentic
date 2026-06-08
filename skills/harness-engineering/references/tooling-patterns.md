@@ -87,12 +87,41 @@ It is fine to standardize `actionlint` and `pinact` as mise-managed tools
 because they are project-level CI/workflow utilities rather than runtime package
 dependencies.
 
+## Tool Surface Hygiene
+
+Treat tool and MCP sprawl as a harness risk. Tool names, descriptions, schemas,
+and MCP server instructions become trusted agent context, so broad or
+overlapping tools can lower reliability and increase prompt-injection exposure.
+
+Prefer:
+
+- a few focused tools with clear names and non-overlapping purposes
+- project-local CLIs and scripts that agents can inspect
+- MCP servers from trusted sources with narrow permissions
+- documented reasons for each installed MCP or broad tool integration
+- removing stale tools when equivalent project-local commands exist
+
+Avoid:
+
+- installing broad MCP servers just in case
+- exposing tools that can mutate external systems without clear need
+- keeping multiple tools that answer the same question differently
+- vague tool descriptions that do not say when or why to use the tool
+
+When recommending a new tool, include why the existing task surface is
+insufficient and what agent failure the tool is meant to prevent.
+
 ## Dependency Intake
 
 Treat supply-chain hardening as a default audit category.
 
+Recommend a 3-7 day cooldown window, defaulting to 7 days unless the project has
+a clear need for a shorter window. Use explicit per-tool or per-package
+exceptions for urgent security updates or high-churn internal tooling.
+
 Prefer native package-manager controls:
 
+- mise: `minimum_release_age = "7d"` in `mise.toml`
 - pnpm: `minimumReleaseAge` in `pnpm-workspace.yaml`
 - Bun: `install.minimumReleaseAge` in `bunfig.toml`
 - Bundler: `cooldown:` on public `Gemfile` sources or project config
