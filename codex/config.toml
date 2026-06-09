@@ -25,7 +25,6 @@ js_repl = false
 [notice.model_migrations]
 "gpt-5.2" = "gpt-5.2-codex"
 
-
 [plugins."github@openai-curated"]
 enabled = true
 
