@@ -2,9 +2,10 @@
 
 model = "gpt-5.5"
 model_reasoning_effort = "high"
-personality = 'pragmatic'
+personality = "pragmatic"
 suppress_unstable_features_warning = true
-web_search = 'live'
+web_search = "live"
+approvals_reviewer = "user"
 
 # Leave room for native compaction near the 272–273k context window.
 # Formula: 273000 - (tool_output_token_limit + 15000)
@@ -25,6 +26,7 @@ js_repl = false
 [notice.model_migrations]
 "gpt-5.2" = "gpt-5.2-codex"
 
+[plugins]
 [plugins."github@openai-curated"]
 enabled = true
 
@@ -43,9 +45,6 @@ enabled = true
 [plugins."codex-security@openai-curated"]
 enabled = true
 
-[plugins."computer-use@openai-bundled"]
-enabled = true
-
 [plugins."remotion@openai-curated"]
 enabled = true
 
@@ -55,13 +54,19 @@ enabled = true
 [plugins."convex@openai-curated"]
 enabled = true
 
-[plugins."build-web-apps@openai-curated"]
-enabled = true
-
 [plugins."browser@openai-bundled"]
 enabled = true
 
 [plugins."chrome@openai-bundled"]
+enabled = true
+
+[plugins."build-macos-apps@openai-curated"]
+enabled = true
+
+[plugins."computer-use@openai-bundled"]
+enabled = true
+
+[plugins."build-web-apps@openai-curated"]
 enabled = true
 
 [[skills.config]]
@@ -78,6 +83,7 @@ enabled = true
 url = "https://mcp.deepwiki.com/mcp"
 
 [mcp_servers.gitnexus]
+enabled = true
 command = 'mise'
 args = ['x', 'npm:gitnexus', '--', 'gitnexus', 'mcp']
 
@@ -350,4 +356,3 @@ global = "vscode"
 [memories]
 generate_memories = true
 use_memories = true
-

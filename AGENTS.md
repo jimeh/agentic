@@ -15,9 +15,9 @@ bun install         # install npm deps with seven-day minimum release age
 ```
 
 ```bash
-mise run setup              # run ./setup.sh via mise
-mise run setup:force        # run ./setup.sh --force
-mise run setup:dry-run      # preview setup changes
+mise run setup               # run ./setup.sh via mise
+mise run setup:force         # run ./setup.sh --force
+mise run setup:dry-run       # preview setup changes
 mise run format              # format with oxfmt + markdownlint --fix
 mise run lint                # check formatting, markdown, agent metadata
 mise run format:oxfmt        # format with oxfmt only
