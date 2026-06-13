@@ -4,7 +4,7 @@
   },
   "attribution": {
     "commit": "",
-    "pr": "🤖 Generated with [Claude Code](https://claude.ai/code)"
+    "pr": ""
   },
   "permissions": {
     "allow": [
@@ -151,6 +151,7 @@
     ],
     "defaultMode": "auto"
   },
+  "model": "opus",
   "hooks": {
     "UserPromptSubmit": [
       {
@@ -249,8 +250,9 @@
   "effortLevel": "xhigh",
   "autoUpdatesChannel": "latest",
   "showThinkingSummaries": true,
+  "theme": "dark",
   "editorMode": "normal",
+  "preferredNotifChannel": "ghostty",
   "teammateMode": "auto",
-  "skipAutoPermissionPrompt": true,
-  "preferredNotifChannel": "ghostty"
+  "skipAutoPermissionPrompt": true
 }
