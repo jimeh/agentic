@@ -1,4 +1,4 @@
-import readline from "node:readline";
+import { autocompleteMultiselect, isCancel } from "@clack/prompts";
 import type { DiscoveredSkill } from "./discover";
 
 type PromptStreams = {
@@ -6,25 +6,47 @@ type PromptStreams = {
   output: NodeJS.WriteStream;
 };
 
-function render(
-  output: NodeJS.WriteStream,
-  skills: DiscoveredSkill[],
-  selected: Set<number>,
-  cursor: number,
-): void {
-  output.write("\x1b[2J\x1b[H");
-  output.write("Select skills to add\n\n");
-  for (const [index, skill] of skills.entries()) {
-    const pointer = index === cursor ? ">" : " ";
-    const mark = selected.has(index) ? "x" : " ";
-    output.write(`${pointer} [${mark}] ${skill.name}\n`);
-    output.write(`      ${skill.description}\n`);
-  }
-  output.write("\nspace: toggle  a: all  enter: confirm  q: cancel\n");
+type SkillPromptOption = {
+  value: string;
+  label: string;
+  hint: string;
+};
+
+function visibleItems(output: NodeJS.WriteStream): number {
+  const rows = output.rows ?? 20;
+  return Math.max(5, Math.min(12, rows - 8));
 }
 
-/** Prompt for a multi-select skill choice in an interactive terminal. */
-export function selectSkills(
+/** Build searchable multi-select options for discovered skills. */
+export function skillPromptOptions(
+  skills: DiscoveredSkill[],
+): SkillPromptOption[] {
+  return skills.map((skill) => ({
+    value: skill.name,
+    label: skill.name,
+    hint: skill.path,
+  }));
+}
+
+/** Match skill options by name, path, or description. */
+export function skillPromptFilter(
+  search: string,
+  option: SkillPromptOption,
+  skills: DiscoveredSkill[],
+): boolean {
+  const needle = search.trim().toLowerCase();
+  if (!needle) {
+    return true;
+  }
+
+  const skill = skills.find((candidate) => candidate.name === option.value);
+  return [option.label, option.hint, skill?.description ?? ""].some((value) =>
+    value.toLowerCase().includes(needle),
+  );
+}
+
+/** Prompt for a searchable multi-select skill choice in a terminal. */
+export async function selectSkills(
   skills: DiscoveredSkill[],
   streams: PromptStreams = { input: process.stdin, output: process.stdout },
 ): Promise<DiscoveredSkill[]> {
@@ -33,63 +55,21 @@ export function selectSkills(
     throw new Error("pass --skill when not running in an interactive terminal");
   }
 
-  readline.emitKeypressEvents(input);
-  const previousRawMode = input.isRaw;
-  input.setRawMode(true);
-  input.resume();
-
-  let cursor = 0;
-  const selected = new Set<number>();
-  render(output, skills, selected, cursor);
-
-  return new Promise((resolve, reject) => {
-    function cleanup(): void {
-      input.setRawMode(previousRawMode);
-      input.off("keypress", onKeypress);
-      input.pause();
-      output.write("\x1b[2J\x1b[H");
-    }
-
-    function onKeypress(_: string, key: readline.Key): void {
-      if (key.ctrl && key.name === "c") {
-        cleanup();
-        reject(new Error("cancelled"));
-        return;
-      }
-
-      if (key.name === "q") {
-        cleanup();
-        reject(new Error("cancelled"));
-        return;
-      }
-
-      if (key.name === "up") {
-        cursor = Math.max(0, cursor - 1);
-      } else if (key.name === "down") {
-        cursor = Math.min(skills.length - 1, cursor + 1);
-      } else if (key.name === "space") {
-        if (selected.has(cursor)) {
-          selected.delete(cursor);
-        } else {
-          selected.add(cursor);
-        }
-      } else if (key.name === "a") {
-        if (selected.size === skills.length) {
-          selected.clear();
-        } else {
-          for (const index of skills.keys()) {
-            selected.add(index);
-          }
-        }
-      } else if (key.name === "return") {
-        cleanup();
-        resolve([...selected].sort().map((index) => skills[index]));
-        return;
-      }
-
-      render(output, skills, selected, cursor);
-    }
-
-    input.on("keypress", onKeypress);
+  const selected = await autocompleteMultiselect({
+    input,
+    output,
+    message: "Select skills to add",
+    options: skillPromptOptions(skills),
+    placeholder: "Type to search by name, path, or description",
+    maxItems: visibleItems(output),
+    required: false,
+    filter: (search, option) => skillPromptFilter(search, option, skills),
   });
+
+  if (isCancel(selected)) {
+    throw new Error("cancelled");
+  }
+
+  const byName = new Map(skills.map((skill) => [skill.name, skill]));
+  return selected.map((name) => byName.get(name)!);
 }

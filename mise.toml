@@ -27,19 +27,19 @@ run = "lefthook install --reset-hooks-path"
 
 [tasks."thirdparty:add-skills"]
 description = "Add selected upstream skills to the third-party manifest"
-run = "bun --cwd packages/vendor-skills ./bin/vendor-skills.ts add --root ../.."
+run = "bun packages/vendor-skills/bin/vendor-skills.ts add"
 
 [tasks."thirdparty:update-skills"]
 description = "Update vendored third-party skills from manifest sources"
-run = "bun --cwd packages/vendor-skills ./bin/vendor-skills.ts update --root ../.."
+run = "bun packages/vendor-skills/bin/vendor-skills.ts update"
 
 [tasks."thirdparty:update-skills:dry-run"]
 description = "Preview vendored third-party skill updates"
-run = "bun --cwd packages/vendor-skills ./bin/vendor-skills.ts update --dry-run --root ../.."
+run = "bun packages/vendor-skills/bin/vendor-skills.ts update --dry-run"
 
 [tasks."thirdparty:update-skills:check"]
 description = "Check vendored third-party skills against upstream"
-run = "bun --cwd packages/vendor-skills ./bin/vendor-skills.ts check --root ../.."
+run = "bun packages/vendor-skills/bin/vendor-skills.ts check"
 
 [tasks.format]
 description = "Format markdown files (oxfmt + markdownlint)"
@@ -51,7 +51,7 @@ depends = ["lint:oxfmt", "lint:markdownlint", "lint:agent-harness"]
 
 [tasks.test]
 description = "Run Bun tests"
-run = "bun --cwd packages/vendor-skills test"
+run = "bun test packages/vendor-skills/src"
 
 [tasks.verify]
 description = "Run lint and tests"

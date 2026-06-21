@@ -8,6 +8,7 @@
     "test": "bun test"
   },
   "dependencies": {
+    "@clack/prompts": "1.5.1",
     "gray-matter": "^4.0.3"
   }
 }
