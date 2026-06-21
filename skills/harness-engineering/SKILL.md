@@ -17,18 +17,22 @@ description: >-
 
 Shape a repository into a practical agent harness: easy to navigate, easy to
 validate, hard to drift, and explicit about the constraints agents must obey.
-Optimize for repo-local systems that compound across future agent runs.
+Optimize for repo-local systems that compound across future agent runs. Reduce
+agent uncertainty and make wrong turns fail early, locally, and with actionable
+remediation.
 
-Harness engineering is not prompt polishing. Treat repeated agent mistakes as
-missing harness capabilities: unclear maps, inaccessible signals, weak tests,
-unenforced boundaries, stale docs, or absent cleanup loops.
+Harness engineering is not prompt polishing. Treat repeated agent mistakes, slow
+handoffs, and review-only failures as missing repo capabilities: unclear maps,
+inaccessible signals, weak tests, unenforced boundaries, stale docs, or absent
+cleanup loops.
 
 Think in four parts:
 
 - **Guides**: docs, skills, task names, examples, templates, and maps that steer
   agents before they act.
-- **Sensors**: tests, linters, type checks, logs, CI, screenshots, review
-  agents, and other feedback that lets agents self-correct after they act.
+- **Sensors**: fast feedback checks, tests, linters, type checks, logs, CI,
+  screenshots, review agents, and other signals that let agents detect and
+  correct mistakes.
 - **Task surface**: stable commands agents can discover and run without
   guessing.
 - **Cleanup**: recurring checks and small refactors that keep the harness fresh.
@@ -59,6 +63,10 @@ implement the focused harness improvement. If they ask to "consider", "audit",
 improve an agent harness setup, proceed without asking for more confirmation
 unless the change would be unusually broad or risky.
 
+Bias toward changes that compound: one good command, check, fixture, map, or
+diagnostic should make many future agent runs easier. Prefer early mechanical
+failure over late human review whenever the rule can be checked.
+
 ### 2. Read the Project as the Agent Will
 
 Inspect, in this order:
@@ -86,6 +94,9 @@ and CI workflow checks are expected unless the project has a documented reason
 to omit them.
 
 ### 3. Find the Missing Harness Capability
+
+Translate every friction point into a missing guide, sensor, task, or cleanup
+loop before choosing the artifact.
 
 For each recurring failure or desired autonomy level, ask:
 
@@ -185,6 +196,9 @@ Read only what the current task needs:
   matters.
 - Treat missing formatters, linters, type/schema checks, test commands, and
   GitHub Actions checks as gaps unless they are genuinely not applicable.
+- Do not add heavyweight tooling just to satisfy the checklist. Add the lightest
+  durable control that gives agents reliable feedback for the repo's actual
+  risk.
 - Favor maps over manuals: short entry points, linked deeper sources.
 - Keep guidance stable and grep-able; avoid brittle file path inventories.
 - Wrap existing project tooling instead of replacing it. If `make`, `rake`,
