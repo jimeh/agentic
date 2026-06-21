@@ -10,16 +10,20 @@ bun = true
 # --- Top-level tasks ---
 
 [tasks.setup]
-description = "Create agent config symlinks and install configured plugins"
-run = "./setup.sh"
+description = "Install project dependencies"
+run = "bun install"
 
-[tasks."setup:force"]
-description = "Replace existing agent config symlinks after backing them up"
-run = "./setup.sh --force"
+[tasks."agent-config:install"]
+description = "Install agent config symlinks and configured plugins"
+run = "./install-agent-configs.sh"
 
-[tasks."setup:dry-run"]
-description = "Preview setup changes without modifying files"
-run = "./setup.sh --dry-run"
+[tasks."agent-config:force"]
+description = "Replace installed agent config symlinks after backing them up"
+run = "./install-agent-configs.sh --force"
+
+[tasks."agent-config:dry-run"]
+description = "Preview agent config installation"
+run = "./install-agent-configs.sh --dry-run"
 
 [tasks."hooks:install"]
 description = "Install Lefthook git hooks"

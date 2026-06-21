@@ -375,7 +375,7 @@ setup_claude_plugins() {
 
 show_help() {
   cat << 'EOF'
-Usage: setup.sh [--dry-run] [--force] [--help]
+Usage: install-agent-configs.sh [--dry-run] [--force] [--help]
 
 Options:
   --dry-run  Preview what would be done without making changes
