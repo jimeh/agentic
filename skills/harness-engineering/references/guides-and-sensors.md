@@ -3,6 +3,16 @@
 Use this model to decide whether a harness improvement should steer agents
 before action or validate their work after action.
 
+## Contents
+
+- [Core Terms](#core-terms)
+- [Control Matrix](#control-matrix)
+- [Choosing the Control](#choosing-the-control)
+- [Docs vs Skills](#docs-vs-skills)
+- [Sensor Quality](#sensor-quality)
+- [Long-Running Workflows](#long-running-workflows)
+- [Harness Evolution](#harness-evolution)
+
 ## Core Terms
 
 - **Guide**: feed-forward context that helps the agent choose the right path
