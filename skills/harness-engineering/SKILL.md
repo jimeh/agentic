@@ -79,6 +79,12 @@ Inspect, in this order:
 Prefer `rg` and existing project commands. Do not assume missing docs are the
 main problem; missing executable feedback often matters more.
 
+Use `references/harness-checklist.md` for audits or broad harness work. Treat
+each baseline item as pass, gap, or not applicable, with file or command
+evidence. For common ecosystems, formatter, linter, type/schema checks, tests,
+and CI workflow checks are expected unless the project has a documented reason
+to omit them.
+
 ### 3. Find the Missing Harness Capability
 
 For each recurring failure or desired autonomy level, ask:
@@ -90,6 +96,8 @@ For each recurring failure or desired autonomy level, ask:
   or lints instead of prose.
 - **Can the agent run the obvious command?** If not, standardize task names or
   wrap existing Make, Rake, package, or framework commands.
+- **Can the agent prove format, lint, test, and workflow safety locally?** If
+  not, add a command or document why the check is CI-only or not applicable.
 - **Can the repo resist rushed dependency intake?** If not, recommend cooldowns,
   pinned automation dependencies, and lockfile checks.
 - **Can the agent recover from drift?** If not, create cleanup checks, quality
@@ -133,6 +141,7 @@ For audits, output:
 
 - current maturity level
 - top harness gaps
+- checklist highlights, especially missing automated validation
 - prioritized changes by leverage and effort
 - concrete files or checks to add
 - validation strategy
@@ -149,6 +158,8 @@ near handoff and local instructions do not discourage full-suite runs.
 
 Read only what the current task needs:
 
+- `references/harness-checklist.md`: concrete pass/gap/not-applicable audit
+  checklist.
 - `references/readiness-rubric.md`: audit categories and maturity levels.
 - `references/repo-knowledge-map.md`: progressive disclosure structures.
 - `references/enforceable-invariants.md`: turning taste and architecture into
@@ -166,6 +177,8 @@ Read only what the current task needs:
 
 - Favor executable checks over advisory prose when correctness or architecture
   matters.
+- Treat missing formatters, linters, type/schema checks, test commands, and
+  GitHub Actions checks as gaps unless they are genuinely not applicable.
 - Favor maps over manuals: short entry points, linked deeper sources.
 - Keep guidance stable and grep-able; avoid brittle file path inventories.
 - Wrap existing project tooling instead of replacing it. If `make`, `rake`,

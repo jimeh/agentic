@@ -72,20 +72,25 @@ a shared cross-language tool pin.
 
 ## CI and Workflow Hardening
 
-For GitHub Actions projects, consider:
+For GitHub Actions projects, expect a local workflow-check task unless the repo
+has a documented reason not to support one. Standard checks are:
 
 - `actionlint` for workflow syntax and expression checks
+- `zizmor --offline .` for GitHub Actions security findings
 - `pinact` for pinning, checking, updating, and verifying action versions
 - full-length SHA pins for third-party actions where practical
 - restricted `GITHUB_TOKEN` permissions
-- `CODEOWNERS` or focused review for workflow changes
 
 Map CI jobs to local commands where possible. If a job is CI-only, say so in the
 agent docs.
 
-It is fine to standardize `actionlint` and `pinact` as mise-managed tools
-because they are project-level CI/workflow utilities rather than runtime package
-dependencies.
+It is fine to standardize `actionlint`, `zizmor`, and `pinact` as mise-managed
+tools because they are project-level CI/workflow utilities rather than runtime
+package dependencies.
+
+Use `actionlint` default discovery instead of a narrow workflow glob so `.yml`
+and `.yaml` files stay covered. Run `zizmor` offline by default for local agent
+loops; use online or token-backed checks only when the repo documents that need.
 
 ## Tool Surface Hygiene
 
@@ -145,5 +150,5 @@ Do not install or index GitNexus unless the user asks. If it already exists,
 checking index freshness can be part of the audit.
 
 If the user asks to manage GitNexus with mise, install it through the npm
-backend with reviewed build approvals. This requires `node` and an npm package
-manager path that supports `allow_builds`, currently `aube` or `pnpm`.
+backend with Bun trust enabled. This requires `node`, `bun`, mise's npm package
+manager set to `bun`, and `bun_args = "--trust"` on the `npm:gitnexus` tool.

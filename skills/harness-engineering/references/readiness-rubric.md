@@ -41,6 +41,8 @@ agent validation or reduce repeated failures.
 ### Validation Surface
 
 - The project has clear setup, build, lint, typecheck, and test commands.
+- Formatting, linting, type/schema checks, tests, and workflow checks exist for
+  all applicable project surfaces.
 - Agents can run targeted tests for a change without guessing.
 - UI apps expose browser automation paths, fixtures, seed data, or screenshots
   when needed.
@@ -77,7 +79,8 @@ agent validation or reduce repeated failures.
 
 - Dependency intake uses native package-manager cooldowns or equivalent policy
   where supported.
-- GitHub Actions workflows are linted when present.
+- GitHub Actions workflows are checked with `actionlint`, `zizmor`, and action
+  pinning tooling when present.
 - Third-party actions and reusable workflows are pinned and updateable through
   documented tooling where practical.
 - CI permissions, secrets, lockfiles, and generated workflow artifacts have
