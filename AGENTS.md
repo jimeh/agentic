@@ -22,6 +22,8 @@ mise run thirdparty:update-skills:dry-run # preview third-party skill updates
 mise run thirdparty:update-skills:check   # check vendored skills upstream
 mise run format              # format with oxfmt + markdownlint --fix
 mise run lint                # check formatting, markdown, agent metadata
+mise run test                # run Bun tests
+mise run verify              # run lint and tests
 mise run format:oxfmt        # format with oxfmt only
 mise run format:markdownlint # auto-fix markdownlint issues only
 mise run lint:oxfmt          # check oxfmt formatting only
@@ -76,6 +78,8 @@ never edit the symlink targets directly.
 
 Plugin tests live in `plugins/*/tests/*.test.sh`. CI auto-discovers and runs
 them. Tests must be self-contained bash scripts that exit 0 on success.
+TypeScript tests live beside implementation files as `src/**/*.test.ts` and run
+with `mise run test`.
 
 Agent harness checks live in `scripts/check-agent-harness.ts` and run as part of
 `mise run lint`. They verify that skill frontmatter names are slug-safe and
@@ -122,9 +126,9 @@ hashes instead.
 
 ## Dependency Policy
 
-`bunfig.toml` sets Bun's `install.minimumReleaseAge` to seven days. Keep it in
-place so new direct and transitive npm dependency versions have had time to
-settle before installation.
+`mise.toml` pins Bun to the `1.3` release line. `bunfig.toml` sets Bun's
+`install.minimumReleaseAge` to seven days. Keep it in place so new direct and
+transitive npm dependency versions have had time to settle before installation.
 
 ## Shell Conventions
 

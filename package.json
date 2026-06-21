@@ -1,4 +1,13 @@
 {
+  "name": "@jimeh/agentic",
+  "private": true,
+  "bin": {
+    "agentic-vendor-skills": "./bin/agentic-vendor-skills.ts"
+  },
+  "scripts": {
+    "test": "bun test",
+    "vendor-skills": "bun run ./bin/agentic-vendor-skills.ts"
+  },
   "dependencies": {
     "gray-matter": "^4.0.3"
   },
