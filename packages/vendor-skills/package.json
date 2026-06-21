@@ -1,0 +1,13 @@
+{
+  "name": "@jimeh/vendor-skills",
+  "private": true,
+  "bin": {
+    "vendor-skills": "./bin/vendor-skills.ts"
+  },
+  "scripts": {
+    "test": "bun test"
+  },
+  "dependencies": {
+    "gray-matter": "^4.0.3"
+  }
+}

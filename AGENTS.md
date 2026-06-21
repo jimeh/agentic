@@ -78,8 +78,8 @@ never edit the symlink targets directly.
 
 Plugin tests live in `plugins/*/tests/*.test.sh`. CI auto-discovers and runs
 them. Tests must be self-contained bash scripts that exit 0 on success.
-TypeScript tests live beside implementation files as `src/**/*.test.ts` and run
-with `mise run test`.
+TypeScript tests live beside package implementation files as
+`packages/*/src/**/*.test.ts` and run with `mise run test`.
 
 Agent harness checks live in `scripts/check-agent-harness.ts` and run as part of
 `mise run lint`. They verify that skill frontmatter names are slug-safe and
@@ -126,7 +126,8 @@ hashes instead.
 
 ## Dependency Policy
 
-`mise.toml` pins Bun to the `1.3` release line. `bunfig.toml` sets Bun's
+`mise.toml` pins Bun to the `1.3` release line. The root `package.json` is a Bun
+workspace for packages under `packages/`. `bunfig.toml` sets Bun's
 `install.minimumReleaseAge` to seven days. Keep it in place so new direct and
 transitive npm dependency versions have had time to settle before installation.
 

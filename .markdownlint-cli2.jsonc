@@ -19,6 +19,7 @@
   },
   "ignores": [
     "node_modules/",
+    "**/node_modules/**",
     "docs/references/",
     "thirdparty/",
     "plan.md",

@@ -10,8 +10,19 @@
         "oxfmt": "^0.43.0",
       },
     },
+    "packages/vendor-skills": {
+      "name": "@jimeh/vendor-skills",
+      "bin": {
+        "vendor-skills": "./bin/vendor-skills.ts",
+      },
+      "dependencies": {
+        "gray-matter": "^4.0.3",
+      },
+    },
   },
   "packages": {
+    "@jimeh/vendor-skills": ["@jimeh/vendor-skills@workspace:packages/vendor-skills"],
+
     "@oxfmt/binding-android-arm-eabi": ["@oxfmt/binding-android-arm-eabi@0.43.0", "", { "os": "android", "cpu": "arm" }, "sha512-CgU2s+/9hHZgo0IxVxrbMPrMj+tJ6VM3mD7Mr/4oiz4FNTISLoCvRmB5nk4wAAle045RtRjd86m673jwPyb1OQ=="],
 
     "@oxfmt/binding-android-arm64": ["@oxfmt/binding-android-arm64@0.43.0", "", { "os": "android", "cpu": "arm64" }, "sha512-T9OfRwjA/EdYxAqbvR7TtqLv5nIrwPXuCtTwOHtS7aR9uXyn74ZYgzgTo6/ZwvTq9DY4W+DsV09hB2EXgn9EbA=="],

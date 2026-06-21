@@ -10,7 +10,7 @@ type ParsedCommand = {
 function usage(exitCode = 2): never {
   console.error(
     [
-      "Usage: agentic-vendor-skills <command> [options]",
+      "Usage: vendor-skills <command> [options]",
       "",
       "Commands:",
       "  update      Update vendored third-party skills",

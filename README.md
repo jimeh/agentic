@@ -67,8 +67,8 @@ mise run thirdparty:update-skills:dry-run
 mise run thirdparty:update-skills:check
 ```
 
-Those tasks call the repo-local `agentic-vendor-skills` CLI through Bun. Its
-implementation and colocated tests live under `src/thirdparty-skills/`.
+Those tasks call the repo-local `vendor-skills` CLI through Bun. Its
+implementation and colocated tests live under `packages/vendor-skills/src/`.
 
 ## Plugins
 
