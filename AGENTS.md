@@ -1,49 +1,70 @@
 # AGENTS.md
 
 Shared configuration and rules for AI coding agents (Claude Code, Codex, etc).
-`setup.sh` symlinks configs into `~/.claude/`, `~/.agents/`, `~/.codex/`.
+`install-agent-configs.sh` symlinks configs into `~/.claude/`, `~/.agents/`,
+`~/.codex/`.
 
 ## Commands
 
 ```bash
-./setup.sh          # create symlinks (skips existing)
-./setup.sh --force  # replace existing (backs up to .bak)
-shellcheck **/*.sh  # lint all shell scripts
-bun run prepare     # install Husky git hooks
-bun run lint-staged # lint staged files like the pre-commit hook
-bun install         # install npm deps with seven-day minimum release age
+./install-agent-configs.sh          # create symlinks (skips existing)
+./install-agent-configs.sh --force  # replace existing (backs up to .bak)
+shellcheck **/*.sh                  # lint all shell scripts
+bun install                         # install npm deps with minimum release age
 ```
 
 ```bash
-mise run setup               # run ./setup.sh via mise
-mise run setup:force         # run ./setup.sh --force
-mise run setup:dry-run       # preview setup changes
+mise run setup                    # install project dependencies
+mise run setup:ci                 # install deps from lockfile for CI
+mise run agent-config:install     # install agent config symlinks/plugins
+mise run agent-config:force       # replace installed agent config symlinks
+mise run agent-config:dry-run     # preview agent config installation
+mise run hooks:install            # install Lefthook git hooks
+mise run thirdparty:add-skills -- <source> # add upstream skills to manifest
+mise run thirdparty:update-skills         # update vendored third-party skills
+mise run thirdparty:update-skills:dry-run # preview third-party skill updates
+mise run thirdparty:update-skills:check   # check vendored skills upstream
 mise run format              # format with oxfmt + markdownlint --fix
 mise run lint                # check formatting, markdown, agent metadata
+mise run test                # run Bun tests
+mise run verify              # run lint and tests
 mise run format:oxfmt        # format with oxfmt only
 mise run format:markdownlint # auto-fix markdownlint issues only
 mise run lint:oxfmt          # check oxfmt formatting only
 mise run lint:markdownlint   # lint with markdownlint only
 mise run lint:agent-harness  # check skill/plugin metadata invariants
+mise run lint:workflows      # check GitHub Actions syntax/security
 ```
 
 ## Architecture
 
-`setup.sh` auto-discovers and symlinks skills:
+`install-agent-configs.sh` auto-discovers and symlinks skills:
 
 - **Skills**: any `skills/*/` dir with a `SKILL.md` → `~/.claude/skills/` and
   `~/.agents/skills/`
+- **Vendored third-party skills**: any `thirdparty/skills/*/` dir with a
+  `SKILL.md` → the same global skill targets
 
-To add a new skill, just create the directory — `setup.sh` picks it up
-automatically. Stale symlinks are cleaned up on each run.
+To add a new skill, just create the directory — `install-agent-configs.sh` picks
+it up automatically. Stale symlinks are cleaned up on each run.
+
+Third-party skills are source-controlled under `thirdparty/skills/`.
+`thirdparty/skills.manifest.json` defines the reviewed upstream sources and
+selected skills, while `thirdparty/skills.lock.json` records the resolved
+commit, upstream path, and content hash. Skill entries can set `ref` to override
+their source default. Agent config installation stays offline; run
+`mise run thirdparty:add-skills -- <source>` to add and vendor skills, or
+`mise run thirdparty:update-skills` explicitly to refresh already-configured
+vendored content.
 
 **Commands** live in plugins under `plugins/*/commands/`. Each plugin has a
 `.claude-plugin/plugin.json` manifest and auto-discovered `.md` command files.
 
-**Plugins** are installed via the Claude CLI, not symlinks. `setup.sh` ensures
-the official `claude-plugins-official` marketplace and the local `jimeh-agentic`
-marketplace are registered, then installs plugins listed in the `CLAUDE_PLUGINS`
-array at the top of the script. Requires `claude` and `jq`.
+**Plugins** are installed via the Claude CLI, not symlinks.
+`install-agent-configs.sh` ensures the official `claude-plugins-official`
+marketplace and the local `jimeh-agentic` marketplace are registered, then
+installs plugins listed in the `CLAUDE_PLUGINS` array at the top of the script.
+Requires `claude` and `jq`.
 
 ### Marketplace Manifest
 
@@ -65,10 +86,13 @@ never edit the symlink targets directly.
 
 Plugin tests live in `plugins/*/tests/*.test.sh`. CI auto-discovers and runs
 them. Tests must be self-contained bash scripts that exit 0 on success.
+TypeScript tests live beside package implementation files as
+`packages/*/src/**/*.test.ts` and run with `mise run test`.
 
 Agent harness checks live in `scripts/check-agent-harness.ts` and run as part of
 `mise run lint`. They verify that skill frontmatter names are slug-safe and
-match their directories, and that Claude plugin versions match the marketplace.
+match their directories, vendored third-party skill locks match the checked-in
+content, and Claude plugin versions match the marketplace.
 
 ## Plugin Versioning
 
@@ -102,13 +126,18 @@ match.
 
 oxfmt (`proseWrap: "always"`, 80 chars) and markdownlint handle formatting.
 `embeddedLanguageFormatting: "off"` keeps oxfmt from touching YAML frontmatter.
-Run `mise run format` before committing.
+Run `mise run format` before committing. Lefthook runs staged Markdown files
+through `scripts/lint-markdown-files.sh` before commit. Vendored content under
+`thirdparty/` is excluded from Markdown formatting/linting;
+`mise run lint:agent-harness` checks vendored skill frontmatter and content
+hashes instead.
 
 ## Dependency Policy
 
-`bunfig.toml` sets Bun's `install.minimumReleaseAge` to seven days. Keep it in
-place so new direct and transitive npm dependency versions have had time to
-settle before installation.
+`mise.toml` pins Bun to the `1.3` release line. The root `package.json` is a Bun
+workspace for packages under `packages/`. `bunfig.toml` sets Bun's
+`install.minimumReleaseAge` to seven days. Keep it in place so new direct and
+transitive npm dependency versions have had time to settle before installation.
 
 ## Shell Conventions
 
@@ -124,9 +153,10 @@ not `>file`). See `.editorconfig` for shfmt flags.
   `#:schema https://developers.openai.com/codex/config-schema.json` header for
   editor autocomplete/validation in tools like VS Code or Cursor with Even
   Better TOML.
-- When testing `setup.sh` with a temporary `HOME`, tools resolved through mise
-  shims can fail trust checks. Prefer POSIX tools for setup helpers where
-  possible, and validate symlink cleanup before plugin setup side effects.
+- When testing `install-agent-configs.sh` with a temporary `HOME`, tools
+  resolved through mise shims can fail trust checks. Prefer POSIX tools for
+  setup helpers where possible, and validate symlink cleanup before plugin setup
+  side effects.
 - For gone-branch cleanup, `git branch -v` shows `[gone]` and `git branch -vv`
   adds the upstream ref. Prefer `git for-each-ref` for scripts that need stable
   gone-branch detection.

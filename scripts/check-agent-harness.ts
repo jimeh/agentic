@@ -1,7 +1,8 @@
 #!/usr/bin/env bun
 
-import { existsSync, readdirSync, readFileSync } from "node:fs";
-import { basename, dirname, join } from "node:path";
+import { createHash } from "node:crypto";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { basename, dirname, join, relative, sep } from "node:path";
 import matter from "gray-matter";
 
 type Marketplace = {
@@ -15,6 +16,41 @@ type Marketplace = {
 type PluginManifest = {
   name?: string;
   version?: string;
+};
+
+type ThirdpartyManifest = {
+  version?: number;
+  sources?: ThirdpartySource[];
+};
+
+type ThirdpartySource = {
+  id?: string;
+  type?: string;
+  url?: string;
+  ref?: string;
+  skills?: ThirdpartySkill[];
+};
+
+type ThirdpartySkill = {
+  name?: string;
+  path?: string;
+  ref?: string;
+};
+
+type ThirdpartyLock = {
+  version?: number;
+  skills?: Record<string, ThirdpartyLockEntry>;
+};
+
+type ThirdpartyLockEntry = {
+  manifestSourceId?: string;
+  sourceType?: string;
+  sourceUrl?: string;
+  ref?: string;
+  resolvedCommit?: string;
+  upstreamPath?: string;
+  contentHash?: string;
+  skillsCliVersion?: string | null;
 };
 
 const slugPattern = /^[a-z0-9]+(-[a-z0-9]+)*$/;
@@ -50,6 +86,10 @@ function skillFiles(): string[] {
     .map((skillDir) => join(skillDir, "SKILL.md"))
     .filter(existsSync);
 
+  const thirdpartySkills = subdirs("thirdparty/skills")
+    .map((skillDir) => join(skillDir, "SKILL.md"))
+    .filter(existsSync);
+
   const pluginSkills = subdirs("plugins").flatMap((pluginDir) =>
     subdirs(join(pluginDir, "skills")).flatMap((skillsDir) =>
       subdirs(skillsDir)
@@ -58,7 +98,7 @@ function skillFiles(): string[] {
     ),
   );
 
-  return [...rootSkills, ...pluginSkills].sort();
+  return [...rootSkills, ...thirdpartySkills, ...pluginSkills].sort();
 }
 
 function frontmatterName(path: string): string | null {
@@ -165,8 +205,226 @@ function checkPluginVersions(): void {
   }
 }
 
+function assertSlug(name: string | undefined, path: string): boolean {
+  if (!name) {
+    reportError(`${path}: missing name`);
+    return false;
+  }
+
+  if (!slugPattern.test(name)) {
+    reportError(`${path}: name '${name}' is not a slug`);
+    return false;
+  }
+
+  return true;
+}
+
+function isSafeRelativePath(path: string): boolean {
+  const windowsAbsolute = /^[a-zA-Z]:/.test(path) || path.startsWith("\\\\");
+  return (
+    !path.startsWith("/") &&
+    !windowsAbsolute &&
+    !path.split(/[\\/]/).includes("..")
+  );
+}
+
+function collectFiles(baseDir: string, currentDir = baseDir): string[] {
+  return readdirSync(currentDir, { withFileTypes: true }).flatMap((entry) => {
+    if (entry.name === ".git" || entry.name === "node_modules") {
+      return [];
+    }
+
+    const fullPath = join(currentDir, entry.name);
+    if (entry.isDirectory()) {
+      return collectFiles(baseDir, fullPath);
+    }
+
+    if (!entry.isFile()) {
+      return [];
+    }
+
+    return [fullPath];
+  });
+}
+
+function contentHash(dir: string): string {
+  const hash = createHash("sha256");
+  const files = collectFiles(dir).sort((a, b) => a.localeCompare(b));
+
+  for (const file of files) {
+    const relativePath = relative(dir, file).split(sep).join("/");
+    const content = readFileSync(file);
+    hash.update("path\0");
+    hash.update(`${Buffer.byteLength(relativePath, "utf8")}\0`);
+    hash.update(relativePath);
+    hash.update("\0content\0");
+    hash.update(`${content.length}\0`);
+    hash.update(content);
+    hash.update("\0");
+  }
+
+  return `sha256:${hash.digest("hex")}`;
+}
+
+function checkThirdpartySkills(): void {
+  const manifestPath = "thirdparty/skills.manifest.json";
+  const lockPath = "thirdparty/skills.lock.json";
+  const skillsDir = "thirdparty/skills";
+
+  if (!existsSync(manifestPath) && !existsSync(skillsDir) && !existsSync(lockPath)) {
+    return;
+  }
+
+  if (!existsSync(manifestPath)) {
+    reportError(`${manifestPath}: missing third-party skill manifest`);
+    return;
+  }
+
+  if (!existsSync(lockPath)) {
+    reportError(`${lockPath}: missing third-party skill lock`);
+    return;
+  }
+
+  const manifest = readJson<ThirdpartyManifest>(manifestPath);
+  const lock = readJson<ThirdpartyLock>(lockPath);
+  if (!manifest || !lock) {
+    return;
+  }
+
+  if (manifest.version !== 1) {
+    reportError(`${manifestPath}: unsupported version`);
+  }
+
+  if (lock.version !== 1) {
+    reportError(`${lockPath}: unsupported version`);
+  }
+
+  const lockSkills = lock.skills ?? {};
+  const expectedSkills = new Set<string>();
+  const sourceIds = new Set<string>();
+
+  for (const source of manifest.sources ?? []) {
+    const sourceId = source.id;
+    if (!assertSlug(sourceId, manifestPath)) {
+      continue;
+    }
+
+    if (sourceIds.has(sourceId)) {
+      reportError(`${manifestPath}: duplicate source id '${sourceId}'`);
+    }
+    sourceIds.add(sourceId);
+
+    if (source.type !== "git") {
+      reportError(`${manifestPath}: source '${sourceId}' must be type git`);
+    }
+
+    if (
+      typeof source.url !== "string" ||
+      source.url === "" ||
+      typeof source.ref !== "string" ||
+      source.ref === ""
+    ) {
+      reportError(`${manifestPath}: source '${sourceId}' missing url or ref`);
+    }
+
+    for (const skill of source.skills ?? []) {
+      const name = skill.name;
+      if (!assertSlug(name, manifestPath)) {
+        continue;
+      }
+
+      if (
+        typeof skill.path !== "string" ||
+        !skill.path ||
+        !isSafeRelativePath(skill.path)
+      ) {
+        reportError(`${manifestPath}: '${name}' has unsafe path`);
+        continue;
+      }
+
+      if (
+        skill.ref !== undefined &&
+        (typeof skill.ref !== "string" || skill.ref.trim() === "")
+      ) {
+        reportError(`${manifestPath}: '${name}' has empty ref`);
+      }
+
+      if (expectedSkills.has(name)) {
+        reportError(`${manifestPath}: duplicate skill '${name}'`);
+      }
+      expectedSkills.add(name);
+
+      const skillDir = join("thirdparty", "skills", name);
+      const skillFile = join(skillDir, "SKILL.md");
+      if (!existsSync(skillFile)) {
+        reportError(`${skillFile}: vendored skill missing`);
+        continue;
+      }
+
+      const frontmatter = frontmatterName(skillFile);
+      if (frontmatter !== name) {
+        reportError(`${skillFile}: name '${frontmatter}' should match '${name}'`);
+      }
+
+      const lockEntry = lockSkills[name];
+      if (!lockEntry) {
+        reportError(`${lockPath}: missing lock entry for '${name}'`);
+        continue;
+      }
+
+      if (lockEntry.manifestSourceId !== sourceId) {
+        reportError(`${lockPath}: '${name}' has wrong source id`);
+      }
+
+      if (lockEntry.sourceType !== source.type) {
+        reportError(`${lockPath}: '${name}' has wrong source type`);
+      }
+
+      const expectedRef = skill.ref ?? source.ref;
+      if (lockEntry.sourceUrl !== source.url || lockEntry.ref !== expectedRef) {
+        reportError(`${lockPath}: '${name}' source does not match manifest`);
+      }
+
+      if (lockEntry.upstreamPath !== skill.path) {
+        reportError(`${lockPath}: '${name}' path does not match manifest`);
+      }
+
+      if (!lockEntry.resolvedCommit) {
+        reportError(`${lockPath}: '${name}' missing resolved commit`);
+      }
+
+      const actualHash = contentHash(skillDir);
+      if (lockEntry.contentHash !== actualHash) {
+        reportError(`${lockPath}: '${name}' content hash is stale`);
+      }
+    }
+  }
+
+  for (const name of Object.keys(lockSkills)) {
+    if (!expectedSkills.has(name)) {
+      reportError(`${lockPath}: unexpected lock entry '${name}'`);
+    }
+  }
+
+  for (const skillDir of subdirs("thirdparty/skills")) {
+    const name = basename(skillDir);
+    if (!expectedSkills.has(name)) {
+      reportError(`${skillDir}: vendored skill is not in manifest`);
+    }
+
+    try {
+      if (!statSync(join(skillDir, "SKILL.md")).isFile()) {
+        reportError(`${skillDir}: missing SKILL.md`);
+      }
+    } catch {
+      reportError(`${skillDir}: missing SKILL.md`);
+    }
+  }
+}
+
 checkSkillNames();
 checkPluginVersions();
+checkThirdpartySkills();
 
 if (failed) {
   process.exit(1);

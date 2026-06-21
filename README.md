@@ -26,13 +26,20 @@ Supports [Claude Code], [Codex], and any tool that reads `AGENTS.md`.
 ```bash
 git clone https://github.com/jimeh/agentic.git ~/.config/agentic
 cd ~/.config/agentic
-./setup.sh            # create symlinks (skips existing)
-./setup.sh --force    # replace existing (backs up to .bak)
+mise run setup                  # install project dependencies
+mise run agent-config:install   # create symlinks (skips existing)
+# mise run agent-config:force   # replace existing (backs up to .bak)
 ```
 
 This creates symlinks from the repo into `~/.claude/`, `~/.agents/`, and
 `~/.codex/`, and registers plugin marketplaces and installs plugins via the
-Claude CLI. Run `./setup.sh --help` for details.
+Claude CLI. Run `./install-agent-configs.sh --help` for details.
+
+Git hooks are managed by Lefthook:
+
+```bash
+mise run hooks:install
+```
 
 ## What's Inside
 
@@ -41,13 +48,35 @@ Claude CLI. Run `./setup.sh --help` for details.
   directly — never edit the symlink targets.
 - **`claude/`** — Claude Code settings and statusline script.
 - **`codex/`** — OpenAI Codex config.
-- **`skills/`** — Custom skills (auto-discovered by `setup.sh`).
+- **`skills/`** — Custom skills (auto-discovered by the agent config installer).
+- **`thirdparty/`** — Vendored third-party skills plus manifest and lock
+  metadata.
 - **`plugins/`** — Claude Code plugins, published via a local marketplace.
 - **`docs/references/`** — External articles and guides.
 
-Skills are auto-discovered — drop a directory in the right place, re-run
-`setup.sh`, done. Commands live in plugins. Plugins are registered and installed
-via the Claude CLI (`claude plugin marketplace add` / `claude plugin install`).
+Skills are auto-discovered — drop a directory in the right place, re-run the
+agent config installer, done. Vendored third-party skills under
+`thirdparty/skills/` are installed the same way, but only the explicit update
+task fetches from upstream. Commands live in plugins. Plugins are registered and
+installed via the Claude CLI (`claude plugin marketplace add` /
+`claude plugin install`).
+
+Update vendored third-party skills with:
+
+```bash
+mise run thirdparty:add-skills -- vercel-labs/agent-skills
+mise run thirdparty:add-skills -- vercel-labs/agent-skills --skill skill-name
+mise run thirdparty:update-skills
+mise run thirdparty:update-skills:dry-run
+mise run thirdparty:update-skills:check
+```
+
+Those tasks call the repo-local `vendor-skills` CLI through Bun. Its
+implementation and colocated tests live under `packages/vendor-skills/src/`. The
+add command accepts full git URLs or GitHub `owner/repo` shorthand and opens a
+multi-select prompt when `--skill` is not provided, then vendors selected skills
+and updates the lockfile. Individual manifest skill entries can set `ref` to pin
+or test a skill separately from the source default.
 
 ## Plugins
 
@@ -131,20 +160,20 @@ claude plugin install git-commands@jimeh-agentic
 /plugin install git-commands@jimeh-agentic
 ```
 
-### Installation via setup.sh
+### Agent Config Installation
 
-`setup.sh` ensures both the official `claude-plugins-official` marketplace and
-this repo's local marketplace are registered, then installs plugins listed in
-the `CLAUDE_PLUGINS` array at the top of the script. To add or remove
-auto-installed plugins, edit that array.
+`install-agent-configs.sh` ensures both the official `claude-plugins-official`
+marketplace and this repo's local marketplace are registered, then installs
+plugins listed in the `CLAUDE_PLUGINS` array at the top of the script. To add or
+remove auto-installed plugins, edit that array.
 
 Requires the `claude` CLI and `jq`. Skipped gracefully if either is missing.
 
 ## Requirements
 
 - Bash 3.2+ (macOS default works)
-- For symlink resolution, `setup.sh` tries `realpath` first, then
-  platform-specific fallbacks:
+- For symlink resolution, `install-agent-configs.sh` tries `realpath` first,
+  then platform-specific fallbacks:
   - **macOS**: `python3`, `python`, `perl`, or `readlink`
   - **Linux**: `readlink -f` (part of coreutils)
 

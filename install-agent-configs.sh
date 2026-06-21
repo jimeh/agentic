@@ -45,15 +45,24 @@ discover_symlinks() {
   )
 
   # Discover skills: skills/*/SKILL.md → both ~/.claude and ~/.agents
+  discover_skill_symlinks "skills"
+
+  # Discover vendored third-party skills. Updates are explicit; setup only
+  # links the already-vendored local files.
+  discover_skill_symlinks "thirdparty/skills"
+}
+
+discover_skill_symlinks() {
+  local root="$1"
   local skill_dir
-  for skill_dir in "${SCRIPT_DIR}/skills/"*/; do
+  for skill_dir in "${SCRIPT_DIR}/${root}/"*/; do
     [[ -d "${skill_dir}" ]] || continue
     [[ -f "${skill_dir}/SKILL.md" ]] || continue
     local name
     name="$(basename "${skill_dir}")"
     SYMLINKS+=(
-      "skills/${name}|${HOME}/.claude/skills/${name}"
-      "skills/${name}|${HOME}/.agents/skills/${name}"
+      "${root}/${name}|${HOME}/.claude/skills/${name}"
+      "${root}/${name}|${HOME}/.agents/skills/${name}"
     )
   done
 }
@@ -237,6 +246,10 @@ cleanup_stale() {
     "${SCRIPT_DIR}/skills" "${HOME}/.claude/skills"
   _cleanup_stale_links \
     "${SCRIPT_DIR}/skills" "${HOME}/.agents/skills"
+  _cleanup_stale_links \
+    "${SCRIPT_DIR}/thirdparty/skills" "${HOME}/.claude/skills"
+  _cleanup_stale_links \
+    "${SCRIPT_DIR}/thirdparty/skills" "${HOME}/.agents/skills"
 }
 
 # ==============================================================================
@@ -362,7 +375,7 @@ setup_claude_plugins() {
 
 show_help() {
   cat << 'EOF'
-Usage: setup.sh [--dry-run] [--force] [--help]
+Usage: install-agent-configs.sh [--dry-run] [--force] [--help]
 
 Options:
   --dry-run  Preview what would be done without making changes
@@ -379,6 +392,8 @@ Creates symlinks for Claude Code and agents configuration:
   codex/hooks.json   → ~/.codex/hooks.json
   skills/*           → ~/.claude/skills/
   skills/*           → ~/.agents/skills/
+  thirdparty/skills/* → ~/.claude/skills/
+  thirdparty/skills/* → ~/.agents/skills/
 
 Registers the local plugin marketplace and installs plugins
 via the Claude CLI (skipped if claude or jq is not available).

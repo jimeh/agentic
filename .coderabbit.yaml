@@ -2,6 +2,9 @@
 inheritance: true
 
 reviews:
+  path_filters:
+    - "!thirdparty/skills/**"
+
   path_instructions:
     - path: "**/*.md"
       instructions: >-

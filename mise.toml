@@ -1,7 +1,10 @@
 [tools]
-bun = "latest"
+actionlint = "latest"
+bun = "1.3"
+lefthook = "latest"
 markdownlint-cli2 = "latest"
 oxfmt = "latest"
+zizmor = "latest"
 
 [settings.npm]
 bun = true
@@ -9,16 +12,44 @@ bun = true
 # --- Top-level tasks ---
 
 [tasks.setup]
-description = "Create agent config symlinks and install configured plugins"
-run = "./setup.sh"
+description = "Install project dependencies"
+run = "bun install"
 
-[tasks."setup:force"]
-description = "Replace existing agent config symlinks after backing them up"
-run = "./setup.sh --force"
+[tasks."setup:ci"]
+description = "Install project dependencies from the lockfile"
+run = "bun install --frozen-lockfile"
 
-[tasks."setup:dry-run"]
-description = "Preview setup changes without modifying files"
-run = "./setup.sh --dry-run"
+[tasks."agent-config:install"]
+description = "Install agent config symlinks and configured plugins"
+run = "./install-agent-configs.sh"
+
+[tasks."agent-config:force"]
+description = "Replace installed agent config symlinks after backing them up"
+run = "./install-agent-configs.sh --force"
+
+[tasks."agent-config:dry-run"]
+description = "Preview agent config installation"
+run = "./install-agent-configs.sh --dry-run"
+
+[tasks."hooks:install"]
+description = "Install Lefthook git hooks"
+run = "lefthook install --reset-hooks-path"
+
+[tasks."thirdparty:add-skills"]
+description = "Add selected upstream skills to the third-party manifest"
+run = "bun packages/vendor-skills/bin/vendor-skills.ts add"
+
+[tasks."thirdparty:update-skills"]
+description = "Update vendored third-party skills from manifest sources"
+run = "bun packages/vendor-skills/bin/vendor-skills.ts update"
+
+[tasks."thirdparty:update-skills:dry-run"]
+description = "Preview vendored third-party skill updates"
+run = "bun packages/vendor-skills/bin/vendor-skills.ts update --dry-run"
+
+[tasks."thirdparty:update-skills:check"]
+description = "Check vendored third-party skills against upstream"
+run = "bun packages/vendor-skills/bin/vendor-skills.ts check"
 
 [tasks.format]
 description = "Format markdown files (oxfmt + markdownlint)"
@@ -26,7 +57,20 @@ depends = ["format:oxfmt", "format:markdownlint"]
 
 [tasks.lint]
 description = "Run all lint and harness checks"
-depends = ["lint:oxfmt", "lint:markdownlint", "lint:agent-harness"]
+depends = [
+  "lint:oxfmt",
+  "lint:markdownlint",
+  "lint:agent-harness",
+  "lint:workflows",
+]
+
+[tasks.test]
+description = "Run Bun tests"
+run = "bun test packages/vendor-skills/src"
+
+[tasks.verify]
+description = "Run lint and tests"
+depends = ["lint", "test"]
 
 # --- Per-tool subtasks ---
 
@@ -49,3 +93,7 @@ run = "markdownlint-cli2 '**/*.md'"
 [tasks."lint:agent-harness"]
 description = "Check agent skill and plugin metadata invariants"
 run = "bun run scripts/check-agent-harness.ts"
+
+[tasks."lint:workflows"]
+description = "Check GitHub Actions syntax and security posture"
+run = ["actionlint", "zizmor --pedantic .github/workflows"]

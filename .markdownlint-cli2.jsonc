@@ -17,5 +17,13 @@
     // Allow fenced code blocks without a language tag.
     "fenced-code-language": false
   },
-  "ignores": ["node_modules/", "docs/references/", "plan.md", "research.md", "review.md"]
+  "ignores": [
+    "node_modules/",
+    "**/node_modules/**",
+    "docs/references/",
+    "thirdparty/",
+    "plan.md",
+    "research.md",
+    "review.md"
+  ]
 }

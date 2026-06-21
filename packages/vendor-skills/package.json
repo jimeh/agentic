@@ -1,0 +1,14 @@
+{
+  "name": "@jimeh/vendor-skills",
+  "private": true,
+  "bin": {
+    "vendor-skills": "./bin/vendor-skills.ts"
+  },
+  "scripts": {
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@clack/prompts": "1.5.1",
+    "gray-matter": "^4.0.3"
+  }
+}

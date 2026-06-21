@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "skills": {
+    "agent-browser": {
+      "manifestSourceId": "agent-browser",
+      "sourceType": "git",
+      "sourceUrl": "https://github.com/vercel-labs/agent-browser.git",
+      "ref": "main",
+      "resolvedCommit": "4572acf0d71c0086009206c9c1e2136fc54ec9e5",
+      "upstreamPath": "skills/agent-browser",
+      "contentHash": "sha256:bba7848e49d75fe079828eee1377fede5fd45ba2c00004905c21927dd15808df",
+      "skillsCliVersion": null
+    },
+    "frontend-design": {
+      "manifestSourceId": "skills",
+      "sourceType": "git",
+      "sourceUrl": "https://github.com/anthropics/skills.git",
+      "ref": "main",
+      "resolvedCommit": "57546260929473d4e0d1c1bb75297be2fdfa1949",
+      "upstreamPath": "skills/frontend-design",
+      "contentHash": "sha256:15787d8f3c8bd24aa3907b736fdffa67a90c7639c0e8b7ad961013171b835ad0",
+      "skillsCliVersion": null
+    },
+    "grill-me": {
+      "manifestSourceId": "mattpocock-skills",
+      "sourceType": "git",
+      "sourceUrl": "https://github.com/mattpocock/skills.git",
+      "ref": "main",
+      "resolvedCommit": "6eeb81b5fcfeeb5bd531dd47ab2f9f2bbea27461",
+      "upstreamPath": "skills/productivity/grill-me",
+      "contentHash": "sha256:eb9ca5eb0cb86a12902a94f6daa0b4785c01d86c0d0d386c28ecf7a3f77661df",
+      "skillsCliVersion": null
+    },
+    "handoff": {
+      "manifestSourceId": "agent-skills",
+      "sourceType": "git",
+      "sourceUrl": "https://github.com/openclaw/agent-skills.git",
+      "ref": "main",
+      "resolvedCommit": "283f06904d917a2464e7fb4787795a7fe063e391",
+      "upstreamPath": "skills/handoff",
+      "contentHash": "sha256:fc076f67a527973739f065ad0b45a693fee1e0a529174d61a901a331989b00ec",
+      "skillsCliVersion": null
+    },
+    "rust-best-practices": {
+      "manifestSourceId": "apollographql-skills",
+      "sourceType": "git",
+      "sourceUrl": "https://github.com/apollographql/skills.git",
+      "ref": "main",
+      "resolvedCommit": "605089108a198e412f7f0c1926c91eb94a6d1727",
+      "upstreamPath": "skills/rust-best-practices",
+      "contentHash": "sha256:4c4e0298dccc1d6ed8d4c0b529c745985032516e0668d11155bc01ceadf66964",
+      "skillsCliVersion": null
+    },
+    "vercel-react-best-practices": {
+      "manifestSourceId": "vercel-agent-skills",
+      "sourceType": "git",
+      "sourceUrl": "https://github.com/vercel-labs/agent-skills.git",
+      "ref": "main",
+      "resolvedCommit": "f8a72b9603728bb92a217a879b7e62e43ad76c81",
+      "upstreamPath": "skills/react-best-practices",
+      "contentHash": "sha256:b26955b4458a63d542406e6bb40e5a5e8e39dd622f8a630e6e3cd2fb356af544",
+      "skillsCliVersion": null
+    }
+  }
+}
