@@ -55,7 +55,9 @@ has high-churn internal tooling or time-sensitive security tooling.
 ## mise Idiomatic Version Files
 
 Use this when the repo already has files such as `.node-version`,
-`.ruby-version`, or `.python-version` and you want mise to respect them.
+`.ruby-version`, or `.python-version` and you want mise to respect them. This is
+an early-init setting, so configure it in global mise config such as
+`~/.config/mise/config.toml`, not project-level `mise.toml`.
 
 ```toml
 [settings]
@@ -64,4 +66,6 @@ idiomatic_version_file_enable_tools = ["node", "ruby", "python"]
 ```
 
 Enable only the tools the repo actually uses. Do not enable `.python-version`
-for projects where another tool, such as `uv`, owns that file.
+for projects where another tool, such as `uv`, owns that file. Project-level
+`mise.toml` is read too late for this setting to affect idiomatic version-file
+discovery.

@@ -140,7 +140,7 @@ Use this compact shape when reporting checklist results:
 
 ## Highest-Leverage Gaps
 
-1. Add `actionlint`, `zizmor --offline .`, and `pinact run -check`.
+1. Add `actionlint`, `zizmor --offline .`, and `pinact run --check`.
 2. <gap with concrete file or command>
 3. <gap with concrete file or command>
 ```

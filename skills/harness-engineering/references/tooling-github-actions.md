@@ -25,7 +25,7 @@ description = "Check GitHub Actions workflows"
 run = [
   "actionlint",
   "zizmor --offline .",
-  "pinact run -check",
+  "pinact run --check",
 ]
 ```
 
