@@ -4,6 +4,21 @@ Use this checklist during audits, bootstraps, or broad harness changes. Mark
 each item as **pass**, **gap**, or **n/a**, and include the command or file that
 proves the answer. Prefer concrete evidence over inferred readiness.
 
+## Contents
+
+- [Project Map](#project-map)
+- [Task Surface](#task-surface)
+- [Formatting](#formatting)
+- [Linting and Static Checks](#linting-and-static-checks)
+- [Types, Schemas, and Contracts](#types-schemas-and-contracts)
+- [Tests and Reproduction](#tests-and-reproduction)
+- [GitHub Actions](#github-actions)
+- [Dependency Intake](#dependency-intake)
+- [Observability and Operations](#observability-and-operations)
+- [Agent Affordances](#agent-affordances)
+- [Entropy Control](#entropy-control)
+- [Audit Output](#audit-output)
+
 ## Project Map
 
 - Root `AGENTS.md` or equivalent exists and is short enough to scan.

@@ -2,6 +2,17 @@
 
 Use this when shaping project docs for agent legibility.
 
+## Contents
+
+- [Principle](#principle)
+- [Useful Structure](#useful-structure)
+- [Claude Code Compatibility](#claude-code-compatibility)
+- [Root AGENTS.md Contents](#root-agentsmd-contents)
+- [Deeper Docs](#deeper-docs)
+- [Project-Local Skills](#project-local-skills)
+- [Sub-Folder AGENTS.md](#sub-folder-agentsmd)
+- [Freshness](#freshness)
+
 ## Principle
 
 The root instruction file should be a map. It should tell agents what the repo

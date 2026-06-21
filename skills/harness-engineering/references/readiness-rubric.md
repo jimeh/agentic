@@ -4,6 +4,12 @@ Use this rubric to audit a repository for agent-first development. Score each
 area from 0 to 3, then prioritize low-effort improvements that unlock future
 agent validation or reduce repeated failures.
 
+## Contents
+
+- [Levels](#levels)
+- [Categories](#categories)
+- [Output Shape](#output-shape)
+
 ## Levels
 
 - **0 Missing**: agents depend on unstated human knowledge.

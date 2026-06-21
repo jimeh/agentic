@@ -170,8 +170,14 @@ Read only what the current task needs:
   computational vs inferential controls.
 - `references/tooling-patterns.md`: standard task surfaces, hooks, supply-chain
   hardening, workflow checks, and optional GitNexus use.
-- `references/tooling-snippets.md`: concise config snippets for common harness
-  tooling.
+- `references/tooling-snippets.md`: index for copyable tooling snippets.
+- `references/tooling-task-surface.md`: `mise` task and version-file snippets.
+- `references/tooling-github-actions.md`: GitHub Actions validation snippets.
+- `references/tooling-gitnexus.md`: GitNexus installation snippets.
+- `references/tooling-hooks-dependencies.md`: hook and dependency policy
+  snippets.
+- `references/tooling-language-checks.md`: language-specific validation
+  snippets.
 
 ## Guardrails
 

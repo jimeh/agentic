@@ -3,6 +3,16 @@
 Use this when a project needs faster agent feedback, clearer task entry points,
 or supply-chain hardening.
 
+## Contents
+
+- [Standard Task Surface](#standard-task-surface)
+- [Validation Tiers](#validation-tiers)
+- [Local Hooks](#local-hooks)
+- [CI and Workflow Hardening](#ci-and-workflow-hardening)
+- [Tool Surface Hygiene](#tool-surface-hygiene)
+- [Dependency Intake](#dependency-intake)
+- [Optional GitNexus](#optional-gitnexus)
+
 ## Standard Task Surface
 
 Prefer a small set of stable commands. If the project already has `Makefile`,
