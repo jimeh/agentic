@@ -15,6 +15,7 @@ bun install                         # install npm deps with minimum release age
 
 ```bash
 mise run setup                    # install project dependencies
+mise run setup:ci                 # install deps from lockfile for CI
 mise run agent-config:install     # install agent config symlinks/plugins
 mise run agent-config:force       # replace installed agent config symlinks
 mise run agent-config:dry-run     # preview agent config installation

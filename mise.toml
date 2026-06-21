@@ -13,6 +13,10 @@ bun = true
 description = "Install project dependencies"
 run = "bun install"
 
+[tasks."setup:ci"]
+description = "Install project dependencies from the lockfile"
+run = "bun install --frozen-lockfile"
+
 [tasks."agent-config:install"]
 description = "Install agent config symlinks and configured plugins"
 run = "./install-agent-configs.sh"
