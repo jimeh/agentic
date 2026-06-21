@@ -48,6 +48,30 @@
           "path": "skills/rust-best-practices"
         }
       ]
+    },
+    {
+      "id": "agent-browser",
+      "type": "git",
+      "url": "https://github.com/vercel-labs/agent-browser.git",
+      "ref": "main",
+      "skills": [
+        {
+          "name": "agent-browser",
+          "path": "skills/agent-browser"
+        }
+      ]
+    },
+    {
+      "id": "mattpocock-skills",
+      "type": "git",
+      "url": "https://github.com/mattpocock/skills.git",
+      "ref": "main",
+      "skills": [
+        {
+          "name": "grill-me",
+          "path": "skills/productivity/grill-me"
+        }
+      ]
     }
   ]
 }

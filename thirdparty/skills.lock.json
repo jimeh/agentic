@@ -1,6 +1,16 @@
 {
   "version": 1,
   "skills": {
+    "agent-browser": {
+      "manifestSourceId": "agent-browser",
+      "sourceType": "git",
+      "sourceUrl": "https://github.com/vercel-labs/agent-browser.git",
+      "ref": "main",
+      "resolvedCommit": "4572acf0d71c0086009206c9c1e2136fc54ec9e5",
+      "upstreamPath": "skills/agent-browser",
+      "contentHash": "sha256:b93b77d9a63143fcefa7d371c1fceba58f1f310ef76a5f2ad3d4d2077efa8c25",
+      "skillsCliVersion": null
+    },
     "frontend-design": {
       "manifestSourceId": "skills",
       "sourceType": "git",
@@ -9,6 +19,16 @@
       "resolvedCommit": "57546260929473d4e0d1c1bb75297be2fdfa1949",
       "upstreamPath": "skills/frontend-design",
       "contentHash": "sha256:4eabc66183767153e404b39d1b839b1c37f2d82d86f0a0d7e880a579d8d62336",
+      "skillsCliVersion": null
+    },
+    "grill-me": {
+      "manifestSourceId": "mattpocock-skills",
+      "sourceType": "git",
+      "sourceUrl": "https://github.com/mattpocock/skills.git",
+      "ref": "main",
+      "resolvedCommit": "6eeb81b5fcfeeb5bd531dd47ab2f9f2bbea27461",
+      "upstreamPath": "skills/productivity/grill-me",
+      "contentHash": "sha256:f321507f77702a54af1db66549ec1685fc625390d06c57d7949cdcda8eb1b5c7",
       "skillsCliVersion": null
     },
     "handoff": {
