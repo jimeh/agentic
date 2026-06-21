@@ -59,6 +59,34 @@ test("validateManifest rejects unsafe paths", () => {
   expect(() => validateManifest(invalid, paths)).toThrow("must stay inside");
 });
 
+test("validateManifest rejects Windows and UNC absolute paths", () => {
+  for (const path of ["C:\\skills\\example-skill", "\\\\server\\share"]) {
+    const invalid = manifest({
+      sources: [
+        {
+          ...manifest().sources[0],
+          skills: [{ name: "example-skill", path }],
+        },
+      ],
+    });
+
+    expect(() => validateManifest(invalid, paths)).toThrow("must stay inside");
+  }
+});
+
+test("validateManifest rejects invalid skill refs", () => {
+  const invalid = manifest({
+    sources: [
+      {
+        ...manifest().sources[0],
+        skills: [{ name: "example-skill", path: "skills/example", ref: 123 }],
+      },
+    ],
+  } as unknown as Partial<Manifest>);
+
+  expect(() => validateManifest(invalid, paths)).toThrow("empty ref");
+});
+
 test("selectedSources rejects unknown filters", () => {
   expect(() =>
     selectedSources(manifest(), {

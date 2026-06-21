@@ -7,7 +7,14 @@ import { validateManifest } from "./manifest";
 import { pathsForRoot } from "./paths";
 import { readJson, writeJson } from "./json";
 import { normalizeSourceUrl, sourceIdForUrl } from "./source-url";
-import type { AddOptions, Exec, Logger, Manifest, Source } from "./types";
+import type {
+  AddOptions,
+  Exec,
+  Logger,
+  Manifest,
+  Source,
+  UpdateResult,
+} from "./types";
 import { selectSkills } from "./prompt";
 import { updateThirdpartySkills } from "./update";
 
@@ -118,10 +125,21 @@ export async function addThirdpartySkills(input: AddInput): Promise<AddResult> {
   const sourceUrl = normalizeSourceUrl(input.options.source);
   const manifest = readManifest(paths.manifestPath);
   validateManifest(manifest, paths);
+  const previousManifest = existsSync(paths.manifestPath)
+    ? readJson<Manifest>(paths.manifestPath)
+    : null;
 
   const source = sourceForAdd(manifest, sourceUrl, input.options.ref ?? "main");
   const effectiveRef = input.options.ref ?? source.ref;
   const tempRoot = mkdtempSync(join(tmpdir(), "agentic-vendor-add-"));
+
+  const restoreManifest = () => {
+    if (previousManifest) {
+      writeJson(paths.manifestPath, previousManifest);
+    } else {
+      rmSync(paths.manifestPath, { force: true });
+    }
+  };
 
   try {
     const cloneDir = cloneSource(
@@ -173,22 +191,30 @@ export async function addThirdpartySkills(input: AddInput): Promise<AddResult> {
     validateManifest(manifest, paths);
     writeJson(paths.manifestPath, manifest);
 
-    for (const skill of nextSkills) {
-      logger.log(`added ${skill.name}`);
+    let updateResult: UpdateResult;
+    try {
+      updateResult = updateThirdpartySkills({
+        root: input.root,
+        options: {
+          dryRun: false,
+          check: false,
+          filter: new Set(nextSkills.map((skill) => skill.name)),
+        },
+        exec,
+        logger,
+      });
+    } catch (error) {
+      restoreManifest();
+      throw error;
     }
 
-    const updateResult = updateThirdpartySkills({
-      root: input.root,
-      options: {
-        dryRun: false,
-        check: false,
-        filter: new Set(nextSkills.map((skill) => skill.name)),
-      },
-      exec,
-      logger,
-    });
     if (!updateResult.ok) {
+      restoreManifest();
       return { added: nextSkills.map((skill) => skill.name), ok: false };
+    }
+
+    for (const skill of nextSkills) {
+      logger.log(`added ${skill.name}`);
     }
 
     return { added: nextSkills.map((skill) => skill.name), ok: true };

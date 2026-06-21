@@ -11,7 +11,12 @@ export function assertSlug(name: string, context: string): void {
 
 /** Assert that a manifest path cannot escape its upstream source checkout. */
 export function assertSafeRelativePath(path: string, context: string): void {
-  if (path.startsWith("/") || path.split(/[\\/]/).includes("..")) {
+  const windowsAbsolute = /^[a-zA-Z]:/.test(path) || path.startsWith("\\\\");
+  if (
+    path.startsWith("/") ||
+    windowsAbsolute ||
+    path.split(/[\\/]/).includes("..")
+  ) {
     throw new Error(`${context}: path '${path}' must stay inside the source`);
   }
 }
@@ -44,7 +49,10 @@ export function validateManifest(
     for (const skill of source.skills) {
       assertSlug(skill.name, "skill name");
       assertSafeRelativePath(skill.path, `${skill.name} path`);
-      if (skill.ref !== undefined && skill.ref.trim() === "") {
+      if (
+        skill.ref !== undefined &&
+        (typeof skill.ref !== "string" || skill.ref.trim() === "")
+      ) {
         throw new Error(`${paths.manifestPath}: '${skill.name}' has empty ref`);
       }
       if (names.has(skill.name)) {

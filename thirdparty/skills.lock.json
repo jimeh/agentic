@@ -8,7 +8,7 @@
       "ref": "main",
       "resolvedCommit": "4572acf0d71c0086009206c9c1e2136fc54ec9e5",
       "upstreamPath": "skills/agent-browser",
-      "contentHash": "sha256:b93b77d9a63143fcefa7d371c1fceba58f1f310ef76a5f2ad3d4d2077efa8c25",
+      "contentHash": "sha256:bba7848e49d75fe079828eee1377fede5fd45ba2c00004905c21927dd15808df",
       "skillsCliVersion": null
     },
     "frontend-design": {
@@ -18,7 +18,7 @@
       "ref": "main",
       "resolvedCommit": "57546260929473d4e0d1c1bb75297be2fdfa1949",
       "upstreamPath": "skills/frontend-design",
-      "contentHash": "sha256:4eabc66183767153e404b39d1b839b1c37f2d82d86f0a0d7e880a579d8d62336",
+      "contentHash": "sha256:15787d8f3c8bd24aa3907b736fdffa67a90c7639c0e8b7ad961013171b835ad0",
       "skillsCliVersion": null
     },
     "grill-me": {
@@ -28,7 +28,7 @@
       "ref": "main",
       "resolvedCommit": "6eeb81b5fcfeeb5bd531dd47ab2f9f2bbea27461",
       "upstreamPath": "skills/productivity/grill-me",
-      "contentHash": "sha256:f321507f77702a54af1db66549ec1685fc625390d06c57d7949cdcda8eb1b5c7",
+      "contentHash": "sha256:eb9ca5eb0cb86a12902a94f6daa0b4785c01d86c0d0d386c28ecf7a3f77661df",
       "skillsCliVersion": null
     },
     "handoff": {
@@ -38,7 +38,7 @@
       "ref": "main",
       "resolvedCommit": "283f06904d917a2464e7fb4787795a7fe063e391",
       "upstreamPath": "skills/handoff",
-      "contentHash": "sha256:eafcf347aa22cb3a079172da12bc238cca2c8e9c1ccf355d2524af684ed6621f",
+      "contentHash": "sha256:fc076f67a527973739f065ad0b45a693fee1e0a529174d61a901a331989b00ec",
       "skillsCliVersion": null
     },
     "rust-best-practices": {
@@ -48,7 +48,7 @@
       "ref": "main",
       "resolvedCommit": "605089108a198e412f7f0c1926c91eb94a6d1727",
       "upstreamPath": "skills/rust-best-practices",
-      "contentHash": "sha256:fd336f2f772eb46ddf8658de5f9dd8faa1f35615b316665307fc82eeb4b2e658",
+      "contentHash": "sha256:4c4e0298dccc1d6ed8d4c0b529c745985032516e0668d11155bc01ceadf66964",
       "skillsCliVersion": null
     },
     "vercel-react-best-practices": {
@@ -58,7 +58,7 @@
       "ref": "main",
       "resolvedCommit": "f8a72b9603728bb92a217a879b7e62e43ad76c81",
       "upstreamPath": "skills/react-best-practices",
-      "contentHash": "sha256:3219a1944e404ffc14d1d9d6aef6dd2e3855b81387ee0a044ccbfe14d34c2357",
+      "contentHash": "sha256:b26955b4458a63d542406e6bb40e5a5e8e39dd622f8a630e6e3cd2fb356af544",
       "skillsCliVersion": null
     }
   }

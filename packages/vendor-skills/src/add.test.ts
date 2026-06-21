@@ -2,7 +2,8 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, expect, test } from "bun:test";
 import { addThirdpartySkills } from "./add";
-import type { Lock, Manifest } from "./types";
+import { realExec } from "./git";
+import type { Exec, Lock, Manifest } from "./types";
 import { createTempProject, readJson, write } from "./test-helpers";
 
 const projects: ReturnType<typeof createTempProject>[] = [];
@@ -141,6 +142,41 @@ test("add dry-run does not write the manifest", async () => {
   expect(
     manifest.sources[0].skills.some((skill) => skill.name === "second-skill"),
   ).toBe(false);
+  expect(existsSync(join(temp.root, "thirdparty", "skills.lock.json"))).toBe(
+    false,
+  );
+});
+
+test("add restores the manifest when vendoring fails", async () => {
+  const temp = project();
+  const manifestPath = join(temp.root, "thirdparty", "skills.manifest.json");
+  const before = readJson<Manifest>(manifestPath);
+  let cloneCount = 0;
+  const exec: Exec = (command, args, cwd) => {
+    if (command === "git" && args[0] === "clone") {
+      cloneCount += 1;
+      if (cloneCount === 2) {
+        throw new Error("clone failed");
+      }
+    }
+    return realExec(command, args, cwd);
+  };
+
+  await expect(
+    addThirdpartySkills({
+      root: temp.root,
+      options: {
+        source: temp.upstream,
+        ref: null,
+        dryRun: false,
+        skills: ["second-skill"],
+      },
+      exec,
+      logger: silentLogger,
+    }),
+  ).rejects.toThrow("clone failed");
+
+  expect(readJson<Manifest>(manifestPath)).toEqual(before);
   expect(existsSync(join(temp.root, "thirdparty", "skills.lock.json"))).toBe(
     false,
   );

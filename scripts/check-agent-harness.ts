@@ -220,7 +220,12 @@ function assertSlug(name: string | undefined, path: string): boolean {
 }
 
 function isSafeRelativePath(path: string): boolean {
-  return !path.startsWith("/") && !path.split(/[\\/]/).includes("..");
+  const windowsAbsolute = /^[a-zA-Z]:/.test(path) || path.startsWith("\\\\");
+  return (
+    !path.startsWith("/") &&
+    !windowsAbsolute &&
+    !path.split(/[\\/]/).includes("..")
+  );
 }
 
 function collectFiles(baseDir: string, currentDir = baseDir): string[] {
@@ -248,8 +253,14 @@ function contentHash(dir: string): string {
 
   for (const file of files) {
     const relativePath = relative(dir, file).split(sep).join("/");
+    const content = readFileSync(file);
+    hash.update("path\0");
+    hash.update(`${Buffer.byteLength(relativePath, "utf8")}\0`);
     hash.update(relativePath);
-    hash.update(readFileSync(file));
+    hash.update("\0content\0");
+    hash.update(`${content.length}\0`);
+    hash.update(content);
+    hash.update("\0");
   }
 
   return `sha256:${hash.digest("hex")}`;
@@ -258,8 +269,9 @@ function contentHash(dir: string): string {
 function checkThirdpartySkills(): void {
   const manifestPath = "thirdparty/skills.manifest.json";
   const lockPath = "thirdparty/skills.lock.json";
+  const skillsDir = "thirdparty/skills";
 
-  if (!existsSync(manifestPath) && !existsSync("thirdparty/skills")) {
+  if (!existsSync(manifestPath) && !existsSync(skillsDir) && !existsSync(lockPath)) {
     return;
   }
 
@@ -306,7 +318,12 @@ function checkThirdpartySkills(): void {
       reportError(`${manifestPath}: source '${sourceId}' must be type git`);
     }
 
-    if (!source.url || !source.ref) {
+    if (
+      typeof source.url !== "string" ||
+      source.url === "" ||
+      typeof source.ref !== "string" ||
+      source.ref === ""
+    ) {
       reportError(`${manifestPath}: source '${sourceId}' missing url or ref`);
     }
 
@@ -316,12 +333,19 @@ function checkThirdpartySkills(): void {
         continue;
       }
 
-      if (!skill.path || !isSafeRelativePath(skill.path)) {
+      if (
+        typeof skill.path !== "string" ||
+        !skill.path ||
+        !isSafeRelativePath(skill.path)
+      ) {
         reportError(`${manifestPath}: '${name}' has unsafe path`);
         continue;
       }
 
-      if (skill.ref !== undefined && skill.ref.trim() === "") {
+      if (
+        skill.ref !== undefined &&
+        (typeof skill.ref !== "string" || skill.ref.trim() === "")
+      ) {
         reportError(`${manifestPath}: '${name}' has empty ref`);
       }
 

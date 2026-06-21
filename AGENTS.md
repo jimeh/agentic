@@ -33,6 +33,7 @@ mise run format:markdownlint # auto-fix markdownlint issues only
 mise run lint:oxfmt          # check oxfmt formatting only
 mise run lint:markdownlint   # lint with markdownlint only
 mise run lint:agent-harness  # check skill/plugin metadata invariants
+mise run lint:workflows      # check GitHub Actions syntax/security
 ```
 
 ## Architecture

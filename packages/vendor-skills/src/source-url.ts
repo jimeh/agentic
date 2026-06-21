@@ -9,7 +9,7 @@ export function normalizeSourceUrl(input: string): string {
   }
 
   const githubHttps = value.match(
-    /^https:\/\/github\.com\/([^/]+)\/([^/.]+?)(?:\.git)?\/?$/,
+    /^https:\/\/github\.com\/([^/]+)\/([^/]+?)(?:\.git)?\/?$/,
   );
   if (githubHttps) {
     const [, owner, repo] = githubHttps;

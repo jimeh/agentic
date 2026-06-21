@@ -29,8 +29,14 @@ export function contentHash(dir: string): string {
 
   for (const file of files) {
     const relativePath = relative(dir, file).split(sep).join("/");
+    const content = readFileSync(file);
+    hash.update("path\0");
+    hash.update(`${Buffer.byteLength(relativePath, "utf8")}\0`);
     hash.update(relativePath);
-    hash.update(readFileSync(file));
+    hash.update("\0content\0");
+    hash.update(`${content.length}\0`);
+    hash.update(content);
+    hash.update("\0");
   }
 
   return `sha256:${hash.digest("hex")}`;

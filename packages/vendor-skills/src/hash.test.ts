@@ -42,3 +42,13 @@ test("contentHash ignores .git and node_modules directories", () => {
 
   expect(contentHash(dir)).toBe(before);
 });
+
+test("contentHash frames paths and content without ambiguity", () => {
+  const first = tempDir();
+  const second = tempDir();
+
+  writeFileSync(join(first, "a"), "bc");
+  writeFileSync(join(second, "ab"), "c");
+
+  expect(contentHash(first)).not.toBe(contentHash(second));
+});
