@@ -1,5 +1,6 @@
 [tools]
 bun = "latest"
+lefthook = "latest"
 markdownlint-cli2 = "latest"
 oxfmt = "latest"
 
@@ -19,6 +20,22 @@ run = "./setup.sh --force"
 [tasks."setup:dry-run"]
 description = "Preview setup changes without modifying files"
 run = "./setup.sh --dry-run"
+
+[tasks."hooks:install"]
+description = "Install Lefthook git hooks"
+run = "lefthook install --reset-hooks-path"
+
+[tasks."thirdparty:update-skills"]
+description = "Update vendored third-party skills from manifest sources"
+run = "bun run scripts/update-thirdparty-skills.ts"
+
+[tasks."thirdparty:update-skills:dry-run"]
+description = "Preview vendored third-party skill updates"
+run = "bun run scripts/update-thirdparty-skills.ts --dry-run"
+
+[tasks."thirdparty:update-skills:check"]
+description = "Check vendored third-party skills against upstream"
+run = "bun run scripts/update-thirdparty-skills.ts --check"
 
 [tasks.format]
 description = "Format markdown files (oxfmt + markdownlint)"

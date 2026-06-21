@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "skills": {
+    "vercel-react-best-practices": {
+      "manifestSourceId": "vercel-agent-skills",
+      "sourceType": "git",
+      "sourceUrl": "https://github.com/vercel-labs/agent-skills.git",
+      "ref": "main",
+      "resolvedCommit": "f8a72b9603728bb92a217a879b7e62e43ad76c81",
+      "upstreamPath": "skills/react-best-practices",
+      "contentHash": "sha256:3219a1944e404ffc14d1d9d6aef6dd2e3855b81387ee0a044ccbfe14d34c2357",
+      "skillsCliVersion": null
+    }
+  }
+}

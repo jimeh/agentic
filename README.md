@@ -34,6 +34,12 @@ This creates symlinks from the repo into `~/.claude/`, `~/.agents/`, and
 `~/.codex/`, and registers plugin marketplaces and installs plugins via the
 Claude CLI. Run `./setup.sh --help` for details.
 
+Git hooks are managed by Lefthook:
+
+```bash
+mise run hooks:install
+```
+
 ## What's Inside
 
 - **`RULES.md`** — Single source of truth for all agent behavior rules.
@@ -42,12 +48,24 @@ Claude CLI. Run `./setup.sh --help` for details.
 - **`claude/`** — Claude Code settings and statusline script.
 - **`codex/`** — OpenAI Codex config.
 - **`skills/`** — Custom skills (auto-discovered by `setup.sh`).
+- **`thirdparty/`** — Vendored third-party skills plus manifest and lock
+  metadata.
 - **`plugins/`** — Claude Code plugins, published via a local marketplace.
 - **`docs/references/`** — External articles and guides.
 
 Skills are auto-discovered — drop a directory in the right place, re-run
-`setup.sh`, done. Commands live in plugins. Plugins are registered and installed
-via the Claude CLI (`claude plugin marketplace add` / `claude plugin install`).
+`setup.sh`, done. Vendored third-party skills under `thirdparty/skills/` are
+installed the same way, but only the explicit update task fetches from upstream.
+Commands live in plugins. Plugins are registered and installed via the Claude
+CLI (`claude plugin marketplace add` / `claude plugin install`).
+
+Update vendored third-party skills with:
+
+```bash
+mise run thirdparty:update-skills
+mise run thirdparty:update-skills:dry-run
+mise run thirdparty:update-skills:check
+```
 
 ## Plugins
 

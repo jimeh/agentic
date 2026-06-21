@@ -9,8 +9,6 @@ Shared configuration and rules for AI coding agents (Claude Code, Codex, etc).
 ./setup.sh          # create symlinks (skips existing)
 ./setup.sh --force  # replace existing (backs up to .bak)
 shellcheck **/*.sh  # lint all shell scripts
-bun run prepare     # install Husky git hooks
-bun run lint-staged # lint staged files like the pre-commit hook
 bun install         # install npm deps with seven-day minimum release age
 ```
 
@@ -18,6 +16,10 @@ bun install         # install npm deps with seven-day minimum release age
 mise run setup               # run ./setup.sh via mise
 mise run setup:force         # run ./setup.sh --force
 mise run setup:dry-run       # preview setup changes
+mise run hooks:install       # install Lefthook git hooks
+mise run thirdparty:update-skills         # update vendored third-party skills
+mise run thirdparty:update-skills:dry-run # preview third-party skill updates
+mise run thirdparty:update-skills:check   # check vendored skills upstream
 mise run format              # format with oxfmt + markdownlint --fix
 mise run lint                # check formatting, markdown, agent metadata
 mise run format:oxfmt        # format with oxfmt only
@@ -33,9 +35,18 @@ mise run lint:agent-harness  # check skill/plugin metadata invariants
 
 - **Skills**: any `skills/*/` dir with a `SKILL.md` → `~/.claude/skills/` and
   `~/.agents/skills/`
+- **Vendored third-party skills**: any `thirdparty/skills/*/` dir with a
+  `SKILL.md` → the same global skill targets
 
 To add a new skill, just create the directory — `setup.sh` picks it up
 automatically. Stale symlinks are cleaned up on each run.
+
+Third-party skills are source-controlled under `thirdparty/skills/`.
+`thirdparty/skills.manifest.json` defines the reviewed upstream sources and
+selected skills, while `thirdparty/skills.lock.json` records the resolved
+commit, upstream path, and content hash. Normal setup stays offline; run
+`mise run thirdparty:update-skills` explicitly to fetch upstream sources and
+refresh vendored content.
 
 **Commands** live in plugins under `plugins/*/commands/`. Each plugin has a
 `.claude-plugin/plugin.json` manifest and auto-discovered `.md` command files.
@@ -68,7 +79,8 @@ them. Tests must be self-contained bash scripts that exit 0 on success.
 
 Agent harness checks live in `scripts/check-agent-harness.ts` and run as part of
 `mise run lint`. They verify that skill frontmatter names are slug-safe and
-match their directories, and that Claude plugin versions match the marketplace.
+match their directories, vendored third-party skill locks match the checked-in
+content, and Claude plugin versions match the marketplace.
 
 ## Plugin Versioning
 
@@ -102,7 +114,11 @@ match.
 
 oxfmt (`proseWrap: "always"`, 80 chars) and markdownlint handle formatting.
 `embeddedLanguageFormatting: "off"` keeps oxfmt from touching YAML frontmatter.
-Run `mise run format` before committing.
+Run `mise run format` before committing. Lefthook runs staged Markdown files
+through `scripts/lint-markdown-files.sh` before commit. Vendored content under
+`thirdparty/` is excluded from Markdown formatting/linting;
+`mise run lint:agent-harness` checks vendored skill frontmatter and content
+hashes instead.
 
 ## Dependency Policy
 

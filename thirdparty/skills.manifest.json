@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "sources": [
+    {
+      "id": "vercel-agent-skills",
+      "type": "git",
+      "url": "https://github.com/vercel-labs/agent-skills.git",
+      "ref": "main",
+      "skills": [
+        {
+          "name": "vercel-react-best-practices",
+          "path": "skills/react-best-practices"
+        }
+      ]
+    }
+  ]
+}

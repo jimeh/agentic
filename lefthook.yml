@@ -1,0 +1,6 @@
+pre-commit:
+  parallel: true
+  jobs:
+    - name: markdown
+      glob: "*.md"
+      run: bash scripts/lint-markdown-files.sh {staged_files}
