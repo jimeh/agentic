@@ -34,6 +34,7 @@ type ThirdpartySource = {
 type ThirdpartySkill = {
   name?: string;
   path?: string;
+  ref?: string;
 };
 
 type ThirdpartyLock = {
@@ -320,6 +321,10 @@ function checkThirdpartySkills(): void {
         continue;
       }
 
+      if (skill.ref !== undefined && skill.ref.trim() === "") {
+        reportError(`${manifestPath}: '${name}' has empty ref`);
+      }
+
       if (expectedSkills.has(name)) {
         reportError(`${manifestPath}: duplicate skill '${name}'`);
       }
@@ -351,7 +356,8 @@ function checkThirdpartySkills(): void {
         reportError(`${lockPath}: '${name}' has wrong source type`);
       }
 
-      if (lockEntry.sourceUrl !== source.url || lockEntry.ref !== source.ref) {
+      const expectedRef = skill.ref ?? source.ref;
+      if (lockEntry.sourceUrl !== source.url || lockEntry.ref !== expectedRef) {
         reportError(`${lockPath}: '${name}' source does not match manifest`);
       }
 

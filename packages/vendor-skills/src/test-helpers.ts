@@ -15,6 +15,7 @@ import type { Manifest } from "./types";
 export type TempProject = {
   root: string;
   upstream: string;
+  initialCommit: string;
   cleanup(): void;
 };
 
@@ -67,9 +68,23 @@ export function createTempProject(): TempProject {
     ].join("\n"),
   );
   write(join(upstream, "skills", "example-skill", "README.md"), "hello\n");
+  write(
+    join(upstream, "skills", "second-skill", "SKILL.md"),
+    [
+      "---",
+      "name: second-skill",
+      "description: Second skill",
+      "---",
+      "",
+      "# Second Skill",
+      "",
+    ].join("\n"),
+  );
+  write(join(upstream, "skills", "second-skill", "README.md"), "second\n");
   run("git", ["add", "."], upstream);
   run("git", ["commit", "--quiet", "-m", "add skill"], upstream);
   run("git", ["branch", "-M", "main"], upstream);
+  const initialCommit = run("git", ["rev-parse", "HEAD"], upstream);
 
   const manifest: Manifest = {
     version: 1,
@@ -91,6 +106,7 @@ export function createTempProject(): TempProject {
   return {
     root,
     upstream,
+    initialCommit,
     cleanup() {
       if (existsSync(root)) {
         rmSync(root, { recursive: true, force: true });

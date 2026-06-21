@@ -17,6 +17,7 @@ export type Source = {
 export type SkillSelection = {
   name: string;
   path: string;
+  ref?: string;
 };
 
 /** Lockfile containing resolved upstream metadata for vendored skills. */
@@ -50,6 +51,14 @@ export type VendorOptions = {
   dryRun: boolean;
   check: boolean;
   filter: Set<string> | null;
+};
+
+/** Runtime options for adding skills to the source-controlled manifest. */
+export type AddOptions = {
+  source: string;
+  ref: string | null;
+  dryRun: boolean;
+  skills: string[];
 };
 
 /** Logger interface used to keep updater output testable. */

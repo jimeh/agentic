@@ -110,3 +110,37 @@ test("full update prunes skills removed from the manifest", () => {
     existsSync(join(temp.root, "thirdparty", "skills", "example-skill")),
   ).toBe(false);
 });
+
+test("update honors a skill-level ref override", () => {
+  const temp = project();
+  const manifest = readJson<Manifest>(
+    join(temp.root, "thirdparty", "skills.manifest.json"),
+  );
+  manifest.sources[0].skills[0].ref = temp.initialCommit;
+  write(
+    join(temp.root, "thirdparty", "skills.manifest.json"),
+    `${JSON.stringify(manifest, null, 2)}\n`,
+  );
+
+  writeFileSync(
+    join(temp.upstream, "skills", "example-skill", "README.md"),
+    "changed\n",
+  );
+  run("git", ["add", "."], temp.upstream);
+  run("git", ["commit", "--quiet", "-m", "change skill"], temp.upstream);
+
+  updateThirdpartySkills({
+    root: temp.root,
+    options: { dryRun: false, check: false, filter: null },
+    logger: silentLogger,
+  });
+
+  const lock = readJson<Lock>(join(temp.root, "thirdparty", "skills.lock.json"));
+  const content = readFileSync(
+    join(temp.root, "thirdparty", "skills", "example-skill", "README.md"),
+    "utf8",
+  );
+
+  expect(lock.skills["example-skill"].ref).toBe(temp.initialCommit);
+  expect(content).toBe("hello\n");
+});

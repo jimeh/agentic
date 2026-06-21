@@ -1,6 +1,36 @@
 {
   "version": 1,
   "skills": {
+    "frontend-design": {
+      "manifestSourceId": "skills",
+      "sourceType": "git",
+      "sourceUrl": "https://github.com/anthropics/skills.git",
+      "ref": "main",
+      "resolvedCommit": "57546260929473d4e0d1c1bb75297be2fdfa1949",
+      "upstreamPath": "skills/frontend-design",
+      "contentHash": "sha256:4eabc66183767153e404b39d1b839b1c37f2d82d86f0a0d7e880a579d8d62336",
+      "skillsCliVersion": null
+    },
+    "handoff": {
+      "manifestSourceId": "agent-skills",
+      "sourceType": "git",
+      "sourceUrl": "https://github.com/openclaw/agent-skills.git",
+      "ref": "main",
+      "resolvedCommit": "283f06904d917a2464e7fb4787795a7fe063e391",
+      "upstreamPath": "skills/handoff",
+      "contentHash": "sha256:eafcf347aa22cb3a079172da12bc238cca2c8e9c1ccf355d2524af684ed6621f",
+      "skillsCliVersion": null
+    },
+    "rust-best-practices": {
+      "manifestSourceId": "apollographql-skills",
+      "sourceType": "git",
+      "sourceUrl": "https://github.com/apollographql/skills.git",
+      "ref": "main",
+      "resolvedCommit": "605089108a198e412f7f0c1926c91eb94a6d1727",
+      "upstreamPath": "skills/rust-best-practices",
+      "contentHash": "sha256:fd336f2f772eb46ddf8658de5f9dd8faa1f35615b316665307fc82eeb4b2e658",
+      "skillsCliVersion": null
+    },
     "vercel-react-best-practices": {
       "manifestSourceId": "vercel-agent-skills",
       "sourceType": "git",

@@ -24,8 +24,10 @@ export function cloneSource(
   tempRoot: string,
   cwd: string,
   exec: Exec,
+  ref = source.ref,
+  cloneName = source.id,
 ): string {
-  const cloneDir = join(tempRoot, source.id);
+  const cloneDir = join(tempRoot, cloneName);
   exec(
     "git",
     [
@@ -38,6 +40,6 @@ export function cloneSource(
     ],
     cwd,
   );
-  exec("git", ["checkout", "--quiet", source.ref], cloneDir);
+  exec("git", ["checkout", "--quiet", ref], cloneDir);
   return cloneDir;
 }

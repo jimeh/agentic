@@ -25,6 +25,10 @@ run = "./setup.sh --dry-run"
 description = "Install Lefthook git hooks"
 run = "lefthook install --reset-hooks-path"
 
+[tasks."thirdparty:add-skills"]
+description = "Add selected upstream skills to the third-party manifest"
+run = "bun --cwd packages/vendor-skills ./bin/vendor-skills.ts add --root ../.."
+
 [tasks."thirdparty:update-skills"]
 description = "Update vendored third-party skills from manifest sources"
 run = "bun --cwd packages/vendor-skills ./bin/vendor-skills.ts update --root ../.."

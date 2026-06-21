@@ -62,13 +62,19 @@ CLI (`claude plugin marketplace add` / `claude plugin install`).
 Update vendored third-party skills with:
 
 ```bash
+mise run thirdparty:add-skills -- vercel-labs/agent-skills
+mise run thirdparty:add-skills -- vercel-labs/agent-skills --skill skill-name
 mise run thirdparty:update-skills
 mise run thirdparty:update-skills:dry-run
 mise run thirdparty:update-skills:check
 ```
 
 Those tasks call the repo-local `vendor-skills` CLI through Bun. Its
-implementation and colocated tests live under `packages/vendor-skills/src/`.
+implementation and colocated tests live under `packages/vendor-skills/src/`. The
+add command accepts full git URLs or GitHub `owner/repo` shorthand and opens a
+multi-select prompt when `--skill` is not provided, then vendors selected skills
+and updates the lockfile. Individual manifest skill entries can set `ref` to pin
+or test a skill separately from the source default.
 
 ## Plugins
 

@@ -17,6 +17,7 @@ mise run setup               # run ./setup.sh via mise
 mise run setup:force         # run ./setup.sh --force
 mise run setup:dry-run       # preview setup changes
 mise run hooks:install       # install Lefthook git hooks
+mise run thirdparty:add-skills -- <source> # add upstream skills to manifest
 mise run thirdparty:update-skills         # update vendored third-party skills
 mise run thirdparty:update-skills:dry-run # preview third-party skill updates
 mise run thirdparty:update-skills:check   # check vendored skills upstream
@@ -46,9 +47,11 @@ automatically. Stale symlinks are cleaned up on each run.
 Third-party skills are source-controlled under `thirdparty/skills/`.
 `thirdparty/skills.manifest.json` defines the reviewed upstream sources and
 selected skills, while `thirdparty/skills.lock.json` records the resolved
-commit, upstream path, and content hash. Normal setup stays offline; run
-`mise run thirdparty:update-skills` explicitly to fetch upstream sources and
-refresh vendored content.
+commit, upstream path, and content hash. Skill entries can set `ref` to override
+their source default. Normal setup stays offline; run
+`mise run thirdparty:add-skills -- <source>` to add and vendor skills, or
+`mise run thirdparty:update-skills` explicitly to refresh already-configured
+vendored content.
 
 **Commands** live in plugins under `plugins/*/commands/`. Each plugin has a
 `.claude-plugin/plugin.json` manifest and auto-discovered `.md` command files.

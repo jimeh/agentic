@@ -44,6 +44,9 @@ export function validateManifest(
     for (const skill of source.skills) {
       assertSlug(skill.name, "skill name");
       assertSafeRelativePath(skill.path, `${skill.name} path`);
+      if (skill.ref !== undefined && skill.ref.trim() === "") {
+        throw new Error(`${paths.manifestPath}: '${skill.name}' has empty ref`);
+      }
       if (names.has(skill.name)) {
         throw new Error(
           `${paths.manifestPath}: duplicate skill '${skill.name}'`,

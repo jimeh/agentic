@@ -25,6 +25,8 @@ import type {
   Lock,
   Logger,
   Manifest,
+  SkillSelection,
+  Source,
   UpdateResult,
   VendorOptions,
 } from "./types";
@@ -51,6 +53,17 @@ function frontmatterName(skillDir: string): string {
   return data.name;
 }
 
+function groupedSkillsByRef(source: Source): Map<string, SkillSelection[]> {
+  const groups = new Map<string, SkillSelection[]>();
+
+  for (const skill of source.skills) {
+    const ref = skill.ref ?? source.ref;
+    groups.set(ref, [...(groups.get(ref) ?? []), skill]);
+  }
+
+  return groups;
+}
+
 /** Update or check vendored third-party skills from the configured manifest. */
 export function updateThirdpartySkills(input: UpdateInput): UpdateResult {
   const paths = pathsForRoot(input.root);
@@ -70,57 +83,68 @@ export function updateThirdpartySkills(input: UpdateInput): UpdateResult {
 
   try {
     for (const source of selectedSources(manifest, input.options)) {
-      const cloneDir = cloneSource(source, tempRoot, paths.root, exec);
-      const resolvedCommit = exec("git", ["rev-parse", "HEAD"], cloneDir);
+      let groupIndex = 0;
+      for (const [ref, skills] of groupedSkillsByRef(source)) {
+        const cloneDir = cloneSource(
+          source,
+          tempRoot,
+          paths.root,
+          exec,
+          ref,
+          `${source.id}-${groupIndex}`,
+        );
+        const resolvedCommit = exec("git", ["rev-parse", "HEAD"], cloneDir);
+        groupIndex += 1;
 
-      for (const skill of source.skills) {
-        checked.push(skill.name);
-        const upstreamDir = join(cloneDir, skill.path);
-        if (!existsSync(join(upstreamDir, "SKILL.md"))) {
-          throw new Error(`${skill.name}: ${skill.path}/SKILL.md not found`);
-        }
-
-        const actualName = frontmatterName(upstreamDir);
-        if (actualName !== skill.name) {
-          throw new Error(
-            `${skill.name}: frontmatter name '${actualName}' does not match`,
-          );
-        }
-
-        const nextHash = contentHash(upstreamDir);
-        const currentHash = currentLock.skills[skill.name]?.contentHash;
-        const vendorDir = join(paths.vendorRoot, skill.name);
-
-        nextSkills[skill.name] = {
-          manifestSourceId: source.id,
-          sourceType: "git",
-          sourceUrl: source.url,
-          ref: source.ref,
-          resolvedCommit,
-          upstreamPath: skill.path,
-          contentHash: nextHash,
-          skillsCliVersion: null,
-        };
-
-        if (currentHash !== nextHash || !existsSync(vendorDir)) {
-          changed.push(skill.name);
-          if (input.options.dryRun) {
-            logger.log(`would update ${skill.name}`);
-            continue;
+        for (const skill of skills) {
+          checked.push(skill.name);
+          const upstreamDir = join(cloneDir, skill.path);
+          if (!existsSync(join(upstreamDir, "SKILL.md"))) {
+            throw new Error(`${skill.name}: ${skill.path}/SKILL.md not found`);
           }
 
-          rmSync(vendorDir, { recursive: true, force: true });
-          mkdirSync(dirname(vendorDir), { recursive: true });
-          cpSync(upstreamDir, vendorDir, {
-            recursive: true,
-            filter: (src) => {
-              const name = basename(src);
-              return name !== ".git" && name !== "node_modules";
-            },
-          });
-          logger.log(`updated ${skill.name}`);
-        } else {
-          logger.log(`unchanged ${skill.name}`);
+          const actualName = frontmatterName(upstreamDir);
+          if (actualName !== skill.name) {
+            throw new Error(
+              `${skill.name}: frontmatter name '${actualName}' does not match`,
+            );
+          }
+
+          const nextHash = contentHash(upstreamDir);
+          const currentHash = currentLock.skills[skill.name]?.contentHash;
+          const vendorDir = join(paths.vendorRoot, skill.name);
+
+          nextSkills[skill.name] = {
+            manifestSourceId: source.id,
+            sourceType: "git",
+            sourceUrl: source.url,
+            ref,
+            resolvedCommit,
+            upstreamPath: skill.path,
+            contentHash: nextHash,
+            skillsCliVersion: null,
+          };
+
+          if (currentHash !== nextHash || !existsSync(vendorDir)) {
+            changed.push(skill.name);
+            if (input.options.dryRun) {
+              logger.log(`would update ${skill.name}`);
+              continue;
+            }
+
+            rmSync(vendorDir, { recursive: true, force: true });
+            mkdirSync(dirname(vendorDir), { recursive: true });
+            cpSync(upstreamDir, vendorDir, {
+              recursive: true,
+              filter: (src) => {
+                const name = basename(src);
+                return name !== ".git" && name !== "node_modules";
+              },
+            });
+            logger.log(`updated ${skill.name}`);
+          } else {
+            logger.log(`unchanged ${skill.name}`);
+          }
         }
       }
     }

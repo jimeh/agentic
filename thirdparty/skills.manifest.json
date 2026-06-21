@@ -12,6 +12,42 @@
           "path": "skills/react-best-practices"
         }
       ]
+    },
+    {
+      "id": "agent-skills",
+      "type": "git",
+      "url": "https://github.com/openclaw/agent-skills.git",
+      "ref": "main",
+      "skills": [
+        {
+          "name": "handoff",
+          "path": "skills/handoff"
+        }
+      ]
+    },
+    {
+      "id": "skills",
+      "type": "git",
+      "url": "https://github.com/anthropics/skills.git",
+      "ref": "main",
+      "skills": [
+        {
+          "name": "frontend-design",
+          "path": "skills/frontend-design"
+        }
+      ]
+    },
+    {
+      "id": "apollographql-skills",
+      "type": "git",
+      "url": "https://github.com/apollographql/skills.git",
+      "ref": "main",
+      "skills": [
+        {
+          "name": "rust-best-practices",
+          "path": "skills/rust-best-practices"
+        }
+      ]
     }
   ]
 }
