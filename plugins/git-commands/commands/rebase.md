@@ -27,6 +27,10 @@ have low confidence in the resolution, abort the rebase with
 `git rebase --abort`, restore any stashed changes with `git stash pop`, and ask
 the user to resolve manually — leaving the working tree as it was found.
 
+## Guidelines
+
+- Never force-push without explicit user confirmation
+
 You have the capability to call multiple tools in a single response. Do not use
 any other tools or do anything else. Do not send any other text or messages
 besides these tool calls.

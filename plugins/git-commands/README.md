@@ -33,8 +33,10 @@ if confidence is low, leaving the working tree as it was found.
 ### `/clean-gone-branches`
 
 Remove local branches whose remote tracking branch is marked `[gone]` (deleted
-on remote). Also removes any associated worktrees before deleting the branch.
-Reports what was cleaned up, or that no cleanup was needed.
+on remote). Also removes any associated worktrees before deleting the branch. By
+default it previews the gone branches with a dry run (after `git fetch --prune`)
+and asks for confirmation before deleting; ask to delete without confirmation to
+skip the prompt. Reports what was cleaned up, or that no cleanup was needed.
 
 ## Install
 

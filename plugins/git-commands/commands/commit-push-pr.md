@@ -18,31 +18,63 @@ notes: Heavily modified from the original.
 
 Based on the above changes:
 
-1. **Branch**: If on `main`, `master`, or the repository's default/protected
+1. **Check agent docs**: If the project has an AGENTS.md or CLAUDE.md, review it
+   against the current changes. If the changes introduce new conventions,
+   commands, architecture, or patterns that should be documented (or invalidate
+   existing docs), update the relevant file as part of this commit. Only update
+   if clearly warranted — don't add noise. Things worth documenting:
+   - Non-obvious conventions or patterns not apparent from code structure alone
+   - Surprising behaviors, gotchas, or workarounds discovered during development
+   - Implicit dependencies or ordering constraints between components
+   - Environment-specific quirks (platform differences, tool version
+     sensitivities)
+   - Undocumented requirements or constraints found through trial and error
+2. **Branch**: If on `main`, `master`, or the repository's default/protected
    branch, create a new branch named for the changes with
    `git checkout -b <descriptive-name>`. Never rename these branches.
-2. **Branch name**: Only use `git branch -m <descriptive-name>` when already on
+3. **Branch name**: Only use `git branch -m <descriptive-name>` when already on
    a non-main branch whose name appears generated, random, or unrelated to the
    current work, such as UUIDs, hex strings, meaningless sequences, or 1-3
    unrelated words like "brave-fox". If the branch name is meaningful or
    user-provided, keep it.
-3. **Commit**: Stage all relevant changes and create a single commit. If asked
+4. **Commit**: Stage all relevant changes and create a single commit with a
+   conventional commit message. Lead with why over what — the body should start
+   with the reason for the change; technical overview and implementation notes
+   come after. If the rationale is unclear, do not guess; ask the user. If asked
    to commit only staged changes, run `git diff --staged` and base the message
    solely on those — do NOT stage additional files. Never stage or commit files
    ignored by git unless the user explicitly asks. Do not use `git add -f`,
    `git add --force`, or equivalent to include ignored files.
-4. **Push** the branch to origin.
-5. **Understand full scope**: Run `git log` and `git diff main...HEAD` (or
+5. **Push** the branch to origin.
+6. **Understand full scope**: Run `git log` and `git diff main...HEAD` (or
    master) to see all changes since the base branch.
-6. **PR template**: Determine whether the PR template search found no template,
+7. **PR template**: Determine whether the PR template search found no template,
    one template, or multiple templates. If one template was found, read it
    before drafting the PR body and use it as the body structure. If multiple
    templates were found and no obvious default exists, ask which one to use. Do
    not run `gh pr create` until template status is known.
-7. **Create PR** with `gh pr create`. Description should explain _what_ changed
-   and _why_, covering the full scope. Preserve meaningful template headings and
-   checklists when a template is used. Do NOT list commits — the PR already
-   shows those.
+8. **Create PR** with `gh pr create`. Lead the description with the motivation
+   and purpose behind the change — before technical details — then cover the
+   implementation across the full scope of all commits. If the rationale is
+   unclear, do not guess; stick to the confirmed scope or ask the user. Preserve
+   meaningful template headings and checklists when a template is used. Do NOT
+   list individual commits — the PR already shows those.
+
+Before creating the PR, verify:
+
+- The PR template search command was run
+- Any matched template file was read
+- The PR body follows the selected template, or no template was found
+
+## Guidelines
+
+- Use parallel tool calls where possible to minimize round-trips
+- Prefer conventional commits format, but defer to project conventions
+- Pass commit messages and PR bodies via heredocs to avoid shell interpretation
+  of backticks and other special characters in multi-line strings
+- Treat `.gitignore` and other git exclude rules as authoritative for default
+  commit scope
+- Minimize text output — focus on tool calls
 
 Do all of the above in a single message using parallel tool calls where
 possible. Do not send any other text or messages besides tool calls.
