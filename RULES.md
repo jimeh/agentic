@@ -37,8 +37,10 @@
 
 ## Technical Considerations
 
-- Check Makefile and build scripts for lint, format, test commands, and platform
-  constraints.
+- Check Makefile, mise config, and build scripts for lint, format, test
+  commands, and platform constraints.
+- In Rails apps, create database migrations with `rails g migration ...` so
+  Rails generates accurate, unique timestamps.
 - If a command fails unexpectedly, verify the working directory with `pwd`.
 - Do not use `git -C`. Verify the current directory and `cd` if needed.
 - Use deepwiki to look up third-party libraries when available.
