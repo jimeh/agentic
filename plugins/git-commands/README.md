@@ -26,9 +26,12 @@ the user explicitly asks to include them.
 ### `/rebase`
 
 Rebase the current branch onto the upstream default branch (main or master).
-Uncommitted changes are auto-stashed beforehand and restored after. If the
-rebase hits conflicts, the agent attempts to resolve them — and aborts cleanly
-if confidence is low, leaving the working tree as it was found.
+Uncommitted changes are auto-stashed beforehand and restored after. The agent
+checks upstream changes that landed under the branch, looks for overlap with the
+branch's design, and reports whether local commits were adapted or should be
+followed up. If the rebase hits conflicts, the agent attempts to resolve them
+into one coherent implementation — and aborts cleanly if confidence is low,
+leaving the working tree as it was found.
 
 ### `/clean-gone-branches`
 
