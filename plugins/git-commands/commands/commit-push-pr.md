@@ -52,19 +52,30 @@ Based on the above changes:
    one template, or multiple templates. If one template was found, read it
    before drafting the PR body and use it as the body structure. If multiple
    templates were found and no obvious default exists, ask which one to use. Do
-   not run `gh pr create` until template status is known.
+   not run `gh pr create` until template status is known. Template detection is
+   internal workflow state: do not include lines like `No PR template found`,
+   `PR template: No PR template found`, or selected template paths in the PR
+   title/body unless the repository template explicitly asks for it.
 8. **Create PR** with `gh pr create`. Lead the description with the motivation
    and purpose behind the change — before technical details — then cover the
    implementation across the full scope of all commits. If the rationale is
    unclear, do not guess; stick to the confirmed scope or ask the user. Preserve
    meaningful template headings and checklists when a template is used. Do NOT
-   list individual commits — the PR already shows those.
+   list individual commits — the PR already shows those. Prefer title wording
+   that would read well as a bullet in a user-facing changelog when the change
+   has user-visible impact; for internal-only changes, frame the title around
+   the durable project outcome rather than the implementation task. Include
+   manual QA only when there are useful, concrete reviewer workflows or
+   user-visible scenarios tied to the branch. Do not fill manual QA with generic
+   test commands, CI commands, or "CI should pass"; mention commands only when
+   actually run locally and useful as testing notes.
 
 Before creating the PR, verify:
 
 - The PR template search command was run
 - Any matched template file was read
 - The PR body follows the selected template, or no template was found
+- The PR title and body do not include template-search metadata
 
 ## Guidelines
 
