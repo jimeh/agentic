@@ -38,7 +38,9 @@ test("update vendors a selected skill and writes lock metadata", () => {
     existsSync(join(temp.root, "thirdparty", "skills", "example-skill")),
   ).toBe(true);
 
-  const lock = readJson<Lock>(join(temp.root, "thirdparty", "skills.lock.json"));
+  const lock = readJson<Lock>(
+    join(temp.root, "thirdparty", "skills.lock.json"),
+  );
   const entry = lock.skills["example-skill"];
 
   expect(entry.sourceUrl).toBe(temp.upstream);
@@ -135,7 +137,9 @@ test("update honors a skill-level ref override", () => {
     logger: silentLogger,
   });
 
-  const lock = readJson<Lock>(join(temp.root, "thirdparty", "skills.lock.json"));
+  const lock = readJson<Lock>(
+    join(temp.root, "thirdparty", "skills.lock.json"),
+  );
   const content = readFileSync(
     join(temp.root, "thirdparty", "skills", "example-skill", "README.md"),
     "utf8",

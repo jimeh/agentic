@@ -205,7 +205,7 @@ function checkPluginVersions(): void {
   }
 }
 
-function assertSlug(name: string | undefined, path: string): boolean {
+function assertSlug(name: string | undefined, path: string): name is string {
   if (!name) {
     reportError(`${path}: missing name`);
     return false;
@@ -271,7 +271,11 @@ function checkThirdpartySkills(): void {
   const lockPath = "thirdparty/skills.lock.json";
   const skillsDir = "thirdparty/skills";
 
-  if (!existsSync(manifestPath) && !existsSync(skillsDir) && !existsSync(lockPath)) {
+  if (
+    !existsSync(manifestPath) &&
+    !existsSync(skillsDir) &&
+    !existsSync(lockPath)
+  ) {
     return;
   }
 
@@ -363,7 +367,9 @@ function checkThirdpartySkills(): void {
 
       const frontmatter = frontmatterName(skillFile);
       if (frontmatter !== name) {
-        reportError(`${skillFile}: name '${frontmatter}' should match '${name}'`);
+        reportError(
+          `${skillFile}: name '${frontmatter}' should match '${name}'`,
+        );
       }
 
       const lockEntry = lockSkills[name];

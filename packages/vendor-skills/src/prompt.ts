@@ -8,8 +8,8 @@ type PromptStreams = {
 
 type SkillPromptOption = {
   value: string;
-  label: string;
-  hint: string;
+  label?: string;
+  hint?: string;
 };
 
 function visibleItems(output: NodeJS.WriteStream): number {
@@ -40,9 +40,11 @@ export function skillPromptFilter(
   }
 
   const skill = skills.find((candidate) => candidate.name === option.value);
-  return [option.label, option.hint, skill?.description ?? ""].some((value) =>
-    value.toLowerCase().includes(needle),
-  );
+  return [
+    option.label ?? option.value,
+    option.hint ?? "",
+    skill?.description ?? "",
+  ].some((value) => value.toLowerCase().includes(needle));
 }
 
 /** Prompt for a searchable multi-select skill choice in a terminal. */

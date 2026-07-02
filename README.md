@@ -8,7 +8,7 @@ My personal AI coding agent configuration, with any quirks, oddities,
 opinionated rules, and hallucination-inducing prompt fragments I live with on a
 daily basis.
 
-One repo, one set of rules, symlinked into every agent's config directory.
+One repo, one base rule set, rendered into per-agent global instruction files.
 Supports [Claude Code], [Codex], and any tool that reads `AGENTS.md`.
 
 > [!Warning]
@@ -26,16 +26,23 @@ Supports [Claude Code], [Codex], and any tool that reads `AGENTS.md`.
 ```bash
 git clone https://github.com/jimeh/agentic.git ~/.config/agentic
 cd ~/.config/agentic
-mise run setup                  # install project dependencies
+mise run setup                  # install dependencies and local git hooks
 mise run agent-config:install   # create symlinks (skips existing)
 # mise run agent-config:force   # replace existing (backs up to .bak)
 ```
 
 This creates symlinks from the repo into `~/.claude/`, `~/.agents/`, and
 `~/.codex/`, and registers plugin marketplaces and installs plugins via the
-Claude CLI. Run `./install-agent-configs.sh --help` for details.
+Claude CLI. Use the `mise run agent-config:*` tasks for installation.
 
-Git hooks are managed by Lefthook:
+Install only project dependencies with:
+
+```bash
+mise run deps:install
+```
+
+Git hooks are managed by Lefthook and installed by `mise run setup`. To install
+or refresh hooks directly:
 
 ```bash
 mise run hooks:install
@@ -43,9 +50,12 @@ mise run hooks:install
 
 ## What's Inside
 
-- **`RULES.md`** — Single source of truth for all agent behavior rules.
-  Symlinked as the global rules file for each supported agent. Edit this file
-  directly — never edit the symlink targets.
+- **`rules/`** — Source Markdown for global behavior rules. `base.md` is shared
+  by all targets, while `agents.md` and `claude.md` append target-specific
+  guidance.
+- **`generated/`** — Rendered global `AGENTS.md` and `CLAUDE.md` files. These
+  are symlinked into agent config directories; edit `rules/` and run
+  `mise run rules:build` instead of editing generated files directly.
 - **`claude/`** — Claude Code settings and statusline script.
 - **`codex/`** — OpenAI Codex config.
 - **`skills/`** — Custom skills (auto-discovered by the agent config installer).
@@ -77,6 +87,49 @@ add command accepts full git URLs or GitHub `owner/repo` shorthand and opens a
 multi-select prompt when `--skill` is not provided, then vendors selected skills
 and updates the lockfile. Individual manifest skill entries can set `ref` to pin
 or test a skill separately from the source default.
+
+Render global instruction files after changing `rules/`:
+
+```bash
+mise run rules:build
+mise run rules:check
+```
+
+Update pinned GitHub Actions with Pinact:
+
+```bash
+mise run actions:update
+```
+
+New worktrees can be bootstrapped with Treeboot:
+
+```bash
+mise run treeboot
+mise run treeboot:check
+```
+
+Run local tests with:
+
+```bash
+mise run test
+mise run test:plugins
+```
+
+Format Markdown and TypeScript with:
+
+```bash
+mise run format
+mise run format:check
+```
+
+Mise-managed tools are locked in `mise.lock`. Bun stays on the `1.3` release
+line; other tools stay on their current major release lines with Mise's
+three-day `minimum_release_age`. Refresh tool lock metadata after changing
+`mise.toml` with:
+
+```bash
+mise lock --minimum-release-age 3d
+```
 
 ## Plugins
 
@@ -162,20 +215,16 @@ claude plugin install git-commands@jimeh-agentic
 
 ### Agent Config Installation
 
-`install-agent-configs.sh` ensures both the official `claude-plugins-official`
-marketplace and this repo's local marketplace are registered, then installs
-plugins listed in the `CLAUDE_PLUGINS` array at the top of the script. To add or
-remove auto-installed plugins, edit that array.
+`scripts/install-agent-configs.ts` ensures both the official
+`claude-plugins-official` marketplace and this repo's local marketplace are
+registered, then installs plugins listed in the `claudePlugins` array near the
+top of the script. To add or remove auto-installed plugins, edit that array.
 
-Requires the `claude` CLI and `jq`. Skipped gracefully if either is missing.
+Requires the `claude` CLI. Skipped gracefully if it is missing.
 
 ## Requirements
 
-- Bash 3.2+ (macOS default works)
-- For symlink resolution, `install-agent-configs.sh` tries `realpath` first,
-  then platform-specific fallbacks:
-  - **macOS**: `python3`, `python`, `perl`, or `readlink`
-  - **Linux**: `readlink -f` (part of coreutils)
+- Bun 1.3+
 
 ## License
 

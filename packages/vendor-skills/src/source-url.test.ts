@@ -10,9 +10,9 @@ test("normalizeSourceUrl expands GitHub shorthand", () => {
 test("normalizeSourceUrl normalizes GitHub HTTPS and SSH URLs", () => {
   const expected = "https://github.com/vercel-labs/agent-skills.git";
 
-  expect(normalizeSourceUrl("https://github.com/vercel-labs/agent-skills")).toBe(
-    expected,
-  );
+  expect(
+    normalizeSourceUrl("https://github.com/vercel-labs/agent-skills"),
+  ).toBe(expected);
   expect(
     normalizeSourceUrl("git@github.com:vercel-labs/agent-skills.git"),
   ).toBe(expected);
@@ -28,7 +28,10 @@ test("normalizeSourceUrl supports dotted GitHub repo names", () => {
 
 test("sourceIdForUrl derives unique source ids", () => {
   expect(
-    sourceIdForUrl("https://github.com/vercel-labs/agent-skills.git", new Set()),
+    sourceIdForUrl(
+      "https://github.com/vercel-labs/agent-skills.git",
+      new Set(),
+    ),
   ).toBe("agent-skills");
   expect(
     sourceIdForUrl(

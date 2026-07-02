@@ -25,6 +25,21 @@ const silentLogger = {
   error() {},
 };
 
+async function expectRejects(
+  promise: Promise<unknown>,
+  message: string,
+): Promise<void> {
+  try {
+    await promise;
+  } catch (error) {
+    expect(error).toBeInstanceOf(Error);
+    expect((error as Error).message).toContain(message);
+    return;
+  }
+
+  throw new Error("expected promise to reject");
+}
+
 test("add appends selected skills to an existing source", async () => {
   const temp = project();
 
@@ -53,7 +68,9 @@ test("add appends selected skills to an existing source", async () => {
     existsSync(join(temp.root, "thirdparty", "skills", "second-skill")),
   ).toBe(true);
 
-  const lock = readJson<Lock>(join(temp.root, "thirdparty", "skills.lock.json"));
+  const lock = readJson<Lock>(
+    join(temp.root, "thirdparty", "skills.lock.json"),
+  );
   expect(lock.skills["second-skill"].upstreamPath).toBe("skills/second-skill");
 });
 
@@ -117,7 +134,9 @@ test("add records skill-level refs when they differ from source ref", async () =
     ref: temp.initialCommit,
   });
 
-  const lock = readJson<Lock>(join(temp.root, "thirdparty", "skills.lock.json"));
+  const lock = readJson<Lock>(
+    join(temp.root, "thirdparty", "skills.lock.json"),
+  );
   expect(lock.skills["second-skill"].ref).toBe(temp.initialCommit);
 });
 
@@ -162,7 +181,7 @@ test("add restores the manifest when vendoring fails", async () => {
     return realExec(command, args, cwd);
   };
 
-  await expect(
+  await expectRejects(
     addThirdpartySkills({
       root: temp.root,
       options: {
@@ -174,7 +193,8 @@ test("add restores the manifest when vendoring fails", async () => {
       exec,
       logger: silentLogger,
     }),
-  ).rejects.toThrow("clone failed");
+    "clone failed",
+  );
 
   expect(readJson<Manifest>(manifestPath)).toEqual(before);
   expect(existsSync(join(temp.root, "thirdparty", "skills.lock.json"))).toBe(
@@ -185,7 +205,7 @@ test("add restores the manifest when vendoring fails", async () => {
 test("add rejects unknown selected skills", async () => {
   const temp = project();
 
-  await expect(
+  await expectRejects(
     addThirdpartySkills({
       root: temp.root,
       options: {
@@ -196,5 +216,6 @@ test("add rejects unknown selected skills", async () => {
       },
       logger: silentLogger,
     }),
-  ).rejects.toThrow("unknown available skill");
+    "unknown available skill",
+  );
 });

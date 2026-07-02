@@ -14,6 +14,21 @@ const skills = [
   },
 ];
 
+async function expectRejects(
+  promise: Promise<unknown>,
+  message: string,
+): Promise<void> {
+  try {
+    await promise;
+  } catch (error) {
+    expect(error).toBeInstanceOf(Error);
+    expect((error as Error).message).toContain(message);
+    return;
+  }
+
+  throw new Error("expected promise to reject");
+}
+
 test("skillPromptOptions renders names with path hints", () => {
   expect(skillPromptOptions(skills)).toEqual([
     {
@@ -39,10 +54,11 @@ test("skillPromptFilter searches name, path, and description", () => {
 });
 
 test("selectSkills rejects non-interactive streams", async () => {
-  await expect(
+  await expectRejects(
     selectSkills(skills, {
       input: { isTTY: false } as never,
       output: { isTTY: true } as never,
     }),
-  ).rejects.toThrow("pass --skill");
+    "pass --skill",
+  );
 });

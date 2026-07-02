@@ -1,4 +1,6 @@
 interface:
   display_name: "Clean Gone Branches"
   short_description: "Remove stale gone Git branches safely"
-  default_prompt: "Use $clean-gone-branches to remove local Git branches whose upstream branches are gone."
+  default_prompt:
+    "Use $clean-gone-branches to remove local Git branches whose upstream
+    branches are gone."

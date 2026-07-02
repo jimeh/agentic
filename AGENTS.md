@@ -1,21 +1,20 @@
 # AGENTS.md
 
 Shared configuration and rules for AI coding agents (Claude Code, Codex, etc).
-`install-agent-configs.sh` symlinks configs into `~/.claude/`, `~/.agents/`,
-`~/.codex/`.
+`mise run agent-config:install` symlinks configs into `~/.claude/`,
+`~/.agents/`, `~/.codex/`.
 
 ## Commands
 
 ```bash
-./install-agent-configs.sh          # create symlinks (skips existing)
-./install-agent-configs.sh --force  # replace existing (backs up to .bak)
-shellcheck **/*.sh                  # lint all shell scripts
-bun install                         # install npm deps with minimum release age
+mise run deps:install             # install npm deps with minimum release age
 ```
 
 ```bash
-mise run setup                    # install project dependencies
-mise run setup:ci                 # install deps from lockfile for CI
+mise run setup                    # install deps and local git hooks
+mise run setup:ci                 # install CI deps from lockfile
+mise run deps:install             # install project dependencies
+mise run deps:install:ci          # install deps from lockfile for CI
 mise run agent-config:install     # install agent config symlinks/plugins
 mise run agent-config:force       # replace installed agent config symlinks
 mise run agent-config:dry-run     # preview agent config installation
@@ -24,29 +23,40 @@ mise run thirdparty:add-skills -- <source> # add upstream skills to manifest
 mise run thirdparty:update-skills         # update vendored third-party skills
 mise run thirdparty:update-skills:dry-run # preview third-party skill updates
 mise run thirdparty:update-skills:check   # check vendored skills upstream
-mise run format              # format with oxfmt + markdownlint --fix
-mise run lint                # check formatting, markdown, agent metadata
-mise run test                # run Bun tests
+mise run rules:build        # render global AGENTS.md/CLAUDE.md files
+mise run rules:check        # check rendered global rules are up to date
+mise run actions:update     # update and pin GitHub Actions with Pinact
+mise run treeboot           # bootstrap a new worktree
+mise run treeboot:check     # validate Treeboot bootstrap config
+mise run format              # format Markdown/TypeScript
+mise run format:check        # check file formatting
+mise run lint                # run lint and agent metadata checks
+mise run check               # run format check, lint, and typecheck
+mise run test                # run Bun and plugin tests
+mise run test:unit           # run Bun tests
+mise run test:plugins        # run plugin shell tests
 mise run verify              # run lint and tests
-mise run format:oxfmt        # format with oxfmt only
-mise run format:markdownlint # auto-fix markdownlint issues only
-mise run lint:oxfmt          # check oxfmt formatting only
+mise run typecheck           # type-check TypeScript
+mise run format:oxfmt        # format files with oxfmt
+mise run format:oxfmt:check  # check oxfmt formatting
+mise run lint:oxlint         # lint TypeScript with oxlint
 mise run lint:markdownlint   # lint with markdownlint only
+mise run lint:shell          # lint shell scripts with shellcheck
 mise run lint:agent-harness  # check skill/plugin metadata invariants
 mise run lint:workflows      # check GitHub Actions syntax/security
 ```
 
 ## Architecture
 
-`install-agent-configs.sh` auto-discovers and symlinks skills:
+`scripts/install-agent-configs.ts` auto-discovers and symlinks skills:
 
 - **Skills**: any `skills/*/` dir with a `SKILL.md` → `~/.claude/skills/` and
   `~/.agents/skills/`
 - **Vendored third-party skills**: any `thirdparty/skills/*/` dir with a
   `SKILL.md` → the same global skill targets
 
-To add a new skill, just create the directory — `install-agent-configs.sh` picks
-it up automatically. Stale symlinks are cleaned up on each run.
+To add a new skill, just create the directory — the installer picks it up
+automatically. Stale symlinks are cleaned up on each run.
 
 Third-party skills are source-controlled under `thirdparty/skills/`.
 `thirdparty/skills.manifest.json` defines the reviewed upstream sources and
@@ -61,21 +71,23 @@ vendored content.
 `.claude-plugin/plugin.json` manifest and auto-discovered `.md` command files.
 
 **Plugins** are installed via the Claude CLI, not symlinks.
-`install-agent-configs.sh` ensures the official `claude-plugins-official`
-marketplace and the local `jimeh-agentic` marketplace are registered, then
-installs plugins listed in the `CLAUDE_PLUGINS` array at the top of the script.
-Requires `claude` and `jq`.
+`scripts/install-agent-configs.ts` ensures the official
+`claude-plugins-official` marketplace and the local `jimeh-agentic` marketplace
+are registered, then installs plugins listed in the `claudePlugins` array near
+the top of the script. Requires the `claude` CLI.
 
 ### Marketplace Manifest
 
 `.claude-plugin/marketplace.json` at the repo root lists all publishable plugins
 with metadata (name, version, description, source path, category).
 
-### RULES.md
+### Global Rules
 
-Single source of truth for agent instructions. Symlinked as the global
-`CLAUDE.md` and `AGENTS.md` for all supported agents. Always edit this file —
-never edit the symlink targets directly.
+Global instructions are rendered from Markdown sources under `rules/`.
+`rules/base.md` is shared by all targets, and `rules/agents.md` or
+`rules/claude.md` can append target-specific guidance. Run
+`mise run rules:build` after editing these files; `mise run lint` checks the
+rendered files in `generated/` are current.
 
 ### Agent-Specific Config
 
@@ -84,15 +96,16 @@ never edit the symlink targets directly.
 
 ## Testing
 
-Plugin tests live in `plugins/*/tests/*.test.sh`. CI auto-discovers and runs
-them. Tests must be self-contained bash scripts that exit 0 on success.
-TypeScript tests live beside package implementation files as
-`packages/*/src/**/*.test.ts` and run with `mise run test`.
+Plugin tests live in `plugins/*/tests/*.test.sh` and run with
+`mise run test:plugins`. Tests must be self-contained bash scripts that exit 0
+on success. TypeScript tests live beside package implementation files as
+`packages/*/src/**/*.test.ts`; `mise run test` runs both unit and plugin tests.
 
 Agent harness checks live in `scripts/check-agent-harness.ts` and run as part of
 `mise run lint`. They verify that skill frontmatter names are slug-safe and
 match their directories, vendored third-party skill locks match the checked-in
-content, and Claude plugin versions match the marketplace.
+content, and Claude plugin versions match the marketplace. Rendered global rule
+drift is checked separately by `mise run rules:check`.
 
 ## Plugin Versioning
 
@@ -122,22 +135,35 @@ spirit. Snippets are intentionally shorter than commands (no frontmatter, no
 tool constraints, no context blocks), but the core instructional intent should
 match.
 
-## Markdown Formatting
+## Formatting
 
-oxfmt (`proseWrap: "always"`, 80 chars) and markdownlint handle formatting.
-`embeddedLanguageFormatting: "off"` keeps oxfmt from touching YAML frontmatter.
-Run `mise run format` before committing. Lefthook runs staged Markdown files
-through `scripts/lint-markdown-files.sh` before commit. Vendored content under
+oxfmt (`proseWrap: "always"`, 80 chars) handles repo formatting; markdownlint
+handles Markdown-specific linting. `embeddedLanguageFormatting: "off"` keeps
+oxfmt from touching YAML frontmatter. Run `mise run format` before committing.
+Lefthook uses staged file globs as triggers, then runs repo-level
+`mise run format:oxfmt:check`, `mise run lint:markdownlint`, and
+`mise run lint:oxlint` before commit. Formatting/lint exclusions live in
+`.oxfmtrc.json` and `.markdownlint-cli2.jsonc`. Vendored content under
 `thirdparty/` is excluded from Markdown formatting/linting;
 `mise run lint:agent-harness` checks vendored skill frontmatter and content
 hashes instead.
 
 ## Dependency Policy
 
-`mise.toml` pins Bun to the `1.3` release line. The root `package.json` is a Bun
-workspace for packages under `packages/`. `bunfig.toml` sets Bun's
-`install.minimumReleaseAge` to seven days. Keep it in place so new direct and
-transitive npm dependency versions have had time to settle before installation.
+`mise.toml` pins Bun to the `1.3` release line and keeps other Mise-managed
+tools on their current major release lines, resolved through `mise.lock`. Mise's
+repo-local `minimum_release_age` is three days, and `task.run_auto_install` is
+enabled so task tools install automatically. Run
+`mise lock --minimum-release-age 3d` after changing Mise tools. `.pinact.yaml`
+sets Pinact's GitHub Actions minimum release age to three days; use
+`mise run actions:update` to update pinned workflow actions. `.treeboot.toml`
+runs `mise run setup` for new worktree bootstraps; validate it with
+`mise run treeboot:check`.
+
+The root `package.json` is a Bun workspace for packages under `packages/`.
+`bunfig.toml` sets Bun's `install.minimumReleaseAge` to seven days. Keep it in
+place so new direct and transitive npm dependency versions have had time to
+settle before installation.
 
 ## Shell Conventions
 
@@ -153,7 +179,7 @@ not `>file`). See `.editorconfig` for shfmt flags.
   `#:schema https://developers.openai.com/codex/config-schema.json` header for
   editor autocomplete/validation in tools like VS Code or Cursor with Even
   Better TOML.
-- When testing `install-agent-configs.sh` with a temporary `HOME`, tools
+- When testing `scripts/install-agent-configs.ts` with a temporary `HOME`, tools
   resolved through mise shims can fail trust checks. Prefer POSIX tools for
   setup helpers where possible, and validate symlink cleanup before plugin setup
   side effects.

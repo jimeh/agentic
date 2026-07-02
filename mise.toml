@@ -1,39 +1,78 @@
-[tools]
-actionlint = "latest"
-bun = "1.3"
-lefthook = "latest"
-markdownlint-cli2 = "latest"
-oxfmt = "latest"
-zizmor = "latest"
+# --- Settings ---
+
+[settings]
+lockfile = true
+minimum_release_age = "3d"
 
 [settings.npm]
 bun = true
 
-# --- Top-level tasks ---
+[settings.task]
+run_auto_install = true
+
+# --- Tools ---
+
+[tools]
+actionlint = "1"
+bun = "1.3"
+lefthook = "2"
+markdownlint-cli2 = "0"
+oxfmt = "0"
+oxlint = "1"
+pinact = "4"
+shellcheck = "0"
+zizmor = "1"
+"github:jimeh/treeboot" = "0"
+
+# --- Tasks ---
+
+# Setup and dependencies
 
 [tasks.setup]
+description = "Install dependencies and local git hooks"
+run = ["mise run deps:install", "mise run hooks:install"]
+
+[tasks."setup:ci"]
+description = "Install dependencies from the lockfile for CI"
+run = "mise run deps:install:ci"
+
+[tasks."deps:install"]
 description = "Install project dependencies"
 run = "bun install"
 
-[tasks."setup:ci"]
+[tasks."deps:install:ci"]
 description = "Install project dependencies from the lockfile"
 run = "bun install --frozen-lockfile"
-
-[tasks."agent-config:install"]
-description = "Install agent config symlinks and configured plugins"
-run = "./install-agent-configs.sh"
-
-[tasks."agent-config:force"]
-description = "Replace installed agent config symlinks after backing them up"
-run = "./install-agent-configs.sh --force"
-
-[tasks."agent-config:dry-run"]
-description = "Preview agent config installation"
-run = "./install-agent-configs.sh --dry-run"
 
 [tasks."hooks:install"]
 description = "Install Lefthook git hooks"
 run = "lefthook install --reset-hooks-path"
+
+# Agent configuration
+
+[tasks."agent-config:install"]
+description = "Install agent config symlinks and configured plugins"
+run = "./scripts/install-agent-configs.ts"
+
+[tasks."agent-config:force"]
+description = "Replace installed agent config symlinks after backing them up"
+run = "./scripts/install-agent-configs.ts --force"
+
+[tasks."agent-config:dry-run"]
+description = "Preview agent config installation"
+run = "./scripts/install-agent-configs.ts --dry-run"
+
+# Generated global rules
+
+[tasks."rules:build"]
+description = "Render global rule files from base and target overlays"
+run = "./scripts/render-global-rules.ts"
+
+[tasks."rules:check"]
+description = "Check rendered global rule files are up to date"
+run = "./scripts/render-global-rules.ts --check"
+
+# Vendored third-party skills
 
 [tasks."thirdparty:add-skills"]
 description = "Add selected upstream skills to the third-party manifest"
@@ -51,44 +90,91 @@ run = "bun packages/vendor-skills/bin/vendor-skills.ts update --dry-run"
 description = "Check vendored third-party skills against upstream"
 run = "bun packages/vendor-skills/bin/vendor-skills.ts check"
 
+# GitHub Actions
+
+[tasks."actions:update"]
+description = "Update and pin GitHub Actions with Pinact"
+run = "pinact run --update"
+
+# Worktree bootstrap
+
+[tasks.treeboot]
+description = "Run Treeboot worktree bootstrap"
+run = "treeboot run"
+
+[tasks."treeboot:check"]
+description = "Validate Treeboot worktree bootstrap config"
+run = "treeboot check"
+
+# Quality gates
+
 [tasks.format]
-description = "Format markdown files (oxfmt + markdownlint)"
-depends = ["format:oxfmt", "format:markdownlint"]
+description = "Format files with configured formatters"
+depends = ["format:oxfmt"]
+
+[tasks."format:check"]
+description = "Check file formatting"
+depends = ["format:oxfmt:check"]
 
 [tasks.lint]
 description = "Run all lint and harness checks"
 depends = [
-  "lint:oxfmt",
+  "lint:oxlint",
   "lint:markdownlint",
+  "lint:shell",
+  "rules:check",
+  "treeboot:check",
   "lint:agent-harness",
   "lint:workflows",
 ]
 
+[tasks.check]
+description = "Run fast local confidence checks"
+depends = ["format:check", "lint", "typecheck"]
+
 [tasks.test]
-description = "Run Bun tests"
-run = "bun test packages/vendor-skills/src"
+description = "Run all tests"
+run = ["mise run test:unit", "mise run test:plugins"]
+
+[tasks."test:unit"]
+description = "Run Bun unit tests"
+run = "bun test packages/vendor-skills/src scripts"
+
+[tasks."test:plugins"]
+description = "Run plugin shell tests"
+run = "./scripts/run-plugin-tests.ts"
 
 [tasks.verify]
 description = "Run lint and tests"
-depends = ["lint", "test"]
+depends = ["check", "test"]
 
-# --- Per-tool subtasks ---
+[tasks.typecheck]
+description = "Type-check TypeScript with oxlint"
+run = "oxlint --type-aware --type-check --no-error-on-unmatched-pattern ."
+
+# Formatting subtasks
 
 [tasks."format:oxfmt"]
-description = "Format markdown files with oxfmt"
-run = "oxfmt '**/*.md'"
+description = "Format files with oxfmt"
+run = "oxfmt --no-error-on-unmatched-pattern"
 
-[tasks."format:markdownlint"]
-description = "Auto-fix markdownlint issues"
-run = "markdownlint-cli2 --fix '**/*.md'"
+[tasks."format:oxfmt:check"]
+description = "Check formatting with oxfmt"
+run = "oxfmt --check --no-error-on-unmatched-pattern"
 
-[tasks."lint:oxfmt"]
-description = "Check markdown formatting with oxfmt"
-run = "oxfmt --check '**/*.md'"
+# Linting subtasks
+
+[tasks."lint:oxlint"]
+description = "Lint TypeScript with oxlint"
+run = "oxlint --no-error-on-unmatched-pattern ."
 
 [tasks."lint:markdownlint"]
 description = "Lint markdown files with markdownlint"
 run = "markdownlint-cli2 '**/*.md'"
+
+[tasks."lint:shell"]
+description = "Lint shell scripts with shellcheck"
+run = "bash -lc 'shopt -s globstar nullglob; shellcheck ./**/*.sh'"
 
 [tasks."lint:agent-harness"]
 description = "Check agent skill and plugin metadata invariants"

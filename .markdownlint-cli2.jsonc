@@ -2,11 +2,11 @@
   "config": {
     // Allow hard tabs in code blocks for languages that use them.
     "no-hard-tabs": {
-      "ignore_code_languages": ["caddyfile", "go", "makefile"]
+      "ignore_code_languages": ["caddyfile", "go", "makefile"],
     },
     // Don't force blank lines around code blocks inside lists.
     "blanks-around-fences": {
-      "list_items": false
+      "list_items": false,
     },
     // No auto-formatter for line length; disable checking.
     "line-length": false,
@@ -15,7 +15,7 @@
     // Allow inline HTML (used in README for layout).
     "no-inline-html": false,
     // Allow fenced code blocks without a language tag.
-    "fenced-code-language": false
+    "fenced-code-language": false,
   },
   "ignores": [
     "node_modules/",
@@ -24,6 +24,6 @@
     "thirdparty/",
     "plan.md",
     "research.md",
-    "review.md"
-  ]
+    "review.md",
+  ],
 }
