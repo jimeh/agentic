@@ -18,6 +18,8 @@ mise run deps:install:ci          # install deps from lockfile for CI
 mise run agent-config:install     # install agent config symlinks/plugins
 mise run agent-config:force       # replace installed agent config symlinks
 mise run agent-config:dry-run     # preview agent config installation
+mise run agent-config:schema:build # generate agent config JSON schema
+mise run agent-config:schema:check # check agent config schema is current
 mise run hooks:install            # install Lefthook git hooks
 mise run thirdparty:add-skills -- <source> # add upstream skills to manifest
 mise run thirdparty:update-skills         # update vendored third-party skills
@@ -48,7 +50,7 @@ mise run lint:workflows      # check GitHub Actions syntax/security
 
 ## Architecture
 
-`scripts/install-agent-configs.ts` auto-discovers and symlinks skills:
+`packages/agent-config` auto-discovers and symlinks skills:
 
 - **Skills**: any `skills/*/` dir with a `SKILL.md` → `~/.claude/skills/` and
   `~/.agents/skills/`
@@ -70,11 +72,20 @@ vendored content.
 **Commands** live in plugins under `plugins/*/commands/`. Each plugin has a
 `.claude-plugin/plugin.json` manifest and auto-discovered `.md` command files.
 
-**Plugins** are installed via the Claude CLI, not symlinks.
-`scripts/install-agent-configs.ts` ensures the official
-`claude-plugins-official` marketplace and the local `jimeh-agentic` marketplace
-are registered, then installs plugins listed in the `claudePlugins` array near
-the top of the script. Requires the `claude` CLI.
+**Plugins** are installed via the Claude CLI, not symlinks. The
+`agent-config install` command reads `agent-config.toml` to register Claude
+plugin marketplaces and install configured Claude plugins. Requires the `claude`
+CLI. The package also supports `agent-config.yaml`, `agent-config.yml`, and
+`agent-config.json`, after checking `agent-config.toml` first.
+
+`agent-config.toml` points editors at `schemas/agent-config.schema.json` with a
+schema comment. The schema file is generated from `packages/agent-config`; run
+`mise run agent-config:schema:build` after schema changes. `mise run lint`
+checks it is current via `mise run agent-config:schema:check`.
+
+In `agent-config.toml`, source paths are repo-relative. Home-side target paths
+must start with `~/`: `symlinks[].target`, `skillSymlinks[].targetRoots[]`, and
+`staleSymlinkCleanup[].targetDir`.
 
 ### Marketplace Manifest
 
@@ -101,7 +112,7 @@ Plugin tests live in `plugins/*/tests/*.test.sh` and run with
 on success. TypeScript tests live beside package implementation files as
 `packages/*/src/**/*.test.ts`; `mise run test` runs both unit and plugin tests.
 
-Agent harness checks live in `scripts/check-agent-harness.ts` and run as part of
+Agent harness checks live in `packages/agent-config` and run as part of
 `mise run lint`. They verify that skill frontmatter names are slug-safe and
 match their directories, vendored third-party skill locks match the checked-in
 content, and Claude plugin versions match the marketplace. Rendered global rule
@@ -179,10 +190,9 @@ not `>file`). See `.editorconfig` for shfmt flags.
   `#:schema https://developers.openai.com/codex/config-schema.json` header for
   editor autocomplete/validation in tools like VS Code or Cursor with Even
   Better TOML.
-- When testing `scripts/install-agent-configs.ts` with a temporary `HOME`, tools
-  resolved through mise shims can fail trust checks. Prefer POSIX tools for
-  setup helpers where possible, and validate symlink cleanup before plugin setup
-  side effects.
+- When testing `agent-config install` with a temporary `HOME`, tools resolved
+  through mise shims can fail trust checks. Prefer POSIX tools for setup helpers
+  where possible, and validate symlink cleanup before plugin setup side effects.
 - For gone-branch cleanup, `git branch -v` shows `[gone]` and `git branch -vv`
   adds the upstream ref. Prefer `git for-each-ref` for scripts that need stable
   gone-branch detection.

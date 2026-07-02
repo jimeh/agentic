@@ -10,7 +10,8 @@ import { join } from "node:path";
 import { afterEach, expect, test } from "bun:test";
 import { spawnSync } from "node:child_process";
 
-const script = join(import.meta.dir, "render-global-rules.ts");
+const cli = join(import.meta.dir, "..", "bin", "agent-config.ts");
+const bun = process.execPath;
 let tempDirs: string[] = [];
 
 function createProject(overlay: string): string {
@@ -24,7 +25,7 @@ function createProject(overlay: string): string {
 }
 
 function run(args: string[], cwd: string) {
-  return spawnSync("bun", [script, "--root", cwd, ...args], {
+  return spawnSync(bun, [cli, "rules", ...args, "--root", cwd], {
     cwd,
     encoding: "utf8",
     stdio: ["ignore", "pipe", "pipe"],
@@ -41,7 +42,7 @@ afterEach(() => {
 test("renders base rules into both targets", () => {
   const root = createProject("<!-- only comments -->\n");
 
-  const result = run([], root);
+  const result = run(["build"], root);
 
   expect(result.status).toBe(0);
   expect(readFileSync(join(root, "generated", "AGENTS.md"), "utf8")).toContain(
@@ -55,7 +56,7 @@ test("renders base rules into both targets", () => {
 test("appends non-empty overlays", () => {
   const root = createProject("<!-- comment -->\n\n## Target\n\nSpecific.\n");
 
-  const result = run([], root);
+  const result = run(["build"], root);
 
   expect(result.status).toBe(0);
   expect(readFileSync(join(root, "generated", "AGENTS.md"), "utf8")).toContain(
@@ -65,10 +66,10 @@ test("appends non-empty overlays", () => {
 
 test("check fails when generated files are stale", () => {
   const root = createProject("## Target\n\nSpecific.\n");
-  expect(run([], root).status).toBe(0);
+  expect(run(["build"], root).status).toBe(0);
   writeFileSync(join(root, "generated", "AGENTS.md"), "stale\n");
 
-  const result = run(["--check"], root);
+  const result = run(["check"], root);
 
   expect(result.status).toBe(1);
   expect(result.stderr).toContain("is stale");

@@ -1,5 +1,3 @@
-#!/usr/bin/env bun
-
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 
@@ -24,26 +22,34 @@ function targets(rootDir: string): Target[] {
 function usage(exitCode = 2): never {
   console.error(
     [
-      "Usage: scripts/render-global-rules.ts [--check]",
+      "Usage: agent-config rules <build|check> [options]",
       "",
       "Options:",
-      "  --check  Verify generated global rule files are up to date",
-      "  --root   Repository root (default: script parent directory)",
+      "  --root   Repository root (default: current directory)",
       "  --help   Show help",
     ].join("\n"),
   );
   process.exit(exitCode);
 }
 
-function parseArgs(args: string[]): { check: boolean; root: string } {
-  let check = false;
-  let root = resolve(import.meta.dir, "..");
+function parseArgs(args: string[]): {
+  command: "build" | "check";
+  root: string;
+} {
+  const command = args[0];
+  if (!command || command === "--help" || command === "-h") {
+    usage(command ? 0 : 2);
+  }
+  if (command !== "build" && command !== "check") {
+    console.error(`ERROR: Unknown rules command: ${command}`);
+    usage();
+  }
 
-  for (let i = 0; i < args.length; i += 1) {
+  let root = process.cwd();
+
+  for (let i = 1; i < args.length; i += 1) {
     const arg = args[i];
-    if (arg === "--check") {
-      check = true;
-    } else if (arg === "--root") {
+    if (arg === "--root") {
       const value = args[i + 1];
       if (!value || value.startsWith("-")) {
         usage();
@@ -58,14 +64,14 @@ function parseArgs(args: string[]): { check: boolean; root: string } {
     }
   }
 
-  return { check, root };
+  return { command, root: resolve(root) };
 }
 
 function stripTopLevelComments(markdown: string): string {
   return markdown.replace(/^<!--[\s\S]*?-->\n?/, "").trim();
 }
 
-function renderTarget(rootDir: string, overlayPath: string): string {
+export function renderRuleTarget(rootDir: string, overlayPath: string): string {
   const base = readFileSync(
     join(rootDir, "rules", "base.md"),
     "utf8",
@@ -82,35 +88,50 @@ function renderTarget(rootDir: string, overlayPath: string): string {
 
 function writeTarget(rootDir: string, target: Target): void {
   mkdirSync(dirname(target.output), { recursive: true });
-  writeFileSync(target.output, renderTarget(rootDir, target.overlay));
+  writeFileSync(target.output, renderRuleTarget(rootDir, target.overlay));
 }
 
 function checkTarget(rootDir: string, target: Target): boolean {
-  const expected = renderTarget(rootDir, target.overlay);
+  const expected = renderRuleTarget(rootDir, target.overlay);
   let actual = "";
 
   try {
     actual = readFileSync(target.output, "utf8");
   } catch {
     console.error(
-      `ERROR: ${target.output} is missing; run mise run rules:build`,
+      `ERROR: ${target.output} is missing; run agent-config rules build`,
     );
     return false;
   }
 
   if (actual !== expected) {
-    console.error(`ERROR: ${target.output} is stale; run mise run rules:build`);
+    console.error(
+      `ERROR: ${target.output} is stale; run agent-config rules build`,
+    );
     return false;
   }
 
   return true;
 }
 
-function main(args: string[]): number {
-  const { check, root } = parseArgs(args);
+export function buildRules(root: string): void {
+  const ruleTargets = targets(resolve(root));
+  for (const target of ruleTargets) {
+    writeTarget(resolve(root), target);
+  }
+}
+
+export function checkRules(root: string): boolean {
+  const resolvedRoot = resolve(root);
+  const ruleTargets = targets(resolvedRoot);
+  return ruleTargets.every((target) => checkTarget(resolvedRoot, target));
+}
+
+export function rulesCommand(args: string[]): number {
+  const { command, root } = parseArgs(args);
   const ruleTargets = targets(root);
 
-  if (check) {
+  if (command === "check") {
     return ruleTargets.every((target) => checkTarget(root, target)) ? 0 : 1;
   }
 
@@ -120,5 +141,3 @@ function main(args: string[]): number {
 
   return 0;
 }
-
-process.exitCode = main(process.argv.slice(2));

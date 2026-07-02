@@ -52,25 +52,33 @@ run = "lefthook install --reset-hooks-path"
 
 [tasks."agent-config:install"]
 description = "Install agent config symlinks and configured plugins"
-run = "./scripts/install-agent-configs.ts"
+run = "bun packages/agent-config/bin/agent-config.ts install"
 
 [tasks."agent-config:force"]
 description = "Replace installed agent config symlinks after backing them up"
-run = "./scripts/install-agent-configs.ts --force"
+run = "bun packages/agent-config/bin/agent-config.ts install --force"
 
 [tasks."agent-config:dry-run"]
 description = "Preview agent config installation"
-run = "./scripts/install-agent-configs.ts --dry-run"
+run = "bun packages/agent-config/bin/agent-config.ts install --dry-run"
+
+[tasks."agent-config:schema:build"]
+description = "Generate the agent config JSON schema"
+run = "bun packages/agent-config/bin/agent-config.ts schema build"
+
+[tasks."agent-config:schema:check"]
+description = "Check the agent config JSON schema is up to date"
+run = "bun packages/agent-config/bin/agent-config.ts schema check"
 
 # Generated global rules
 
 [tasks."rules:build"]
 description = "Render global rule files from base and target overlays"
-run = "./scripts/render-global-rules.ts"
+run = "bun packages/agent-config/bin/agent-config.ts rules build"
 
 [tasks."rules:check"]
 description = "Check rendered global rule files are up to date"
-run = "./scripts/render-global-rules.ts --check"
+run = "bun packages/agent-config/bin/agent-config.ts rules check"
 
 # Vendored third-party skills
 
@@ -122,6 +130,7 @@ depends = [
   "lint:oxlint",
   "lint:markdownlint",
   "lint:shell",
+  "agent-config:schema:check",
   "rules:check",
   "treeboot:check",
   "lint:agent-harness",
@@ -138,11 +147,11 @@ run = ["mise run test:unit", "mise run test:plugins"]
 
 [tasks."test:unit"]
 description = "Run Bun unit tests"
-run = "bun test packages/vendor-skills/src scripts"
+run = "bun test packages/*/src"
 
 [tasks."test:plugins"]
 description = "Run plugin shell tests"
-run = "./scripts/run-plugin-tests.ts"
+run = "bun packages/agent-config/bin/agent-config.ts test plugins"
 
 [tasks.verify]
 description = "Run lint and tests"
@@ -178,7 +187,7 @@ run = "bash -lc 'shopt -s globstar nullglob; shellcheck ./**/*.sh'"
 
 [tasks."lint:agent-harness"]
 description = "Check agent skill and plugin metadata invariants"
-run = "bun run scripts/check-agent-harness.ts"
+run = "bun packages/agent-config/bin/agent-config.ts check harness"
 
 [tasks."lint:workflows"]
 description = "Check GitHub Actions syntax and security posture"

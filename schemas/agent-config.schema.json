@@ -1,0 +1,147 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/jimeh/agentic/schemas/agent-config.schema.json",
+  "title": "Agent Config",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["symlinks", "skillSymlinks", "staleSymlinkCleanup", "claude"],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "symlinks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/symlink"
+      }
+    },
+    "skillSymlinks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/skillSymlink"
+      }
+    },
+    "staleSymlinkCleanup": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/staleSymlinkCleanup"
+      }
+    },
+    "claude": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["marketplaces", "plugins"],
+      "properties": {
+        "marketplaces": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/claudeMarketplace"
+          }
+        },
+        "localMarketplace": {
+          "$ref": "#/$defs/localClaudeMarketplace"
+        },
+        "plugins": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/claudePlugin"
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+    "homePath": {
+      "type": "string",
+      "pattern": "^~/.+"
+    },
+    "symlink": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source", "target"],
+      "properties": {
+        "source": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "target": {
+          "$ref": "#/$defs/homePath"
+        }
+      }
+    },
+    "skillSymlink": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sourceRoot", "targetRoots"],
+      "properties": {
+        "sourceRoot": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "targetRoots": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/homePath"
+          }
+        }
+      }
+    },
+    "staleSymlinkCleanup": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sourceDir", "targetDir"],
+      "properties": {
+        "sourceDir": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "targetDir": {
+          "$ref": "#/$defs/homePath"
+        }
+      }
+    },
+    "claudeMarketplace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "source"],
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "source": {
+          "$ref": "#/$defs/nonEmptyString"
+        }
+      }
+    },
+    "localClaudeMarketplace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["manifest", "source", "plugins"],
+      "properties": {
+        "manifest": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "source": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "plugins": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/nonEmptyString"
+          }
+        }
+      }
+    },
+    "claudePlugin": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id"],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/nonEmptyString"
+        }
+      }
+    }
+  }
+}

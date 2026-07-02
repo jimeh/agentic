@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { describe, expect, test } from "bun:test";
-import { discoverPluginTests, runPluginTests } from "./run-plugin-tests";
+import { discoverPluginTests, runPluginTests } from "./plugin-tests";
 
 function createPluginTest(root: string, plugin: string, name: string): string {
   const testsDir = join(root, "plugins", plugin, "tests");

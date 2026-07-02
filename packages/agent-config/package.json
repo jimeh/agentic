@@ -1,0 +1,10 @@
+{
+  "name": "@jimeh/agent-config",
+  "private": true,
+  "bin": {
+    "agent-config": "./bin/agent-config.ts"
+  },
+  "scripts": {
+    "test": "bun test"
+  }
+}

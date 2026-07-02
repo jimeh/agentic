@@ -1,4 +1,4 @@
 <!--
 Add AGENTS.md-specific global rules here. This file is appended after
-rules/base.md when scripts/render-global-rules.ts builds generated/AGENTS.md.
+rules/base.md when `agent-config rules build` renders generated/AGENTS.md.
 -->

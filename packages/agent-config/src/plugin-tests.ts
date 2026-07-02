@@ -1,5 +1,3 @@
-#!/usr/bin/env bun
-
 import { spawnSync } from "node:child_process";
 import { existsSync, readdirSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
@@ -14,6 +12,42 @@ type RunOptions = {
   stdout?: Writable;
   stdio?: StdioMode;
 };
+
+function usage(exitCode = 2): never {
+  console.error(
+    [
+      "Usage: agent-config test plugins [options]",
+      "",
+      "Options:",
+      "  --root <path>  Repository root (default: current directory)",
+      "  --help, -h     Show help",
+    ].join("\n"),
+  );
+  process.exit(exitCode);
+}
+
+function parseArgs(args: string[]): { root: string } {
+  let root = process.cwd();
+
+  for (let i = 0; i < args.length; i += 1) {
+    const arg = args[i];
+    if (arg === "--root") {
+      const value = args[i + 1];
+      if (!value || value.startsWith("-")) {
+        usage();
+      }
+      root = value;
+      i += 1;
+    } else if (arg === "--help" || arg === "-h") {
+      usage(0);
+    } else {
+      console.error(`Unknown option: ${arg}`);
+      usage();
+    }
+  }
+
+  return { root };
+}
 
 function write(stream: Writable, message: string): void {
   stream.write(message);
@@ -93,6 +127,7 @@ export function runPluginTests(options: RunOptions = {}): number {
   return failed > 0 ? 1 : 0;
 }
 
-if (import.meta.main) {
-  process.exitCode = runPluginTests();
+export function pluginTestsCommand(args: string[]): number {
+  const { root } = parseArgs(args);
+  return runPluginTests({ rootDir: root });
 }

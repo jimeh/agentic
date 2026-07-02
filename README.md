@@ -33,7 +33,8 @@ mise run agent-config:install   # create symlinks (skips existing)
 
 This creates symlinks from the repo into `~/.claude/`, `~/.agents/`, and
 `~/.codex/`, and registers plugin marketplaces and installs plugins via the
-Claude CLI. Use the `mise run agent-config:*` tasks for installation.
+Claude CLI, including the OpenAI Codex plugin for Claude Code. Use the
+`mise run agent-config:*` tasks for installation.
 
 Install only project dependencies with:
 
@@ -56,12 +57,20 @@ mise run hooks:install
 - **`generated/`** — Rendered global `AGENTS.md` and `CLAUDE.md` files. These
   are symlinked into agent config directories; edit `rules/` and run
   `mise run rules:build` instead of editing generated files directly.
+- **`agent-config.toml`** — Installer config for fixed symlinks, skill symlink
+  roots, stale-link cleanup paths, Claude plugin marketplaces, and
+  auto-installed Claude plugins. It points editors at
+  `schemas/agent-config.schema.json`; JSON and YAML config files are also
+  supported.
 - **`claude/`** — Claude Code settings and statusline script.
 - **`codex/`** — OpenAI Codex config.
 - **`skills/`** — Custom skills (auto-discovered by the agent config installer).
 - **`thirdparty/`** — Vendored third-party skills plus manifest and lock
   metadata.
 - **`plugins/`** — Claude Code plugins, published via a local marketplace.
+- **`packages/agent-config/`** — CLI package for installing agent configs,
+  rendering generated rules, running plugin tests, and checking harness
+  invariants.
 - **`docs/references/`** — External articles and guides.
 
 Skills are auto-discovered — drop a directory in the right place, re-run the
@@ -215,10 +224,21 @@ claude plugin install git-commands@jimeh-agentic
 
 ### Agent Config Installation
 
-`scripts/install-agent-configs.ts` ensures both the official
-`claude-plugins-official` marketplace and this repo's local marketplace are
-registered, then installs plugins listed in the `claudePlugins` array near the
-top of the script. To add or remove auto-installed plugins, edit that array.
+`packages/agent-config` exposes the `agent-config` CLI used by the mise tasks.
+Its `install` command reads `agent-config.toml` to create fixed symlinks,
+discover configured skill roots, clean stale managed symlinks, register Claude
+plugin marketplaces, and install configured Claude plugins. To add or remove
+auto-installed plugins, edit `agent-config.toml`. The loader checks config files
+in this order: `agent-config.toml`, `agent-config.yaml`, `agent-config.yml`,
+then `agent-config.json`.
+
+Config source paths are repo-relative. Home-side target paths must be explicit
+and start with `~/`, including `symlinks[].target`,
+`skillSymlinks[].targetRoots[]`, and `staleSymlinkCleanup[].targetDir`.
+
+The JSON schema at `schemas/agent-config.schema.json` is generated from the
+package source. Run `mise run agent-config:schema:build` after changing the
+schema, or `mise run agent-config:schema:check` to verify it is current.
 
 Requires the `claude` CLI. Skipped gracefully if it is missing.
 
