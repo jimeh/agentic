@@ -53,6 +53,28 @@ describe("runPluginTests", () => {
     });
   });
 
+  test("includes spawn error details when the shell cannot launch", () => {
+    withTempRepo((root) => {
+      createPluginTest(root, "alpha", "pass.test.sh");
+
+      const output = {
+        text: "",
+        write: (text: string) => (output.text += text),
+      };
+
+      expect(
+        runPluginTests({
+          bash: join(root, "missing-bash"),
+          rootDir: root,
+          stderr: output as never,
+          stdout: output as never,
+          stdio: "pipe",
+        }),
+      ).toBe(1);
+      expect(output.text).toMatch(/test failed: .*(ENOENT|No such file)/);
+    });
+  });
+
   test("returns non-zero when a plugin test fails", () => {
     withTempRepo((root) => {
       createPluginTest(root, "alpha", "pass.test.sh");

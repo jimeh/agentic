@@ -569,7 +569,16 @@ function ensureMarketplace(
   if (match) {
     const actual = match.path ?? match.repo;
     if (actual && actual !== source) {
-      warn(`marketplace ${name} points to ${actual} (expected ${source})`);
+      const message = [
+        `marketplace ${name} points to ${actual}`,
+        `(expected ${source})`,
+      ].join(" ");
+      if (match.repo) {
+        throw new Error(message);
+      }
+      // Directory marketplaces may legitimately point at another checkout
+      // of this repo (e.g. a git worktree), so path drift only warns.
+      warn(message);
     }
     info(`skip marketplace ${name} (already configured)`);
     return marketplaces;

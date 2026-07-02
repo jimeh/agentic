@@ -130,7 +130,8 @@ export function runPluginTests(options: RunOptions = {}): number {
     write(stdout, "::endgroup::\n");
 
     if (result.status !== 0) {
-      write(stderr, `ERROR: ${label}: test failed\n`);
+      const reason = result.error ? `: ${result.error.message}` : "";
+      write(stderr, `ERROR: ${label}: test failed${reason}\n`);
       failed += 1;
     }
   }

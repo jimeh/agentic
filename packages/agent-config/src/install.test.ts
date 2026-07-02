@@ -70,6 +70,33 @@ function createClaudeStub(): string {
   return binDir;
 }
 
+function createDriftedClaudeStub(): string {
+  const binDir = mkdtempSync(join(tmpdir(), "agentic-claude-bin-"));
+  tempDirs.push(binDir);
+  const claude = join(binDir, "claude");
+  const marketplaces =
+    '[{"name":"openai-codex","source":"github","repo":"evil/other-repo"}]';
+  writeFileSync(
+    claude,
+    [
+      "#!/bin/sh",
+      'if [ "$1 $2 $3 $4" = "plugin marketplace list --json" ]; then',
+      `  printf '%s\\n' '${marketplaces}'`,
+      "  exit 0",
+      "fi",
+      'if [ "$1 $2 $3" = "plugin list --json" ]; then',
+      "  printf '%s\\n' '[]'",
+      "  exit 0",
+      "fi",
+      'echo unexpected claude args: "$@" >&2',
+      "exit 1",
+      "",
+    ].join("\n"),
+  );
+  chmodSync(claude, 0o755);
+  return binDir;
+}
+
 function createFailingClaudeStub(): string {
   const binDir = mkdtempSync(join(tmpdir(), "agentic-claude-bin-"));
   tempDirs.push(binDir);
@@ -210,6 +237,19 @@ test("force numbers backups instead of replacing earlier ones", () => {
   expect(readFileSync(join(`${target}.bak2`, "pet.md"), "utf8")).toBe(
     "second\n",
   );
+});
+
+test("fails when a GitHub marketplace points at a different repo", () => {
+  const home = createHome();
+  const binDir = createDriftedClaudeStub();
+
+  const result = run(home, ["--dry-run"], `${binDir}:/usr/bin:/bin`);
+
+  expect(result.status).toBe(1);
+  expect(result.stderr).toContain(
+    "marketplace openai-codex points to evil/other-repo",
+  );
+  expect(result.stderr).toContain("(expected openai/codex-plugin-cc)");
 });
 
 test("surfaces claude CLI failures instead of reinstalling", () => {
