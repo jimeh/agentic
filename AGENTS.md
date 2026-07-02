@@ -116,7 +116,8 @@ Agent harness checks live in `packages/agent-config` and run as part of
 `mise run lint`. They verify that skill frontmatter names are slug-safe and
 match their directories, vendored third-party skill locks match the checked-in
 content, and Claude plugin versions match the marketplace. Rendered global rule
-drift is checked separately by `mise run rules:check`.
+drift is checked by `mise run rules:check`, which also runs as part of
+`mise run lint`.
 
 ## Plugin Versioning
 

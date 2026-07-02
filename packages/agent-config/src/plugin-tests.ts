@@ -114,7 +114,19 @@ export function runPluginTests(options: RunOptions = {}): number {
   for (const testFile of tests) {
     const label = displayPath(rootDir, testFile);
     write(stdout, `::group::${label}\n`);
-    const result = spawnSync(bash, [testFile], { cwd: rootDir, stdio });
+    const result = spawnSync(bash, [testFile], {
+      cwd: rootDir,
+      stdio,
+      encoding: "utf8",
+    });
+    if (stdio === "pipe") {
+      if (result.stdout) {
+        write(stdout, result.stdout);
+      }
+      if (result.stderr) {
+        write(stderr, result.stderr);
+      }
+    }
     write(stdout, "::endgroup::\n");
 
     if (result.status !== 0) {

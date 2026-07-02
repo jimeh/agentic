@@ -4,6 +4,7 @@ import {
   lstatSync,
   mkdirSync,
   mkdtempSync,
+  readFileSync,
   readlinkSync,
   rmSync,
   symlinkSync,
@@ -64,6 +65,18 @@ function createClaudeStub(): string {
       "exit 1",
       "",
     ].join("\n"),
+  );
+  chmodSync(claude, 0o755);
+  return binDir;
+}
+
+function createFailingClaudeStub(): string {
+  const binDir = mkdtempSync(join(tmpdir(), "agentic-claude-bin-"));
+  tempDirs.push(binDir);
+  const claude = join(binDir, "claude");
+  writeFileSync(
+    claude,
+    ["#!/bin/sh", "echo boom >&2", "exit 1", ""].join("\n"),
   );
   chmodSync(claude, 0o755);
   return binDir;
@@ -173,6 +186,43 @@ test("rejects home targets without an explicit home prefix", () => {
   expect(result.stderr).toContain(
     "$.symlinks[0].target: expected home-relative path starting with ~/",
   );
+});
+
+test("force numbers backups instead of replacing earlier ones", () => {
+  const home = createHome();
+  const target = join(home, ".codex", "pets");
+  const makeDir = (content: string) => {
+    rmSync(target, { recursive: true, force: true });
+    mkdirSync(target, { recursive: true });
+    writeFileSync(join(target, "pet.md"), content);
+  };
+
+  makeDir("first\n");
+  let result = run(home, ["--force"]);
+  expect(result.status).toBe(0);
+  expect(lstatSync(target).isSymbolicLink()).toBe(true);
+
+  makeDir("second\n");
+  result = run(home, ["--force"]);
+  expect(result.status).toBe(0);
+  expect(lstatSync(target).isSymbolicLink()).toBe(true);
+  expect(readFileSync(join(`${target}.bak`, "pet.md"), "utf8")).toBe("first\n");
+  expect(readFileSync(join(`${target}.bak2`, "pet.md"), "utf8")).toBe(
+    "second\n",
+  );
+});
+
+test("surfaces claude CLI failures instead of reinstalling", () => {
+  const home = createHome();
+  const binDir = createFailingClaudeStub();
+
+  const result = run(home, ["--dry-run"], `${binDir}:/usr/bin:/bin`);
+
+  expect(result.status).toBe(1);
+  expect(result.stderr).toContain(
+    "claude plugin marketplace list --json failed",
+  );
+  expect(result.stderr).toContain("boom");
 });
 
 test("skips unmanaged existing files unless force is set", () => {

@@ -33,6 +33,7 @@ type StaleSymlinkCleanupConfig = {
 type MarketplaceEntry = {
   name?: string;
   path?: string;
+  repo?: string;
 };
 
 type PluginEntry = {
@@ -71,7 +72,7 @@ type Options = {
   root: string;
 };
 
-let rootDir = resolve(import.meta.dir, "../../..");
+let rootDir = process.cwd();
 const configFileNames = [
   "agent-config.toml",
   "agent-config.yaml",
@@ -99,7 +100,7 @@ function usage(exitCode = 2): never {
       "Options:",
       "  --root     Repository root (default: current directory)",
       "  --dry-run  Preview what would be done without making changes",
-      "  --force    Replace existing files/symlinks (backs up to .bak)",
+      "  --force    Replace existing files/symlinks (backs up to .bak, .bak2, …)",
       "",
       "Creates symlinks for Claude Code and agents configuration:",
       "",
@@ -150,7 +151,12 @@ function homePath(path: string): string {
     throw new Error(`${path}: expected home-relative path starting with ~/`);
   }
 
-  return join(process.env.HOME ?? "", path.slice(2));
+  const home = process.env.HOME;
+  if (!home) {
+    throw new Error("HOME is not set");
+  }
+
+  return join(home, path.slice(2));
 }
 
 function rootPath(path: string): string {
@@ -401,6 +407,14 @@ function createSymlink(source: string, target: string): void {
   symlinkSync(source, target, symlinkType(source));
 }
 
+function backupPath(target: string): string {
+  let candidate = `${target}.bak`;
+  for (let i = 2; existsOrSymlink(candidate); i += 1) {
+    candidate = `${target}.bak${i}`;
+  }
+  return candidate;
+}
+
 function backupAndLink(source: string, target: string, options: Options): void {
   if (!options.dryRun) {
     mkdirSync(dirname(target), { recursive: true });
@@ -431,11 +445,12 @@ function backupAndLink(source: string, target: string, options: Options): void {
     }
 
     if (options.force) {
+      const backup = backupPath(target);
       if (options.dryRun) {
-        info(`would backup ${target} → ${target}.bak`);
+        info(`would backup ${target} → ${backup}`);
       } else {
-        info(`backup ${target} → ${target}.bak`);
-        renameSync(target, `${target}.bak`);
+        info(`backup ${target} → ${backup}`);
+        renameSync(target, backup);
       }
     } else {
       warn(`skip ${target} (already exists, use --force)`);
@@ -520,19 +535,20 @@ function isExecutable(path: string): boolean {
 }
 
 function runJson<T>(command: string, args: string[]): T[] {
+  const label = `${command} ${args.join(" ")}`;
   const result = spawnSync(command, args, {
     encoding: "utf8",
-    stdio: ["ignore", "pipe", "ignore"],
+    stdio: ["ignore", "pipe", "pipe"],
   });
 
-  if (result.status !== 0 || result.stdout.trim() === "") {
-    return [];
+  if (result.status !== 0) {
+    throw new Error(`${label} failed: ${result.stderr.trim()}`);
   }
 
   try {
     return JSON.parse(result.stdout) as T[];
   } catch {
-    return [];
+    throw new Error(`${label} returned invalid JSON`);
   }
 }
 
@@ -551,8 +567,9 @@ function ensureMarketplace(
 ): MarketplaceEntry[] {
   const match = marketplaces.find((marketplace) => marketplace.name === name);
   if (match) {
-    if (match.path && match.path !== source) {
-      warn(`marketplace ${name} points to ${match.path} (expected ${source})`);
+    const actual = match.path ?? match.repo;
+    if (actual && actual !== source) {
+      warn(`marketplace ${name} points to ${actual} (expected ${source})`);
     }
     info(`skip marketplace ${name} (already configured)`);
     return marketplaces;
