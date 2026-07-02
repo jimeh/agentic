@@ -60,6 +60,9 @@ When using a template:
 - Preserve meaningful headings and checklists unless the user asks for a rewrite
 - Fill the template with concrete content from the branch instead of leaving
   generic placeholders
+- Do not include template status metadata in the PR copy, including lines like
+  `No PR template found`, `PR template: No PR template found`, or the path of
+  the selected template unless the template explicitly asks for it
 
 ### 3. Write Copy, Not Commands
 
@@ -73,6 +76,14 @@ Produce PR copy only.
   invent rationale that is not grounded in the diff, commits, template, or user
   request
 - Match conventional-commit style titles when the repo history clearly uses them
+- Prefer PR title wording that would read well as a bullet in a user-facing
+  changelog when the change has user-visible impact. For internal-only changes,
+  frame the title around the durable project outcome rather than the
+  implementation task.
+- Include manual QA steps only when they are useful, concrete, and tied to the
+  behavior changed by the branch. Prefer reviewer workflows or user-visible
+  scenarios over commands. Do not fill manual QA with generic test commands, CI
+  commands, or "CI should pass".
 - If the user asks only for a title or only for a description, return only that
 
 ### 4. Keep the Output Honest
@@ -87,7 +98,9 @@ Produce PR copy only.
 - If the reason is still unknown, omit speculative context and stick to the
   confirmed scope of the changes
 - Cover the branch as a coherent change, not a commit log
-- Include testing notes only when they are supported by local evidence
+- Include testing notes only when they are supported by local evidence. Mention
+  commands only when they were actually run locally and the result is useful
+  context for reviewers.
 - If testing is unknown or not run, say so plainly
 - Note important assumptions when the diff or base branch leaves room for doubt
 - Mention no template status only when it is useful context for the user; do not

@@ -223,6 +223,11 @@ templates are found and no obvious default exists, ask which one to use.
 
 Do not run `gh pr create` until the template status is known.
 
+Template detection is internal workflow state. Do not include template status
+metadata in the PR title or body, including lines like `No PR template found`,
+`PR template: No PR template found`, or the path of the selected template unless
+the repository's template explicitly asks for it.
+
 ### 3. Check Agent Docs
 
 If the project has an AGENTS.md or CLAUDE.md, review it against the current
@@ -286,7 +291,11 @@ latest commit.
 Use `gh pr create` to open the pull request.
 
 - **Title**: use conventional commits format when the repo follows that
-  convention
+  convention. Keep the title to one clear line that describes the branch's
+  purpose, not the mechanics of creating the PR. Prefer wording that would read
+  well as a bullet in a user-facing changelog when the change has user-visible
+  impact. For internal-only changes, frame the title around the durable project
+  outcome rather than the implementation task.
 - **PR template**: use the template selected in step 2 as the PR body structure.
   Preserve meaningful headings and checklists, replacing placeholders with
   concrete branch-specific content. If no template was found, write a concise
@@ -297,12 +306,25 @@ Use `gh pr create` to open the pull request.
   cover the implementation. If the rationale is unclear, do not guess; stick to
   the confirmed scope of the branch or ask the user. Cover the full scope of all
   commits. Do NOT list individual commits — the PR already shows those.
+- **Manual QA**: include manual QA steps only when they are useful, concrete,
+  and tied to the behavior changed by the branch. Prefer reviewer workflows or
+  user-visible scenarios over commands. Do not fill this section with generic
+  test commands, CI commands, or "CI should pass"; CI already covers automated
+  checks. If there are no meaningful manual steps, omit the section or mark it
+  not applicable only when the selected template requires an answer.
+- **Testing notes**: mention commands only when they were actually run locally
+  and the result is useful context for reviewers. Keep this distinct from manual
+  QA steps.
+- **Honesty**: do not invent rationale, test coverage, or manual validation
+  that is not grounded in the diff, commits, template, or user request. Note
+  important assumptions only when they affect review.
 
 Before creating the PR, verify:
 
 - PR template search command was run
 - Any matched template file was read
 - PR body follows the selected template, or no template was found
+- PR title and body do not include template-search metadata
 
 ## Guidelines
 
