@@ -1,8 +1,6 @@
-#!/usr/bin/env bun
-
 import { createHash } from "node:crypto";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
-import { basename, dirname, join, relative, sep } from "node:path";
+import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import matter from "gray-matter";
 
 type Marketplace = {
@@ -55,6 +53,42 @@ type ThirdpartyLockEntry = {
 
 const slugPattern = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 let failed = false;
+
+function usage(exitCode = 2): never {
+  console.error(
+    [
+      "Usage: agent-config check harness [options]",
+      "",
+      "Options:",
+      "  --root <path>  Repository root (default: current directory)",
+      "  --help, -h     Show help",
+    ].join("\n"),
+  );
+  process.exit(exitCode);
+}
+
+function parseArgs(args: string[]): { root: string } {
+  let root = process.cwd();
+
+  for (let i = 0; i < args.length; i += 1) {
+    const arg = args[i];
+    if (arg === "--root") {
+      const value = args[i + 1];
+      if (!value || value.startsWith("-")) {
+        usage();
+      }
+      root = value;
+      i += 1;
+    } else if (arg === "--help" || arg === "-h") {
+      usage(0);
+    } else {
+      console.error(`Unknown option: ${arg}`);
+      usage();
+    }
+  }
+
+  return { root: resolve(root) };
+}
 
 function reportError(message: string): void {
   console.error(`ERROR: ${message}`);
@@ -205,7 +239,7 @@ function checkPluginVersions(): void {
   }
 }
 
-function assertSlug(name: string | undefined, path: string): boolean {
+function assertSlug(name: string | undefined, path: string): name is string {
   if (!name) {
     reportError(`${path}: missing name`);
     return false;
@@ -271,7 +305,11 @@ function checkThirdpartySkills(): void {
   const lockPath = "thirdparty/skills.lock.json";
   const skillsDir = "thirdparty/skills";
 
-  if (!existsSync(manifestPath) && !existsSync(skillsDir) && !existsSync(lockPath)) {
+  if (
+    !existsSync(manifestPath) &&
+    !existsSync(skillsDir) &&
+    !existsSync(lockPath)
+  ) {
     return;
   }
 
@@ -363,7 +401,9 @@ function checkThirdpartySkills(): void {
 
       const frontmatter = frontmatterName(skillFile);
       if (frontmatter !== name) {
-        reportError(`${skillFile}: name '${frontmatter}' should match '${name}'`);
+        reportError(
+          `${skillFile}: name '${frontmatter}' should match '${name}'`,
+        );
       }
 
       const lockEntry = lockSkills[name];
@@ -422,12 +462,24 @@ function checkThirdpartySkills(): void {
   }
 }
 
-checkSkillNames();
-checkPluginVersions();
-checkThirdpartySkills();
+export function checkAgentHarness(args: string[] = []): number {
+  const { root } = parseArgs(args);
+  const previousCwd = process.cwd();
+  failed = false;
 
-if (failed) {
-  process.exit(1);
+  try {
+    process.chdir(root);
+    checkSkillNames();
+    checkPluginVersions();
+    checkThirdpartySkills();
+  } finally {
+    process.chdir(previousCwd);
+  }
+
+  if (failed) {
+    return 1;
+  }
+
+  console.log("Agent harness checks passed.");
+  return 0;
 }
-
-console.log("Agent harness checks passed.");

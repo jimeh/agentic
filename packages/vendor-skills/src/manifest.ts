@@ -22,10 +22,7 @@ export function assertSafeRelativePath(path: string, context: string): void {
 }
 
 /** Validate the shape and invariants of the source-controlled manifest. */
-export function validateManifest(
-  manifest: Manifest,
-  paths: VendorPaths,
-): void {
+export function validateManifest(manifest: Manifest, paths: VendorPaths): void {
   if (manifest.version !== 1) {
     throw new Error(`${paths.manifestPath}: unsupported manifest version`);
   }
@@ -81,7 +78,9 @@ export function selectedSources(
 ): Source[] {
   if (options.filter) {
     const knownSkills = expectedSkillNames(manifest);
-    const unknown = [...options.filter].filter((name) => !knownSkills.has(name));
+    const unknown = [...options.filter].filter(
+      (name) => !knownSkills.has(name),
+    );
     if (unknown.length > 0) {
       throw new Error(`unknown skill filter: ${unknown.join(", ")}`);
     }

@@ -17,59 +17,22 @@ jobs:
     name: Shellcheck
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
+      - uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d # v4.2.0
       - name: Run shellcheck
-        run: |
-          shopt -s globstar nullglob
-          shellcheck ./**/*.sh
+        run: mise run lint:shell
 
   lint-and-test:
     name: Lint and test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
-      - uses: jdx/mise-action@6d1e696aa24c1aa1bcc1adea0212707c71ab78a8 # v3.6.1
+      - uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d # v4.2.0
       - name: Install project dependencies
         run: mise run setup:ci
       - name: Run lint and tests
         run: mise run verify
-
-  plugin-tests:
-    name: Plugin tests
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          persist-credentials: false
-
-      - name: Discover and run plugin tests
-        run: |
-          failed=0
-          found=0
-
-          while IFS= read -r test_file; do
-            found=$((found + 1))
-            echo "::group::${test_file}"
-            if bash "$test_file"; then
-              echo "::endgroup::"
-            else
-              echo "::endgroup::"
-              echo "::error file=${test_file}::Test failed"
-              failed=$((failed + 1))
-            fi
-          done < <(find plugins/*/tests -name '*.test.sh' -type f | sort)
-
-          if [[ "$found" -eq 0 ]]; then
-            echo "No plugin tests found."
-            exit 0
-          fi
-
-          echo ""
-          echo "Ran ${found} test file(s), ${failed} failed."
-          if [[ "$failed" -gt 0 ]]; then
-            exit 1
-          fi

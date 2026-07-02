@@ -9,14 +9,11 @@ export const GIT_COMMAND_TIMEOUT_MS = 120_000;
 export function redactSecrets(value: string): string {
   return value
     .replace(/([a-z][a-z0-9+.-]*:\/\/)[^/\s@]+@/gi, "$1***@")
+    .replace(/\b(?:gh[opsu]_[A-Za-z0-9_]+|github_pat_[A-Za-z0-9_]+)/g, "***")
     .replace(
-      /\b(?:gh[opsu]_[A-Za-z0-9_]+|github_pat_[A-Za-z0-9_]+)/g,
-      "***",
-    )
-    .replace(/\b(token|access_token|password|passwd|secret)=([^&\s]+)/gi, (
-      _match,
-      key,
-    ) => `${key}=***`);
+      /\b(token|access_token|password|passwd|secret)=([^&\s]+)/gi,
+      (_match, key) => `${key}=***`,
+    );
 }
 
 /** Execute a command and return trimmed stdout, throwing on failure. */

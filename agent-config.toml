@@ -1,0 +1,45 @@
+#:schema ./schemas/agent-config.schema.json
+
+symlinks = [
+  { source = "generated/CLAUDE.md", target = "~/.claude/CLAUDE.md" },
+  { source = "generated/AGENTS.md", target = "~/.agents/AGENTS.md" },
+  { source = "generated/AGENTS.md", target = "~/.codex/AGENTS.md" },
+  { source = "claude/settings.json", target = "~/.claude/settings.json" },
+  { source = "claude/keybindings.json", target = "~/.claude/keybindings.json" },
+  { source = "claude/statusline.sh", target = "~/.claude/statusline.sh" },
+  { source = "codex/config.toml", target = "~/.codex/config.toml" },
+  { source = "codex/hooks.json", target = "~/.codex/hooks.json" },
+  { source = "codex/pets", target = "~/.codex/pets" },
+]
+
+skillSymlinks = [
+  { sourceRoot = "skills", targetRoots = [
+    "~/.claude/skills",
+    "~/.agents/skills",
+  ] },
+  { sourceRoot = "thirdparty/skills", targetRoots = [
+    "~/.claude/skills",
+    "~/.agents/skills",
+  ] },
+]
+
+staleSymlinkCleanup = [
+  { sourceDir = "claude/commands", targetDir = "~/.claude/commands" },
+  { sourceDir = "skills", targetDir = "~/.claude/skills" },
+  { sourceDir = "skills", targetDir = "~/.agents/skills" },
+  { sourceDir = "thirdparty/skills", targetDir = "~/.claude/skills" },
+  { sourceDir = "thirdparty/skills", targetDir = "~/.agents/skills" },
+]
+
+[claude]
+marketplaces = [
+  { name = "claude-plugins-official", source = "anthropics/claude-plugins-official" },
+  { name = "openai-codex", source = "openai/codex-plugin-cc" },
+]
+
+plugins = [{ id = "codex@openai-codex" }]
+
+[claude.localMarketplace]
+manifest = ".claude-plugin/marketplace.json"
+source = "."
+plugins = ["strip-git-cwd", "git-commands", "agents-md"]

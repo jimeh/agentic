@@ -68,11 +68,7 @@ export type Logger = {
 };
 
 /** Command runner interface used for git operations. */
-export type Exec = (
-  command: string,
-  args: string[],
-  cwd: string,
-) => string;
+export type Exec = (command: string, args: string[], cwd: string) => string;
 
 /** Summary of a vendor update or check operation. */
 export type UpdateResult = {

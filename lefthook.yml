@@ -3,6 +3,12 @@ glob_matcher: doublestar
 pre-commit:
   parallel: true
   jobs:
-    - name: markdown
+    - name: format
+      glob: "**/*.{cjs,cts,css,html,js,json,jsonc,jsx,markdown,md,mjs,mts,scss,ts,tsx,vue,yaml,yml}"
+      run: mise run format:oxfmt:check
+    - name: markdown lint
       glob: "**/*.md"
-      run: bash scripts/lint-markdown-files.sh {staged_files}
+      run: mise run lint:markdownlint
+    - name: typescript lint
+      glob: "**/*.ts"
+      run: mise run lint:oxlint

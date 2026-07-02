@@ -53,7 +53,11 @@ function findSource(manifest: Manifest, sourceUrl: string): Source | null {
   );
 }
 
-function sourceForAdd(manifest: Manifest, sourceUrl: string, ref: string): Source {
+function sourceForAdd(
+  manifest: Manifest,
+  sourceUrl: string,
+  ref: string,
+): Source {
   const existing = findSource(manifest, sourceUrl);
   if (existing) {
     return existing;
@@ -94,8 +98,7 @@ function availableSkills(
 
   return discovered.filter((skill) => {
     return (
-      !manifestNames.has(skill.name) &&
-      !sourceKeys.has(`${skill.path}\0${ref}`)
+      !manifestNames.has(skill.name) && !sourceKeys.has(`${skill.path}\0${ref}`)
     );
   });
 }
