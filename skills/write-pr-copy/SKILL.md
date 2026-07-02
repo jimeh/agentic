@@ -103,8 +103,8 @@ Produce PR copy only.
   context for reviewers.
 - If testing is unknown or not run, say so plainly
 - Note important assumptions when the diff or base branch leaves room for doubt
-- Mention no template status only when it is useful context for the user; do not
-  include it as boilerplate in the PR body
+- Do not mention template status in generated PR copy; it is internal workflow
+  state, not reviewer context
 
 ## Output Format
 
