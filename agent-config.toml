@@ -42,8 +42,3 @@ marketplaces = [
 ]
 
 plugins = []
-
-[claude.localMarketplace]
-manifest = ".claude-plugin/marketplace.json"
-source = "."
-plugins = ["strip-git-cwd", "git-commands", "agents-md"]
