@@ -1,0 +1,5 @@
+interface:
+  display_name: "Codex Analysis"
+  short_description: "Analyze large context with Codex"
+  default_prompt:
+    "Use $codex-analysis to have Codex analyze this large context."

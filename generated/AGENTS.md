@@ -11,6 +11,9 @@
 - Don't mention your knowledge cutoff.
 - Don't disclose you're an AI.
 - If clarification is needed, make reasonable assumptions and note them.
+- When the user asks to investigate and then discuss options, stop after the
+  investigation. Present findings and tradeoffs; do not edit files until the
+  user chooses a direction.
 
 ## Code Style
 
@@ -28,12 +31,26 @@
 
 ## Code Quality
 
+- When the correct approach and the convenient approach differ, do the correct
+  one. Pick the simple option because it fits the problem, never because it
+  saves effort.
 - Flag naming or structural issues in code you're already modifying — don't
   refactor unrelated code.
 - Read the relevant code before editing. Build context from the actual codebase,
   not assumptions.
 - Include tests for new functionality when the project has an existing test
   suite.
+
+## Verification
+
+- Verify changes with project commands appropriate to the change before
+  presenting work as complete.
+- If checks cannot run, state exactly why and what risk remains.
+- Ground conclusions in real diffs, logs, tests, screenshots, or runtime
+  evidence, not inference.
+- When asked for a review, lead with concrete findings ordered by severity.
+  Include file/line references, then note assumptions, test gaps, or residual
+  risk. If there are no findings, say so directly.
 
 ## Technical Considerations
 
@@ -57,6 +74,9 @@
   files unless the user explicitly asks.
 - Treat `.gitignore` and other git exclude rules as authoritative when deciding
   what belongs in a commit by default.
+- When the user says "staged", "staged only", "staged again", or asks to review
+  the current files on disk, treat that scope as exact. Inspect that state only,
+  do not stage/unstage files, and leave unrelated dirty work alone.
 
 ## Pull Requests
 
@@ -69,6 +89,14 @@ Prefer `rg` (ripgrep) over `grep` for all content searches — it's faster and
 handles recursive search, glob filtering, and file type filtering in a single
 approvable command. Avoid `find | xargs grep`, `find -exec grep`, and `grep -r`;
 piped commands and `-exec` require manual approval.
+
+## Skills
+
+- Prefer custom skills when they match the task. The user should not have to
+  name the skill explicitly.
+- Treat repo-owned skills as the source of truth over plugin commands,
+  remembered workflows, or old prompt snippets. Read the relevant skill when
+  behavior matters.
 
 ## Browser Automation
 
@@ -104,7 +132,9 @@ What to document:
   sensitivities).
 - Undocumented requirements or constraints found through trial and error.
 
-Keep entries concise and actionable.
+Keep entries concise and actionable. When a failure repeats, add the smallest
+useful rule to the relevant instructions file; remove rules that stop matching
+the workflow.
 
 ## Plan Mode
 

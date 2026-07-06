@@ -23,6 +23,8 @@ type SymlinkEntry = {
 type SkillSymlinkConfig = {
   sourceRoot: string;
   targetRoots: string[];
+  only?: string[];
+  exclude?: string[];
 };
 
 type StaleSymlinkCleanupConfig = {
@@ -106,11 +108,11 @@ function usage(exitCode = 2): never {
       "",
       "  Fixed symlinks, skill roots, cleanup paths, Claude marketplaces,",
       "  and Claude plugins are configured in agent-config.toml.",
+      "  Skill roots accept only/exclude globs to scope skills per target.",
       "  JSON and YAML config files are also supported.",
       "",
       "Registers configured plugin marketplaces and installs plugins",
-      "via the Claude CLI, including the OpenAI Codex plugin",
-      "(skipped if claude is not available).",
+      "via the Claude CLI (skipped if claude is not available).",
       "",
       "Also removes stale skill symlinks (and legacy command symlinks).",
     ].join("\n"),
@@ -185,6 +187,31 @@ function assertStringArray(value: unknown, path: string): string[] {
   }
 
   return value.map((entry, index) => assertString(entry, `${path}[${index}]`));
+}
+
+function assertOptionalStringArray(
+  value: unknown,
+  path: string,
+): string[] | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  return assertStringArray(value, path);
+}
+
+// Empty only/exclude lists are ambiguous (an empty `only` would silently link
+// nothing, an empty `exclude` nothing extra), so reject them outright.
+function assertOptionalPatternArray(
+  value: unknown,
+  path: string,
+): string[] | undefined {
+  const patterns = assertOptionalStringArray(value, path);
+  if (patterns && patterns.length === 0) {
+    throw new Error(`${path}: expected at least one glob pattern`);
+  }
+
+  return patterns;
 }
 
 function assertHomePath(value: unknown, path: string): string {
@@ -272,6 +299,11 @@ function readConfig(): AgentConfig {
             object.targetRoots,
             `${path}.targetRoots`,
           ),
+          only: assertOptionalPatternArray(object.only, `${path}.only`),
+          exclude: assertOptionalPatternArray(
+            object.exclude,
+            `${path}.exclude`,
+          ),
         };
       },
     ),
@@ -344,6 +376,26 @@ function discoverSymlinks(config: AgentConfig): SymlinkEntry[] {
   ];
 }
 
+function globToRegExp(pattern: string): RegExp {
+  const escaped = pattern.replace(/[.+^${}()|[\]\\]/g, "\\$&");
+  const source = escaped.replace(/\*/g, ".*").replace(/\?/g, ".");
+  return new RegExp(`^${source}$`);
+}
+
+function matchesAnyGlob(name: string, patterns: string[]): boolean {
+  return patterns.some((pattern) => globToRegExp(pattern).test(name));
+}
+
+function skillInScope(name: string, config: SkillSymlinkConfig): boolean {
+  if (config.only && !matchesAnyGlob(name, config.only)) {
+    return false;
+  }
+  if (config.exclude && matchesAnyGlob(name, config.exclude)) {
+    return false;
+  }
+  return true;
+}
+
 function discoverSkillSymlinks(config: SkillSymlinkConfig): SymlinkEntry[] {
   const absoluteRoot = join(rootDir, config.sourceRoot);
   if (!existsSync(absoluteRoot)) {
@@ -357,6 +409,10 @@ function discoverSkillSymlinks(config: SkillSymlinkConfig): SymlinkEntry[] {
 
     const skillPath = join(absoluteRoot, entry.name, "SKILL.md");
     if (!existsSync(skillPath)) {
+      return [];
+    }
+
+    if (!skillInScope(entry.name, config)) {
       return [];
     }
 
@@ -475,6 +531,7 @@ function createSymlinks(entries: SymlinkEntry[], options: Options): void {
 function cleanupStaleLinks(
   sourceDir: string,
   targetDir: string,
+  plannedSources: Map<string, string>,
   options: Options,
 ): void {
   if (!existsSync(targetDir)) {
@@ -490,7 +547,16 @@ function cleanupStaleLinks(
     }
 
     const realTarget = symlinkTargetPath(link);
-    if (realTarget.startsWith(`${realSourceDir}/`) && !existsSync(realTarget)) {
+    if (!realTarget.startsWith(`${realSourceDir}/`)) {
+      continue;
+    }
+
+    // A link into a managed source dir is stale when its source is gone or
+    // when it no longer matches the planned symlink for its path — either
+    // nothing is planned there (e.g. a skill scoped out via only/exclude) or
+    // a different source is planned for the same target name.
+    const plannedSource = plannedSources.get(normalizePath(link));
+    if (!existsSync(realTarget) || plannedSource !== realTarget) {
       if (options.dryRun) {
         info(`would remove stale: ${link}`);
       } else {
@@ -503,12 +569,21 @@ function cleanupStaleLinks(
 
 function cleanupStale(
   entries: StaleSymlinkCleanupConfig[],
+  planned: SymlinkEntry[],
   options: Options,
 ): void {
+  const plannedSources = new Map(
+    planned.map((entry) => [
+      normalizePath(entry.target),
+      normalizePath(join(rootDir, entry.source)),
+    ]),
+  );
+
   for (const entry of entries) {
     cleanupStaleLinks(
       rootPath(entry.sourceDir),
       homePath(entry.targetDir),
+      plannedSources,
       options,
     );
   }
@@ -692,8 +767,11 @@ export function installAgentConfig(args: string[]): number {
     }
 
     info("Setting up symlinks...");
-    createSymlinks(discoverSymlinks(config), options);
-    cleanupStale(config.staleSymlinkCleanup, options);
+    const symlinks = discoverSymlinks(config);
+    // Cleanup runs first so a stale link pointing at the wrong source frees
+    // its slot for the planned link in the same run.
+    cleanupStale(config.staleSymlinkCleanup, symlinks, options);
+    createSymlinks(symlinks, options);
 
     info("Setting up Claude plugins...");
     setupClaudePlugins(config.claude, options);

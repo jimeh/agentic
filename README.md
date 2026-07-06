@@ -32,9 +32,8 @@ mise run agent-config:install   # create symlinks (skips existing)
 ```
 
 This creates symlinks from the repo into `~/.claude/`, `~/.agents/`, and
-`~/.codex/`, and registers plugin marketplaces and installs plugins via the
-Claude CLI, including the OpenAI Codex plugin for Claude Code. Use the
-`mise run agent-config:*` tasks for installation.
+`~/.codex/`, and registers configured plugin marketplaces via the Claude CLI.
+Use the `mise run agent-config:*` tasks for installation.
 
 Install only project dependencies with:
 

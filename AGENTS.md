@@ -57,8 +57,13 @@ mise run lint:workflows      # check GitHub Actions syntax/security
 - **Vendored third-party skills**: any `thirdparty/skills/*/` dir with a
   `SKILL.md` → the same global skill targets
 
+Skill symlink entries accept `only`/`exclude` glob lists to scope which skills
+an entry links. `codex-*` skills are linked into `~/.claude/skills/` only, so
+Codex never loads the skills that delegate work to it.
+
 To add a new skill, just create the directory — the installer picks it up
-automatically. Stale symlinks are cleaned up on each run.
+automatically. Stale symlinks are cleaned up on each run, including links that
+an `only`/`exclude` change scoped out of a target root.
 
 Third-party skills are source-controlled under `thirdparty/skills/`.
 `thirdparty/skills.manifest.json` defines the reviewed upstream sources and
