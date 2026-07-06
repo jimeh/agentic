@@ -151,14 +151,14 @@
     ],
     "defaultMode": "auto"
   },
-  "model": "opus",
+  "model": "claude-fable-5[1m]",
   "hooks": {
     "UserPromptSubmit": [
       {
         "hooks": [
           {
             "type": "command",
-            "command": "[ -n \"$SUPERSET_HOME_DIR\" ] && [ -x \"$SUPERSET_HOME_DIR/hooks/notify.sh\" ] && \"$SUPERSET_HOME_DIR/hooks/notify.sh\" || true"
+            "command": "[ -n \"$SUPERSET_HOME_DIR\" ] && [ -x \"$SUPERSET_HOME_DIR/hooks/notify.sh\" ] && SUPERSET_AGENT_ID=claude \"$SUPERSET_HOME_DIR/hooks/notify.sh\" || true"
           }
         ]
       }
@@ -168,7 +168,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "[ -n \"$SUPERSET_HOME_DIR\" ] && [ -x \"$SUPERSET_HOME_DIR/hooks/notify.sh\" ] && \"$SUPERSET_HOME_DIR/hooks/notify.sh\" || true"
+            "command": "[ -n \"$SUPERSET_HOME_DIR\" ] && [ -x \"$SUPERSET_HOME_DIR/hooks/notify.sh\" ] && SUPERSET_AGENT_ID=claude \"$SUPERSET_HOME_DIR/hooks/notify.sh\" || true"
           }
         ]
       }
@@ -179,7 +179,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "[ -n \"$SUPERSET_HOME_DIR\" ] && [ -x \"$SUPERSET_HOME_DIR/hooks/notify.sh\" ] && \"$SUPERSET_HOME_DIR/hooks/notify.sh\" || true"
+            "command": "[ -n \"$SUPERSET_HOME_DIR\" ] && [ -x \"$SUPERSET_HOME_DIR/hooks/notify.sh\" ] && SUPERSET_AGENT_ID=claude \"$SUPERSET_HOME_DIR/hooks/notify.sh\" || true"
           }
         ]
       }
@@ -190,7 +190,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "[ -n \"$SUPERSET_HOME_DIR\" ] && [ -x \"$SUPERSET_HOME_DIR/hooks/notify.sh\" ] && \"$SUPERSET_HOME_DIR/hooks/notify.sh\" || true"
+            "command": "[ -n \"$SUPERSET_HOME_DIR\" ] && [ -x \"$SUPERSET_HOME_DIR/hooks/notify.sh\" ] && SUPERSET_AGENT_ID=claude \"$SUPERSET_HOME_DIR/hooks/notify.sh\" || true"
           }
         ]
       }
@@ -201,7 +201,27 @@
         "hooks": [
           {
             "type": "command",
-            "command": "[ -n \"$SUPERSET_HOME_DIR\" ] && [ -x \"$SUPERSET_HOME_DIR/hooks/notify.sh\" ] && \"$SUPERSET_HOME_DIR/hooks/notify.sh\" || true"
+            "command": "[ -n \"$SUPERSET_HOME_DIR\" ] && [ -x \"$SUPERSET_HOME_DIR/hooks/notify.sh\" ] && SUPERSET_AGENT_ID=claude \"$SUPERSET_HOME_DIR/hooks/notify.sh\" || true"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ -n \"$SUPERSET_HOME_DIR\" ] && [ -x \"$SUPERSET_HOME_DIR/hooks/notify.sh\" ] && SUPERSET_AGENT_ID=claude \"$SUPERSET_HOME_DIR/hooks/notify.sh\" || true"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ -n \"$SUPERSET_HOME_DIR\" ] && [ -x \"$SUPERSET_HOME_DIR/hooks/notify.sh\" ] && SUPERSET_AGENT_ID=claude \"$SUPERSET_HOME_DIR/hooks/notify.sh\" || true"
           }
         ]
       }
@@ -213,20 +233,15 @@
     "padding": 0
   },
   "enabledPlugins": {
-    "agents-md@jimeh-agentic": true,
     "claude-md-management@claude-plugins-official": true,
     "code-review@claude-plugins-official": true,
     "code-simplifier@claude-plugins-official": true,
     "commit-commands@claude-plugins-official": false,
-    "edd@jimeh-agentic": true,
-    "fd@jimeh-agentic": true,
-    "feature-dev@claude-plugins-official": true,
+    "feature-dev@claude-plugins-official": false,
     "frontend-design@claude-plugins-official": true,
-    "git-commands@jimeh-agentic": true,
     "gitnexus@gitnexus-marketplace": true,
     "gopls-lsp@claude-plugins-official": true,
     "lua-lsp@claude-plugins-official": false,
-    "phased-work@jimeh-agentic": true,
     "playwright@claude-plugins-official": false,
     "plugin-dev@claude-plugins-official": true,
     "pr-review-toolkit@claude-plugins-official": false,
@@ -235,7 +250,6 @@
     "rust-analyzer-lsp@claude-plugins-official": true,
     "security-guidance@claude-plugins-official": false,
     "sentry@claude-plugins-official": false,
-    "strip-git-cwd@jimeh-agentic": true,
     "swift-lsp@claude-plugins-official": false,
     "typescript-lsp@claude-plugins-official": true
   },
@@ -247,12 +261,14 @@
       }
     }
   },
-  "effortLevel": "xhigh",
+  "effortLevel": "high",
   "autoUpdatesChannel": "latest",
+  "tui": "fullscreen",
   "showThinkingSummaries": true,
   "theme": "dark",
   "editorMode": "normal",
   "preferredNotifChannel": "ghostty",
+  "switchModelsOnFlag": false,
   "teammateMode": "auto",
   "skipAutoPermissionPrompt": true
 }
