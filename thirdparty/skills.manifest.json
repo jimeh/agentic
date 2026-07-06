@@ -10,6 +10,10 @@
         {
           "name": "vercel-react-best-practices",
           "path": "skills/react-best-practices"
+        },
+        {
+          "name": "web-design-guidelines",
+          "path": "skills/web-design-guidelines"
         }
       ]
     },
@@ -70,6 +74,30 @@
         {
           "name": "grill-me",
           "path": "skills/productivity/grill-me"
+        }
+      ]
+    },
+    {
+      "id": "agents",
+      "type": "git",
+      "url": "https://github.com/wshobson/agents.git",
+      "ref": "main",
+      "skills": [
+        {
+          "name": "rust-async-patterns",
+          "path": "plugins/systems-programming/skills/rust-async-patterns"
+        }
+      ]
+    },
+    {
+      "id": "ui",
+      "type": "git",
+      "url": "https://github.com/shadcn/ui.git",
+      "ref": "main",
+      "skills": [
+        {
+          "name": "shadcn",
+          "path": "skills/shadcn"
         }
       ]
     }

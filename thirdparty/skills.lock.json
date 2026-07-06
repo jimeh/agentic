@@ -6,7 +6,7 @@
       "sourceType": "git",
       "sourceUrl": "https://github.com/vercel-labs/agent-browser.git",
       "ref": "main",
-      "resolvedCommit": "4572acf0d71c0086009206c9c1e2136fc54ec9e5",
+      "resolvedCommit": "ed2e10598c9064aecfaeb7cf21b540684db4be2c",
       "upstreamPath": "skills/agent-browser",
       "contentHash": "sha256:bba7848e49d75fe079828eee1377fede5fd45ba2c00004905c21927dd15808df",
       "skillsCliVersion": null
@@ -16,7 +16,7 @@
       "sourceType": "git",
       "sourceUrl": "https://github.com/anthropics/skills.git",
       "ref": "main",
-      "resolvedCommit": "57546260929473d4e0d1c1bb75297be2fdfa1949",
+      "resolvedCommit": "9d2f1ae187231d8199c64b5b762e1bdf2244733d",
       "upstreamPath": "skills/frontend-design",
       "contentHash": "sha256:15787d8f3c8bd24aa3907b736fdffa67a90c7639c0e8b7ad961013171b835ad0",
       "skillsCliVersion": null
@@ -26,7 +26,7 @@
       "sourceType": "git",
       "sourceUrl": "https://github.com/mattpocock/skills.git",
       "ref": "main",
-      "resolvedCommit": "6eeb81b5fcfeeb5bd531dd47ab2f9f2bbea27461",
+      "resolvedCommit": "16a2a5cd00b4416f673f4ff38c7971a04dd708e7",
       "upstreamPath": "skills/productivity/grill-me",
       "contentHash": "sha256:eb9ca5eb0cb86a12902a94f6daa0b4785c01d86c0d0d386c28ecf7a3f77661df",
       "skillsCliVersion": null
@@ -36,9 +36,19 @@
       "sourceType": "git",
       "sourceUrl": "https://github.com/openclaw/agent-skills.git",
       "ref": "main",
-      "resolvedCommit": "283f06904d917a2464e7fb4787795a7fe063e391",
+      "resolvedCommit": "91828ceb8638f6bc73780918adcde3b28f5c4ff0",
       "upstreamPath": "skills/handoff",
       "contentHash": "sha256:fc076f67a527973739f065ad0b45a693fee1e0a529174d61a901a331989b00ec",
+      "skillsCliVersion": null
+    },
+    "rust-async-patterns": {
+      "manifestSourceId": "agents",
+      "sourceType": "git",
+      "sourceUrl": "https://github.com/wshobson/agents.git",
+      "ref": "main",
+      "resolvedCommit": "5cc2549a50fc672230efd0a0307e2fd27ffba792",
+      "upstreamPath": "plugins/systems-programming/skills/rust-async-patterns",
+      "contentHash": "sha256:2be9e8f8dead202477da593a56c7203d52484e666729f8c1cb1525a54a78deac",
       "skillsCliVersion": null
     },
     "rust-best-practices": {
@@ -46,9 +56,19 @@
       "sourceType": "git",
       "sourceUrl": "https://github.com/apollographql/skills.git",
       "ref": "main",
-      "resolvedCommit": "605089108a198e412f7f0c1926c91eb94a6d1727",
+      "resolvedCommit": "7df6a608dd71f937e664b19183fb60d101bb13a1",
       "upstreamPath": "skills/rust-best-practices",
       "contentHash": "sha256:4c4e0298dccc1d6ed8d4c0b529c745985032516e0668d11155bc01ceadf66964",
+      "skillsCliVersion": null
+    },
+    "shadcn": {
+      "manifestSourceId": "ui",
+      "sourceType": "git",
+      "sourceUrl": "https://github.com/shadcn/ui.git",
+      "ref": "main",
+      "resolvedCommit": "d8ace420baa5c8a1abccd75e52570f2a232f193d",
+      "upstreamPath": "skills/shadcn",
+      "contentHash": "sha256:110cd5ba7caec5982e29abba9beed9ff3daf9ac02c1116f33ea6f80d9bee3f72",
       "skillsCliVersion": null
     },
     "vercel-react-best-practices": {
@@ -59,6 +79,16 @@
       "resolvedCommit": "f8a72b9603728bb92a217a879b7e62e43ad76c81",
       "upstreamPath": "skills/react-best-practices",
       "contentHash": "sha256:b26955b4458a63d542406e6bb40e5a5e8e39dd622f8a630e6e3cd2fb356af544",
+      "skillsCliVersion": null
+    },
+    "web-design-guidelines": {
+      "manifestSourceId": "vercel-agent-skills",
+      "sourceType": "git",
+      "sourceUrl": "https://github.com/vercel-labs/agent-skills.git",
+      "ref": "main",
+      "resolvedCommit": "f8a72b9603728bb92a217a879b7e62e43ad76c81",
+      "upstreamPath": "skills/web-design-guidelines",
+      "contentHash": "sha256:21fceadedadbc21ecea83268313f84360c3532215a9a469873609c15bedccf14",
       "skillsCliVersion": null
     }
   }
