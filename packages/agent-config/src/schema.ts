@@ -89,6 +89,22 @@ export const agentConfigSchema = {
             $ref: "#/$defs/homePath",
           },
         },
+        only: {
+          description:
+            "Glob patterns; when set, only skill directories matching at least one pattern are linked by this entry.",
+          type: "array",
+          items: {
+            $ref: "#/$defs/nonEmptyString",
+          },
+        },
+        exclude: {
+          description:
+            "Glob patterns; skill directories matching any pattern are skipped by this entry.",
+          type: "array",
+          items: {
+            $ref: "#/$defs/nonEmptyString",
+          },
+        },
       },
     },
     staleSymlinkCleanup: {

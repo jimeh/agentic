@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codex Review"
+  short_description: "Review code changes with Codex"
+  default_prompt: "Use $codex-review to have Codex review the current changes."

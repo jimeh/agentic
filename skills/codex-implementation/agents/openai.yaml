@@ -1,0 +1,6 @@
+interface:
+  display_name: "Codex Implementation"
+  short_description: "Delegate scoped coding work to Codex"
+  default_prompt:
+    "Use $codex-implementation to delegate this bounded implementation task to
+    Codex."

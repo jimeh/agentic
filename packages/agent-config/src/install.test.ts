@@ -70,12 +70,29 @@ function createClaudeStub(): string {
   return binDir;
 }
 
+function createExternalPluginRoot(): string {
+  const root = createRoot();
+  writeFileSync(
+    join(root, "agent-config.toml"),
+    [
+      "symlinks = []",
+      "skillSymlinks = []",
+      "staleSymlinkCleanup = []",
+      "[claude]",
+      'marketplaces = [{ name = "example", source = "acme/example-plugins" }]',
+      'plugins = [{ id = "demo@example" }]',
+      "",
+    ].join("\n"),
+  );
+  return root;
+}
+
 function createDriftedClaudeStub(): string {
   const binDir = mkdtempSync(join(tmpdir(), "agentic-claude-bin-"));
   tempDirs.push(binDir);
   const claude = join(binDir, "claude");
   const marketplaces =
-    '[{"name":"openai-codex","source":"github","repo":"evil/other-repo"}]';
+    '[{"name":"example","source":"github","repo":"evil/other-repo"}]';
   writeFileSync(
     claude,
     [
@@ -155,15 +172,20 @@ test("dry-run does not create symlinks", () => {
   expect(existsSync(join(home, ".claude", "CLAUDE.md"))).toBe(false);
 });
 
-test("dry-run previews external Claude Codex plugin setup", () => {
+test("dry-run previews external Claude plugin setup", () => {
   const home = createHome();
+  const root = createExternalPluginRoot();
   const binDir = createClaudeStub();
 
-  const result = run(home, ["--dry-run"], `${binDir}:/usr/bin:/bin`);
+  const result = run(
+    home,
+    ["--root", root, "--dry-run"],
+    `${binDir}:/usr/bin:/bin`,
+  );
 
   expect(result.status).toBe(0);
-  expect(result.stderr).toContain("would add marketplace openai-codex");
-  expect(result.stderr).toContain("would install plugin codex@openai-codex");
+  expect(result.stderr).toContain("would add marketplace example");
+  expect(result.stderr).toContain("would install plugin demo@example");
 });
 
 test("loads YAML config files", () => {
@@ -241,15 +263,20 @@ test("force numbers backups instead of replacing earlier ones", () => {
 
 test("fails when a GitHub marketplace points at a different repo", () => {
   const home = createHome();
+  const root = createExternalPluginRoot();
   const binDir = createDriftedClaudeStub();
 
-  const result = run(home, ["--dry-run"], `${binDir}:/usr/bin:/bin`);
+  const result = run(
+    home,
+    ["--root", root, "--dry-run"],
+    `${binDir}:/usr/bin:/bin`,
+  );
 
   expect(result.status).toBe(1);
   expect(result.stderr).toContain(
-    "marketplace openai-codex points to evil/other-repo",
+    "marketplace example points to evil/other-repo",
   );
-  expect(result.stderr).toContain("(expected openai/codex-plugin-cc)");
+  expect(result.stderr).toContain("(expected acme/example-plugins)");
 });
 
 test("surfaces claude CLI failures instead of reinstalling", () => {
@@ -263,6 +290,133 @@ test("surfaces claude CLI failures instead of reinstalling", () => {
     "claude plugin marketplace list --json failed",
   );
   expect(result.stderr).toContain("boom");
+});
+
+function createScopedSkillsRoot(): string {
+  const root = createRoot();
+  for (const skill of ["plain-skill", "codex-thing"]) {
+    mkdirSync(join(root, "skills", skill), { recursive: true });
+    writeFileSync(join(root, "skills", skill, "SKILL.md"), `# ${skill}\n`);
+  }
+  writeFileSync(
+    join(root, "agent-config.toml"),
+    [
+      "symlinks = []",
+      "skillSymlinks = [",
+      '  { sourceRoot = "skills", exclude = ["codex-*"], targetRoots = [',
+      '    "~/.claude/skills",',
+      '    "~/.agents/skills",',
+      "  ] },",
+      '  { sourceRoot = "skills", only = ["codex-*"], targetRoots = [',
+      '    "~/.claude/skills",',
+      "  ] },",
+      "]",
+      "staleSymlinkCleanup = [",
+      '  { sourceDir = "skills", targetDir = "~/.claude/skills" },',
+      '  { sourceDir = "skills", targetDir = "~/.agents/skills" },',
+      "]",
+      "[claude]",
+      "marketplaces = []",
+      "plugins = []",
+      "",
+    ].join("\n"),
+  );
+  return root;
+}
+
+test("only/exclude globs scope skill symlinks per target root", () => {
+  const home = createHome();
+  const root = createScopedSkillsRoot();
+
+  const result = run(home, ["--root", root]);
+
+  expect(result.status).toBe(0);
+  expect(readlinkSync(join(home, ".claude", "skills", "plain-skill"))).toBe(
+    join(root, "skills", "plain-skill"),
+  );
+  expect(readlinkSync(join(home, ".agents", "skills", "plain-skill"))).toBe(
+    join(root, "skills", "plain-skill"),
+  );
+  expect(readlinkSync(join(home, ".claude", "skills", "codex-thing"))).toBe(
+    join(root, "skills", "codex-thing"),
+  );
+  expect(existsSync(join(home, ".agents", "skills", "codex-thing"))).toBe(
+    false,
+  );
+});
+
+test("cleanup removes links scoped out of a target root", () => {
+  const home = createHome();
+  const root = createScopedSkillsRoot();
+  const stale = join(home, ".agents", "skills", "codex-thing");
+  mkdirSync(join(home, ".agents", "skills"), { recursive: true });
+  symlinkSync(join(root, "skills", "codex-thing"), stale);
+
+  const result = run(home, ["--root", root]);
+
+  expect(result.status).toBe(0);
+  expect(existsSync(stale)).toBe(false);
+  expect(readlinkSync(join(home, ".claude", "skills", "codex-thing"))).toBe(
+    join(root, "skills", "codex-thing"),
+  );
+});
+
+test("cleanup replaces links whose planned source moved roots", () => {
+  const home = createHome();
+  const root = createRoot();
+  for (const dir of ["skills", "thirdparty/skills"]) {
+    mkdirSync(join(root, dir, "codex-thing"), { recursive: true });
+    writeFileSync(join(root, dir, "codex-thing", "SKILL.md"), `# ${dir}\n`);
+  }
+  writeFileSync(
+    join(root, "agent-config.toml"),
+    [
+      "symlinks = []",
+      "skillSymlinks = [",
+      '  { sourceRoot = "skills", exclude = ["codex-*"], targetRoots = [',
+      '    "~/.agents/skills",',
+      "  ] },",
+      '  { sourceRoot = "thirdparty/skills", targetRoots = [',
+      '    "~/.agents/skills",',
+      "  ] },",
+      "]",
+      "staleSymlinkCleanup = [",
+      '  { sourceDir = "skills", targetDir = "~/.agents/skills" },',
+      '  { sourceDir = "thirdparty/skills", targetDir = "~/.agents/skills" },',
+      "]",
+      "[claude]",
+      "marketplaces = []",
+      "plugins = []",
+      "",
+    ].join("\n"),
+  );
+  const link = join(home, ".agents", "skills", "codex-thing");
+  mkdirSync(join(home, ".agents", "skills"), { recursive: true });
+  symlinkSync(join(root, "skills", "codex-thing"), link);
+
+  const result = run(home, ["--root", root]);
+
+  expect(result.status).toBe(0);
+  expect(readlinkSync(link)).toBe(
+    join(root, "thirdparty", "skills", "codex-thing"),
+  );
+});
+
+test("repo config keeps codex skills out of ~/.agents/skills", () => {
+  const home = createHome();
+
+  const result = run(home);
+
+  expect(result.status).toBe(0);
+  expect(readlinkSync(join(home, ".claude", "skills", "codex-review"))).toBe(
+    join(rootDir, "skills", "codex-review"),
+  );
+  expect(existsSync(join(home, ".agents", "skills", "codex-review"))).toBe(
+    false,
+  );
+  expect(
+    lstatSync(join(home, ".agents", "skills", "commit")).isSymbolicLink(),
+  ).toBe(true);
 });
 
 test("skips unmanaged existing files unless force is set", () => {

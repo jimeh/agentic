@@ -12,17 +12,6 @@ symlinks = [
   { source = "codex/pets", target = "~/.codex/pets" },
 ]
 
-skillSymlinks = [
-  { sourceRoot = "skills", targetRoots = [
-    "~/.claude/skills",
-    "~/.agents/skills",
-  ] },
-  { sourceRoot = "thirdparty/skills", targetRoots = [
-    "~/.claude/skills",
-    "~/.agents/skills",
-  ] },
-]
-
 staleSymlinkCleanup = [
   { sourceDir = "claude/commands", targetDir = "~/.claude/commands" },
   { sourceDir = "skills", targetDir = "~/.claude/skills" },
@@ -31,13 +20,28 @@ staleSymlinkCleanup = [
   { sourceDir = "thirdparty/skills", targetDir = "~/.agents/skills" },
 ]
 
+# codex-* skills delegate work to the Codex CLI; keep them out of Codex's
+# own skill roots so the executor never loads the orchestrator's playbook.
+[[skillSymlinks]]
+sourceRoot = "skills"
+exclude = ["codex-*"]
+targetRoots = ["~/.claude/skills", "~/.agents/skills"]
+
+[[skillSymlinks]]
+sourceRoot = "skills"
+only = ["codex-*"]
+targetRoots = ["~/.claude/skills"]
+
+[[skillSymlinks]]
+sourceRoot = "thirdparty/skills"
+targetRoots = ["~/.claude/skills", "~/.agents/skills"]
+
 [claude]
 marketplaces = [
   { name = "claude-plugins-official", source = "anthropics/claude-plugins-official" },
-  { name = "openai-codex", source = "openai/codex-plugin-cc" },
 ]
 
-plugins = [{ id = "codex@openai-codex" }]
+plugins = []
 
 [claude.localMarketplace]
 manifest = ".claude-plugin/marketplace.json"

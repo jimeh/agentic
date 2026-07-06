@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codex Computer Use"
+  short_description: "Verify desktop and browser flows with Codex"
+  default_prompt: "Use $codex-computer-use to verify this UI flow with Codex."
