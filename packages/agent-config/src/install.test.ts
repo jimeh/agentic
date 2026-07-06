@@ -361,6 +361,32 @@ test("cleanup removes links scoped out of a target root", () => {
   );
 });
 
+test("rejects empty only/exclude pattern lists", () => {
+  const home = createHome();
+  const root = createRoot();
+  writeFileSync(
+    join(root, "agent-config.toml"),
+    [
+      "symlinks = []",
+      'skillSymlinks = [{ sourceRoot = "skills", only = [], targetRoots = [',
+      '  "~/.claude/skills",',
+      "] }]",
+      "staleSymlinkCleanup = []",
+      "[claude]",
+      "marketplaces = []",
+      "plugins = []",
+      "",
+    ].join("\n"),
+  );
+
+  const result = run(home, ["--root", root, "--dry-run"]);
+
+  expect(result.status).toBe(1);
+  expect(result.stderr).toContain(
+    "$.skillSymlinks[0].only: expected at least one glob pattern",
+  );
+});
+
 test("cleanup replaces links whose planned source moved roots", () => {
   const home = createHome();
   const root = createRoot();

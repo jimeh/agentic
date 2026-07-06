@@ -200,6 +200,20 @@ function assertOptionalStringArray(
   return assertStringArray(value, path);
 }
 
+// Empty only/exclude lists are ambiguous (an empty `only` would silently link
+// nothing, an empty `exclude` nothing extra), so reject them outright.
+function assertOptionalPatternArray(
+  value: unknown,
+  path: string,
+): string[] | undefined {
+  const patterns = assertOptionalStringArray(value, path);
+  if (patterns && patterns.length === 0) {
+    throw new Error(`${path}: expected at least one glob pattern`);
+  }
+
+  return patterns;
+}
+
 function assertHomePath(value: unknown, path: string): string {
   const homePathValue = assertString(value, path);
   if (!homePathValue.startsWith("~/")) {
@@ -285,8 +299,11 @@ function readConfig(): AgentConfig {
             object.targetRoots,
             `${path}.targetRoots`,
           ),
-          only: assertOptionalStringArray(object.only, `${path}.only`),
-          exclude: assertOptionalStringArray(object.exclude, `${path}.exclude`),
+          only: assertOptionalPatternArray(object.only, `${path}.only`),
+          exclude: assertOptionalPatternArray(
+            object.exclude,
+            `${path}.exclude`,
+          ),
         };
       },
     ),

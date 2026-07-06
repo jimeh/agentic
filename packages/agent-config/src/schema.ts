@@ -93,6 +93,7 @@ export const agentConfigSchema = {
           description:
             "Glob patterns; when set, only skill directories matching at least one pattern are linked by this entry.",
           type: "array",
+          minItems: 1,
           items: {
             $ref: "#/$defs/nonEmptyString",
           },
@@ -101,6 +102,7 @@ export const agentConfigSchema = {
           description:
             "Glob patterns; skill directories matching any pattern are skipped by this entry.",
           type: "array",
+          minItems: 1,
           items: {
             $ref: "#/$defs/nonEmptyString",
           },

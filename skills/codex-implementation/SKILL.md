@@ -147,9 +147,13 @@ Two constraints always hold:
 To apply a worktree result onto another checkout:
 
 ```bash
-(cd "$WORKTREE_DIR" && git diff HEAD) > "$ARTIFACT_DIR/change.patch"
+(cd "$WORKTREE_DIR" && git add -A &&
+  git diff --binary --cached HEAD) > "$ARTIFACT_DIR/change.patch"
 git apply "$ARTIFACT_DIR/change.patch"
 ```
+
+Staging inside the throwaway worktree is required so newly created files are
+included in the patch; `git diff HEAD` alone would drop them.
 
 ## Cleanup
 
