@@ -31,7 +31,8 @@ function usage(exitCode = 2): never {
       "  --root <path>     Repository root (default: current directory)",
       "  --ref <ref>       Git ref for add source discovery",
       "  --dry-run, -n     Preview update changes",
-      "  --skill <name>    Limit update/check to one skill",
+      "  --skill <name>    Skill to add (frontmatter name or directory",
+      "                    name), or limit update/check to one skill",
       "  --help, -h        Show help",
     ].join("\n"),
   );

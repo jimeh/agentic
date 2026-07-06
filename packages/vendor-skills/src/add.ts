@@ -103,21 +103,53 @@ function availableSkills(
   });
 }
 
+function resolveSkill(
+  requested: string,
+  skills: DiscoveredSkill[],
+): DiscoveredSkill | null {
+  const byName = skills.find((skill) => skill.name === requested);
+  if (byName) {
+    return byName;
+  }
+
+  const byDir = skills.filter((skill) => {
+    return skill.path.split("/").pop() === requested;
+  });
+  if (byDir.length > 1) {
+    const paths = byDir.map((skill) => skill.path).join(", ");
+    throw new Error(`ambiguous skill: ${requested} matches ${paths}`);
+  }
+
+  return byDir[0] ?? null;
+}
+
 function skillsFromFlags(
+  discovered: DiscoveredSkill[],
   available: DiscoveredSkill[],
   requested: string[],
 ): DiscoveredSkill[] {
-  if (requested.length === 0) {
-    return [];
+  const availableNames = new Set(available.map((skill) => skill.name));
+  const selected = new Map<string, DiscoveredSkill>();
+  for (const name of requested) {
+    const match = resolveSkill(name, discovered);
+    if (!match) {
+      const names = discovered.map((skill) => skill.name).join(", ");
+      throw new Error(
+        `unknown skill: ${name} (upstream has: ${names || "none"})`,
+      );
+    }
+
+    if (!availableNames.has(match.name)) {
+      throw new Error(
+        `skill already in manifest: ${match.name}` +
+          " (run `mise run thirdparty:update-skills` to refresh it)",
+      );
+    }
+
+    selected.set(match.name, match);
   }
 
-  const byName = new Map(available.map((skill) => [skill.name, skill]));
-  const missing = requested.filter((name) => !byName.has(name));
-  if (missing.length > 0) {
-    throw new Error(`unknown available skill: ${missing.join(", ")}`);
-  }
-
-  return requested.map((name) => byName.get(name)!);
+  return [...selected.values()];
 }
 
 /** Add selected upstream skills to the source-controlled manifest. */
@@ -153,22 +185,24 @@ export async function addThirdpartySkills(input: AddInput): Promise<AddResult> {
       effectiveRef,
       source.id,
     );
+    const discovered = discoverSkills(cloneDir);
     const available = availableSkills(
       manifest,
       source,
-      discoverSkills(cloneDir),
+      discovered,
       effectiveRef,
     );
 
-    if (available.length === 0) {
-      logger.log("no new skills available");
-      return { added: [], ok: true };
+    let selected: DiscoveredSkill[];
+    if (input.options.skills.length > 0) {
+      selected = skillsFromFlags(discovered, available, input.options.skills);
+    } else {
+      if (available.length === 0) {
+        logger.log("no new skills available");
+        return { added: [], ok: true };
+      }
+      selected = await (input.selector ?? selectSkills)(available);
     }
-
-    const selected =
-      input.options.skills.length > 0
-        ? skillsFromFlags(available, input.options.skills)
-        : await (input.selector ?? selectSkills)(available);
 
     if (selected.length === 0) {
       logger.log("no skills selected");

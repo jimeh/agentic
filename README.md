@@ -93,7 +93,8 @@ Those tasks call the repo-local `vendor-skills` CLI through Bun. Its
 implementation and colocated tests live under `packages/vendor-skills/src/`. The
 add command accepts full git URLs or GitHub `owner/repo` shorthand and opens a
 multi-select prompt when `--skill` is not provided, then vendors selected skills
-and updates the lockfile. Individual manifest skill entries can set `ref` to pin
+and updates the lockfile. `--skill` matches a skill's frontmatter name or its
+upstream directory name. Individual manifest skill entries can set `ref` to pin
 or test a skill separately from the source default.
 
 Render global instruction files after changing `rules/`:

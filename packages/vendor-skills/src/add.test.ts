@@ -4,7 +4,7 @@ import { afterEach, expect, test } from "bun:test";
 import { addThirdpartySkills } from "./add";
 import { realExec } from "./git";
 import type { Exec, Lock, Manifest } from "./types";
-import { createTempProject, readJson, write } from "./test-helpers";
+import { createTempProject, readJson, run, write } from "./test-helpers";
 
 const projects: ReturnType<typeof createTempProject>[] = [];
 
@@ -202,7 +202,7 @@ test("add restores the manifest when vendoring fails", async () => {
   );
 });
 
-test("add rejects unknown selected skills", async () => {
+test("add rejects unknown selected skills and lists upstream names", async () => {
   const temp = project();
 
   await expectRejects(
@@ -216,6 +216,112 @@ test("add rejects unknown selected skills", async () => {
       },
       logger: silentLogger,
     }),
-    "unknown available skill",
+    "unknown skill: missing-skill (upstream has: example-skill, " +
+      "second-skill, vendor-prefixed-skill)",
+  );
+});
+
+test("add resolves skills by upstream directory name", async () => {
+  const temp = project();
+
+  const result = await addThirdpartySkills({
+    root: temp.root,
+    options: {
+      source: temp.upstream,
+      ref: null,
+      dryRun: false,
+      skills: ["prefixed-skill"],
+    },
+    logger: silentLogger,
+  });
+
+  expect(result.added).toEqual(["vendor-prefixed-skill"]);
+
+  const manifest = readJson<Manifest>(
+    join(temp.root, "thirdparty", "skills.manifest.json"),
+  );
+  expect(manifest.sources[0].skills).toContainEqual({
+    name: "vendor-prefixed-skill",
+    path: "skills/prefixed-skill",
+  });
+});
+
+test("add explains when a requested skill is already in the manifest", async () => {
+  const temp = project();
+
+  await expectRejects(
+    addThirdpartySkills({
+      root: temp.root,
+      options: {
+        source: temp.upstream,
+        ref: null,
+        dryRun: false,
+        skills: ["example-skill"],
+      },
+      logger: silentLogger,
+    }),
+    "skill already in manifest: example-skill " +
+      "(run `mise run thirdparty:update-skills` to refresh it)",
+  );
+});
+
+test("add prefers exact vendored names over directory basename matches", async () => {
+  const temp = project();
+  write(
+    join(temp.upstream, "nested", "example-skill", "SKILL.md"),
+    [
+      "---",
+      "name: nested-example-skill",
+      "description: Different skill in a same-named directory",
+      "---",
+      "",
+      "# Nested Example Skill",
+      "",
+    ].join("\n"),
+  );
+  run("git", ["add", "."], temp.upstream);
+  run("git", ["commit", "--quiet", "-m", "add nested skill"], temp.upstream);
+
+  await expectRejects(
+    addThirdpartySkills({
+      root: temp.root,
+      options: {
+        source: temp.upstream,
+        ref: null,
+        dryRun: false,
+        skills: ["example-skill"],
+      },
+      logger: silentLogger,
+    }),
+    "skill already in manifest: example-skill",
+  );
+});
+
+test("add reports already-vendored skills requested by directory name", async () => {
+  const temp = project();
+
+  await addThirdpartySkills({
+    root: temp.root,
+    options: {
+      source: temp.upstream,
+      ref: null,
+      dryRun: false,
+      skills: ["prefixed-skill"],
+    },
+    logger: silentLogger,
+  });
+
+  await expectRejects(
+    addThirdpartySkills({
+      root: temp.root,
+      options: {
+        source: temp.upstream,
+        ref: null,
+        dryRun: false,
+        skills: ["prefixed-skill"],
+      },
+      logger: silentLogger,
+    }),
+    "skill already in manifest: vendor-prefixed-skill",
   );
 });

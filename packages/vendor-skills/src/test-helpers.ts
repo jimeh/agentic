@@ -81,6 +81,18 @@ export function createTempProject(): TempProject {
     ].join("\n"),
   );
   write(join(upstream, "skills", "second-skill", "README.md"), "second\n");
+  write(
+    join(upstream, "skills", "prefixed-skill", "SKILL.md"),
+    [
+      "---",
+      "name: vendor-prefixed-skill",
+      "description: Skill whose name differs from its directory",
+      "---",
+      "",
+      "# Prefixed Skill",
+      "",
+    ].join("\n"),
+  );
   run("git", ["add", "."], upstream);
   run("git", ["commit", "--quiet", "-m", "add skill"], upstream);
   run("git", ["branch", "-M", "main"], upstream);
