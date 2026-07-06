@@ -131,6 +131,8 @@
       "Bash(wc:*)",
       "Search",
       "Skill(git-commands:commit:*)",
+      "Skill(rust-best-practices)",
+      "Skill(rust-best-practices:*)",
       "WebFetch",
       "WebSearch",
       "mcp__claude_ai_DeepWiki__ask_question",
