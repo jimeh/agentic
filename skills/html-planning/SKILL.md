@@ -1,29 +1,31 @@
 ---
 name: html-planning
 description: >-
-  Write plans, specs, design docs, and proposals as self-contained HTML files
-  with a consistent structure: dark theme, sticky sidebar TOC with scrollspy,
-  phase status badges, and required plan sections. Use when the user explicitly
-  asks for a plan or planning document as an HTML file, or asks to update an
-  existing HTML plan. Do not proactively switch other documents or plans to
-  HTML.
+  Write plans, specs, design docs, proposals, and other technical documents as
+  self-contained HTML files with a consistent structure: dark theme, sticky
+  sidebar TOC with scrollspy, status badges, and required plan sections. Use
+  when the user explicitly asks for a plan, spec, or other technical document
+  as an HTML file, or asks to update an existing one. Do not proactively
+  switch other documents or plans to HTML.
 ---
 
 # HTML Planning
 
 ## Overview
 
-Produce planning documents as single, self-contained `.html` files. The point of
-HTML is layout Markdown cannot express: a plan that reads like a rendered
-Markdown file has missed it. This skill fixes the structural backbone (theme,
-navigation, sections, badges) so plans are consistent, while leaving layout and
-visual personality free to serve each plan's content.
+Produce plans and other technical documents as single, self-contained `.html`
+files. The point of HTML is layout Markdown cannot express: a document that
+reads like a rendered Markdown file has missed it. This skill fixes the
+structural backbone (theme, navigation, sections, badges) so documents are
+consistent, while leaving layout and visual personality free to serve each
+document's content.
 
 ## When to Use
 
-- The user explicitly asks for a plan, spec, design doc, or proposal as an HTML
-  file.
-- The user asks to update, extend, or mark progress on an existing HTML plan.
+- The user explicitly asks for a plan, spec, design doc, proposal, or another
+  standalone technical document as an HTML file.
+- The user asks to update, extend, or mark progress on an existing HTML plan or
+  document written with this skill.
 
 Do not use HTML for plans or documents when the user has not asked for it, and
 do not suggest converting Markdown plans to HTML unprompted.
@@ -36,7 +38,8 @@ do not suggest converting Markdown plans to HTML unprompted.
   written. Merely untracked paths clutter `git status`; if no ignored
   destination is obvious, ask.
 - Never stage or commit plan files unless the user explicitly asks.
-- Default name: `<topic>-plan.html`, e.g. `auth-refactor-plan.html`.
+- Default name: `<topic>-<kind>.html`, e.g. `auth-refactor-plan.html` or
+  `billing-api-spec.html`.
 
 ## Start from the Template
 
@@ -102,9 +105,9 @@ not check for newer versions, recompute hashes, or otherwise vary the tags.
   source clean and readable. Simple diagrams (a few boxes and arrows) stay
   inline SVG.
 
-## Required Sections
+## Required Sections (Plans)
 
-In order, adjusting names to fit the task:
+For plans, in order, adjusting names to fit the task:
 
 1. **Header** — plan title, one-sentence framing, and a metadata block: date,
    repo and branch, author (agent and model), and overall plan status badge.
@@ -124,6 +127,21 @@ In order, adjusting names to fit the task:
 
 Add extra sections (alternatives considered, risks, rollout, diagrams) when the
 task warrants them.
+
+## Other Document Types
+
+Everything outside the plan section list — theme, template, hard requirements,
+CDN exceptions, and content style — applies unchanged to any technical document
+written as HTML: specs, RFCs, architecture docs, reference material. What flexes
+is the anatomy:
+
+- Choose sections that fit the genre instead of the plan list. Every document
+  still gets the header metadata block, explicit scope boundaries, and a visible
+  open-questions section (say so if there are none).
+- Reuse the four badge classes for whatever statuses the genre needs; labels may
+  differ from the plan statuses, but do not invent new badge classes.
+- Swap the progress log for a change log when the document is a long-lived
+  reference; the living-document rules apply whenever the document evolves.
 
 ## Content Style
 
@@ -163,7 +181,7 @@ When implementing a plan that exists as an HTML file:
 
 ## Boundaries
 
-This skill governs the format and structure of HTML plan files. It does not
-change how plans are researched or decided: gather context, weigh approaches,
-and confirm scope exactly as you would for any other plan, then render the
-result with this skill.
+This skill governs the format and structure of HTML plan and technical document
+files. It does not change how their content is researched or decided: gather
+context, weigh approaches, and confirm scope exactly as you would otherwise,
+then render the result with this skill.
