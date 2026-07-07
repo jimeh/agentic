@@ -419,5 +419,38 @@
         });
       })();
     </script>
+
+    <!--
+      Optional CDN enhancements — see "CDN Exceptions" in SKILL.md.
+      Both are progressive enhancements: the plan must stay complete and
+      readable if they never load. Pin exact versions (bump when adopting;
+      recompute the integrity hashes for a new highlight.js version).
+
+      Syntax highlighting for code-heavy plans (highlight.js). Add to
+      <head>; mark code blocks with class="language-x":
+
+      <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css"
+        integrity="sha384-wH75j6z1lH97ZOpMOInqhgKzFkAInZPPSPlZpYKYTOqsaizPvhQZmAtLcPKXpLyH"
+        crossorigin="anonymous"
+      />
+      <script
+        defer
+        src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"
+        integrity="sha384-RH2xi4eIQ/gjtbs9fUXM68sLSi99C7ZWBRX1vDrVv6GQXRibxXLbwO2NGZB74MbU"
+        crossorigin="anonymous"
+        onload="hljs.highlightAll()"
+      ></script>
+
+      Mermaid for diagrams that are painful as hand-written SVG. Add before
+      </body>; diagram source goes in <pre class="mermaid"> blocks and must
+      stay readable as plain text (it is the offline fallback):
+
+      <script type="module">
+        import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.16.0/dist/mermaid.esm.min.mjs";
+        mermaid.initialize({ startOnLoad: true, theme: "dark" });
+      </script>
+    -->
   </body>
 </html>

@@ -64,9 +64,11 @@ Every HTML plan must be:
 
 - **Dark themed.** Dark mode only, no light theme, no theme toggle. The only
   light rendering is the print stylesheet.
-- **Fully self-contained.** One file, zero network requests: system font stack,
-  inline CSS and JS, inline SVG for diagrams. No CDN scripts, no web fonts, no
-  external images. It must render correctly offline, forever.
+- **Self-contained.** One file: system font stack, inline CSS and JS, inline SVG
+  for diagrams. No web fonts, no external images, and no CDN scripts other than
+  the two exceptions below. The document must stay fully readable offline;
+  anything loaded from a CDN is a progressive enhancement, never a carrier of
+  content.
 - **Navigable.** Sticky sidebar TOC with links to every section and JS scrollspy
   highlighting the current section. The sidebar collapses to a top-of-content
   block on narrow screens.
@@ -77,6 +79,24 @@ Every HTML plan must be:
   `localStorage`/`sessionStorage`/`IndexedDB`, no fetch/XHR.
 - **Printable.** `@media print` rules: light background, sidebar hidden,
   collapsibles expanded, sane page breaks.
+
+## CDN Exceptions
+
+Two libraries may be loaded from a CDN when the plan genuinely benefits. Both
+are enhancements: the plan must remain complete and readable if they never load.
+Pin exact versions, never `latest` or a bare major. The comment at the end of
+the template holds copy-paste snippets with pinned versions.
+
+- **highlight.js** — allowed when the plan is code-heavy enough that syntax
+  colors genuinely aid reading. Load the JS and a dark theme CSS from cdnjs with
+  `integrity` hashes, and mark code blocks with `class="language-x"`. Failure
+  mode is today's plain code blocks, so this is always safe.
+- **Mermaid** — allowed for diagrams that are genuinely painful as hand-written
+  SVG: sequence diagrams, larger flowcharts, state machines. Load the ESM build
+  from jsDelivr and initialize with `theme: 'dark'`. The offline fallback is the
+  raw Mermaid source shown in its `<pre class="mermaid">` block, so keep that
+  source clean and readable. Simple diagrams (a few boxes and arrows) stay
+  inline SVG.
 
 ## Required Sections
 
@@ -110,11 +130,12 @@ task warrants them.
   plan cannot be understood without belongs in the open, not inside closed
   collapsibles.
 - Code blocks are plain `<pre><code>` with good font, background, and border
-  styling. No syntax highlighting: no CDN highlighters, no hand-rolled token
-  spans.
+  styling by default. No hand-rolled token spans; for code-heavy plans, use the
+  highlight.js exception above instead.
 - Use inline `<svg>` for architecture and flow diagrams when a diagram genuinely
   aids understanding; never decorative diagrams, never raster screenshots of
-  code or text.
+  code or text. Diagrams too intricate for hand-written SVG may use the Mermaid
+  exception above.
 - Tables for enumerable facts (file lists, phase summaries, option comparisons),
   prose for reasoning.
 
