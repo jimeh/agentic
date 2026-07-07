@@ -84,8 +84,9 @@ Every HTML plan must be:
 
 Two libraries may be loaded from a CDN when the plan genuinely benefits. Both
 are enhancements: the plan must remain complete and readable if they never load.
-Pin exact versions, never `latest` or a bare major. The comment at the end of
-the template holds copy-paste snippets with pinned versions.
+Use the copy-paste snippets in the comment at the end of the template verbatim:
+their pinned versions and integrity hashes are maintained in this skill, so do
+not check for newer versions, recompute hashes, or otherwise vary the tags.
 
 - **highlight.js** — allowed when the plan is code-heavy enough that syntax
   colors genuinely aid reading. Load the JS and a dark theme CSS from cdnjs with
