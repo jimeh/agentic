@@ -54,9 +54,10 @@ Adapt it, do not reproduce it verbatim:
   variables in `:root`, so retheme there. Distinct plans looking distinct helps
   humans tell them apart; do not ship the template's example palette unchanged
   every time.
-- Visual clarity and clean structure always win over decoration. Prioritize
-  readable line lengths (~70–80ch), a clear heading hierarchy, and strong text
-  contrast.
+- Visual clarity and clean structure always win over decoration. Keep the
+  content column centered in the viewport beside the sidebar with a capped width
+  (the template's `--content-width`), and prioritize a clear heading hierarchy
+  and strong text contrast.
 
 ## Hard Requirements
 
