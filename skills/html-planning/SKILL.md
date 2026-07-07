@@ -13,11 +13,11 @@ description: >-
 
 ## Overview
 
-Produce planning documents as single, self-contained `.html` files. HTML gives
-longer plans better layout, navigation, and readability than Markdown, but only
-when every plan shares the same structural backbone. This skill fixes that
-backbone (theme, navigation, sections, badges) while leaving visual personality
-to fit the task.
+Produce planning documents as single, self-contained `.html` files. The point of
+HTML is layout Markdown cannot express: a plan that reads like a rendered
+Markdown file has missed it. This skill fixes the structural backbone (theme,
+navigation, sections, badges) so plans are consistent, while leaving layout and
+visual personality free to serve each plan's content.
 
 ## When to Use
 
@@ -47,8 +47,10 @@ print stylesheet.
 
 Adapt it, do not reproduce it verbatim:
 
-- Keep the structure: layout, navigation, section order, badge semantics,
-  metadata header, print behavior.
+- Keep the structure: page layout, navigation, section order, badge semantics,
+  metadata header, print behavior. Inside sections, the template's plain
+  placeholder markup is deliberately minimal and is not layout guidance —
+  section interiors are yours to design.
 - Restyle the surface: colors, accent, typography scale, spacing, and decorative
   touches are yours to choose per document. All theming runs through the CSS
   variables in `:root`, so retheme there. Distinct plans looking distinct helps
@@ -125,6 +127,12 @@ task warrants them.
 
 ## Content Style
 
+- Use layout as a tool. For each section, pick the presentation that
+  communicates its content best instead of defaulting to a linear column of
+  headings, paragraphs, and lists — if the whole document could have been
+  rendered from Markdown, the format added nothing. Let the shape of the content
+  decide, and keep clarity the test: structure must aid scanning and
+  comprehension, never decorate.
 - Comprehensive but scannable: full prose where reasoning matters, relying on
   the TOC, tables, and collapsibles to stay navigable.
 - Push long secondary material (exhaustive file lists, rejected alternatives,
