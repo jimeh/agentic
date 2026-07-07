@@ -1,0 +1,423 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Example Topic — Plan</title>
+    <style>
+      /*
+       * Theme tokens. Retheme every plan here: pick an accent and surface
+       * palette that suits the task. Keep text contrast WCAG AA or better.
+       * Dark mode only; @media print below is the sole light rendering.
+       */
+      :root {
+        --bg: #14161a;
+        --bg-sidebar: #101216;
+        --bg-raised: #1c1f26;
+        --border: #2b2f38;
+        --text: #d7dae0;
+        --text-muted: #8b919d;
+        --heading: #f2f4f7;
+        --accent: #6aa2ff;
+        --code-bg: #191c22;
+        --badge-pending-fg: #c8cdd6;
+        --badge-pending-bg: #262a33;
+        --badge-progress-fg: #8ec1ff;
+        --badge-progress-bg: #1a2c47;
+        --badge-done-fg: #8fd9a8;
+        --badge-done-bg: #16321f;
+        --badge-blocked-fg: #f2a0a0;
+        --badge-blocked-bg: #3d1c1c;
+        --content-width: 46rem;
+        --sidebar-width: 16rem;
+      }
+
+      * { box-sizing: border-box; }
+
+      html { scroll-behavior: smooth; }
+      @media (prefers-reduced-motion: reduce) {
+        html { scroll-behavior: auto; }
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font: 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+        display: grid;
+        grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+      }
+
+      /* ---------- Sidebar TOC ---------- */
+      nav.toc {
+        position: sticky;
+        top: 0;
+        align-self: start;
+        height: 100vh;
+        overflow-y: auto;
+        padding: 1.5rem 1rem;
+        background: var(--bg-sidebar);
+        border-right: 1px solid var(--border);
+        font-size: 0.875rem;
+      }
+      nav.toc .toc-title {
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-size: 0.7rem;
+        margin: 0 0 0.75rem;
+      }
+      nav.toc ol {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+      nav.toc a {
+        display: block;
+        padding: 0.3rem 0.6rem;
+        color: var(--text-muted);
+        text-decoration: none;
+        border-left: 2px solid transparent;
+        border-radius: 0 4px 4px 0;
+      }
+      nav.toc a:hover { color: var(--text); }
+      nav.toc a.active {
+        color: var(--accent);
+        border-left-color: var(--accent);
+        background: var(--bg-raised);
+      }
+
+      /* ---------- Main column ---------- */
+      main {
+        padding: 2.5rem 2rem 4rem;
+        max-width: calc(var(--content-width) + 4rem);
+      }
+
+      h1, h2, h3 { color: var(--heading); line-height: 1.25; }
+      h1 { font-size: 1.9rem; margin: 0 0 0.5rem; }
+      h2 {
+        font-size: 1.35rem;
+        margin: 2.5rem 0 0.75rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border);
+      }
+      h3 { font-size: 1.05rem; margin: 1.5rem 0 0.5rem; }
+
+      a { color: var(--accent); }
+      p, li { max-width: var(--content-width); }
+      hr { border: 0; border-top: 1px solid var(--border); }
+
+      .framing { color: var(--text-muted); font-size: 1.05rem; margin-top: 0; }
+
+      /* ---------- Metadata header ---------- */
+      .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem 1.5rem;
+        margin: 1rem 0 0;
+        padding: 0.75rem 1rem;
+        background: var(--bg-raised);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-size: 0.85rem;
+      }
+      .meta div { display: flex; gap: 0.4rem; align-items: baseline; }
+      .meta dt { color: var(--text-muted); margin: 0; }
+      .meta dd { margin: 0; }
+
+      /* ---------- Status badges ---------- */
+      .badge {
+        display: inline-block;
+        padding: 0.1rem 0.55rem;
+        border-radius: 999px;
+        font-size: 0.72rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        vertical-align: middle;
+        white-space: nowrap;
+      }
+      .badge.pending     { color: var(--badge-pending-fg);  background: var(--badge-pending-bg); }
+      .badge.in-progress { color: var(--badge-progress-fg); background: var(--badge-progress-bg); }
+      .badge.done        { color: var(--badge-done-fg);     background: var(--badge-done-bg); }
+      .badge.blocked     { color: var(--badge-blocked-fg);  background: var(--badge-blocked-bg); }
+
+      /* ---------- Code ---------- */
+      code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.875em;
+        background: var(--code-bg);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 0.1em 0.35em;
+      }
+      pre {
+        background: var(--code-bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 1rem;
+        overflow-x: auto;
+        max-width: var(--content-width);
+      }
+      pre code { background: none; border: 0; padding: 0; font-size: 0.85rem; }
+
+      /* ---------- Tables ---------- */
+      .table-wrap { overflow-x: auto; max-width: var(--content-width); }
+      table { border-collapse: collapse; font-size: 0.9rem; width: 100%; }
+      th, td {
+        text-align: left;
+        padding: 0.5rem 0.75rem;
+        border-bottom: 1px solid var(--border);
+        vertical-align: top;
+      }
+      th { color: var(--heading); }
+
+      /* ---------- Collapsibles ---------- */
+      details {
+        max-width: var(--content-width);
+        margin: 1rem 0;
+        padding: 0.6rem 1rem;
+        background: var(--bg-raised);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+      }
+      summary { cursor: pointer; color: var(--heading); font-weight: 600; }
+      details[open] summary { margin-bottom: 0.5rem; }
+
+      /* ---------- Progress log ---------- */
+      .log { list-style: none; padding: 0; max-width: var(--content-width); }
+      .log li {
+        display: grid;
+        grid-template-columns: 7rem 1fr;
+        gap: 1rem;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid var(--border);
+      }
+      .log time { color: var(--text-muted); font-size: 0.85rem; }
+
+      /* ---------- Narrow screens ---------- */
+      @media (max-width: 800px) {
+        body { grid-template-columns: 1fr; }
+        nav.toc {
+          position: static;
+          height: auto;
+          border-right: 0;
+          border-bottom: 1px solid var(--border);
+        }
+        main { padding: 1.5rem 1rem 3rem; }
+      }
+
+      /* ---------- Print ---------- */
+      @media print {
+        :root {
+          --bg: #ffffff;
+          --bg-sidebar: #ffffff;
+          --bg-raised: #f4f4f5;
+          --border: #d4d4d8;
+          --text: #1c1c1f;
+          --text-muted: #55555c;
+          --heading: #000000;
+          --accent: #1d4ed8;
+          --code-bg: #f4f4f5;
+          --badge-pending-fg: #3f3f46;  --badge-pending-bg: #e4e4e7;
+          --badge-progress-fg: #1e40af; --badge-progress-bg: #dbeafe;
+          --badge-done-fg: #166534;     --badge-done-bg: #dcfce7;
+          --badge-blocked-fg: #991b1b;  --badge-blocked-bg: #fee2e2;
+        }
+        body { display: block; }
+        nav.toc { display: none; }
+        main { max-width: none; padding: 0; }
+        h2 { break-after: avoid; }
+        pre, table, details { break-inside: avoid; }
+        /* Expand closed collapsibles in print engines that support
+           ::details-content; the beforeprint script covers the rest. */
+        details:not([open])::details-content {
+          content-visibility: visible;
+          display: block;
+        }
+        a { color: var(--text); text-decoration: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="toc" aria-label="Table of contents">
+      <p class="toc-title">Contents</p>
+      <ol>
+        <li><a href="#context">Context</a></li>
+        <li><a href="#goals">Goals &amp; Non-goals</a></li>
+        <li><a href="#phases">Implementation Phases</a></li>
+        <li><a href="#testing">Testing Strategy</a></li>
+        <li><a href="#questions">Open Questions</a></li>
+        <li><a href="#log">Progress Log</a></li>
+      </ol>
+    </nav>
+
+    <main>
+      <header>
+        <h1>Example Topic — Plan</h1>
+        <p class="framing">
+          One sentence framing what this plan achieves and why it matters.
+        </p>
+        <dl class="meta">
+          <div>
+            <dt>Status</dt>
+            <dd><span class="badge in-progress">In progress</span></dd>
+          </div>
+          <div>
+            <dt>Date</dt>
+            <dd><time datetime="2026-01-01">2026-01-01</time></dd>
+          </div>
+          <div>
+            <dt>Repo</dt>
+            <dd>owner/repo @ <code>branch-name</code></dd>
+          </div>
+          <div>
+            <dt>Author</dt>
+            <dd>Agent name (model)</dd>
+          </div>
+        </dl>
+      </header>
+
+      <section id="context">
+        <h2>Context</h2>
+        <p>
+          The problem, the current state of the system, and why this work
+          matters now. Enough background that a reader with no prior context can
+          judge the plan.
+        </p>
+      </section>
+
+      <section id="goals">
+        <h2>Goals &amp; Non-goals</h2>
+        <h3>Goals</h3>
+        <ul>
+          <li>Concrete outcome this plan delivers.</li>
+        </ul>
+        <h3>Non-goals</h3>
+        <ul>
+          <li>Adjacent work deliberately left out of scope, and why.</li>
+        </ul>
+      </section>
+
+      <section id="phases">
+        <h2>Implementation Phases</h2>
+
+        <h3>Phase 1: Name <span class="badge done">Done</span></h3>
+        <p>What this phase does and why it comes first.</p>
+        <ul>
+          <li>
+            Concrete step, naming affected files like <code>src/thing.ts</code>.
+          </li>
+          <li>Another concrete step.</li>
+        </ul>
+
+        <h3>
+          Phase 2: Name <span class="badge in-progress">In progress</span>
+        </h3>
+        <p>What this phase does.</p>
+        <pre><code>command --that --runs-here</code></pre>
+
+        <h3>Phase 3: Name <span class="badge pending">Pending</span></h3>
+        <p>What this phase does.</p>
+
+        <details>
+          <summary>Appendix: full list of affected files</summary>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>File</th>
+                  <th>Change</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>src/a.ts</code></td>
+                  <td>What changes and why.</td>
+                </tr>
+                <tr>
+                  <td><code>src/b.ts</code></td>
+                  <td>What changes and why.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </details>
+      </section>
+
+      <section id="testing">
+        <h2>Testing Strategy</h2>
+        <p>
+          How each phase and the overall change get verified: test commands, new
+          tests to write, manual verification steps.
+        </p>
+        <pre><code>mise run test</code></pre>
+      </section>
+
+      <section id="questions">
+        <h2>Open Questions</h2>
+        <ul>
+          <li>
+            Unresolved decision, who or what resolves it, and the default if
+            unanswered.
+          </li>
+        </ul>
+      </section>
+
+      <section id="log">
+        <h2>Progress Log</h2>
+        <ul class="log">
+          <li>
+            <time datetime="2026-01-01">2026-01-01</time>
+            <span>Plan created.</span>
+          </li>
+        </ul>
+      </section>
+    </main>
+
+    <script>
+      // Scrollspy: highlight the TOC link for the section nearest the top.
+      (function () {
+        var links = document.querySelectorAll("nav.toc a[href^='#']");
+        var byId = {};
+        links.forEach(function (a) {
+          byId[a.getAttribute("href").slice(1)] = a;
+        });
+        var sections = document.querySelectorAll("main section[id]");
+        function onScroll() {
+          var current = sections[0];
+          sections.forEach(function (s) {
+            if (s.getBoundingClientRect().top <= 120) current = s;
+          });
+          links.forEach(function (a) {
+            a.classList.remove("active");
+            a.removeAttribute("aria-current");
+          });
+          if (current && byId[current.id]) {
+            byId[current.id].classList.add("active");
+            byId[current.id].setAttribute("aria-current", "location");
+          }
+        }
+        document.addEventListener("scroll", onScroll, { passive: true });
+        onScroll();
+      })();
+
+      // Expand all collapsibles for printing, restore afterwards.
+      (function () {
+        var touched = [];
+        window.addEventListener("beforeprint", function () {
+          touched = [];
+          document.querySelectorAll("details:not([open])").forEach(function (d) {
+            d.open = true;
+            touched.push(d);
+          });
+        });
+        window.addEventListener("afterprint", function () {
+          touched.forEach(function (d) { d.open = false; });
+          touched = [];
+        });
+      })();
+    </script>
+  </body>
+</html>
