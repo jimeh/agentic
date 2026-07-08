@@ -236,7 +236,7 @@
   },
   "enabledPlugins": {
     "claude-md-management@claude-plugins-official": true,
-    "code-review@claude-plugins-official": true,
+    "code-review@claude-plugins-official": false,
     "code-simplifier@claude-plugins-official": true,
     "commit-commands@claude-plugins-official": false,
     "feature-dev@claude-plugins-official": false,
@@ -267,6 +267,7 @@
   "autoUpdatesChannel": "latest",
   "tui": "fullscreen",
   "showThinkingSummaries": true,
+  "skipWorkflowUsageWarning": false,
   "theme": "dark",
   "editorMode": "normal",
   "preferredNotifChannel": "ghostty",
