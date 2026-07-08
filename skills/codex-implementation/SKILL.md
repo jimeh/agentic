@@ -65,9 +65,12 @@ Bad candidates:
 6. Run `codex exec` with workspace write access in the intended checkout.
 7. Inspect `git status` and `git diff`.
 8. Run or check focused verification yourself.
-9. For non-trivial changes, get an independent review of the diff via the
-   `codex-review` skill before treating the work as complete. This gate is
-   mandatory; adjust or reject the result based on what it finds.
+9. For non-trivial changes, review the diff yourself as an independent reviewer
+   before treating the work as complete — judge it like a contributor PR. Do not
+   route the diff to `codex-review`: gpt-5.5 re-reviewing its own output is weak
+   independence. For substantial diffs, also get a fresh Claude subagent review;
+   the orchestrating session wrote the spec and is not fully neutral. This gate
+   is mandatory; adjust or reject the result based on what it finds.
 10. Deliver the result (see Delivery below).
 11. Report what changed, what was verified, and what remains.
 
@@ -115,6 +118,14 @@ codex exec \
   -o "$REPORT" \
   - < "$PROMPT"
 ```
+
+Run notes, for any `codex exec` invocation in this skill:
+
+- Append `2>/dev/null` to suppress Codex's progress noise on stderr; drop it
+  only to debug a failing run. The `-o` report file holds the result.
+- For long tasks, run in the background and read the `-o` report when the run
+  exits. Do not kill quiet runs prematurely; long silences are normal.
+- Parallel independent tasks are fine: separate worktrees, separate `-o` files.
 
 After Codex finishes, inspect the result from the worktree:
 
@@ -184,6 +195,25 @@ codex exec \
 Use `danger-full-access` only when the implementation truly needs machine-level
 access such as simulator control, app automation, package-manager global state,
 or files outside the workspace.
+
+## Iteration
+
+Follow-up fixes are cheaper through the same Codex session than a fresh
+zero-context run, and keep the context Codex already built. `codex exec resume`
+accepts `-o` and `-c` config overrides but not `-C` or `-s`, so run it from the
+target checkout and set the sandbox through config:
+
+```bash
+(cd "$WORKTREE_DIR" && codex exec resume --last \
+  -c sandbox_mode="workspace-write" \
+  -o "$REPORT" \
+  - < "$PROMPT")
+```
+
+Write the follow-up prompt to a fresh file first; state only what is wrong and
+what proof is expected. With parallel Codex runs in flight, resume by session id
+instead of `--last`. If two resume rounds fail to fix the problem, stop
+delegating and make the fix directly.
 
 ## Prompting Strategy
 

@@ -63,6 +63,10 @@ and copy. Update the table when available models change.
   - `codex-computer-use` — GUI/runtime observation and verification.
 - Raw `codex` CLI is a fallback for read-only investigation when no skill fits,
   or when the user explicitly asks.
+- When the user invokes the `codex-first` skill or asks for Codex to lead the
+  hands-on implementation work, Codex becomes the default implementer for the
+  session per that skill's routing. A one-off Codex request (a single review,
+  analysis, or task) is not an opt-in. Never adopt that posture uninvited.
 - Label wrapper agents with a `codex:` or `gpt-5.5:` prefix so the real worker
   is visible.
 - Implementation delegation requires isolation such as a separate worktree.
@@ -77,5 +81,10 @@ and copy. Update the table when available models change.
 ## Review Gate
 
 - Before presenting non-trivial implementation work as complete, get an
-  independent review of the diff (`codex-review`, or a fresh subagent when Codex
-  is unavailable). This gate is mandatory, not optional.
+  independent review of the diff. This gate is mandatory, not optional.
+- Claude-authored diffs: review via `codex-review`, or a fresh subagent when
+  Codex is unavailable.
+- Codex-authored diffs: Claude reviews the diff itself — same-model review is
+  weak independence, so do not send them to `codex-review`. For substantial
+  diffs, also get a fresh Claude subagent review, since the orchestrating
+  session wrote the spec and is not fully neutral.

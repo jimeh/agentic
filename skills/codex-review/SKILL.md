@@ -7,8 +7,8 @@ description: >-
   review work, when model-routing calls for a Codex review perspective, or when
   Codex should audit a diff for bugs, regressions, missing tests, security
   issues, or requirement mismatches. Do not use for small reviews Claude can
-  handle directly, or as a substitute for Claude reading and validating the
-  code.
+  handle directly, for diffs Codex itself authored, or as a substitute for
+  Claude reading and validating the code.
 ---
 
 # Codex Review
@@ -21,7 +21,9 @@ reviewing Claude's own implementation, or getting a cheap second perspective on
 a plan or diff.
 
 Do not use it for small local reviews, formatting-only diffs, or to avoid
-reading the code yourself. Treat Codex's report as evidence, not authority.
+reading the code yourself. Do not use it on diffs Codex itself authored:
+same-model review is weak independence, so Claude reviews those directly. Treat
+Codex's report as evidence, not authority.
 
 Assume `codex` is installed and configured to use the desired GPT/Codex model
 unless the environment proves otherwise.
