@@ -1,15 +1,14 @@
 ---
 name: codex-implementation
 description: >-
-  Delegate bounded implementation work to Codex CLI / gpt-5.5 and then have
-  Claude inspect, verify, and deliver the result where the work belongs.
-  Use when the user asks
-  Claude to have Codex or gpt-5.5 implement code, when model-routing calls for
-  Codex implementation, or when a scoped task is well-defined, mechanically
-  implementable, independently verifiable, and unlikely to require
-  architectural, product, API, or UX judgement. Do not use for planning,
-  architecture, exploratory debugging, ambiguous requirements, product
-  decisions, UX decisions, or open-ended features.
+  Delegate bounded implementation work to Codex CLI / gpt-5.6-sol and then
+  have Claude inspect, verify, and deliver the result where the work belongs.
+  Use when the user asks Claude to have Codex or gpt-5.6-sol implement code,
+  when model-routing calls for Codex implementation, or when a scoped task is
+  well-defined, mechanically implementable, independently verifiable, and
+  unlikely to require architectural, product, API, or UX judgement. Do not use
+  for planning, architecture, exploratory debugging, ambiguous requirements,
+  product decisions, UX decisions, or open-ended features.
 ---
 
 # Codex Implementation
@@ -67,10 +66,10 @@ Bad candidates:
 8. Run or check focused verification yourself.
 9. For non-trivial changes, review the diff yourself as an independent reviewer
    before treating the work as complete — judge it like a contributor PR. Do not
-   route the diff to `codex-review`: gpt-5.5 re-reviewing its own output is weak
-   independence. For substantial diffs, also get a fresh Claude subagent review;
-   the orchestrating session wrote the spec and is not fully neutral. This gate
-   is mandatory; adjust or reject the result based on what it finds.
+   route the diff to `codex-review`: gpt-5.6-sol re-reviewing its own output is
+   weak independence. For substantial diffs, also get a fresh Claude subagent
+   review; the orchestrating session wrote the spec and is not fully neutral.
+   This gate is mandatory; adjust or reject the result based on what it finds.
 10. Deliver the result (see Delivery below).
 11. Report what changed, what was verified, and what remains.
 

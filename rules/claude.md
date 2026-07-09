@@ -30,21 +30,21 @@ Cost is what I actually pay, not list price. Intelligence is how hard a problem
 the model handles unsupervised. Taste covers UI/UX, API design, code quality,
 and copy. Update the table when available models change.
 
-| model    | cost | intelligence | taste | default use                 |
-| -------- | ---: | -----------: | ----: | --------------------------- |
-| gpt-5.5  |    9 |            8 |     5 | bulk work, logs, specs      |
-| sonnet-5 |    6 |            5 |     7 | thin wrappers, routine work |
-| opus-4.8 |    4 |            8 |     8 | review, architecture        |
-| fable-5  |    2 |            9 |     9 | UX, APIs, copy, judgement   |
+| model       | cost | intelligence | taste | default use                 |
+| ----------- | ---: | -----------: | ----: | --------------------------- |
+| gpt-5.6-sol |    9 |            8 |     5 | bulk work, logs, specs      |
+| sonnet-5    |    6 |            5 |     7 | thin wrappers, routine work |
+| opus-4.8    |    4 |            8 |     8 | review, architecture        |
+| fable-5     |    2 |            9 |     9 | UX, APIs, copy, judgement   |
 
 - These are defaults, not limits. Judge output quality, not the price tag.
 - Cost is only a tie-breaker; for anything that ships, intelligence > taste >
   cost.
-- Bulk, mechanical, token-heavy, or clear-spec work goes to gpt-5.5 / Codex.
+- Bulk, mechanical, token-heavy, or clear-spec work goes to gpt-5.6-sol / Codex.
   Spend cheap tokens gathering evidence before expensive judgement.
 - User-facing work needs taste >= 7: UI, UX, copy, API shape, naming, product
   decisions, and final polish.
-- Reviews of plans or implementations use fable-5 or opus-4.8; add gpt-5.5 /
+- Reviews of plans or implementations use fable-5 or opus-4.8; add gpt-5.6-sol /
   Codex as an extra independent perspective when useful.
 - Do not use Haiku.
 - Escalate to a smarter model without asking when a cheaper model's output is
@@ -52,7 +52,7 @@ and copy. Update the table when available models change.
   UX, or avoidable rework.
 - Claude models run via the Agent/Workflow model parameter.
 
-## Delegation to Codex / GPT-5.5
+## Delegation to Codex / GPT-5.6-Sol
 
 - Reach Codex through the codex-\* skills; pick the matching skill
   automatically:
@@ -67,8 +67,8 @@ and copy. Update the table when available models change.
   hands-on implementation work, Codex becomes the default implementer for the
   session per that skill's routing. A one-off Codex request (a single review,
   analysis, or task) is not an opt-in. Never adopt that posture uninvited.
-- Label wrapper agents with a `codex:` or `gpt-5.5:` prefix so the real worker
-  is visible.
+- Label wrapper agents with a `codex:` or `gpt-5.6-sol:` prefix so the real
+  worker is visible.
 - Implementation delegation requires isolation such as a separate worktree.
 
 ## Browser and GUI Automation

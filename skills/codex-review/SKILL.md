@@ -1,14 +1,14 @@
 ---
 name: codex-review
 description: >-
-  Ask Codex CLI / gpt-5.5 for an independent code review of uncommitted
+  Ask Codex CLI / gpt-5.6-sol for an independent code review of uncommitted
   changes, a branch diff, a commit, a PR checkout, or a specific
-  implementation. Use when the user asks Claude to have Codex or gpt-5.5
-  review work, when model-routing calls for a Codex review perspective, or when
-  Codex should audit a diff for bugs, regressions, missing tests, security
-  issues, or requirement mismatches. Do not use for small reviews Claude can
-  handle directly, for diffs Codex itself authored, or as a substitute for
-  Claude reading and validating the code.
+  implementation. Use when the user asks Claude to have Codex or gpt-5.6-sol
+  review work, when model-routing calls for a Codex review perspective, or
+  when Codex should audit a diff for bugs, regressions, missing tests,
+  security issues, or requirement mismatches. Do not use for small reviews
+  Claude can handle directly, for diffs Codex itself authored, or as a
+  substitute for Claude reading and validating the code.
 ---
 
 # Codex Review
