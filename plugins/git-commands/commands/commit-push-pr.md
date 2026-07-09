@@ -67,8 +67,25 @@ Based on the above changes:
    the durable project outcome rather than the implementation task. Include
    manual QA only when there are useful, concrete reviewer workflows or
    user-visible scenarios tied to the branch. Do not fill manual QA with generic
-   test commands, CI commands, or "CI should pass"; mention commands only when
-   actually run locally and useful as testing notes.
+   test commands, CI commands, or "CI should pass".
+
+   Apply these PR copy hygiene rules:
+   - Never include machine-local details in a PR title or body: absolute local
+     filesystem paths, usernames, home directories, host-specific locations, or
+     similar local-only context.
+   - Include a Testing section only when actual validation results provide
+     useful context to reviewers. Mention commands only when they were actually
+     run and their results are meaningful; keep Testing notes distinct from
+     Manual QA.
+   - For docs-only or content-only changes, omit Testing when it would merely
+     list generic lint, format, test, or CI-equivalent commands, unless the
+     selected PR template requires the section.
+   - If the selected PR template requires a Testing section and validation was
+     not run or is unknown, state that plainly without inventing commands or
+     results.
+   - When useful validation involved a machine-local path, rewrite the note with
+     a repository-relative command or path, or concise prose; never copy the raw
+     local invocation.
 
 Before creating the PR, verify:
 
@@ -76,6 +93,9 @@ Before creating the PR, verify:
 - Any matched template file was read
 - The PR body follows the selected template, or no template was found
 - The PR title and body do not include template-search metadata
+- The PR title and body contain no machine-local details
+- Any Testing section adds useful reviewer context or is required by the
+  template
 
 ## Guidelines
 

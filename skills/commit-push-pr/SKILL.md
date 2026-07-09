@@ -136,9 +136,22 @@ Use `gh pr create` to open the pull request.
   test commands, CI commands, or "CI should pass"; CI already covers automated
   checks. If there are no meaningful manual steps, omit the section or mark it
   not applicable only when the selected template requires an answer.
-- **Testing notes**: mention commands only when they were actually run locally
-  and the result is useful context for reviewers. Keep this distinct from manual
-  QA steps.
+- **PR copy hygiene**:
+  - Never include machine-local details in a PR title or body: absolute local
+    filesystem paths, usernames, home directories, host-specific locations, or
+    similar local-only context.
+  - Include a Testing section only when actual validation results provide useful
+    context to reviewers. Mention commands only when they were actually run and
+    their results are meaningful; keep Testing notes distinct from Manual QA.
+  - For docs-only or content-only changes, omit Testing when it would merely
+    list generic lint, format, test, or CI-equivalent commands, unless the
+    selected PR template requires the section.
+  - If the selected PR template requires a Testing section and validation was
+    not run or is unknown, state that plainly without inventing commands or
+    results.
+  - When useful validation involved a machine-local path, rewrite the note with
+    a repository-relative command or path, or concise prose; never copy the raw
+    local invocation.
 - **Honesty**: do not invent rationale, test coverage, or manual validation that
   is not grounded in the diff, commits, template, or user request. Note
   important assumptions only when they affect review.
@@ -149,6 +162,9 @@ Before creating the PR, verify:
 - Any matched template file was read
 - PR body follows the selected template, or no template was found
 - PR title and body do not include template-search metadata
+- PR title and body contain no machine-local details
+- Any Testing section adds useful reviewer context or is required by the
+  template
 
 ## Guidelines
 
