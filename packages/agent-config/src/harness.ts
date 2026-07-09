@@ -52,6 +52,24 @@ type ThirdpartyLockEntry = {
 };
 
 const slugPattern = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+const prCopyInstructionPaths = [
+  "skills/commit-push-pr/SKILL.md",
+  "skills/write-pr-copy/SKILL.md",
+  "plugins/git-commands/commands/commit-push-pr.md",
+];
+const prCopyHygieneRules = [
+  "Never include machine-local details in a PR title or body",
+  "absolute local filesystem paths, usernames, home directories, " +
+    "host-specific locations",
+  "Include a Testing section only when actual validation results provide " +
+    "useful context to reviewers",
+  "keep Testing notes distinct from Manual QA",
+  "For docs-only or content-only changes, omit Testing when it would merely " +
+    "list generic lint, format, test, or CI-equivalent commands",
+  "unless the selected PR template requires the section",
+  "rewrite the note with a repository-relative command or path, or concise " +
+    "prose; never copy the raw local invocation",
+];
 let failed = false;
 
 function usage(exitCode = 2): never {
@@ -144,6 +162,44 @@ function frontmatterName(path: string): string | null {
     const message = error instanceof Error ? error.message : String(error);
     reportError(`${path}: invalid frontmatter (${message})`);
     return null;
+  }
+}
+
+function normalizeWhitespace(content: string): string {
+  return content.replace(/\s+/g, " ").trim();
+}
+
+function checkPrCopyInstructions(): void {
+  for (const path of prCopyInstructionPaths) {
+    if (!existsSync(path)) {
+      reportError(`${path}: missing PR copy instructions`);
+      continue;
+    }
+
+    const content = normalizeWhitespace(readFileSync(path, "utf8"));
+    for (const rule of prCopyHygieneRules) {
+      if (!content.includes(rule)) {
+        reportError(`${path}: missing PR copy hygiene rule '${rule}'`);
+      }
+    }
+  }
+
+  const skillPath = "skills/commit-push-pr/SKILL.md";
+  const codexConfigPath = "codex/config.toml";
+  if (!existsSync(skillPath) || !existsSync(codexConfigPath)) {
+    return;
+  }
+
+  const skillBody = normalizeWhitespace(
+    matter(readFileSync(skillPath, "utf8")).content,
+  );
+  const codexConfig = normalizeWhitespace(
+    readFileSync(codexConfigPath, "utf8"),
+  );
+  if (!codexConfig.includes(skillBody)) {
+    reportError(
+      `${codexConfigPath}: git-pr-instructions must mirror ${skillPath}`,
+    );
   }
 }
 
@@ -471,6 +527,7 @@ export function checkAgentHarness(args: string[] = []): number {
     process.chdir(root);
     checkSkillNames();
     checkPluginVersions();
+    checkPrCopyInstructions();
     checkThirdpartySkills();
   } finally {
     process.chdir(previousCwd);

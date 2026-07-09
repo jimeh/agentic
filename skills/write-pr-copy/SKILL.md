@@ -98,10 +98,20 @@ Produce PR copy only.
 - If the reason is still unknown, omit speculative context and stick to the
   confirmed scope of the changes
 - Cover the branch as a coherent change, not a commit log
-- Include testing notes only when they are supported by local evidence. Mention
-  commands only when they were actually run locally and the result is useful
-  context for reviewers.
-- If testing is unknown or not run, say so plainly
+- Never include machine-local details in a PR title or body: absolute local
+  filesystem paths, usernames, home directories, host-specific locations, or
+  similar local-only context.
+- Include a Testing section only when actual validation results provide useful
+  context to reviewers. Mention commands only when they were actually run and
+  their results are meaningful; keep Testing notes distinct from Manual QA.
+- For docs-only or content-only changes, omit Testing when it would merely list
+  generic lint, format, test, or CI-equivalent commands, unless the selected PR
+  template requires the section.
+- When useful validation involved a machine-local path, rewrite the note with a
+  repository-relative command or path, or concise prose; never copy the raw
+  local invocation.
+- If the selected template requires a testing status and testing is unknown or
+  not run, say so plainly
 - Note important assumptions when the diff or base branch leaves room for doubt
 - Do not mention template status in generated PR copy; it is internal workflow
   state, not reviewer context

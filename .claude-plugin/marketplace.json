@@ -18,7 +18,7 @@
     {
       "name": "git-commands",
       "description": "Git workflow slash commands: commit, push, PR, rebase, and branch cleanup",
-      "version": "0.2.1",
+      "version": "0.2.2",
       "author": {
         "name": "jimeh"
       },

@@ -120,9 +120,11 @@ on success. TypeScript tests live beside package implementation files as
 Agent harness checks live in `packages/agent-config` and run as part of
 `mise run lint`. They verify that skill frontmatter names are slug-safe and
 match their directories, vendored third-party skill locks match the checked-in
-content, and Claude plugin versions match the marketplace. Rendered global rule
-drift is checked by `mise run rules:check`, which also runs as part of
-`mise run lint`.
+content, and Claude plugin versions match the marketplace. They also keep the
+PR-copy hygiene rules aligned across the authoritative `commit-push-pr` skill,
+the related PR-copy skill and Claude command, and the embedded Codex PR
+instructions. Rendered global rule drift is checked by `mise run rules:check`,
+which also runs as part of `mise run lint`.
 
 ## Plugin Versioning
 
