@@ -107,11 +107,11 @@ Produce PR copy only.
 - For docs-only or content-only changes, omit Testing when it would merely list
   generic lint, format, test, or CI-equivalent commands, unless the selected PR
   template requires the section.
+- If the selected PR template requires a Testing section and validation was not
+  run or is unknown, state that plainly without inventing commands or results.
 - When useful validation involved a machine-local path, rewrite the note with a
   repository-relative command or path, or concise prose; never copy the raw
   local invocation.
-- If the selected template requires a testing status and testing is unknown or
-  not run, say so plainly
 - Note important assumptions when the diff or base branch leaves room for doubt
 - Do not mention template status in generated PR copy; it is internal workflow
   state, not reviewer context

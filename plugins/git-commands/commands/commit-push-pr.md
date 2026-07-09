@@ -80,6 +80,9 @@ Based on the above changes:
    - For docs-only or content-only changes, omit Testing when it would merely
      list generic lint, format, test, or CI-equivalent commands, unless the
      selected PR template requires the section.
+   - If the selected PR template requires a Testing section and validation was
+     not run or is unknown, state that plainly without inventing commands or
+     results.
    - When useful validation involved a machine-local path, rewrite the note with
      a repository-relative command or path, or concise prose; never copy the raw
      local invocation.

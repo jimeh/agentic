@@ -67,6 +67,9 @@ const prCopyHygieneRules = [
   "For docs-only or content-only changes, omit Testing when it would merely " +
     "list generic lint, format, test, or CI-equivalent commands",
   "unless the selected PR template requires the section",
+  "If the selected PR template requires a Testing section and validation " +
+    "was not run or is unknown, state that plainly without inventing " +
+    "commands or results",
   "rewrite the note with a repository-relative command or path, or concise " +
     "prose; never copy the raw local invocation",
 ];
@@ -169,6 +172,29 @@ function normalizeWhitespace(content: string): string {
   return content.replace(/\s+/g, " ").trim();
 }
 
+/** Extract normalized git PR instructions from the tracked Codex TOML. */
+export function extractGitPrInstructions(content: string): string | null {
+  const assignment = /^git-pr-instructions[ \t]*=[ \t]*'''/m.exec(content);
+  if (!assignment) {
+    return null;
+  }
+
+  let valueStart = assignment.index + assignment[0].length;
+  if (content.startsWith("\r\n", valueStart)) {
+    valueStart += 2;
+  } else if (content.startsWith("\n", valueStart)) {
+    valueStart += 1;
+  }
+
+  const remaining = content.slice(valueStart);
+  const closingDelimiter = /^'''[ \t]*(?:#.*)?\r?$/m.exec(remaining);
+  if (!closingDelimiter) {
+    return null;
+  }
+
+  return normalizeWhitespace(remaining.slice(0, closingDelimiter.index));
+}
+
 function checkPrCopyInstructions(): void {
   for (const path of prCopyInstructionPaths) {
     if (!existsSync(path)) {
@@ -193,10 +219,10 @@ function checkPrCopyInstructions(): void {
   const skillBody = normalizeWhitespace(
     matter(readFileSync(skillPath, "utf8")).content,
   );
-  const codexConfig = normalizeWhitespace(
+  const gitPrInstructions = extractGitPrInstructions(
     readFileSync(codexConfigPath, "utf8"),
   );
-  if (!codexConfig.includes(skillBody)) {
+  if (gitPrInstructions !== skillBody) {
     reportError(
       `${codexConfigPath}: git-pr-instructions must mirror ${skillPath}`,
     );
