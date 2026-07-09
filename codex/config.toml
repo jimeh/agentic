@@ -1,11 +1,14 @@
 #:schema https://developers.openai.com/codex/config-schema.json
 
-model = "gpt-5.5"
+model = "gpt-5.6-sol"
 model_reasoning_effort = "high"
 personality = "pragmatic"
 suppress_unstable_features_warning = true
 web_search = "live"
 approvals_reviewer = "user"
+service_tier = "default"
+approval_policy = "never"
+sandbox_mode = "danger-full-access"
 
 # Leave room for native compaction near the 272–273k context window.
 # Formula: 273000 - (tool_output_token_limit + 15000)
@@ -54,9 +57,6 @@ enabled = true
 [plugins."convex@openai-curated"]
 enabled = true
 
-[plugins."browser@openai-bundled"]
-enabled = true
-
 [plugins."chrome@openai-bundled"]
 enabled = true
 
@@ -66,7 +66,19 @@ enabled = true
 [plugins."computer-use@openai-bundled"]
 enabled = true
 
+[plugins."pdf@openai-primary-runtime"]
+enabled = true
+
 [plugins."build-web-apps@openai-curated"]
+enabled = true
+
+[plugins."template-creator@openai-primary-runtime"]
+enabled = true
+
+[plugins."visualize@openai-bundled"]
+enabled = true
+
+[plugins."browser@openai-bundled"]
 enabled = true
 
 [[skills.config]]
@@ -81,6 +93,12 @@ enabled = false
 [mcp_servers.deepwiki]
 enabled = true
 url = "https://mcp.deepwiki.com/mcp"
+
+[mcp_servers.deepwiki.tools.read_wiki_structure]
+approval_mode = "approve"
+
+[mcp_servers.deepwiki.tools.ask_question]
+approval_mode = "approve"
 
 [mcp_servers.gitnexus]
 enabled = true
@@ -336,9 +354,13 @@ Before creating the PR, verify:
 - Treat `.gitignore` and other git exclude rules as authoritative for default
   commit scope
 '''
-conversationDetailMode = "STEPS_EXECUTION"
+conversationDetailMode = "STEPS_COMMANDS"
 preventSleepWhileRunning = true
 selected-avatar-id = "rocky"
+dictationDictionary = ["Hucode"]
+avatar-overlay-mascot-width-px = 80
+dock-icon-preference = "app-default"
+show-context-window-usage = true
 
 [desktop.appearanceLightChromeTheme]
 accent = "#339cff"
