@@ -1,0 +1,7 @@
+interface:
+  display_name: "Ship Feature PR"
+  short_description: "Plan, implement, and dual-review a feature PR"
+  default_prompt:
+    "Use $ship-feature-pr to take this feature end to end: plan it, implement it
+    in an isolated worktree, open a draft PR, run one Codex and one Claude
+    reviewer, reconcile the findings, and mark the PR ready."
