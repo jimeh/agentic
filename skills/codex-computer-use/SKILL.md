@@ -1,15 +1,15 @@
 ---
 name: codex-computer-use
 description: >-
-  Ask Codex CLI / gpt-5.5 to perform local computer-use verification that needs
-  GUI interaction, browser automation, screenshots, simulators, app launching,
-  installation checks, runtime inspection, native app workflows, complex
-  websites, or repeated desktop steps. Use when Claude needs observations from
-  a running application, wants to verify UI behavior, reproduce a UI bug,
-  collect screenshots, inspect simulator/browser/device state, or confirm a
-  user flow. Do not use for writing code, architecture, planning, API design,
-  code review, implementation, documentation, static analysis, or answers that
-  can be produced from existing context.
+  Ask Codex CLI / gpt-5.6-sol to perform local computer-use verification that
+  needs GUI interaction, browser automation, screenshots, simulators, app
+  launching, installation checks, runtime inspection, native app workflows,
+  complex websites, or repeated desktop steps. Use when Claude needs
+  observations from a running application, wants to verify UI behavior,
+  reproduce a UI bug, collect screenshots, inspect simulator/browser/device
+  state, or confirm a user flow. Do not use for writing code, architecture,
+  planning, API design, code review, implementation, documentation, static
+  analysis, or answers that can be produced from existing context.
 ---
 
 # Codex Computer Use

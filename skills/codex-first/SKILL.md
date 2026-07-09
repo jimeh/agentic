@@ -1,13 +1,13 @@
 ---
 name: codex-first
 description: >-
-  Opt-in session mode that makes Codex CLI / gpt-5.5 the default implementer
-  while Claude specs, reviews, and verifies. Use only when the user explicitly
-  opts in: invokes codex-first, asks to work codex-first, says Codex should do
-  the implementation or coding work by default, or asks to delegate the
-  hands-on work of a session or task to Codex. Do not trigger on ordinary
-  implementation requests that never mention Codex-led work; without this
-  opt-in the normal delegation rules decide case by case.
+  Opt-in session mode that makes Codex CLI / gpt-5.6-sol the default
+  implementer while Claude specs, reviews, and verifies. Use only when the
+  user explicitly opts in: invokes codex-first, asks to work codex-first, says
+  Codex should do the implementation or coding work by default, or asks to
+  delegate the hands-on work of a session or task to Codex. Do not trigger on
+  ordinary implementation requests that never mention Codex-led work; without
+  this opt-in the normal delegation rules decide case by case.
 ---
 
 # Codex First
