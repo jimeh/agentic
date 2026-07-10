@@ -1,5 +1,6 @@
 interface:
   display_name: "Claude Review"
-  short_description: "Review code changes with Claude"
+  short_description: "Independent Claude review of code changes"
   default_prompt:
-    "Use $claude-review to have Claude review the current changes."
+    "Use $claude-review to get an independent Claude review of the current
+    changes, verify its findings against the code, and report the result."

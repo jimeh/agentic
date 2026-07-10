@@ -40,11 +40,14 @@ for those actions.
 4. Give a clean-context planning agent the request, worktree, repository
    instructions, and base. Require it to inspect the actual code without edits
    and return scope, acceptance criteria, implementation steps, tests, risks,
-   and unresolved decisions.
+   explicit non-goals, and unresolved decisions.
 5. Verify the plan and present it for user approval. Skip this pause only when
    the user explicitly requested uninterrupted or autopilot execution and the
    plan contains no unresolved product, API, architecture, security, or UX
-   decision. Stop for any material decision instead of guessing.
+   decision. Stop for any material decision instead of guessing. Freeze the
+   approved result into a temporary implementation spec containing the
+   objective, constraints, intended files, non-goals, acceptance criteria, and
+   exact verification commands. Give every downstream role the same spec.
 6. Give the approved plan to one clean-context implementation agent. Make it the
    sole writer in the feature worktree; require focused verification and forbid
    commits, pushes, PR operations, and unrelated external mutations. Keep the
@@ -65,29 +68,34 @@ for those actions.
    multiple templates are equally applicable, ask the user which to use.
    Preserve required headings and checklists; when none exists, draft a concise
    custom body. Commit only the intended feature changes using repository
-   conventions, push the feature branch, and open a PR against the selected
-   base. Describe the full branch diff, lead with purpose, and report only
-   checks actually run.
+   conventions, push the feature branch, and open a draft PR against the
+   selected base. Describe the full branch diff, lead with purpose, and report
+   only checks actually run. Keep it draft until every delivery gate passes.
 9. Record the pushed HEAD. Start two concurrent, independent, read-only reviews
    of that exact commit: one performed by Claude and one by Codex. Give both the
-   approved requirements and the same review target. Require each report to name
-   its reviewer identity and reviewed SHA and to lead with severity, file and
-   line, concrete failure mode, and fix direction. Do not name an invocation
-   mechanism or prescribe platform-specific agent tooling.
+   frozen implementation spec and the same review target. Ask both to check
+   requirement mismatches, correctness, edge cases, missing or weak tests,
+   security issues, and unintended behavior outside the spec. Require each
+   report to name its reviewer identity and reviewed SHA and to lead with
+   severity, file and line, concrete failure mode, and fix direction. Do not
+   name an invocation mechanism or prescribe platform-specific agent tooling.
 10. Wait up to 30 minutes per reviewer unless the user sets another deadline,
     polling without treating silence as failure. On a plausibly transient
     failure or timeout, retry the missing review at most once using the same
     reviewer identity and SHA. Then stop through the blocker report. Never
     silently replace a missing Claude or Codex reviewer with another reviewer
     from the available family. Treat a report for a different SHA as stale.
-11. Send validated actionable findings to the implementation agent. Re-run all
-    affected checks, commit and push corrections, then obtain fresh concurrent
-    Claude and Codex reviews of the new pushed HEAD. Allow at most three
-    complete dual-review rounds, including the initial round. Every correction
-    push, including one triggered by CI, consumes the next complete dual-review
-    round. Never push a correction unless another round remains; do not create a
-    fourth review round. Stop with a concrete blocker if issues remain, the same
-    failure class repeats, or scope expands beyond the approved plan.
+11. Verify every finding against the code. Record dismissed findings with a
+    one-line reason. Send validated actionable findings to the implementation
+    agent and have it edit the worktree. The coordinator then inspects the full
+    diff, runs affected check-only verification, commits and pushes corrections,
+    and obtains fresh concurrent Claude and Codex reviews of the new pushed
+    HEAD. Allow at most three complete dual-review rounds, including the initial
+    round. Every correction push, including one triggered by CI, consumes the
+    next complete dual-review round. Never push a correction unless another
+    round remains; do not create a fourth review round. Stop with a concrete
+    blocker if issues remain, the same failure class repeats, or scope expands
+    beyond the approved plan.
 12. Monitor GitHub CI for the current pushed HEAD. Route actionable CI failures
     through the same correction, verification, push, and re-review process.
     Unless the user sets another deadline, wait at most 60 minutes and 30 status
@@ -98,6 +106,8 @@ for those actions.
     or commit change invalidates that gate. Finish only when the gate passes,
     both reviewer identities report no validated blocking findings on the same
     current pushed HEAD, and required GitHub checks for that HEAD are green.
+    Then mark the draft PR ready and verify the transition. If residual findings
+    need a user decision, leave it draft and report why.
 
 Do not wait indefinitely for human or bot PR comments unless the user also
 requested ongoing PR maintenance.
@@ -132,4 +142,6 @@ checks, elapsed deadline or attempt budget, blocker, and exact command or action
 that resumes from the preserved state.
 
 On success, report the PR URL, base and branch, final pushed SHA, commits,
-verification run, both reviewer outcomes, CI result, and cleanup performed.
+verification run, both reviewer outcomes, dismissed findings and reasons, any
+deviations from the approved spec, CI result, ready state, and cleanup
+performed.

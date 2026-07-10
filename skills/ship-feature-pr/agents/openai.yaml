@@ -1,6 +1,7 @@
 interface:
   display_name: "Ship Feature PR"
-  short_description: "Plan, implement, review, and open a feature PR"
+  short_description: "Plan, implement, and dual-review a feature PR"
   default_prompt:
-    "Use $ship-feature-pr to take a feature from idea through a reviewed pull
-    request."
+    "Use $ship-feature-pr to plan and implement this feature in an isolated
+    worktree, open a draft PR, coordinate Claude and Codex review, and deliver
+    it ready."

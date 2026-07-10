@@ -33,10 +33,11 @@ requests one.
 
 1. Identify the exact target: uncommitted changes, a base branch, commit SHA, PR
    checkout, or specific files.
-2. Verify the repository root and gather the target into temporary, read-only
-   artifacts. Include status, the exact diff or file list, recent history, and
-   relevant requirements. Account for every untracked path, including safe,
-   bounded text content and an explicit reason for every exclusion.
+2. Verify the repository root and classify the repository trust boundary before
+   copying content. For a trusted repository, gather the target into temporary,
+   read-only artifacts. For an untrusted change, secret-bearing repository, or
+   uncertain classification, build an allowlisted sanitized snapshot outside the
+   checkout and never expose the source repository to Claude.
 3. Write a concise review prompt naming the repository, target, base or commit,
    artifact paths, requirements, and risky areas.
 4. Choose a research trust boundary. Use combined repository and web access only
@@ -46,8 +47,9 @@ requests one.
    interactive permission prompts. Disable auto-memory and ordinary lifecycle
    hooks. Keep Bash, edits, external mutations, and nested delegation
    unavailable.
-6. Wait for completion. A quiet process is normal; poll it rather than assuming
-   failure, but honor an explicit timeout.
+6. Wait for completion. A quiet process is normal; poll process liveness rather
+   than assuming failure. Enforce `CLAUDE_REVIEW_TIMEOUT_SECONDS`, terminate the
+   process at the deadline, and retain timeout diagnostics.
 7. Read the report and diagnostics. Surface CLI, authentication, permission,
    timeout, and vague-output failures instead of silently substituting another
    reviewer.
@@ -55,16 +57,23 @@ requests one.
 
 ## Prepare the Target
 
-Create artifacts outside the repository so the review cannot alter tracked
-state. Adapt the Git commands to the chosen scope:
+Set a private umask and create artifacts outside the repository so the review
+cannot alter tracked state or expose artifacts to other local users:
 
 ```bash
+umask 077
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 ARTIFACT_DIR="$(mktemp -d "${TMPDIR:-/tmp}/claude-review.XXXXXX")"
 PROMPT="$ARTIFACT_DIR/prompt.md"
 REPORT="$ARTIFACT_DIR/report.md"
 DIAGNOSTICS="$ARTIFACT_DIR/diagnostics.log"
+REVIEW_ROOT="$REPO_ROOT"
+```
 
+Only after classifying the repository as trusted, gather the normal source
+artifacts. Adapt the Git commands to the chosen scope:
+
+```bash
 (
   cd "$REPO_ROOT"
   git status --short > "$ARTIFACT_DIR/status.txt"
@@ -79,8 +88,8 @@ For a branch, commit, PR checkout, or file-only review, replace the diff command
 with the narrowest exact comparison. Store task requirements in a separate
 artifact when they are longer than a few lines. Do not include secrets.
 
-Build `untracked-manifest.md` from `untracked.txt`. Give every path one of these
-dispositions:
+For a trusted repository, build `untracked-manifest.md` from `untracked.txt`.
+Give every path one of these dispositions:
 
 - `included`: copy safe textual content into a numbered artifact, recording its
   source path, size, and artifact path;
@@ -92,27 +101,54 @@ dispositions:
 Use explicit bounds, such as 256 KiB per text file and 1 MiB total, and record
 the limits in the manifest. Adjust them when needed, but never silently truncate
 or omit a path. Treat an unreviewable file that materially affects the change as
-a review limitation or blocker. Tell Claude not to open source paths marked
-skipped, excluded, or inaccessible; the manifest is the authority for their
-disposition.
+a review limitation or blocker.
 
 Claude can use `Read`, `Glob`, and `Grep` to inspect cited source files after
 starting from the prepared diff. Bash is unnecessary for the common path.
+
+### Strict snapshot preparation
+
+For an untrusted diff or PR, a secret-bearing repository, or any uncertain
+classification, do not create a raw diff first and do not run Claude from
+`REPO_ROOT`. Instead:
+
+1. Enumerate changed and untracked paths without copying their contents.
+2. Classify every path as allowed or excluded before producing artifacts. Treat
+   secrets, binaries, oversized files, explicit exclusions, and inaccessible
+   paths as excluded. If an excluded path materially affects the review, stop or
+   report the limitation.
+3. Set `REVIEW_ROOT="$ARTIFACT_DIR/repository"` and assemble an allowlisted
+   snapshot there, preserving relative paths. Copy only approved changed files,
+   approved untracked files, and the minimum approved context files needed to
+   understand them. Never create a normal Git worktree because that would
+   populate all tracked files, including excluded secrets.
+4. Generate `changes.diff` only for approved paths. Redact private absolute
+   paths and other sensitive metadata. Build a manifest that accounts for every
+   changed and untracked path without copying excluded contents.
+5. Verify that neither the prompt, snapshot, diff, manifest, nor other artifacts
+   contain excluded content. Run Claude from `REVIEW_ROOT` and grant access only
+   to `REVIEW_ROOT` and the artifact directory, never `REPO_ROOT`.
+
+This snapshot is the access-control boundary. Prompt instructions alone are not
+an adequate substitute.
 
 ## Restrict Capabilities
 
 Use `--tools` to define the built-in review surface; `--allowedTools` alone does
 not remove capabilities inherited from settings. Keep mutation and delegation
-tools explicitly disallowed as defense in depth. Run from `REPO_ROOT` so source
-reads do not depend on the caller's working directory:
+tools explicitly disallowed as defense in depth. Set the timeout before launch
+and run from `REVIEW_ROOT` so strict reviews cannot reach the source checkout:
 
 The default invocation is local-only. Opt in to outbound research using the
 trusted-review variant in the next section only when it materially helps.
 
 ```bash
+CLAUDE_REVIEW_TIMEOUT_SECONDS="${CLAUDE_REVIEW_TIMEOUT_SECONDS:-1800}"
+CLAUDE_REVIEW_STARTED_AT="$(date +%s)"
+
 (
-  cd "$REPO_ROOT"
-  CLAUDE_CODE_DISABLE_AUTO_MEMORY=1 claude -p \
+  cd "$REVIEW_ROOT"
+  exec env CLAUDE_CODE_DISABLE_AUTO_MEMORY=1 claude -p \
     --permission-mode dontAsk \
     --no-session-persistence \
     --disable-slash-commands \
@@ -124,8 +160,38 @@ trusted-review variant in the next section only when it materially helps.
     --disallowedTools "Bash,Edit,Write,NotebookEdit,Task" \
     --add-dir "$ARTIFACT_DIR" \
     < "$PROMPT" > "$REPORT" 2> "$DIAGNOSTICS"
-)
+) &
+CLAUDE_REVIEW_PID=$!
+
+CLAUDE_REVIEW_TIMED_OUT=0
+while kill -0 "$CLAUDE_REVIEW_PID" 2>/dev/null; do
+  if [ "$(($(date +%s) - CLAUDE_REVIEW_STARTED_AT))" \
+    -ge "$CLAUDE_REVIEW_TIMEOUT_SECONDS" ]; then
+    CLAUDE_REVIEW_TIMED_OUT=1
+    kill "$CLAUDE_REVIEW_PID" 2>/dev/null || true
+    sleep 5
+    kill -KILL "$CLAUDE_REVIEW_PID" 2>/dev/null || true
+    break
+  fi
+  sleep 5
+done
+
+if wait "$CLAUDE_REVIEW_PID"; then
+  CLAUDE_REVIEW_STATUS=0
+else
+  CLAUDE_REVIEW_STATUS=$?
+fi
+
+if [ "$CLAUDE_REVIEW_TIMED_OUT" -eq 1 ]; then
+  printf 'Claude review timed out after %s seconds.\n' \
+    "$CLAUDE_REVIEW_TIMEOUT_SECONDS" >> "$DIAGNOSTICS"
+  CLAUDE_REVIEW_STATUS=124
+fi
 ```
+
+Treat any nonzero `CLAUDE_REVIEW_STATUS`, missing report, or unreadable report
+as a failed review. Surface the captured diagnostics rather than continuing as
+if Claude returned no findings.
 
 `CLAUDE_CODE_DISABLE_AUTO_MEMORY=1` prevents review context from being written
 to auto-memory. The settings override disables ordinary hooks. If diagnostics or
@@ -151,18 +217,17 @@ When possible, provide a minimal MCP config containing only research servers and
 use `--strict-mcp-config`; do not load a mixed read/write connector merely to
 use one read method.
 
-For an untrusted diff or PR, a secret-bearing repository, or any uncertain
-classification, do not combine repository reads with outbound tools:
+For a strict snapshot review, do not combine snapshot reads with outbound tools:
 
-1. Run a local-only repository review with `Read`, `Glob`, and `Grep`; omit
+1. Run a local-only snapshot review with `Read`, `Glob`, and `Grep`; omit
    `WebSearch`, `WebFetch`, and all MCP servers.
 2. Have the invoking agent turn unresolved documentation questions into generic,
    sanitized questions containing no repository-derived private material.
 3. Run a separate web-only pass from a neutral temporary directory with only
    `WebSearch` and `WebFetch`. Give it the sanitized questions directly and no
    repository or artifact access.
-4. Feed the resulting public research artifact into a final local-only review or
-   synthesis pass. Keep outbound tools disabled in that pass.
+4. Feed the resulting public research artifact into a final local-only snapshot
+   review or synthesis pass. Keep outbound tools disabled in that pass.
 
 Apply the same hook, auto-memory, session-persistence, permission, mutation, and
 delegation restrictions to every pass.
@@ -228,6 +293,14 @@ In the final report:
   why it was not reviewed.
 - Do not imply Claude ran tests unless the report shows that it did.
 
+After consuming the report and diagnostics and retaining the findings in the
+orchestrator's state, remove `ARTIFACT_DIR` on success, failure, or timeout. Do
+not leave sanitized snapshots, diffs, prompts, or reports behind.
+
+```bash
+rm -rf -- "$ARTIFACT_DIR"
+```
+
 Do not retry a clean result automatically.
 
 ## Failure Handling
@@ -237,8 +310,9 @@ Do not retry a clean result automatically.
   capabilities, report the limitation instead of broadening authority silently.
 - If managed hooks remain active and cannot be disabled, report them as a
   residual limitation and block when the required review must be read-only.
-- If Claude is still quiet, keep polling until the configured timeout; then
-  report the timeout without looping blindly.
+- If Claude is still quiet, keep polling process liveness until
+  `CLAUDE_REVIEW_TIMEOUT_SECONDS`; then terminate it, report status 124 and the
+  captured diagnostics, and do not loop blindly.
 - If Claude returns vague findings, verify only plausible ones and discard the
   rest.
 - If Claude's report conflicts with the code, trust the code.

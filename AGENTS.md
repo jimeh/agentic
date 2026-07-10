@@ -52,7 +52,8 @@ mise run lint:workflows      # check GitHub Actions syntax/security
 
 `packages/agent-config` auto-discovers and symlinks skills:
 
-- **Skills**: any `skills/*/` dir with a `SKILL.md` → `~/.claude/skills/` and
+- **Ordinary first-party skills**: any `skills/*/` dir with a `SKILL.md` other
+  than directional `codex-*` and `claude-*` skills → `~/.claude/skills/` and
   `~/.agents/skills/`
 - **Vendored third-party skills**: any `thirdparty/skills/*/` dir with a
   `SKILL.md` → the same global skill targets
