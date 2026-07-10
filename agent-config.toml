@@ -20,17 +20,23 @@ staleSymlinkCleanup = [
   { sourceDir = "thirdparty/skills", targetDir = "~/.agents/skills" },
 ]
 
-# codex-* skills delegate work to the Codex CLI; keep them out of Codex's
-# own skill roots so the executor never loads the orchestrator's playbook.
+# First-party tool-prefixed skills delegate work to that tool. Keep each family
+# out of its own skill root so the executor never loads the orchestrator's
+# playbook. Vendored third-party skills remain shared below.
 [[skillSymlinks]]
 sourceRoot = "skills"
-exclude = ["codex-*"]
+exclude = ["codex-*", "claude-*"]
 targetRoots = ["~/.claude/skills", "~/.agents/skills"]
 
 [[skillSymlinks]]
 sourceRoot = "skills"
 only = ["codex-*"]
 targetRoots = ["~/.claude/skills"]
+
+[[skillSymlinks]]
+sourceRoot = "skills"
+only = ["claude-*"]
+targetRoots = ["~/.agents/skills"]
 
 [[skillSymlinks]]
 sourceRoot = "thirdparty/skills"

@@ -58,8 +58,10 @@ mise run lint:workflows      # check GitHub Actions syntax/security
   `SKILL.md` → the same global skill targets
 
 Skill symlink entries accept `only`/`exclude` glob lists to scope which skills
-an entry links. `codex-*` skills are linked into `~/.claude/skills/` only, so
-Codex never loads the skills that delegate work to it.
+an entry links. Directional first-party skills under `skills/` stay out of the
+executor's own skill root: `codex-*` links only into `~/.claude/skills/`, while
+`claude-*` links only into `~/.agents/skills/`. Other first-party skills and all
+vendored third-party skills link into both roots.
 
 To add a new skill, just create the directory — the installer picks it up
 automatically. Stale symlinks are cleaned up on each run, including links that

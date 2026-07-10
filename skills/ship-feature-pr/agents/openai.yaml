@@ -1,0 +1,6 @@
+interface:
+  display_name: "Ship Feature PR"
+  short_description: "Plan, implement, review, and open a feature PR"
+  default_prompt:
+    "Use $ship-feature-pr to take a feature from idea through a reviewed pull
+    request."
