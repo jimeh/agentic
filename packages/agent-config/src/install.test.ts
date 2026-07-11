@@ -294,7 +294,7 @@ test("surfaces claude CLI failures instead of reinstalling", () => {
 
 function createScopedSkillsRoot(): string {
   const root = createRoot();
-  for (const skill of ["plain-skill", "codex-thing"]) {
+  for (const skill of ["plain-skill", "codex-thing", "claude-thing"]) {
     mkdirSync(join(root, "skills", skill), { recursive: true });
     writeFileSync(join(root, "skills", skill, "SKILL.md"), `# ${skill}\n`);
   }
@@ -303,12 +303,15 @@ function createScopedSkillsRoot(): string {
     [
       "symlinks = []",
       "skillSymlinks = [",
-      '  { sourceRoot = "skills", exclude = ["codex-*"], targetRoots = [',
+      '  { sourceRoot = "skills", exclude = ["codex-*", "claude-*"], targetRoots = [',
       '    "~/.claude/skills",',
       '    "~/.agents/skills",',
       "  ] },",
       '  { sourceRoot = "skills", only = ["codex-*"], targetRoots = [',
       '    "~/.claude/skills",',
+      "  ] },",
+      '  { sourceRoot = "skills", only = ["claude-*"], targetRoots = [',
+      '    "~/.agents/skills",',
       "  ] },",
       "]",
       "staleSymlinkCleanup = [",
@@ -343,21 +346,34 @@ test("only/exclude globs scope skill symlinks per target root", () => {
   expect(existsSync(join(home, ".agents", "skills", "codex-thing"))).toBe(
     false,
   );
+  expect(readlinkSync(join(home, ".agents", "skills", "claude-thing"))).toBe(
+    join(root, "skills", "claude-thing"),
+  );
+  expect(existsSync(join(home, ".claude", "skills", "claude-thing"))).toBe(
+    false,
+  );
 });
 
 test("cleanup removes links scoped out of a target root", () => {
   const home = createHome();
   const root = createScopedSkillsRoot();
-  const stale = join(home, ".agents", "skills", "codex-thing");
+  const staleCodex = join(home, ".agents", "skills", "codex-thing");
+  const staleClaude = join(home, ".claude", "skills", "claude-thing");
   mkdirSync(join(home, ".agents", "skills"), { recursive: true });
-  symlinkSync(join(root, "skills", "codex-thing"), stale);
+  mkdirSync(join(home, ".claude", "skills"), { recursive: true });
+  symlinkSync(join(root, "skills", "codex-thing"), staleCodex);
+  symlinkSync(join(root, "skills", "claude-thing"), staleClaude);
 
   const result = run(home, ["--root", root]);
 
   expect(result.status).toBe(0);
-  expect(existsSync(stale)).toBe(false);
+  expect(existsSync(staleCodex)).toBe(false);
+  expect(existsSync(staleClaude)).toBe(false);
   expect(readlinkSync(join(home, ".claude", "skills", "codex-thing"))).toBe(
     join(root, "skills", "codex-thing"),
+  );
+  expect(readlinkSync(join(home, ".agents", "skills", "claude-thing"))).toBe(
+    join(root, "skills", "claude-thing"),
   );
 });
 
@@ -428,7 +444,7 @@ test("cleanup replaces links whose planned source moved roots", () => {
   );
 });
 
-test("repo config keeps codex skills out of ~/.agents/skills", () => {
+test("repo config routes directional reviewer skills to opposite roots", () => {
   const home = createHome();
 
   const result = run(home);
@@ -440,8 +456,17 @@ test("repo config keeps codex skills out of ~/.agents/skills", () => {
   expect(existsSync(join(home, ".agents", "skills", "codex-review"))).toBe(
     false,
   );
+  expect(readlinkSync(join(home, ".agents", "skills", "claude-review"))).toBe(
+    join(rootDir, "skills", "claude-review"),
+  );
+  expect(existsSync(join(home, ".claude", "skills", "claude-review"))).toBe(
+    false,
+  );
   expect(
     lstatSync(join(home, ".agents", "skills", "commit")).isSymbolicLink(),
+  ).toBe(true);
+  expect(
+    lstatSync(join(home, ".claude", "skills", "commit")).isSymbolicLink(),
   ).toBe(true);
 });
 

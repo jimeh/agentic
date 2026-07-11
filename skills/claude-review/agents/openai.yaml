@@ -1,0 +1,6 @@
+interface:
+  display_name: "Claude Review"
+  short_description: "Independent Claude review of a diff, branch, or commit"
+  default_prompt:
+    "Use $claude-review to get an independent Claude review of the current
+    changes, verify its findings against the code, and report them."
