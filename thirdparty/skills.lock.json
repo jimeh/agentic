@@ -11,6 +11,16 @@
       "contentHash": "sha256:bba7848e49d75fe079828eee1377fede5fd45ba2c00004905c21927dd15808df",
       "skillsCliVersion": null
     },
+    "airplan": {
+      "manifestSourceId": "airplan",
+      "sourceType": "git",
+      "sourceUrl": "https://github.com/jimeh/airplan.git",
+      "ref": "main",
+      "resolvedCommit": "648c9f0f6f0a134bc07d6868eba759d1657268b5",
+      "upstreamPath": "skills/airplan",
+      "contentHash": "sha256:9c13c156ed9b9169682488d550eec0ada514d6ea570ef6b63e4b4058d275831b",
+      "skillsCliVersion": null
+    },
     "frontend-design": {
       "manifestSourceId": "skills",
       "sourceType": "git",

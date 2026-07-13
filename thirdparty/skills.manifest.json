@@ -100,6 +100,18 @@
           "path": "skills/shadcn"
         }
       ]
+    },
+    {
+      "id": "airplan",
+      "type": "git",
+      "url": "https://github.com/jimeh/airplan.git",
+      "ref": "main",
+      "skills": [
+        {
+          "name": "airplan",
+          "path": "skills/airplan"
+        }
+      ]
     }
   ]
 }
