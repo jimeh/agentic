@@ -53,22 +53,15 @@ mise run lint:workflows      # check GitHub Actions syntax/security
 `packages/agent-config` auto-discovers and symlinks skills:
 
 - **Ordinary first-party skills**: any `skills/*/` dir with a `SKILL.md` other
-  than `codex-*` wrappers and directional `claude-*` skills →
-  `~/.claude/skills/` and `~/.agents/skills/`
+  than directional `codex-*` and `claude-*` skills → `~/.claude/skills/` and
+  `~/.agents/skills/`
 - **Vendored third-party skills**: any `thirdparty/skills/*/` dir with a
   `SKILL.md` → the same global skill targets
 
-Managed Claude subagents live under `claude/agents/` and are linked individually
-into `~/.claude/agents/`, allowing unrelated local agents to coexist. The `sol`
-and `terra` agents pin their corresponding gateway models while accepting
-role-specific instructions at invocation time.
-
 Skill symlink entries accept `only`/`exclude` glob lists to scope which skills
-an entry links. GPT models run directly in Claude Code, so `codex-*` wrapper
-skills are excluded from both skill roots while their sources remain available
-for reversible or manual use. `claude-*` skills are linked into
-`~/.agents/skills/` only, so Claude never loads skills that delegate work back
-to itself.
+an entry links. `codex-*` skills are linked into `~/.claude/skills/` only, and
+`claude-*` skills into `~/.agents/skills/` only, so neither executor loads the
+skills that delegate work to it.
 
 To add a new skill, just create the directory — the installer picks it up
 automatically. Stale symlinks are cleaned up on each run, including links that
@@ -200,6 +193,9 @@ not `>file`). See `.editorconfig` for shfmt flags.
 
 ## Discoveries
 
+- The `claude/agents` stale-symlink cleanup entry intentionally remains after
+  removing the managed Sol and Terra agents. It removes their legacy installed
+  links without touching unrelated local Claude agents.
 - The external `skill-creator` `quick_validate.py` helper requires `PyYAML`. If
   that dependency is missing locally, rely on manual frontmatter checks plus
   `mise run lint` for repo-local skill edits.

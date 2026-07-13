@@ -7,7 +7,8 @@ description: >-
   Codex should do the implementation or coding work by default, or asks to
   delegate the hands-on work of a session or task to Codex. Do not trigger on
   ordinary implementation requests that never mention Codex-led work; without
-  this opt-in the normal delegation rules decide case by case.
+  this opt-in Claude does the work directly unless another explicit delegation
+  request or workflow applies.
 ---
 
 # Codex First
@@ -80,8 +81,8 @@ and output shape. Spec quality decides success.
   rounds, take over.
 - The review gate still applies: Claude reviews Codex-authored diffs itself — do
   not send them back to `codex-review`, since same-model review is weak
-  independence. For substantial diffs, also get a fresh Claude subagent review;
-  the orchestrating session wrote the spec and is not fully neutral.
+  independence. Add another reviewer only when the user requests one or the
+  selected workflow explicitly requires one.
 
 ## Economics
 

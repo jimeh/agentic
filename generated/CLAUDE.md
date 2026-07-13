@@ -142,92 +142,108 @@ the workflow.
 - Plans must include testing strategy.
 - End each plan with unresolved questions, if any.
 
-## Delegation
+## Execution Mode
 
-- Act as an orchestrator: understand the goal, decompose, route work to the best
-  execution engine, then integrate and validate the results.
-- Delegate bounded tasks with clear scope, inputs, outputs, and acceptance
+- Do the work directly in the current Claude session by default.
+- Do not delegate, spawn subagents, launch workflows, or request independent
+  reviews unless the user explicitly asks for multi-agent execution, subagents,
+  or a workflow, or invokes a named skill whose documented workflow requires
+  them.
+- For ordinary single-agent work, do not apply the model routing table. The
+  current model owns investigation, implementation, verification, and review.
+- You may suggest multi-agent execution when it would materially help, but wait
+  for approval before starting it.
+
+## Opt-In Multi-Agent Execution
+
+Apply this section only after the user has opted into multi-agent execution or
+invoked a named skill whose documented workflow requires it.
+
+### Delegation
+
+- Decompose the goal, route bounded work, then integrate and validate the
+  results.
+- Give each delegated task clear scope, inputs, outputs, and acceptance
   criteria. Split work before delegating; one deliverable per agent.
-- Delegate when specification plus verification costs less than doing the work
-  directly. Never delegate final judgement.
+- Never delegate final judgement.
 - Do not let parallel implementation agents edit the same checkout. Use isolated
   worktrees.
 - Reconcile delegated results before acting on them.
+- Do not silently add agents or reviewers beyond the requested or documented
+  workflow scope.
 
-## Subagents vs Workflows
+### Delegation vs Workflows
 
-- Use subagents for one-off bounded work: investigation, implementation, review,
-  reproduction, data extraction, or a second opinion.
+- Within the requested scope, use the matching repo-owned skill for bounded
+  delegation such as investigation, implementation, review, reproduction, data
+  extraction, or computer use.
+- Use native Claude subagents only when the user explicitly requests them or a
+  selected workflow requires a separate Claude context. Do not use them to route
+  work to GPT or Codex models.
 - Use workflows for deterministic fan-out/fan-in within a task: parallel sweeps,
-  staged find-then-verify pipelines, migrations over a work list. Workflows
-  require explicit user opt-in; suggest one instead of launching it unprompted.
+  staged find-then-verify pipelines, or migrations over a work list.
 - For long-running delegated work, ask for a report file and poll for it.
 
-## Model Routing
+### Model Routing
 
 Cost is the effective cost to me, including actual spend and scarcity from usage
 limits. It does not include model-selection or invocation friction. Intelligence
 is how hard a problem the model handles unsupervised. Taste covers UI/UX, API
 design, code quality, and copy. Update the table when available models change.
 
-| Claude Code model | delegation agent | cost | intelligence | taste | default use                        |
-| ----------------- | ---------------- | ---: | -----------: | ----: | ---------------------------------- |
-| gpt-5.6-sol       | `sol`            |    8 |            9 |     7 | substantive execution              |
-| gpt-5.6-terra     | `terra`          |    5 |            8 |     7 | simple bounded execution           |
-| fable             | —                |   10 |            9 |     9 | planning, orchestration, judgement |
+| Model                   | execution route  | cost | intelligence | taste | role                               |
+| ----------------------- | ---------------- | ---: | -----------: | ----: | ---------------------------------- |
+| gpt-5.6-sol / Codex CLI | `codex-*` skills |    8 |            9 |     7 | substantive execution              |
+| fable-5                 | current Claude   |   10 |            9 |     9 | judgement, investigation, planning |
 
-- The delegation agent is the named subagent type to use without passing a
-  `model` parameter. Fable uses the built-in `model: fable` selection and does
-  not need a custom agent.
 - These are defaults, not limits. Judge output quality, not the price tag.
 - Cost is only a tie-breaker; for anything that ships, intelligence > taste >
   cost.
-- Use `gpt-5.6-sol` as the default hands-on worker for substantive
-  investigation, implementation, technical reasoning, debugging, and broad
-  evidence gathering.
-- Use `gpt-5.6-terra` for simple, bounded work or when the user asks for it
-  specifically.
-- Use `fable` for high-level planning, decomposition, architecture, API and UX
-  decisions, agent orchestration, synthesis, and final judgement.
-- Treat Fable as scarce. Keep direction, coordination, synthesis, and judgement
-  in Fable; delegate token-heavy investigation and implementation to `sol` or
-  `terra`.
+- Use `gpt-5.6-sol` through the matching `codex-*` skill for bounded
+  implementation, large read-only analysis, independent review, computer use,
+  and broad evidence gathering.
+- Use `fable-5` in the current Claude session for complex or ambiguous
+  investigation, debugging, root-cause analysis, high-level planning,
+  decomposition, architecture, API and UX decisions, agent orchestration,
+  synthesis, and final judgement.
 - Do not use Haiku.
-- Escalate without asking when the selected model's output is below the bar, or
-  early when ambiguity could cause wrong architecture, weak UX, or avoidable
-  rework.
-- Select the main model with `/model`. For delegated GPT work, use the named
-  `sol` and `terra` custom agents; their definitions pin the model while the
-  invocation prompt defines the role. Workflow workers accept full model IDs.
-- The Agent tool's per-invocation model parameter currently accepts only
-  `sonnet`, `opus`, `haiku`, or `fable`; omit it when invoking `sol` or `terra`.
+- If delegated output is below the bar, iterate through the selected skill or
+  take the work back into Claude. Ask before adding another worker beyond the
+  approved scope.
 
-## GPT Models in Claude Code
+### Delegation to Codex CLI
 
-- `gpt-5.6-sol` and `gpt-5.6-terra` are exposed directly through the configured
-  Claude Code gateway.
-- Route delegated GPT work through the named `sol` and `terra` agents or through
-  Workflow model selection. Do not use `codex-*` wrapper skills for routing.
-- Use the raw `codex` CLI only when the user explicitly asks for that separate
-  execution surface.
+- Reach Codex through the matching `codex-*` skill:
+  - `codex-analysis` for read-only analysis, investigation, extraction, and
+    broad evidence gathering.
+  - `codex-review` for independent review of Claude-authored work.
+  - `codex-implementation` for bounded, well-specified code changes.
+  - `codex-computer-use` for GUI and runtime observation or verification.
+- Use `codex-first` only when the user explicitly opts into Codex-led hands-on
+  work for the task or session.
+- Use the raw `codex` CLI only when no skill fits or the user explicitly asks
+  for it.
+- Do not route GPT or Codex work through Claude's Agent model parameter or the
+  `sol` and `terra` custom agents.
 - Implementation delegation requires isolation such as a separate worktree.
 
-## Browser and GUI Automation
+### Independent Review
 
-- Use `agent-browser` directly for browser interactions: open pages, click, fill
-  forms, capture screenshots, and exercise multi-step user journeys.
-- For desktop apps, simulators, or other non-browser GUI flows, use the direct
-  GUI tooling available in the current harness rather than `codex-*` skills.
-
-## Review Gate
-
-- Before presenting non-trivial implementation work as complete, get an
-  independent review of the diff. This gate is mandatory, not optional.
-- Sol- or Terra-authored diffs use a fresh Fable reviewer.
-- Fable-authored diffs use a fresh `sol` subagent invoked in plan mode with an
-  explicit review prompt.
+- Use an independent reviewer only when the user requests one or the selected
+  workflow explicitly requires one.
+- Review Claude-authored diffs through `codex-review`. Review Codex-authored
+  diffs directly in the current Claude session; do not send them back to Codex
+  for same-model review.
 - The reviewer must run in a separate context from the authoring agent.
   Cross-model review improves independence, but the orchestrator retains final
   judgement and reconciles the findings.
-- For substantial or high-risk diffs, add a second fresh reviewer when another
-  perspective would materially improve confidence.
+- Add a second reviewer only when the user requests one or the selected workflow
+  explicitly requires one.
+
+## Browser and GUI Automation
+
+- Use `agent-browser` directly for quick, small browser interactions such as
+  opening a page, clicking, filling a form, capturing a screenshot, or
+  extracting data.
+- Use `codex-computer-use` for complicated or long-running flows such as
+  multi-step user journeys, desktop apps, simulators, or repeated GUI steps.
