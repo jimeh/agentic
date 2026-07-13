@@ -7,6 +7,8 @@ symlinks = [
   { source = "claude/settings.json", target = "~/.claude/settings.json" },
   { source = "claude/keybindings.json", target = "~/.claude/keybindings.json" },
   { source = "claude/statusline.sh", target = "~/.claude/statusline.sh" },
+  { source = "claude/agents/sol.md", target = "~/.claude/agents/sol.md" },
+  { source = "claude/agents/terra.md", target = "~/.claude/agents/terra.md" },
   { source = "codex/config.toml", target = "~/.codex/config.toml" },
   { source = "codex/hooks.json", target = "~/.codex/hooks.json" },
   { source = "codex/pets", target = "~/.codex/pets" },
@@ -14,24 +16,20 @@ symlinks = [
 
 staleSymlinkCleanup = [
   { sourceDir = "claude/commands", targetDir = "~/.claude/commands" },
+  { sourceDir = "claude/agents", targetDir = "~/.claude/agents" },
   { sourceDir = "skills", targetDir = "~/.claude/skills" },
   { sourceDir = "skills", targetDir = "~/.agents/skills" },
   { sourceDir = "thirdparty/skills", targetDir = "~/.claude/skills" },
   { sourceDir = "thirdparty/skills", targetDir = "~/.agents/skills" },
 ]
 
-# codex-* skills delegate work to the Codex CLI and claude-* skills delegate
-# work to the Claude CLI; keep each family out of its executor's own skill
-# roots so the executor never loads the orchestrator's playbook.
+# Ordinary skills load in both executors. GPT models run directly in Claude
+# Code, so codex-* wrappers load in neither; claude-* skills remain available
+# only to non-Claude executors that delegate work to the Claude CLI.
 [[skillSymlinks]]
 sourceRoot = "skills"
 exclude = ["codex-*", "claude-*"]
 targetRoots = ["~/.claude/skills", "~/.agents/skills"]
-
-[[skillSymlinks]]
-sourceRoot = "skills"
-only = ["codex-*"]
-targetRoots = ["~/.claude/skills"]
 
 [[skillSymlinks]]
 sourceRoot = "skills"

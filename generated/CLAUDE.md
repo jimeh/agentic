@@ -165,65 +165,69 @@ the workflow.
 
 ## Model Routing
 
-Cost is what I actually pay, not list price. Intelligence is how hard a problem
-the model handles unsupervised. Taste covers UI/UX, API design, code quality,
-and copy. Update the table when available models change.
+Cost is the effective cost to me, including actual spend and scarcity from usage
+limits. It does not include model-selection or invocation friction. Intelligence
+is how hard a problem the model handles unsupervised. Taste covers UI/UX, API
+design, code quality, and copy. Update the table when available models change.
 
-| model       | cost | intelligence | taste | default use                 |
-| ----------- | ---: | -----------: | ----: | --------------------------- |
-| gpt-5.6-sol |    9 |            8 |     5 | bulk work, logs, specs      |
-| sonnet-5    |    6 |            5 |     7 | thin wrappers, routine work |
-| opus-4.8    |    4 |            8 |     8 | review, architecture        |
-| fable-5     |    2 |            9 |     9 | UX, APIs, copy, judgement   |
+| Claude Code model | delegation agent | cost | intelligence | taste | default use                        |
+| ----------------- | ---------------- | ---: | -----------: | ----: | ---------------------------------- |
+| gpt-5.6-sol       | `sol`            |    8 |            9 |     7 | substantive execution              |
+| gpt-5.6-terra     | `terra`          |    5 |            8 |     7 | simple bounded execution           |
+| fable             | —                |   10 |            9 |     9 | planning, orchestration, judgement |
 
+- The delegation agent is the named subagent type to use without passing a
+  `model` parameter. Fable uses the built-in `model: fable` selection and does
+  not need a custom agent.
 - These are defaults, not limits. Judge output quality, not the price tag.
 - Cost is only a tie-breaker; for anything that ships, intelligence > taste >
   cost.
-- Bulk, mechanical, token-heavy, or clear-spec work goes to gpt-5.6-sol / Codex.
-  Spend cheap tokens gathering evidence before expensive judgement.
-- User-facing work needs taste >= 7: UI, UX, copy, API shape, naming, product
-  decisions, and final polish.
-- Reviews of plans or implementations use fable-5 or opus-4.8; add gpt-5.6-sol /
-  Codex as an extra independent perspective when useful.
+- Use `gpt-5.6-sol` as the default hands-on worker for substantive
+  investigation, implementation, technical reasoning, debugging, and broad
+  evidence gathering.
+- Use `gpt-5.6-terra` for simple, bounded work or when the user asks for it
+  specifically.
+- Use `fable` for high-level planning, decomposition, architecture, API and UX
+  decisions, agent orchestration, synthesis, and final judgement.
+- Treat Fable as scarce. Keep direction, coordination, synthesis, and judgement
+  in Fable; delegate token-heavy investigation and implementation to `sol` or
+  `terra`.
 - Do not use Haiku.
-- Escalate to a smarter model without asking when a cheaper model's output is
-  below the bar, or early when ambiguity could cause wrong architecture, weak
-  UX, or avoidable rework.
-- Claude models run via the Agent/Workflow model parameter.
+- Escalate without asking when the selected model's output is below the bar, or
+  early when ambiguity could cause wrong architecture, weak UX, or avoidable
+  rework.
+- Select the main model with `/model`. For delegated GPT work, use the named
+  `sol` and `terra` custom agents; their definitions pin the model while the
+  invocation prompt defines the role. Workflow workers accept full model IDs.
+- The Agent tool's per-invocation model parameter currently accepts only
+  `sonnet`, `opus`, `haiku`, or `fable`; omit it when invoking `sol` or `terra`.
 
-## Delegation to Codex / GPT-5.6-Sol
+## GPT Models in Claude Code
 
-- Reach Codex through the codex-\* skills; pick the matching skill
-  automatically:
-  - `codex-analysis` — read-only analysis over large context (logs, PDFs, specs,
-    broad searches).
-  - `codex-review` — independent review of a diff, branch, or commit.
-  - `codex-implementation` — bounded, well-specified code changes.
-  - `codex-computer-use` — GUI/runtime observation and verification.
-- Raw `codex` CLI is a fallback for read-only investigation when no skill fits,
-  or when the user explicitly asks.
-- When the user invokes the `codex-first` skill or asks for Codex to lead the
-  hands-on implementation work, Codex becomes the default implementer for the
-  session per that skill's routing. A one-off Codex request (a single review,
-  analysis, or task) is not an opt-in. Never adopt that posture uninvited.
-- Label wrapper agents with a `codex:` or `gpt-5.6-sol:` prefix so the real
-  worker is visible.
+- `gpt-5.6-sol` and `gpt-5.6-terra` are exposed directly through the configured
+  Claude Code gateway.
+- Route delegated GPT work through the named `sol` and `terra` agents or through
+  Workflow model selection. Do not use `codex-*` wrapper skills for routing.
+- Use the raw `codex` CLI only when the user explicitly asks for that separate
+  execution surface.
 - Implementation delegation requires isolation such as a separate worktree.
 
 ## Browser and GUI Automation
 
-- Use `agent-browser` directly for quick, small page interactions: open a page,
-  click, fill a form, grab a screenshot or some data.
-- Use `codex-computer-use` for complicated or long-running flows: multi-step
-  user journeys, desktop apps, simulators, or repeated GUI steps.
+- Use `agent-browser` directly for browser interactions: open pages, click, fill
+  forms, capture screenshots, and exercise multi-step user journeys.
+- For desktop apps, simulators, or other non-browser GUI flows, use the direct
+  GUI tooling available in the current harness rather than `codex-*` skills.
 
 ## Review Gate
 
 - Before presenting non-trivial implementation work as complete, get an
   independent review of the diff. This gate is mandatory, not optional.
-- Claude-authored diffs: review via `codex-review`, or a fresh subagent when
-  Codex is unavailable.
-- Codex-authored diffs: Claude reviews the diff itself — same-model review is
-  weak independence, so do not send them to `codex-review`. For substantial
-  diffs, also get a fresh Claude subagent review, since the orchestrating
-  session wrote the spec and is not fully neutral.
+- Sol- or Terra-authored diffs use a fresh Fable reviewer.
+- Fable-authored diffs use a fresh `sol` subagent invoked in plan mode with an
+  explicit review prompt.
+- The reviewer must run in a separate context from the authoring agent.
+  Cross-model review improves independence, but the orchestrator retains final
+  judgement and reconciles the findings.
+- For substantial or high-risk diffs, add a second fresh reviewer when another
+  perspective would materially improve confidence.

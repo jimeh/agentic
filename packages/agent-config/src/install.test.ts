@@ -150,6 +150,20 @@ test("installs generated global rule symlinks", () => {
   );
 });
 
+test("installs managed Claude agent symlinks", () => {
+  const home = createHome();
+
+  const result = run(home);
+
+  expect(result.status).toBe(0);
+  expect(readlinkSync(join(home, ".claude", "agents", "sol.md"))).toBe(
+    join(rootDir, "claude", "agents", "sol.md"),
+  );
+  expect(readlinkSync(join(home, ".claude", "agents", "terra.md"))).toBe(
+    join(rootDir, "claude", "agents", "terra.md"),
+  );
+});
+
 test("relinks legacy RULES.md symlinks without force", () => {
   const home = createHome();
   mkdirSync(join(home, ".claude"), { recursive: true });
@@ -444,15 +458,16 @@ test("cleanup replaces links whose planned source moved roots", () => {
   );
 });
 
-test("repo config routes directional reviewer skills to opposite roots", () => {
+test("repo config excludes codex wrappers from skill roots", () => {
   const home = createHome();
+  const staleCodexReview = join(home, ".claude", "skills", "codex-review");
+  mkdirSync(join(home, ".claude", "skills"), { recursive: true });
+  symlinkSync(join(rootDir, "skills", "codex-review"), staleCodexReview);
 
   const result = run(home);
 
   expect(result.status).toBe(0);
-  expect(readlinkSync(join(home, ".claude", "skills", "codex-review"))).toBe(
-    join(rootDir, "skills", "codex-review"),
-  );
+  expect(existsSync(staleCodexReview)).toBe(false);
   expect(existsSync(join(home, ".agents", "skills", "codex-review"))).toBe(
     false,
   );
