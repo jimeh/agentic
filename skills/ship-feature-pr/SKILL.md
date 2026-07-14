@@ -2,8 +2,9 @@
 name: ship-feature-pr
 description: >-
   Orchestrate a feature end to end into a reviewed pull request: gather the
-  feature and base branch, plan, implement, commit and push, open a draft PR,
-  run one Codex and one Claude reviewer in parallel,
+  feature and base branch, reuse an existing plan or create one, implement,
+  commit and push, open a draft PR, run one Codex and one Claude reviewer in
+  parallel,
   reconcile their findings, wait for CI, and mark the PR ready. Use when the
   user asks to
   ship a feature as a PR, run the feature PR pipeline, take a change end to
@@ -31,14 +32,15 @@ skill; otherwise use the inline CLI shapes at the end of this document.
 
 1. Intake — feature description and base branch.
 2. Branch — feature branch off an updated base.
-3. Plan — planning pass, sanity check, user approval.
+3. Plan — reuse or create a plan, sanity check, user approval.
 4. Implement — usually one fresh implementer in an isolated worktree.
 5. Commit, push, draft PR.
 6. Dual review — one Codex reviewer and one Claude reviewer, in parallel.
 7. Reconcile and fix — verify findings, fix, re-review the delta.
 8. Deliver — wait for CI, mark the PR ready, and report.
 
-Do not skip phases or reorder the gates. Details below.
+Do not skip phases or reorder the gates. Reusing an existing plan completes the
+planning pass; it does not skip phase 3. Details below.
 
 ## 1. Intake
 
@@ -52,9 +54,16 @@ base branch to the repository's default branch
 (`gh repo view --json defaultBranchRef -q .defaultBranchRef.name`, or
 `git remote show origin`) and state that assumption instead of asking.
 
-Also settle autonomy: plan approval (phase 3) is on by default. If the user said
-to run without checkpoints ("just ship it", "don't ask, go"), skip the approval
-stop and note that in the final report.
+Before planning, inspect the conversation and any referenced plan document for
+the latest plan that applies to the requested feature. Record whether it is
+settled, provisional, stale, or has unresolved choices. A plan is settled when
+the user approved it explicitly, or when the user invokes this skill after a
+completed planning discussion with no unresolved choices. Treat a settled plan
+as approved and proceed without another approval stop.
+
+Otherwise, plan approval (phase 3) is on by default. If the user said to run
+without checkpoints ("just ship it", "don't ask, go"), skip the approval stop
+and note that in the final report.
 
 Then preflight before any work: verify `gh` authentication, push access to the
 remote, that the base ref exists on the remote, and that both reviewer engines
@@ -71,21 +80,32 @@ requirement as a blocker now instead of discovering it after implementation.
 
 ## 3. Plan
 
-For non-trivial features, delegate planning to a fresh instance (a planning
-subagent, or a headless CLI run of either engine) so the plan is grounded in a
-clean read of the code. Plan directly only when the change is small and the
-approach is obvious.
+Start with the plan found during intake:
+
+- If it still applies to the feature, reuse it. Do not delegate a fresh planning
+  pass merely to restate or independently validate it. Ask the user directly to
+  settle any unresolved product or scope choices.
+- If the existing plan has stale, contradictory, or incomplete code-grounded
+  assumptions, resolve them directly when straightforward. Delegate a fresh
+  planning pass only when doing so requires material replanning.
+- If no applicable plan exists, delegate planning for a non-trivial feature to a
+  fresh instance (a planning subagent, or a headless CLI run of either engine)
+  so the plan is grounded in a clean read of the code.
+- Plan directly when the change is small and the approach is obvious.
 
 The plan must cover: approach, files to touch, testing strategy, risks, and
-explicit non-goals.
+explicit non-goals. Fill minor omissions directly while freezing the
+implementation spec; minor omissions do not justify another planning pass.
 
 Then, as orchestrator:
 
-1. Sanity-check the plan against the actual code. Reject plans that name files
-   or APIs that do not exist.
-2. Present a condensed plan to the user for approval, unless autonomy was
-   settled at intake. Revise on feedback; do not start implementing a plan the
-   user pushed back on.
+1. Sanity-check the plan against the actual code. Resolve material gaps or
+   assumptions that name files or APIs that do not exist. Delegate a new
+   planning pass only when those problems require material replanning.
+2. Treat a settled plan as already approved. For a provisional plan, present a
+   condensed version to the user for approval unless autonomy was settled at
+   intake. Revise on feedback; do not start implementing a plan the user pushed
+   back on.
 3. Freeze the approved plan into an implementation spec: objective, constraints,
    files, success criteria, verification commands.
 
