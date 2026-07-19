@@ -164,6 +164,20 @@ test("installs managed Claude gateway agent symlinks", () => {
   );
 });
 
+test("installs managed CLI wrapper symlinks", () => {
+  const home = createHome();
+
+  const result = run(home);
+
+  expect(result.status).toBe(0);
+  expect(readlinkSync(join(home, ".local", "bin", "claudex"))).toBe(
+    join(rootDir, "bin", "claudex"),
+  );
+  expect(readlinkSync(join(home, ".local", "bin", "fable"))).toBe(
+    join(rootDir, "bin", "fable"),
+  );
+});
+
 test("relinks legacy RULES.md symlinks without force", () => {
   const home = createHome();
   mkdirSync(join(home, ".claude"), { recursive: true });
@@ -458,16 +472,15 @@ test("cleanup replaces links whose planned source moved roots", () => {
   );
 });
 
-test("repo config excludes Codex wrappers from skill roots", () => {
+test("repo config scopes executor wrappers to the other skill root", () => {
   const home = createHome();
-  const staleCodexReview = join(home, ".claude", "skills", "codex-review");
-  mkdirSync(join(home, ".claude", "skills"), { recursive: true });
-  symlinkSync(join(rootDir, "skills", "codex-review"), staleCodexReview);
 
   const result = run(home);
 
   expect(result.status).toBe(0);
-  expect(existsSync(staleCodexReview)).toBe(false);
+  expect(readlinkSync(join(home, ".claude", "skills", "codex-review"))).toBe(
+    join(rootDir, "skills", "codex-review"),
+  );
   expect(existsSync(join(home, ".agents", "skills", "codex-review"))).toBe(
     false,
   );

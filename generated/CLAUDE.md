@@ -218,12 +218,25 @@ design, code quality, and copy. Update the table when available models change.
 
 ### GPT Models in Claude Code
 
-- GPT models are exposed directly through CLIProxyAPI and Claude Code's gateway
-  model discovery.
-- Route delegated GPT work through the `sol` or `terra` custom agent, or through
-  Workflow model selection. Do not use `codex-*` wrapper skills for routing.
+- The `sol` and `terra` agents resolve their GPT models only when Claude Code
+  was launched against CLIProxyAPI. The agent definitions are always listed
+  regardless, so listing alone proves nothing.
+- Before first routing GPT work in a session, probe once with
+  `printenv ANTHROPIC_BASE_URL` and cache the result for the session:
+  - Set → gateway mode. Route delegated GPT work through the `sol` or `terra`
+    custom agent, or through Workflow model selection. Do not use `codex-*`
+    wrapper skills for routing.
+  - Unset → direct mode. `sol`/`terra` model pins will not resolve; do not spawn
+    them. Route GPT work through the `codex-*` skills instead (`codex-review`,
+    `codex-implementation`, `codex-analysis`, `codex-first`,
+    `codex-computer-use`), which wrap the codex CLI. Note the routing mode in
+    the final report.
+- Where a skill or workflow names a GPT/Codex reviewer or worker by engine,
+  satisfy it with the mechanism the current mode provides; the engine
+  requirement, not the mechanism, is the contract.
 - Use the raw `codex` CLI only when the user explicitly asks for that separate
-  execution surface.
+  execution surface, or as a last-resort fallback when the `codex-*` skills are
+  unavailable in direct mode.
 - Implementation delegation requires isolation such as a separate worktree.
 
 ### Independent Review
@@ -236,6 +249,9 @@ design, code quality, and copy. Update the table when available models change.
 - The reviewer must run in a separate context from the authoring agent.
   Cross-model review improves independence, but the orchestrator retains final
   judgement and reconciles the findings.
+- Spawned Claude reviewers and workers do not inherit the session model; pass
+  `model: "fable"` explicitly on the Agent call. Never let a delegated Claude
+  fall back to Opus, Sonnet, or Haiku by omission.
 - Add a second reviewer only when the user requests one or the selected workflow
   explicitly requires one.
 

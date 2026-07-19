@@ -183,7 +183,7 @@ run = "markdownlint-cli2 '**/*.md'"
 
 [tasks."lint:shell"]
 description = "Lint shell scripts with shellcheck"
-run = "bash -lc 'shopt -s globstar nullglob; shellcheck ./**/*.sh'"
+run = "bash -lc 'shopt -s globstar nullglob; shellcheck ./**/*.sh ./bin/*'"
 
 [tasks."lint:agent-harness"]
 description = "Check agent skill and plugin metadata invariants"
