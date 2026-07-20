@@ -6,9 +6,9 @@
       "sourceType": "git",
       "sourceUrl": "https://github.com/vercel-labs/agent-browser.git",
       "ref": "main",
-      "resolvedCommit": "ed2e10598c9064aecfaeb7cf21b540684db4be2c",
+      "resolvedCommit": "81c336c1c20b80ac648e0416a7b6e0c0ae7878bb",
       "upstreamPath": "skills/agent-browser",
-      "contentHash": "sha256:bba7848e49d75fe079828eee1377fede5fd45ba2c00004905c21927dd15808df",
+      "contentHash": "sha256:e8db7de3a6cf970efd0bd7753552aa7fca25c08d6fc4b98c3b7fff7ad19228b4",
       "skillsCliVersion": null
     },
     "airplan": {
@@ -16,7 +16,7 @@
       "sourceType": "git",
       "sourceUrl": "https://github.com/jimeh/airplan.git",
       "ref": "main",
-      "resolvedCommit": "648c9f0f6f0a134bc07d6868eba759d1657268b5",
+      "resolvedCommit": "9e700076a4573509e92bb4e84539b4e9cdf81db0",
       "upstreamPath": "skills/airplan",
       "contentHash": "sha256:9c13c156ed9b9169682488d550eec0ada514d6ea570ef6b63e4b4058d275831b",
       "skillsCliVersion": null
@@ -26,7 +26,7 @@
       "sourceType": "git",
       "sourceUrl": "https://github.com/anthropics/skills.git",
       "ref": "main",
-      "resolvedCommit": "9d2f1ae187231d8199c64b5b762e1bdf2244733d",
+      "resolvedCommit": "fa0fa64bdc967915dc8399e803be67759e1e62b8",
       "upstreamPath": "skills/frontend-design",
       "contentHash": "sha256:15787d8f3c8bd24aa3907b736fdffa67a90c7639c0e8b7ad961013171b835ad0",
       "skillsCliVersion": null
@@ -36,9 +36,9 @@
       "sourceType": "git",
       "sourceUrl": "https://github.com/mattpocock/skills.git",
       "ref": "main",
-      "resolvedCommit": "16a2a5cd00b4416f673f4ff38c7971a04dd708e7",
+      "resolvedCommit": "9603c1cc8118d08bc1b3bf34cf714f62178dea3b",
       "upstreamPath": "skills/productivity/grill-me",
-      "contentHash": "sha256:eb9ca5eb0cb86a12902a94f6daa0b4785c01d86c0d0d386c28ecf7a3f77661df",
+      "contentHash": "sha256:79054f4df616e91968cdbd0291485fbadc209e398abbe2a61035cef13deb5049",
       "skillsCliVersion": null
     },
     "handoff": {
@@ -46,7 +46,7 @@
       "sourceType": "git",
       "sourceUrl": "https://github.com/openclaw/agent-skills.git",
       "ref": "main",
-      "resolvedCommit": "91828ceb8638f6bc73780918adcde3b28f5c4ff0",
+      "resolvedCommit": "06cfaef5d17cefe089e0fc3e6b793086e10bc564",
       "upstreamPath": "skills/handoff",
       "contentHash": "sha256:fc076f67a527973739f065ad0b45a693fee1e0a529174d61a901a331989b00ec",
       "skillsCliVersion": null
@@ -56,7 +56,7 @@
       "sourceType": "git",
       "sourceUrl": "https://github.com/wshobson/agents.git",
       "ref": "main",
-      "resolvedCommit": "5cc2549a50fc672230efd0a0307e2fd27ffba792",
+      "resolvedCommit": "c4b82b0ad771190355eb8e204b1329732a18449a",
       "upstreamPath": "plugins/systems-programming/skills/rust-async-patterns",
       "contentHash": "sha256:2be9e8f8dead202477da593a56c7203d52484e666729f8c1cb1525a54a78deac",
       "skillsCliVersion": null
@@ -66,7 +66,7 @@
       "sourceType": "git",
       "sourceUrl": "https://github.com/apollographql/skills.git",
       "ref": "main",
-      "resolvedCommit": "7df6a608dd71f937e664b19183fb60d101bb13a1",
+      "resolvedCommit": "98c99fdf95fa2108786786d7f17d06868be3ebf9",
       "upstreamPath": "skills/rust-best-practices",
       "contentHash": "sha256:4c4e0298dccc1d6ed8d4c0b529c745985032516e0668d11155bc01ceadf66964",
       "skillsCliVersion": null
@@ -76,7 +76,7 @@
       "sourceType": "git",
       "sourceUrl": "https://github.com/shadcn/ui.git",
       "ref": "main",
-      "resolvedCommit": "d8ace420baa5c8a1abccd75e52570f2a232f193d",
+      "resolvedCommit": "d28738b183c5eaa69d8d540826e450f30d39ab6c",
       "upstreamPath": "skills/shadcn",
       "contentHash": "sha256:110cd5ba7caec5982e29abba9beed9ff3daf9ac02c1116f33ea6f80d9bee3f72",
       "skillsCliVersion": null
