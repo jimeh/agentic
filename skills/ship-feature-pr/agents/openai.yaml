@@ -4,6 +4,8 @@ interface:
   default_prompt:
     "Use $ship-feature-pr to take this feature end to end: reuse any settled
     plan already in context or plan it if needed, preserve and return the final
-    branch to the invocation checkout, implement with native task tooling in an
-    isolated worktree, open a draft PR, run native and foreign-engine reviews,
-    reconcile the findings, and mark the PR ready."
+    branch to the invocation checkout, prefer native task tooling and an
+    isolated worktree, fall back to the same-engine CLI when native tooling is
+    unavailable or insufficient, allow direct implementation for small changes,
+    open a draft PR, run native and foreign-engine reviews, reconcile the
+    findings, and mark the PR ready."

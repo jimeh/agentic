@@ -228,9 +228,11 @@ capability, not merely to pin a model.
 
 Give each reviewer the same substantive prompt: the repo path, the target
 (feature branch vs base), the condensed feature spec, and, for CLI channels, a
-report file path. Native task results may return directly through the task
-tooling. Including the spec matters — requirement mismatches are the
-highest-value finding class.
+report destination for captured stdout. Native task results may return directly
+through the task tooling. Including the spec matters — requirement mismatches
+are the highest-value finding class. Keep prompts compact: tell reviewers how to
+inspect the target in the repository instead of pasting large diffs, logs, or
+path lists.
 
 ```text
 Review this implementation independently.
@@ -239,7 +241,7 @@ Repository: <absolute repo path>
 Target: branch <feature-branch> vs <base>
 Commit: <pushed HEAD SHA>
 Feature spec: <condensed spec>
-Report file: <absolute report path, when the channel uses one>
+Report destination: <absolute report path, when the channel uses one>
 
 Look for:
 - requirement mismatches against the spec
@@ -250,21 +252,22 @@ Look for:
 
 For each finding include severity, file and line reference, concrete failure
 mode, and suggested fix direction. Do not edit files. Return the report through
-the review channel; when a report file is provided, write it there. Name the
-reviewed commit in the report. If there are no substantive findings, say so.
+the review channel; for a CLI channel, print only the report on stdout so the
+launcher captures it at the report destination. Name the reviewed commit in the
+report. If there are no substantive findings, say so.
 ```
 
-Babysit the runs: launch both in parallel, then poll native task status and the
-foreign channel's process/report as appropriate. Long silences are normal — do
-not kill a live run before its deadline. Give each reviewer a bounded runtime
-(default 30 minutes unless the user sets another); retry a reviewer once only
-after its task or process has died or the deadline has passed. If an engine's
-review is still missing after the retry, continue reconciling with the coverage
-you have, but the PR cannot be marked ready (see phase 8). A failed task, a
-nonzero process, or an empty or missing expected report is a failed review —
-inspect its error output and never treat it as clean. A result naming a
-different commit than the current pushed HEAD is stale — discard it and re-run
-that reviewer.
+Use a fresh native task invocation and a new, previously nonexistent report path
+for every CLI attempt, including retries; never reuse an earlier report. Launch
+both channels in parallel and poll their status as appropriate. Long silences
+are normal — do not kill a live run before its deadline. Give each reviewer a
+bounded runtime (default 30 minutes unless the user sets another). Read a result
+only after its task or process completes successfully, then require non-empty
+output that names the exact full pushed HEAD SHA. A failed task, nonzero
+process, missing or reused output, or missing or mismatched SHA is an invalid
+review — inspect its error output and retry once with another fresh attempt. If
+a channel is still missing after the retry, continue reconciling with the
+coverage you have, but the PR cannot be marked ready (see phase 8).
 
 ## 7. Reconcile and Fix
 
@@ -273,12 +276,25 @@ Reviewer reports are evidence, not authority:
 1. Read both reports and verify every finding against the code before acting.
 2. Weight by independence: the reviewer whose model differs from the implementer
    is the primary gate; the same-model reviewer is a secondary perspective.
-3. Fix confirmed findings (directly, or through the same implementer channel),
-   re-run project checks, commit, and push.
-4. Re-review only the fix delta, not the whole branch, through the same two
-   channels: a fresh native reviewer subagent and the foreign-engine review
-   skill or CLI. Cap the loop at two fix rounds; surface anything still open to
+3. Record the exact pushed SHA covered by the valid review round as
+   `PREVIOUS_REVIEWED_SHA`. Fix confirmed findings (directly, or through the
+   same implementer channel), re-run project checks, commit, push, and record
+   the verified remote tip as `CURRENT_PUSHED_SHA`.
+4. Re-review only the fix delta through the same two channels: a fresh native
+   reviewer subagent and the foreign-engine review skill or CLI. Give both
+   reviewers the two SHAs and tell them to fetch the exact delta and affected
+   paths themselves with:
+
+   ```bash
+   git diff --binary "$PREVIOUS_REVIEWED_SHA" "$CURRENT_PUSHED_SHA"
+   git diff --name-only "$PREVIOUS_REVIEWED_SHA" "$CURRENT_PUSHED_SHA"
+   ```
+
+   Never paste the generated diff or a long path list into the prompt. After a
+   valid round, treat `CURRENT_PUSHED_SHA` as the previous reviewed SHA for any
+   next round. Cap the loop at two fix rounds; surface anything still open to
    the user instead of looping.
+
 5. Record dismissed findings with a one-line reason each.
 
 ## 8. Deliver
@@ -343,17 +359,21 @@ ARTIFACT_DIR="$(mktemp -d "${TMPDIR:-/tmp}/ship-feature-pr.XXXXXX")"
 Codex reviewer:
 
 ```bash
-codex review - < "$ARTIFACT_DIR/codex-prompt.md" \
-  > "$ARTIFACT_DIR/codex-report.md" 2> "$ARTIFACT_DIR/codex-stderr.log"
+CODEX_ATTEMPT_DIR="$(mktemp -d "$ARTIFACT_DIR/codex-attempt.XXXXXX")"
+codex review - < "$CODEX_ATTEMPT_DIR/prompt.md" \
+  > "$CODEX_ATTEMPT_DIR/report.md" \
+  2> "$CODEX_ATTEMPT_DIR/stderr.log"
 ```
 
 Claude reviewer (plan mode keeps the session read-only; safe mode keeps the
 target repo's hooks and plugins from executing during the review):
 
 ```bash
+CLAUDE_ATTEMPT_DIR="$(mktemp -d "$ARTIFACT_DIR/claude-attempt.XXXXXX")"
 claude -p --permission-mode plan --safe-mode \
-  < "$ARTIFACT_DIR/claude-prompt.md" \
-  > "$ARTIFACT_DIR/claude-report.md" 2> "$ARTIFACT_DIR/claude-stderr.log"
+  < "$CLAUDE_ATTEMPT_DIR/prompt.md" \
+  > "$CLAUDE_ATTEMPT_DIR/report.md" \
+  2> "$CLAUDE_ATTEMPT_DIR/stderr.log"
 ```
 
 ## Failure Handling
