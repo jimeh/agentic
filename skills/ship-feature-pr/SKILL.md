@@ -212,8 +212,8 @@ The PR is not ready until the review gate in phases 6-7 passes.
 
 ## 6. Dual Review
 
-Record the pushed HEAD SHA, then spawn two fresh reviewers in parallel against
-that exact commit, one per engine. Dual review means:
+Record the pushed HEAD SHA, then spawn two fresh initial reviewers in parallel
+against that exact commit, one per engine. Dual review means:
 
 - one fresh reviewer through the orchestrator's native subagent/task tooling;
 - one reviewer through the dedicated foreign-engine review skill or CLI.
@@ -232,7 +232,8 @@ report destination for captured stdout. Native task results may return directly
 through the task tooling. Including the spec matters — requirement mismatches
 are the highest-value finding class. Keep prompts compact: tell reviewers how to
 inspect the target in the repository instead of pasting large diffs, logs, or
-path lists.
+path lists. When a channel exposes a resumable reviewer session, retain its
+handle for fix verification in phase 7.
 
 ```text
 Review this implementation independently.
@@ -257,8 +258,9 @@ launcher captures it at the report destination. Name the reviewed commit in the
 report. If there are no substantive findings, say so.
 ```
 
-Use a fresh native task invocation and a new, previously nonexistent report path
-for every CLI attempt, including retries; never reuse an earlier report. Launch
+Use a fresh native task invocation for the initial review. Treat every reviewer
+call, continuation, or retry as a distinct attempt. For every CLI attempt, use a
+new, previously nonexistent report path; never reuse an earlier report. Launch
 both channels in parallel and poll their status as appropriate. Long silences
 are normal — do not kill a live run before its deadline. Give each reviewer a
 bounded runtime (default 30 minutes unless the user sets another). Read a result
@@ -280,20 +282,32 @@ Reviewer reports are evidence, not authority:
    `PREVIOUS_REVIEWED_SHA`. Fix confirmed findings (directly, or through the
    same implementer channel), re-run project checks, commit, push, and record
    the verified remote tip as `CURRENT_PUSHED_SHA`.
-4. Re-review only the fix delta through the same two channels: a fresh native
-   reviewer subagent and the foreign-engine review skill or CLI. Give both
-   reviewers the two SHAs and tell them to fetch the exact delta and affected
-   paths themselves with:
+4. Re-review only the fix delta through the same two reviewer sessions when the
+   selected tooling supports continuation. This is focused verification of the
+   reviewers' earlier findings, so preserve their context instead of spawning
+   fresh reviewers by default. Give both reviewers the two SHAs and tell them to
+   fetch the exact delta and affected paths themselves with:
 
    ```bash
    git diff --binary "$PREVIOUS_REVIEWED_SHA" "$CURRENT_PUSHED_SHA"
    git diff --name-only "$PREVIOUS_REVIEWED_SHA" "$CURRENT_PUSHED_SHA"
    ```
 
-   Never paste the generated diff or a long path list into the prompt. After a
-   valid round, treat `CURRENT_PUSHED_SHA` as the previous reviewed SHA for any
-   next round. Cap the loop at two fix rounds; surface anything still open to
-   the user instead of looping.
+   Never paste the generated diff, a long path list, or the full earlier report
+   into the prompt. Include only concise finding identifiers or summaries needed
+   to focus the verification. Every continuation still produces a fresh result
+   artifact and must satisfy the exact-SHA checks from phase 6.
+
+   If a reviewer cannot be resumed, its continuation fails validation, or its
+   channel lacks session continuation, start a fresh reviewer through the same
+   engine channel. Give that fallback the condensed finding context plus the SHA
+   pair and repository inspection commands, not copied artifacts. If fixes
+   materially broaden the implementation beyond the original findings, start
+   fresh reviewers for both channels and review the expanded scope.
+
+   After a valid round, treat `CURRENT_PUSHED_SHA` as the previous reviewed SHA
+   for any next round. Cap the loop at two fix rounds; surface anything still
+   open to the user instead of looping.
 
 5. Record dismissed findings with a one-line reason each.
 
@@ -350,7 +364,9 @@ Use these only for the foreign-engine channel when no dedicated review skill
 covers it. A same-engine CLI is also allowed when native subagent/task tooling
 is unavailable or lacks a required capability. These shapes are intentionally
 minimal; dedicated review skills remain the source of truth for prompting and
-verification strategy.
+verification strategy. They show fresh sessions; when phase 7 continues a CLI
+session, use its documented resume form while keeping a fresh attempt directory
+and report path.
 
 ```bash
 ARTIFACT_DIR="$(mktemp -d "${TMPDIR:-/tmp}/ship-feature-pr.XXXXXX")"
@@ -383,8 +399,9 @@ claude -p --permission-mode plan --safe-mode \
   engine — same-model redundancy adds almost nothing.
 - Plan rejected: revise and re-present; do not implement around the user.
 - Implementer fails twice on the same problem: take over and implement directly.
-- Reviewer run fails or times out: retry once, then continue with the remaining
-  reviewer and report the coverage gap.
+- Initial reviewer run fails or times out: retry once with a fresh reviewer. A
+  fix-verification continuation that fails gets one fresh-reviewer fallback;
+  then continue with the remaining reviewer and report the coverage gap.
 - Single-engine coverage — for any reason — never satisfies the ready gate: the
   PR stays a draft and the user decides whether it is enough.
 - Never mark the PR ready without at least one independent review of the final

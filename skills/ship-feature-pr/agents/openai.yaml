@@ -7,5 +7,6 @@ interface:
     branch to the invocation checkout, prefer native task tooling and an
     isolated worktree, fall back to the same-engine CLI when native tooling is
     unavailable or insufficient, allow direct implementation for small changes,
-    open a draft PR, run native and foreign-engine reviews, reconcile the
+    open a draft PR, run fresh native and foreign-engine initial reviews, resume
+    those reviewers for focused fix verification when possible, reconcile the
     findings, and mark the PR ready."
