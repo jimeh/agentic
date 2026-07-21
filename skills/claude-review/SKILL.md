@@ -14,8 +14,10 @@ description: >-
 
 # Claude Review
 
-Use a fresh Claude Code instance as an independent reviewer. The orchestrating
-agent remains the final judge.
+Start each initial review in a fresh Claude Code session. Fresh context does not
+require a disposable session: preserve it when an orchestration workflow may
+need the same reviewer for follow-up verification. The orchestrating agent
+remains the final judge.
 
 Use this skill for broad or risky changes, user-requested Claude reviews,
 reviewing another model's implementation, or getting a strong second perspective
@@ -59,8 +61,8 @@ There is no scope-flag review subcommand; always name the target inside the
 prompt. Plan mode blocks file edits while still allowing read-only inspection
 commands. Safe mode keeps the target repo's hooks, plugins, and other
 customizations from executing — headless runs skip the workspace trust prompt,
-so a malicious checkout could otherwise run code as the user. Disabling session
-persistence keeps review runs from leaving resumable state behind:
+so a malicious checkout could otherwise run code as the user. For a one-shot
+review, disable session persistence so it leaves no resumable state behind:
 
 ```bash
 claude -p \
@@ -73,6 +75,10 @@ claude -p \
 Drop `--safe-mode` only for a fully trusted checkout where project context
 (CLAUDE.md, project settings) would materially improve the review.
 
+When follow-up verification is likely, omit `--no-session-persistence`, assign
+and retain an explicit session ID with `--session-id`, and resume it with
+`--resume`. Preserve plan and safe mode on every continuation.
+
 Model selection: the default configured model is fine. Pass `--model opus` (or
 another alias) only when the user or model-routing rules ask for a specific
 review tier.
@@ -82,18 +88,18 @@ Run notes:
 - For long reviews, run in the background and read `$REPORT` when the run exits.
   Do not kill quiet runs prematurely; long silences are normal.
 - Parallel independent reviews are fine: separate prompt and report files.
-- Follow-up questions default to a fresh run that includes the prior report as
-  context. To resume the same session instead, drop `--no-session-persistence`
-  from the first run and use `claude -p "<follow-up prompt>" -c` from the same
-  directory. `-c` resumes the most recent conversation there, so avoid it when
-  parallel Claude runs share a directory.
+- Resume the same reviewer for focused fix verification when possible. Give it
+  revision boundaries and concise finding summaries, then have it inspect the
+  delta from the repository rather than pasting prior reports or large diffs.
+  Use a fresh reviewer when continuation is unavailable or the reviewed scope
+  materially broadens.
 
 Do not retry automatically when Claude reports no issues. A run that exits
 nonzero or leaves an empty or missing report has failed — read the stderr log
 and surface the failure; never treat it as a clean review. If the run times out
 or fails, report that and decide whether direct review is still useful.
 
-Once findings are extracted and verified, remove the artifact directory
+Once the review lifecycle is complete, remove the artifact directory
 (`rm -rf "$ARTIFACT_DIR"`) so prompts and reports do not accumulate.
 
 ## Prompting Strategy

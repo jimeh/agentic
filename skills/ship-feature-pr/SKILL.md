@@ -92,7 +92,9 @@ materially stale or incomplete.
 When no applicable plan exists, use a fresh native planning agent for a
 non-trivial feature and plan directly for an obvious small change. Ask the user
 to settle unresolved product or scope choices. Unless the user already granted
-autonomy, obtain approval for a provisional plan before implementation.
+autonomy, obtain approval for a provisional plan before implementation. If the
+user rejects a plan, revise and re-present it rather than implementing around
+the feedback.
 
 Sanity-check the plan against the actual code before freezing it.
 
@@ -103,9 +105,11 @@ state before moving branches or integrating work.
 
 ### 3. Prepare the Delivery Branch
 
-Prefer keeping all orchestration in the delivery checkout. Reuse a relevant
-feature branch, or create one there from the current remote base. A detached
-checkout at the intended base is a valid place to create the branch.
+Prefer keeping all orchestration in the delivery checkout. Refresh and verify
+the remote base before creating the delivery branch or moving the checkout onto
+it. Reuse a relevant feature branch, or create one there from the current remote
+base. A detached checkout at the intended base is a valid place to create the
+branch.
 
 Preserve non-overlapping user changes in place. Ask only when existing changes
 overlap the implementation scope or branch movement would put them at risk. Do
@@ -129,9 +133,12 @@ When it finishes:
 1. Review the complete result as a contributor diff.
 2. Run appropriate project checks yourself.
 3. Send focused corrections back through the same implementer session. Take over
-   after repeated unsuccessful correction attempts.
+   after two unsuccessful correction rounds.
 4. Integrate the complete result, including new files, into the feature branch
    in the delivery checkout.
+
+Do not transfer isolated work through a tracked-file-only diff; it can omit new
+files.
 
 Preserve the intake baseline throughout integration. Limit staging to approved
 feature paths and retain temporary implementation work until final delivery is
@@ -158,6 +165,10 @@ Run two fresh reviewers in parallel against the pushed feature state:
 - one through the orchestrator's native same-engine channel;
 - one through the dedicated foreign-engine review channel.
 
+For CLI-backed foreign review, use `claude-review` or `codex-review` as
+appropriate and follow its read-only safety guidance. Preserve a resumable
+session when this workflow expects reviewer continuity.
+
 Give both reviewers the repository, target base and feature state, and a
 condensed implementation spec. Ask them to inspect the repository themselves for
 requirement mismatches, correctness problems, edge cases, missing or weak tests,
@@ -170,6 +181,9 @@ Keep each review read-only and retain any session handle that allows later
 continuation. Accept a result only after the review completed successfully and
 clearly identifies the pushed revision it covered. Ensure retries cannot be
 mistaken for or consume output from an earlier attempt.
+
+Use a context-appropriate deadline, check task or process liveness before
+retrying, and do not treat quiet output as failure while a review remains live.
 
 Both engine perspectives are required for the ready gate; do not simulate dual
 review with two reviewers from the same engine. If a channel remains unavailable
@@ -187,10 +201,10 @@ run checks, commit only the fix scope, and push from the delivery checkout.
 
 Resume the original reviewer sessions for focused fix verification when
 possible. Give each reviewer the last revision it accepted, the new verified
-remote tip, and concise summaries of the relevant findings. Ensure both
-revisions are available in the review checkout and have the reviewer inspect
-only the intervening changes and affected paths from the repository. Do not
-paste generated diffs, long path lists, or prior reports into the prompt.
+remote tip, and concise summaries of the relevant findings. Ensure the reviewer
+can access both revisions in the repository checkout it is inspecting, then have
+it inspect only the intervening changes and affected paths. Do not paste
+generated diffs, long path lists, or prior reports into the prompt.
 
 Require each continued review to complete successfully and identify the new tip
 it covered. If continuation is unavailable or invalid, use a fresh reviewer
@@ -206,6 +220,9 @@ continuing indefinitely.
 Wait for required CI checks on the final pushed state. Route actionable CI
 failures through the same bounded fix and review loop. Do not mark the PR ready
 before local delivery is complete.
+
+Use a context-appropriate deadline, but do not treat pending checks as failed
+before they finish or the deadline expires.
 
 Before cleanup, verify in the delivery checkout that:
 

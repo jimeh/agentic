@@ -13,8 +13,10 @@ description: >-
 
 # Codex Review
 
-Use Codex as an independent reviewer. Claude remains the orchestrator and final
-judge.
+Start each initial review in a fresh Codex session. Fresh context does not
+require a disposable session: preserve it when an orchestration workflow may
+need the same reviewer for follow-up verification. Claude remains the
+orchestrator and final judge.
 
 Use this skill for broad or risky changes, user-requested Codex reviews,
 reviewing Claude's own implementation, or getting a cheap second perspective on
@@ -82,8 +84,19 @@ If neither form can express the target, use read-only exec:
 codex exec -s read-only -o "$REPORT" - < "$PROMPT"
 ```
 
+For a one-shot review, no session handle needs to be retained. When follow-up
+verification is likely, use a persisted `codex exec review --json` session,
+retain its explicit session ID, and resume it with `codex exec resume`; do not
+use `--ephemeral`. Give the resumed reviewer revision boundaries and concise
+finding summaries, then have it inspect the delta from the repository rather
+than pasting prior reports or large diffs. Use a fresh reviewer when
+continuation is unavailable or the reviewed scope materially broadens.
+
 Do not retry automatically when Codex reports no issues. If the run times out or
 fails, report that and decide whether direct review is still useful.
+
+Once the review lifecycle is complete, remove the artifact directory so prompts
+and reports do not accumulate.
 
 ## Prompting Strategy
 
