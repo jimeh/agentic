@@ -94,6 +94,8 @@ non-trivial feature and plan directly for an obvious small change. Ask the user
 to settle unresolved product or scope choices. Unless the user already granted
 autonomy, obtain approval for a provisional plan before implementation.
 
+Sanity-check the plan against the actual code before freezing it.
+
 Freeze the result into a concise implementation spec covering the objective,
 constraints, expected file scope, success criteria, testing, risks, and
 non-goals. Identify scope early enough to compare it with the captured dirty
@@ -219,8 +221,10 @@ only with explicit user acceptance.
 
 Mark the PR ready only when both reviewer channels cover the final state,
 required CI is green, handback is verified, and temporary checkout cleanup is
-safe.
+safe. Keep it draft while substantive findings or required user decisions remain
+unresolved.
 
-Report the PR URL and base, what shipped, review decisions, checks and CI,
-delivery-checkout path, final branch and revision, upstream state, preserved
-pre-existing changes, and any retained checkout or residual risk.
+Report the PR URL and base, what shipped and any deviations from the approved
+plan, review decisions, checks and CI, delivery-checkout path, final branch and
+revision, upstream state, preserved pre-existing changes, and any retained
+checkout or residual risk.
