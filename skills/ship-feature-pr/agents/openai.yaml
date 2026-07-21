@@ -2,11 +2,8 @@ interface:
   display_name: "Ship Feature PR"
   short_description: "Reuse or plan, implement, and review a feature PR"
   default_prompt:
-    "Use $ship-feature-pr to take this feature end to end: reuse any settled
-    plan already in context or plan it if needed, preserve and return the final
-    branch to the invocation checkout, prefer native task tooling and an
-    isolated worktree, fall back to the same-engine CLI when native tooling is
-    unavailable or insufficient, allow direct implementation for small changes,
-    open a draft PR, run fresh native and foreign-engine initial reviews, resume
-    those reviewers for focused fix verification when possible, reconcile the
-    findings, and mark the PR ready."
+    "Use $ship-feature-pr to ship this feature from the current checkout: reuse
+    or create a plan, route work to the appropriate native and foreign-engine
+    channels, integrate and open the draft PR from this checkout, reuse the
+    initial reviewers for fix verification, and deliver it when reviews, CI, and
+    local handback pass."

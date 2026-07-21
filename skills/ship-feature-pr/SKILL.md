@@ -4,408 +4,220 @@ description: >-
   Orchestrate a feature end to end into a reviewed pull request: gather the
   feature and base branch, reuse an existing plan or create one, implement,
   commit and push, open a draft PR, run one Codex and one Claude reviewer in
-  parallel,
-  reconcile their findings, wait for CI, and mark the PR ready. Use when the
-  user asks to
-  ship a feature as a PR, run the feature PR pipeline, take a change end to
-  end into a pull request, or orchestrate plan-implement-review for a PR. Do
-  not use for tiny single edits, commit-only or PR-only requests, or
-  review-only requests; dedicated skills cover those.
+  parallel, reconcile their findings, wait for CI, and mark the PR ready. Use
+  when the user asks to ship a feature as a PR, run the feature PR pipeline,
+  take a change end to end into a pull request, or orchestrate
+  plan-implement-review for a PR. Do not use for tiny single edits, commit-only
+  or PR-only requests, or review-only requests; dedicated skills cover those.
 ---
 
 # Ship Feature PR
 
-Take a feature request from description to a reviewed, ready pull request. The
-orchestrating agent owns judgement — intake, plan approval, diff review,
-reconciling reviewer findings, checkout handback, and delivery — and delegates
-the typing.
+Take a feature from request to reviewed, ready pull request. The orchestrator
+owns judgement, state safety, integration, review reconciliation, and delivery.
+Delegate implementation and independent review where those perspectives add
+value.
 
 Invoking this skill authorizes the branch, worktree, commit, push, and pull
-request mutations the workflow requires. It never authorizes merging the PR,
-deploying, or releasing; those need separate, explicit user say-so.
+request mutations needed by the workflow. It does not authorize merging,
+deploying, or releasing.
 
-This skill is engine-agnostic: Claude or Codex can run it as the orchestrator.
-Use native subagent or task tooling for same-engine implementation and review.
-Use a dedicated cross-engine skill or CLI only when the work requires the other
-engine. Do not invoke the orchestrator's own CLI merely for isolation or model
-pinning when native subagents are available.
+## Core Contracts
 
-## Phases
+### Delivery checkout ownership
 
-1. Intake — feature, base branch, and delivery-checkout baseline.
-2. Plan — reuse or create a plan, identify file scope, sanity check, approval.
-3. Branch — prepare the feature branch in the delivery checkout.
-4. Implement — usually one fresh implementer in an isolated worktree.
-5. Commit, push, draft PR.
-6. Dual review — one Codex reviewer and one Claude reviewer, in parallel.
-7. Reconcile and fix — verify findings, fix, re-review the delta.
-8. Deliver — wait for CI, hand back the checkout, mark ready, and report.
+Treat the checkout active when the skill is invoked as the **delivery
+checkout**. Use it to integrate the finished implementation, create and hold the
+feature branch, commit, push, and create the pull request. It remains the final
+local home of the branch.
 
-Do not skip phases or reorder the gates. Reusing an existing plan completes the
-planning pass; it does not skip phase 2. Details below.
+Being detached, linked, or outside the root worktree is not by itself a reason
+to relocate delivery. Use another orchestrator checkout only when a concrete Git
+or environment constraint makes the delivery checkout unsafe. Treat that
+checkout as temporary and retain it until handback succeeds or the user accepts
+another final destination.
 
-## 1. Intake
+### Engine routing
 
-Treat the checkout active when the workflow is invoked as the **delivery
-checkout**. It is the default final local home of the feature branch, whether it
-is the repository's root worktree or a linked worktree.
+Use native subagent or task tooling for same-engine planning, implementation,
+and review. Use a dedicated cross-engine skill or CLI for work that requires the
+other engine. For example, a Codex orchestrator uses a native Codex reviewer and
+the Claude review channel; a Claude orchestrator does the reverse.
 
-Before branch movement or delegation, capture:
+Do not invoke the orchestrator's own CLI merely for isolation or model pinning
+when native tooling is available. A same-engine CLI is a fallback only when
+native tooling is unavailable or lacks a required capability.
 
-- invocation path and repository root;
-- whether this is the root or a linked worktree;
-- current branch, or detached-HEAD state, and current HEAD SHA;
-- the complete dirty baseline, including staged, unstaged, and untracked paths,
-  with enough per-path diff or content evidence to verify preservation later;
-- `git worktree list --porcelain` output and the branch-to-worktree mapping.
+### Context continuity
 
-Keep this baseline outside the repository or in an ignored temporary artifact
-directory. Do not stash, discard, stage, or otherwise normalize existing user
-changes just to begin the workflow.
+Use fresh agents for independent initial perspectives. Reuse the implementer for
+focused corrections and reuse the original reviewers for fix verification when
+their sessions can continue. Fresh reviewers are fallbacks for unavailable or
+invalid continuations, or for changes that materially broaden the reviewed
+scope.
 
-Establish two inputs before any work:
+## Workflow
 
-- What should change: the feature or fix, in enough detail to plan from.
-- Base branch: the branch the PR will target.
+### 1. Intake
 
-Ask the user only for what the invocation did not already provide. Default the
-base branch to the repository's default branch
-(`gh repo view --json defaultBranchRef -q .defaultBranchRef.name`, or
-`git remote show origin`) and state that assumption instead of asking.
+Before changing local state, record enough of the delivery checkout to restore
+and verify it later:
 
-Before planning, inspect the conversation and any referenced plan document for
-the latest plan that applies to the requested feature. Record whether it is
-settled, provisional, stale, or has unresolved choices. A plan is settled when
-the user approved it explicitly, or when the user invokes this skill after a
-completed planning discussion with no unresolved choices. Treat a settled plan
-as approved and proceed without another approval stop.
+- invocation path, repository root, branch or detached state, and current head;
+- whether it is the root or a linked worktree and the current worktree mapping;
+- staged, unstaged, and untracked user changes, including their content where
+  needed to prove preservation.
 
-Otherwise, plan approval (phase 2) is on by default. If the user said to run
-without checkpoints ("just ship it", "don't ask, go"), skip the approval stop
-and note that in the final report.
+Do not stash, discard, stage, or otherwise normalize pre-existing work merely to
+start the workflow.
 
-Then preflight before mutating work: verify `gh` authentication, push access to
-the remote, and that the base ref exists on the remote. Select the same-engine
-channel: native subagent/task tooling when available, otherwise the allowed
-same-engine CLI fallback when native tooling is unavailable or lacks a required
-capability. Also require the foreign reviewer channel. CLI version or
-reachability checks are fine. Missing native tooling alone is not a blocker;
-missing both same-engine channels or the foreign reviewer is.
+Establish the requested change and target base branch. Use the remote default
+branch when the user did not specify one, and state the assumption. Find the
+latest applicable plan in the conversation or referenced documents and decide
+whether it is settled, provisional, stale, or incomplete. A plan the user has
+already approved, including a completed planning discussion followed by this
+skill invocation, is settled and needs no second approval.
 
-## 2. Plan
+Verify repository access, the remote base, and both required review channels
+before mutation. Select the native same-engine channel when possible and its
+allowed fallback otherwise. Missing native tooling alone is not a blocker;
+missing both same-engine options or the foreign reviewer is.
 
-Start with the plan found during intake:
+### 2. Plan
 
-- If it still applies to the feature, reuse it. Do not delegate a fresh planning
-  pass merely to restate or independently validate it. Ask the user directly to
-  settle any unresolved product or scope choices.
-- If the existing plan has stale, contradictory, or incomplete code-grounded
-  assumptions, resolve them directly when straightforward. Delegate a fresh
-  planning pass only when doing so requires material replanning.
-- If no applicable plan exists, delegate planning for a non-trivial feature to a
-  fresh native planning subagent so the plan is grounded in a clean read of the
-  code. Use a foreign-engine planning skill or CLI only when the task requires
-  that engine; use a same-engine CLI only when native task tooling is
-  unavailable or lacks a required capability.
-- Plan directly when the change is small and the approach is obvious.
+Reuse a settled plan when it still matches the request. Resolve small,
+code-grounded gaps directly. Replan only when the existing approach is
+materially stale or incomplete.
 
-The plan must cover: approach, files to touch, testing strategy, risks, and
-explicit non-goals. Fill minor omissions directly while freezing the
-implementation spec; minor omissions do not justify another planning pass.
+When no applicable plan exists, use a fresh native planning agent for a
+non-trivial feature and plan directly for an obvious small change. Ask the user
+to settle unresolved product or scope choices. Unless the user already granted
+autonomy, obtain approval for a provisional plan before implementation.
 
-Then, as orchestrator:
+Freeze the result into a concise implementation spec covering the objective,
+constraints, expected file scope, success criteria, testing, risks, and
+non-goals. Identify scope early enough to compare it with the captured dirty
+state before moving branches or integrating work.
 
-1. Sanity-check the plan against the actual code. Resolve material gaps or
-   assumptions that name files or APIs that do not exist. Delegate a new
-   planning pass only when those problems require material replanning.
-2. Treat a settled plan as already approved. For a provisional plan, present a
-   condensed version to the user for approval unless autonomy was settled at
-   intake. Revise on feedback; do not start implementing a plan the user pushed
-   back on.
-3. Freeze the approved plan into an implementation spec: objective, constraints,
-   files, success criteria, verification commands.
+### 3. Prepare the Delivery Branch
 
-Plan early enough to identify the intended file scope before deciding whether
-the captured dirty baseline overlaps the feature. If exact files cannot yet be
-known, identify the narrowest directories or generated outputs that could be
-touched and treat uncertainty at that boundary as possible overlap.
+Prefer keeping all orchestration in the delivery checkout. Reuse a relevant
+feature branch, or create one there from the current remote base. A detached
+checkout at the intended base is a valid place to create the branch.
 
-## 3. Prepare the Delivery Branch
+Preserve non-overlapping user changes in place. Ask only when existing changes
+overlap the implementation scope or branch movement would put them at risk. Do
+not silently absorb user work into the feature.
 
-Prefer the delivery checkout. Detached HEAD, linked-worktree status, or being
-outside the root worktree is not by itself a reason to relocate the workflow.
+If a separate orchestrator checkout is genuinely necessary, record its path and
+reason. Never remove it while it is the only safe local home of the feature
+branch.
 
-1. `git fetch origin <base>` so decisions use the current remote base.
-2. Compare the approved implementation scope with the dirty baseline. Preserve
-   non-overlapping user changes in place. Ask only when existing changes overlap
-   the feature scope or branch movement would be unsafe.
-3. Reuse a relevant existing feature branch when it represents this work. If the
-   delivery checkout is detached at the intended base, create the feature branch
-   there. If it is attached to the intended base, create the feature branch in
-   place from the current remote base while preserving non-overlapping dirt.
-   Follow the branch-naming rules in the `commit-push-pr` skill.
-4. If the checkout is on an unrelated branch or its HEAD differs from the
-   intended base, move it only when Git can do so without rewriting or losing
-   the captured baseline. Ask when the safe destination is ambiguous.
+### 4. Implement and Integrate
 
-Use a separate orchestrator checkout only for a concrete Git or environment
-constraint that prevents safe delivery-checkout use. Record its path and reason;
-it is temporary, not the default home of the branch. Never delete it until the
-final branch is attached to the delivery checkout or the user explicitly accepts
-another local destination.
+For non-trivial work, delegate to one fresh native implementer in an isolated
+worktree or branch. When delegating, keep that agent away from the delivery
+checkout. Direct implementation there is acceptable when the change is small
+enough that delegation would add more cost than perspective; disclose that in
+the final report.
 
-## 4. Implement
+Give the implementer the frozen spec and relevant verification expectations.
+When it finishes:
 
-Delegate implementation to exactly one fresh implementer working in an isolated
-detached worktree or temporary implementation branch created from the feature
-branch. Never let an implementer edit the delivery or orchestrator checkout. For
-routing:
+1. Review the complete result as a contributor diff.
+2. Run appropriate project checks yourself.
+3. Send focused corrections back through the same implementer session. Take over
+   after repeated unsuccessful correction attempts.
+4. Integrate the complete result, including new files, into the feature branch
+   in the delivery checkout.
 
-- Use the orchestrator's native subagent or task tooling for same-engine work.
-- Use a dedicated cross-engine implementation skill or CLI only when the task
-  specifically requires the other engine.
-- Use a same-engine CLI only when native subagents are unavailable or lack a
-  required capability. Do not use it merely to obtain worktree isolation or pin
-  a model.
+Preserve the intake baseline throughout integration. Limit staging to approved
+feature paths and retain temporary implementation work until final delivery is
+verified.
 
-Exception: for small changes where delegation overhead clearly loses, the
-orchestrator may implement directly on the feature branch. This trades away the
-fresh-implementer perspective, so note it in the final report; the dual review
-gate in phases 6-7 applies unchanged either way.
+### 5. Commit, Push, and Open the Draft PR
 
-Give the implementer the frozen spec, the worktree path, and the exact
-verification commands. Ask for a clean diff, not commits.
+Use the `commit-push-pr` skill for commit conventions, push behavior, template
+detection, and PR copy, but create the pull request as a draft.
 
-When the implementer finishes, the orchestrator must:
+Commit only the approved feature scope. When unrelated changes are already
+staged, use a scoped commit approach that excludes them while leaving their
+index state and content exactly as found. Verify that property before and after
+every feature commit, including fix commits, and verify that new feature files
+were included.
 
-1. Read the full diff and judge it like a contributor PR.
-2. Run the project's checks itself (look for Makefile, mise tasks, or build
-   scripts) — implementer claims are advisory.
-3. Send focused fixes back through the same implementer channel. After two
-   failed rounds, take over and finish directly.
-4. Export the result as a complete patch — stage everything in the worktree
-   first so newly created files are included
-   (`git add -A && git diff --binary --cached HEAD`); a plain `git diff` patch
-   silently drops untracked files. Apply the complete result to the feature
-   branch in the delivery checkout, verify new files landed, and confirm the
-   captured user changes remain intact. Stage only the feature paths; never
-   sweep unrelated delivery checkout dirt into the commit. Retain the
-   implementer worktree until the final handback checks in phase 8 pass.
+Push and create the pull request from the delivery checkout. The PR remains a
+draft until review, CI, and local delivery all pass.
 
-## 5. Commit, Push, Draft PR
+### 6. Run the Initial Dual Review
 
-Use the `commit-push-pr` skill for commit message conventions, push, PR template
-detection, and PR body structure — with one override: create the pull request as
-a draft (`gh pr create --draft ...`). Stage only approved feature paths with
-`git add -- <feature-paths>` so tracked changes and new files are included.
+Run two fresh reviewers in parallel against the pushed feature state:
 
-If the intake baseline includes unrelated staged paths, never use a plain
-`git commit`: it commits the whole index. Snapshot those paths' staged status,
-index entries (`git ls-files --stage -- <paths>`), and cached binary diff.
-Verify that snapshot immediately before committing, then use
-`git commit --only -- <feature-paths>` or an equivalently isolated temporary
-index. Immediately afterward, verify that the commit contains only feature paths
-and that every unrelated path's staged status, index entry, and cached content
-exactly match the snapshot. Stop before pushing if they differ. Use the same
-scoped mechanism for every later fix commit while unrelated staged dirt remains.
-The PR is not ready until the review gate in phases 6-7 passes.
+- one through the orchestrator's native same-engine channel;
+- one through the dedicated foreign-engine review channel.
 
-## 6. Dual Review
+Give both reviewers the repository, target base and feature state, and a
+condensed implementation spec. Ask them to inspect the repository themselves for
+requirement mismatches, correctness problems, edge cases, weak tests, security
+issues, and unintended behavior. Keep prompts compact; do not paste large diffs,
+logs, reports, or path lists into them.
 
-Record the pushed HEAD SHA, then spawn two fresh initial reviewers in parallel
-against that exact commit, one per engine. Dual review means:
+Keep each review read-only and retain any session handle that allows later
+continuation. Accept a result only after the review completed successfully and
+clearly identifies the pushed revision it covered. Ensure retries cannot be
+mistaken for or consume output from an earlier attempt.
 
-- one fresh reviewer through the orchestrator's native subagent/task tooling;
-- one reviewer through the dedicated foreign-engine review skill or CLI.
+Both engine perspectives are required for the ready gate. If a channel remains
+unavailable after a bounded retry, continue with the evidence available but
+leave the PR draft and report the coverage gap.
 
-For a Codex orchestrator, use a native Codex reviewer subagent plus the
-`claude-review` skill or Claude CLI. For a Claude orchestrator, use a native
-Claude reviewer subagent plus the `codex-review` skill or Codex CLI. Never
-review from the orchestrating session's context and call it independent. Do not
-invoke the orchestrator's own CLI when native reviewer tooling is available; use
-a same-engine CLI only when native tooling is unavailable or lacks a required
-capability, not merely to pin a model.
+### 7. Reconcile, Fix, and Re-review
 
-Give each reviewer the same substantive prompt: the repo path, the target
-(feature branch vs base), the condensed feature spec, and, for CLI channels, a
-report destination for captured stdout. Native task results may return directly
-through the task tooling. Including the spec matters — requirement mismatches
-are the highest-value finding class. Keep prompts compact: tell reviewers how to
-inspect the target in the repository instead of pasting large diffs, logs, or
-path lists. When a channel exposes a resumable reviewer session, retain its
-handle for fix verification in phase 7.
+Treat reviewer findings as evidence, not authority. Verify each one against the
+code, weigh the reviewer independent of the implementer most heavily, and record
+concise reasons for dismissals.
 
-```text
-Review this implementation independently.
+Fix confirmed findings through the same implementer session when practical, then
+run checks, commit only the fix scope, and push from the delivery checkout.
 
-Repository: <absolute repo path>
-Target: branch <feature-branch> vs <base>
-Commit: <pushed HEAD SHA>
-Feature spec: <condensed spec>
-Report destination: <absolute report path, when the channel uses one>
+Resume the original reviewer sessions for focused fix verification when
+possible. Give each reviewer the last revision it accepted, the new verified
+remote tip, and concise summaries of the relevant findings. Ensure both
+revisions are available in the review checkout and have the reviewer inspect
+only the intervening changes and affected paths from the repository. Do not
+paste generated diffs, long path lists, or prior reports into the prompt.
 
-Look for:
-- requirement mismatches against the spec
-- correctness bugs and edge cases
-- missing or weak tests
-- security issues
-- unintended behavior outside the spec
+Require each continued review to complete successfully and identify the new tip
+it covered. If continuation is unavailable or invalid, use a fresh reviewer
+through the same engine channel. If the fixes materially expand the
+implementation beyond the original findings, use fresh reviewers for both
+channels and review the expanded scope.
 
-For each finding include severity, file and line reference, concrete failure
-mode, and suggested fix direction. Do not edit files. Return the report through
-the review channel; for a CLI channel, print only the report on stdout so the
-launcher captures it at the report destination. Name the reviewed commit in the
-report. If there are no substantive findings, say so.
-```
+Limit the loop to two fix rounds. Surface anything still open rather than
+continuing indefinitely.
 
-Use a fresh native task invocation for the initial review. Treat every reviewer
-call, continuation, or retry as a distinct attempt. For every CLI attempt, use a
-new, previously nonexistent report path; never reuse an earlier report. Launch
-both channels in parallel and poll their status as appropriate. Long silences
-are normal — do not kill a live run before its deadline. Give each reviewer a
-bounded runtime (default 30 minutes unless the user sets another). Read a result
-only after its task or process completes successfully, then require non-empty
-output that names the exact full pushed HEAD SHA. A failed task, nonzero
-process, missing or reused output, or missing or mismatched SHA is an invalid
-review — inspect its error output and retry once with another fresh attempt. If
-a channel is still missing after the retry, continue reconciling with the
-coverage you have, but the PR cannot be marked ready (see phase 8).
+### 8. Deliver
 
-## 7. Reconcile and Fix
+Wait for required CI checks on the final pushed state. Route actionable CI
+failures through the same bounded fix and review loop. Do not mark the PR ready
+before local delivery is complete.
 
-Reviewer reports are evidence, not authority:
-
-1. Read both reports and verify every finding against the code before acting.
-2. Weight by independence: the reviewer whose model differs from the implementer
-   is the primary gate; the same-model reviewer is a secondary perspective.
-3. Record the exact pushed SHA covered by the valid review round as
-   `PREVIOUS_REVIEWED_SHA`. Fix confirmed findings (directly, or through the
-   same implementer channel), re-run project checks, commit, push, and record
-   the verified remote tip as `CURRENT_PUSHED_SHA`.
-4. Re-review only the fix delta through the same two reviewer sessions when the
-   selected tooling supports continuation. This is focused verification of the
-   reviewers' earlier findings, so preserve their context instead of spawning
-   fresh reviewers by default. Give both reviewers the two SHAs and tell them to
-   fetch the exact delta and affected paths themselves with:
-
-   ```bash
-   git diff --binary "$PREVIOUS_REVIEWED_SHA" "$CURRENT_PUSHED_SHA"
-   git diff --name-only "$PREVIOUS_REVIEWED_SHA" "$CURRENT_PUSHED_SHA"
-   ```
-
-   Never paste the generated diff, a long path list, or the full earlier report
-   into the prompt. Include only concise finding identifiers or summaries needed
-   to focus the verification. Every continuation still produces a fresh result
-   artifact and must satisfy the exact-SHA checks from phase 6.
-
-   If a reviewer cannot be resumed, its continuation fails validation, or its
-   channel lacks session continuation, start a fresh reviewer through the same
-   engine channel. Give that fallback the condensed finding context plus the SHA
-   pair and repository inspection commands, not copied artifacts. If fixes
-   materially broaden the implementation beyond the original findings, start
-   fresh reviewers for both channels and review the expanded scope.
-
-   After a valid round, treat `CURRENT_PUSHED_SHA` as the previous reviewed SHA
-   for any next round. Cap the loop at two fix rounds; surface anything still
-   open to the user instead of looping.
-
-5. Record dismissed findings with a one-line reason each.
-
-## 8. Deliver
-
-The review gate requires completed reviews from both engines. When it passes,
-wait for the PR's required GitHub checks on the final pushed HEAD
-(`gh pr checks --watch`, bounded at 60 minutes unless the user sets another
-deadline). Route actionable CI failures back through the phase 7 fix loop — they
-consume fix rounds like reviewer findings. Do not mark the PR ready yet.
-
-Before removing any workflow-created checkout or declaring local delivery
-complete, verify in the delivery checkout:
+Before cleanup, verify in the delivery checkout that:
 
 - the expected feature branch is attached there;
-- its HEAD exactly equals the pushed remote branch SHA;
-- upstream tracking points to the expected remote branch;
-- every pre-existing staged, unstaged, and untracked change from the intake
-  baseline is preserved;
-- the final `git worktree list --porcelain` mapping has no unintended branch
-  attachment.
+- its head matches the pushed remote branch and tracks the expected upstream;
+- all pre-existing staged, unstaged, and untracked changes remain intact;
+- the worktree mapping contains no unintended branch attachment.
 
-Only after these checks pass, remove workflow-created implementer and temporary
-orchestrator worktrees, then inspect the mapping again to confirm cleanup. The
-delivery checkout itself remains the local home of the feature branch.
+Only then remove workflow-created worktrees and verify the mapping again. If
+handback is blocked, retain the checkout holding the feature branch, keep the PR
+draft, and report its path and the blocker. Use another final local destination
+only with explicit user acceptance.
 
-If handback is blocked, retain the temporary orchestrator checkout and report
-its path and the exact blocker. Never remove the only checkout containing or
-holding the final feature branch. The user must explicitly accept a different
-final local destination before the delivery checkout can be skipped. Leave the
-PR as a draft until handback succeeds or the accepted destination is verified.
+Mark the PR ready only when both reviewer channels cover the final state,
+required CI is green, handback is verified, and temporary checkout cleanup is
+safe.
 
-Mark the PR ready with `gh pr ready` only after required checks are green and
-handback plus cleanup verification has passed. If only one engine reviewed the
-branch, residual findings need a user decision, CI cannot pass within scope, or
-handback remains blocked, leave the PR as a draft, say why, and let the user
-decide whether the achieved coverage is enough.
-
-The final report must include:
-
-- PR URL and target base branch.
-- What shipped, and any deviations from the approved plan.
-- Review outcome: findings fixed, findings dismissed (with reasons), and
-  residual findings or risk.
-- Verification evidence: which checks ran and their results, including the CI
-  outcome for the final pushed commit.
-- Local handback: delivery-checkout path, attached branch and final SHA,
-  upstream status, and which pre-existing changes were preserved.
-- Any retained temporary checkout, its path, and why cleanup was blocked.
-
-## Inline CLI Fallback Shapes
-
-Use these only for the foreign-engine channel when no dedicated review skill
-covers it. A same-engine CLI is also allowed when native subagent/task tooling
-is unavailable or lacks a required capability. These shapes are intentionally
-minimal; dedicated review skills remain the source of truth for prompting and
-verification strategy. They show fresh sessions; when phase 7 continues a CLI
-session, use its documented resume form while keeping a fresh attempt directory
-and report path.
-
-```bash
-ARTIFACT_DIR="$(mktemp -d "${TMPDIR:-/tmp}/ship-feature-pr.XXXXXX")"
-```
-
-Codex reviewer:
-
-```bash
-CODEX_ATTEMPT_DIR="$(mktemp -d "$ARTIFACT_DIR/codex-attempt.XXXXXX")"
-codex review - < "$CODEX_ATTEMPT_DIR/prompt.md" \
-  > "$CODEX_ATTEMPT_DIR/report.md" \
-  2> "$CODEX_ATTEMPT_DIR/stderr.log"
-```
-
-Claude reviewer (plan mode keeps the session read-only; safe mode keeps the
-target repo's hooks and plugins from executing during the review):
-
-```bash
-CLAUDE_ATTEMPT_DIR="$(mktemp -d "$ARTIFACT_DIR/claude-attempt.XXXXXX")"
-claude -p --permission-mode plan --safe-mode \
-  < "$CLAUDE_ATTEMPT_DIR/prompt.md" \
-  > "$CLAUDE_ATTEMPT_DIR/report.md" \
-  2> "$CLAUDE_ATTEMPT_DIR/stderr.log"
-```
-
-## Failure Handling
-
-- One reviewer channel is unavailable: run the reviewer the available channel
-  provides and report the gap. Do not fake a pair with two instances of the same
-  engine — same-model redundancy adds almost nothing.
-- Plan rejected: revise and re-present; do not implement around the user.
-- Implementer fails twice on the same problem: take over and implement directly.
-- Initial reviewer run fails or times out: retry once with a fresh reviewer. A
-  fix-verification continuation that fails gets one fresh-reviewer fallback;
-  then continue with the remaining reviewer and report the coverage gap.
-- Single-engine coverage — for any reason — never satisfies the ready gate: the
-  PR stays a draft and the user decides whether it is enough.
-- Never mark the PR ready without at least one independent review of the final
-  diff, including fix commits.
-- Delivery-checkout handback fails: retain the temporary checkout, preserve all
-  worktree mappings, and report the path and blocker instead of deleting it or
-  silently choosing another destination.
+Report the PR URL and base, what shipped, review decisions, checks and CI,
+delivery-checkout path, final branch and revision, upstream state, preserved
+pre-existing changes, and any retained checkout or residual risk.
