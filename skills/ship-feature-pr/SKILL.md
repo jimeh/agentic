@@ -158,9 +158,11 @@ Run two fresh reviewers in parallel against the pushed feature state:
 
 Give both reviewers the repository, target base and feature state, and a
 condensed implementation spec. Ask them to inspect the repository themselves for
-requirement mismatches, correctness problems, edge cases, weak tests, security
-issues, and unintended behavior. Keep prompts compact; do not paste large diffs,
-logs, reports, or path lists into them.
+requirement mismatches, correctness problems, edge cases, missing or weak tests,
+security issues, and unintended behavior. Require each finding to state its
+severity, location, concrete failure mode, and suggested direction, and require
+reviewers to say explicitly when they find no substantive issues. Keep prompts
+compact; do not paste large diffs, logs, reports, or path lists into them.
 
 Keep each review read-only and retain any session handle that allows later
 continuation. Accept a result only after the review completed successfully and
