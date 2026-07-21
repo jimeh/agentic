@@ -169,9 +169,10 @@ continuation. Accept a result only after the review completed successfully and
 clearly identifies the pushed revision it covered. Ensure retries cannot be
 mistaken for or consume output from an earlier attempt.
 
-Both engine perspectives are required for the ready gate. If a channel remains
-unavailable after a bounded retry, continue with the evidence available but
-leave the PR draft and report the coverage gap.
+Both engine perspectives are required for the ready gate; do not simulate dual
+review with two reviewers from the same engine. If a channel remains unavailable
+after a bounded retry, continue with the evidence available but leave the PR
+draft and report the coverage gap.
 
 ### 7. Reconcile, Fix, and Re-review
 
