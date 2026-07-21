@@ -3,6 +3,7 @@ interface:
   short_description: "Reuse or plan, implement, and review a feature PR"
   default_prompt:
     "Use $ship-feature-pr to take this feature end to end: reuse any settled
-    plan already in context or plan it if needed, implement it in an isolated
-    worktree, open a draft PR, run one Codex and one Claude reviewer, reconcile
-    the findings, and mark the PR ready."
+    plan already in context or plan it if needed, preserve and return the final
+    branch to the invocation checkout, implement with native task tooling in an
+    isolated worktree, open a draft PR, run native and foreign-engine reviews,
+    reconcile the findings, and mark the PR ready."
