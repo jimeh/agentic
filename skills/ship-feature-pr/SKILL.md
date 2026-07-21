@@ -85,10 +85,12 @@ without checkpoints ("just ship it", "don't ask, go"), skip the approval stop
 and note that in the final report.
 
 Then preflight before mutating work: verify `gh` authentication, push access to
-the remote, that the base ref exists on the remote, native subagent/task
-availability, and the foreign reviewer channel. CLI version or reachability
-checks are fine. Surface a missing requirement as a blocker now instead of
-discovering it after implementation.
+the remote, and that the base ref exists on the remote. Select the same-engine
+channel: native subagent/task tooling when available, otherwise the allowed
+same-engine CLI fallback when native tooling is unavailable or lacks a required
+capability. Also require the foreign reviewer channel. CLI version or
+reachability checks are fine. Missing native tooling alone is not a blocker;
+missing both same-engine channels or the foreign reviewer is.
 
 ## 2. Plan
 
@@ -194,8 +196,19 @@ When the implementer finishes, the orchestrator must:
 
 Use the `commit-push-pr` skill for commit message conventions, push, PR template
 detection, and PR body structure — with one override: create the pull request as
-a draft (`gh pr create --draft ...`). Stage and commit only the approved feature
-paths. The PR is not ready until the review gate in phases 6-7 passes.
+a draft (`gh pr create --draft ...`). Stage only approved feature paths with
+`git add -- <feature-paths>` so tracked changes and new files are included.
+
+If the intake baseline includes unrelated staged paths, never use a plain
+`git commit`: it commits the whole index. Snapshot those paths' staged status,
+index entries (`git ls-files --stage -- <paths>`), and cached binary diff.
+Verify that snapshot immediately before committing, then use
+`git commit --only -- <feature-paths>` or an equivalently isolated temporary
+index. Immediately afterward, verify that the commit contains only feature paths
+and that every unrelated path's staged status, index entry, and cached content
+exactly match the snapshot. Stop before pushing if they differ. Use the same
+scoped mechanism for every later fix commit while unrelated staged dirt remains.
+The PR is not ready until the review gate in phases 6-7 passes.
 
 ## 6. Dual Review
 
@@ -274,11 +287,7 @@ The review gate requires completed reviews from both engines. When it passes,
 wait for the PR's required GitHub checks on the final pushed HEAD
 (`gh pr checks --watch`, bounded at 60 minutes unless the user sets another
 deadline). Route actionable CI failures back through the phase 7 fix loop — they
-consume fix rounds like reviewer findings. Mark the PR ready with `gh pr ready`
-only once the required checks are green. If only one engine reviewed the branch,
-residual findings need a user decision, or CI cannot pass within the approved
-scope, leave the PR as a draft, say why, and let the user decide whether the
-achieved coverage is enough.
+consume fix rounds like reviewer findings. Do not mark the PR ready yet.
 
 Before removing any workflow-created checkout or declaring local delivery
 complete, verify in the delivery checkout:
@@ -298,7 +307,14 @@ delivery checkout itself remains the local home of the feature branch.
 If handback is blocked, retain the temporary orchestrator checkout and report
 its path and the exact blocker. Never remove the only checkout containing or
 holding the final feature branch. The user must explicitly accept a different
-final local destination before the delivery checkout can be skipped.
+final local destination before the delivery checkout can be skipped. Leave the
+PR as a draft until handback succeeds or the accepted destination is verified.
+
+Mark the PR ready with `gh pr ready` only after required checks are green and
+handback plus cleanup verification has passed. If only one engine reviewed the
+branch, residual findings need a user decision, CI cannot pass within scope, or
+handback remains blocked, leave the PR as a draft, say why, and let the user
+decide whether the achieved coverage is enough.
 
 The final report must include:
 
