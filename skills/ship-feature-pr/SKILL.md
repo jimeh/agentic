@@ -107,9 +107,10 @@ state before moving branches or integrating work.
 
 Prefer keeping all orchestration in the delivery checkout. Refresh and verify
 the remote base before creating the delivery branch or moving the checkout onto
-it. Reuse a relevant feature branch, or create one there from the current remote
-base. A detached checkout at the intended base is a valid place to create the
-branch.
+it. Reuse an existing feature branch only when its base and commits belong to
+the requested work; otherwise create a clean branch there or ask if local state
+makes that unsafe. A detached checkout at the intended base is a valid place to
+create the branch.
 
 Preserve non-overlapping user changes in place. Ask only when existing changes
 overlap the implementation scope or branch movement would put them at risk. Do
@@ -121,11 +122,12 @@ branch.
 
 ### 4. Implement and Integrate
 
-For non-trivial work, delegate to one fresh native implementer in an isolated
-worktree or branch. When delegating, keep that agent away from the delivery
-checkout. Direct implementation there is acceptable when the change is small
-enough that delegation would add more cost than perspective; disclose that in
-the final report.
+For non-trivial work, delegate to one fresh same-engine implementer in a
+separate worktree or clone, preferring native tooling and using the allowed
+same-engine CLI fallback only when necessary. Keep that agent away from the
+delivery checkout. Direct implementation there is acceptable when the change is
+small enough that delegation would add more cost than perspective; disclose that
+in the final report.
 
 Give the implementer the frozen spec and relevant verification expectations.
 When it finishes:
@@ -155,6 +157,9 @@ index state and content exactly as found. Verify that property before and after
 every feature commit, including fix commits, and verify that new feature files
 were included.
 
+Before pushing, verify that the captured non-feature index and worktree state
+remains unchanged; stop if it does not.
+
 Push and create the pull request from the delivery checkout. The PR remains a
 draft until review, CI, and local delivery all pass.
 
@@ -182,13 +187,14 @@ continuation. Accept a result only after the review completed successfully and
 clearly identifies the pushed revision it covered. Ensure retries cannot be
 mistaken for or consume output from an earlier attempt.
 
-Use a context-appropriate deadline, check task or process liveness before
-retrying, and do not treat quiet output as failure while a review remains live.
+Before launching reviews, set a finite attempt budget and a context-appropriate
+overall deadline. Check task or process liveness before retrying, and do not
+treat quiet output as failure while a review remains live.
 
 Both engine perspectives are required for the ready gate; do not simulate dual
 review with two reviewers from the same engine. If a channel remains unavailable
-after a bounded retry, continue with the evidence available but leave the PR
-draft and report the coverage gap.
+when its budget or deadline is exhausted, continue with the evidence available
+but leave the PR draft and report the coverage gap.
 
 ### 7. Reconcile, Fix, and Re-review
 
@@ -217,9 +223,10 @@ continuing indefinitely.
 
 ### 8. Deliver
 
-Wait for required CI checks on the final pushed state. Route actionable CI
-failures through the same bounded fix and review loop. Do not mark the PR ready
-before local delivery is complete.
+Wait for required CI checks that cover the final pushed remote state; ignore
+results from earlier pushes. Route actionable CI failures through the same
+bounded fix and review loop. Do not mark the PR ready before local delivery is
+complete.
 
 Use a context-appropriate deadline, but do not treat pending checks as failed
 before they finish or the deadline expires.

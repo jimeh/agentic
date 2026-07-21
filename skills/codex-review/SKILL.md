@@ -89,8 +89,10 @@ verification is likely, use a persisted `codex exec review --json` session,
 retain its explicit session ID, and resume it with `codex exec resume`; do not
 use `--ephemeral`. Give the resumed reviewer revision boundaries and concise
 finding summaries, then have it inspect the delta from the repository rather
-than pasting prior reports or large diffs. Use a fresh reviewer when
-continuation is unavailable or the reviewed scope materially broadens.
+than pasting prior reports or large diffs. Before resuming, confirm the intended
+prior and current review targets remain available and match the requested
+review. Use a fresh reviewer when they do not, continuation is unavailable, or
+the reviewed scope materially broadens.
 
 Do not retry automatically when Codex reports no issues. If the run times out or
 fails, report that and decide whether direct review is still useful.

@@ -91,8 +91,9 @@ Run notes:
 - Resume the same reviewer for focused fix verification when possible. Give it
   revision boundaries and concise finding summaries, then have it inspect the
   delta from the repository rather than pasting prior reports or large diffs.
-  Use a fresh reviewer when continuation is unavailable or the reviewed scope
-  materially broadens.
+  Before resuming, confirm the intended prior and current review targets remain
+  available and match the requested review. Use a fresh reviewer when they do
+  not, continuation is unavailable, or the reviewed scope materially broadens.
 
 Do not retry automatically when Claude reports no issues. A run that exits
 nonzero or leaves an empty or missing report has failed — read the stderr log

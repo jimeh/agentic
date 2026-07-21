@@ -5,5 +5,7 @@ interface:
     "Use $ship-feature-pr to ship this feature from the current checkout: reuse
     or create a plan, route work to the appropriate native and foreign-engine
     channels, integrate and open the draft PR from this checkout, reuse the
-    initial reviewers for fix verification, and deliver it when reviews, CI, and
-    local handback pass."
+    initial reviewers for fix verification when valid and use fresh fallbacks
+    otherwise, and mark it ready only after both review channels cover the final
+    state, findings and decisions are resolved, and CI, handback, and cleanup
+    pass."
