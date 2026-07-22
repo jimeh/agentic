@@ -16,9 +16,9 @@
       "sourceType": "git",
       "sourceUrl": "https://github.com/jimeh/airplan.git",
       "ref": "main",
-      "resolvedCommit": "9e700076a4573509e92bb4e84539b4e9cdf81db0",
+      "resolvedCommit": "f8ec2d800d842e00f79cbae8324396da8b6fd6ce",
       "upstreamPath": "skills/airplan",
-      "contentHash": "sha256:9c13c156ed9b9169682488d550eec0ada514d6ea570ef6b63e4b4058d275831b",
+      "contentHash": "sha256:197cce4fcc76c7e92b8ce3822de59b89ff47849c262b87ff4704d1df5e292f0b",
       "skillsCliVersion": null
     },
     "frontend-design": {
@@ -36,7 +36,7 @@
       "sourceType": "git",
       "sourceUrl": "https://github.com/mattpocock/skills.git",
       "ref": "main",
-      "resolvedCommit": "9603c1cc8118d08bc1b3bf34cf714f62178dea3b",
+      "resolvedCommit": "ed37663cc5fbef691ddfecd080dff42f7e7e350d",
       "upstreamPath": "skills/productivity/grill-me",
       "contentHash": "sha256:79054f4df616e91968cdbd0291485fbadc209e398abbe2a61035cef13deb5049",
       "skillsCliVersion": null
@@ -46,7 +46,7 @@
       "sourceType": "git",
       "sourceUrl": "https://github.com/openclaw/agent-skills.git",
       "ref": "main",
-      "resolvedCommit": "06cfaef5d17cefe089e0fc3e6b793086e10bc564",
+      "resolvedCommit": "c4ab5e7f999cf504890986322473d3e7afd373af",
       "upstreamPath": "skills/handoff",
       "contentHash": "sha256:fc076f67a527973739f065ad0b45a693fee1e0a529174d61a901a331989b00ec",
       "skillsCliVersion": null
@@ -76,7 +76,7 @@
       "sourceType": "git",
       "sourceUrl": "https://github.com/shadcn/ui.git",
       "ref": "main",
-      "resolvedCommit": "d28738b183c5eaa69d8d540826e450f30d39ab6c",
+      "resolvedCommit": "fa4872c8ed948c111884e52ae23a649e83591b71",
       "upstreamPath": "skills/shadcn",
       "contentHash": "sha256:110cd5ba7caec5982e29abba9beed9ff3daf9ac02c1116f33ea6f80d9bee3f72",
       "skillsCliVersion": null
@@ -86,7 +86,7 @@
       "sourceType": "git",
       "sourceUrl": "https://github.com/vercel-labs/agent-skills.git",
       "ref": "main",
-      "resolvedCommit": "f8a72b9603728bb92a217a879b7e62e43ad76c81",
+      "resolvedCommit": "4559f18a20c1691c744b4395194290db6a0df5e9",
       "upstreamPath": "skills/react-best-practices",
       "contentHash": "sha256:b26955b4458a63d542406e6bb40e5a5e8e39dd622f8a630e6e3cd2fb356af544",
       "skillsCliVersion": null
@@ -96,7 +96,7 @@
       "sourceType": "git",
       "sourceUrl": "https://github.com/vercel-labs/agent-skills.git",
       "ref": "main",
-      "resolvedCommit": "f8a72b9603728bb92a217a879b7e62e43ad76c81",
+      "resolvedCommit": "4559f18a20c1691c744b4395194290db6a0df5e9",
       "upstreamPath": "skills/web-design-guidelines",
       "contentHash": "sha256:21fceadedadbc21ecea83268313f84360c3532215a9a469873609c15bedccf14",
       "skillsCliVersion": null
