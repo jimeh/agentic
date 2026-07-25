@@ -170,11 +170,17 @@ test("installs managed CLI wrapper symlinks", () => {
   const result = run(home);
 
   expect(result.status).toBe(0);
+  expect(readlinkSync(join(home, ".local", "bin", "clide"))).toBe(
+    join(rootDir, "bin", "clide"),
+  );
   expect(readlinkSync(join(home, ".local", "bin", "claudex"))).toBe(
     join(rootDir, "bin", "claudex"),
   );
   expect(readlinkSync(join(home, ".local", "bin", "fable"))).toBe(
     join(rootDir, "bin", "fable"),
+  );
+  expect(readlinkSync(join(home, ".local", "bin", "opus"))).toBe(
+    join(rootDir, "bin", "opus"),
   );
 });
 

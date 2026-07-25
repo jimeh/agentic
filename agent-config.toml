@@ -12,8 +12,10 @@ symlinks = [
   { source = "codex/config.toml", target = "~/.codex/config.toml" },
   { source = "codex/hooks.json", target = "~/.codex/hooks.json" },
   { source = "codex/pets", target = "~/.codex/pets" },
+  { source = "bin/clide", target = "~/.local/bin/clide" },
   { source = "bin/claudex", target = "~/.local/bin/claudex" },
   { source = "bin/fable", target = "~/.local/bin/fable" },
+  { source = "bin/opus", target = "~/.local/bin/opus" },
 ]
 
 staleSymlinkCleanup = [

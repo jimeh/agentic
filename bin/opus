@@ -2,15 +2,15 @@
 
 set -o pipefail
 
-model="${FABLE_MODEL:-claude-fable-5[1m]}"
-effort="${FABLE_EFFORT:-high}"
-base_url="${FABLE_BASE_URL:-${CLAUDEX_BASE_URL:-http://127.0.0.1:8317}}"
-config="${FABLE_CONFIG:-${CLAUDEX_CONFIG:-${CLIPROXYAPI_CONFIG:-$HOME/.cli-proxy-api/config.yaml}}}"
-auth_token="${FABLE_API_KEY:-${CLAUDEX_API_KEY:-${CLIPROXYAPI_API_KEY:-}}}"
+model="${OPUS_MODEL:-opus[1m]}"
+effort="${OPUS_EFFORT:-medium}"
+base_url="${OPUS_BASE_URL:-${CLAUDEX_BASE_URL:-http://127.0.0.1:8317}}"
+config="${OPUS_CONFIG:-${CLAUDEX_CONFIG:-${CLIPROXYAPI_CONFIG:-$HOME/.cli-proxy-api/config.yaml}}}"
+auth_token="${OPUS_API_KEY:-${CLAUDEX_API_KEY:-${CLIPROXYAPI_API_KEY:-}}}"
 
 if [[ -z "$auth_token" ]]; then
   if [[ ! -r "$config" ]]; then
-    echo "fable: CLIProxyAPI config not readable: $config" >&2
+    echo "opus: CLIProxyAPI config not readable: $config" >&2
     exit 1
   fi
 
@@ -27,7 +27,7 @@ if [[ -z "$auth_token" ]]; then
 fi
 
 if [[ -z "$auth_token" ]]; then
-  echo "fable: no API key found in $config" >&2
+  echo "opus: no API key found in $config" >&2
   exit 1
 fi
 

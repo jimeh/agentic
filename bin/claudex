@@ -3,6 +3,7 @@
 set -o pipefail
 
 model="${CLAUDEX_MODEL:-gpt-5.6-sol}"
+effort="${CLAUDEX_EFFORT:-high}"
 base_url="${CLAUDEX_BASE_URL:-http://127.0.0.1:8317}"
 config="${CLAUDEX_CONFIG:-${CLIPROXYAPI_CONFIG:-$HOME/.cli-proxy-api/config.yaml}}"
 auth_token="${CLAUDEX_API_KEY:-${CLIPROXYAPI_API_KEY:-}}"
@@ -37,4 +38,12 @@ export CLAUDE_CODE_ALWAYS_ENABLE_EFFORT=1
 export CLAUDE_CODE_MAX_TOOL_USE_CONCURRENCY=3
 export ENABLE_TOOL_SEARCH=false
 
-exec claude --model "$model" "$@"
+effort_args=(--effort "$effort")
+for arg in "$@"; do
+  if [[ "$arg" == "--effort" || "$arg" == --effort=* ]]; then
+    effort_args=()
+    break
+  fi
+done
+
+exec claude --model "$model" "${effort_args[@]}" "$@"
