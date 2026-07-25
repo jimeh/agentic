@@ -22,6 +22,9 @@
     "**/node_modules/**",
     "docs/references/",
     "thirdparty/",
+    // Machine-composed output. Structure comes from rules/ sources, including
+    // vendored rules/rtk/ content whose headings we cannot change.
+    "generated/",
     "plan.md",
     "research.md",
     "review.md",

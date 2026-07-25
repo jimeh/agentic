@@ -11,7 +11,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { afterEach, expect, test } from "bun:test";
 import { spawnSync } from "node:child_process";
 
@@ -142,12 +142,38 @@ test("installs generated global rule symlinks", () => {
   expect(readlinkSync(join(home, ".claude", "CLAUDE.md"))).toBe(
     join(rootDir, "generated", "CLAUDE.md"),
   );
-  expect(readlinkSync(join(home, ".agents", "AGENTS.md"))).toBe(
-    join(rootDir, "generated", "AGENTS.md"),
-  );
   expect(readlinkSync(join(home, ".codex", "AGENTS.md"))).toBe(
-    join(rootDir, "generated", "AGENTS.md"),
+    join(rootDir, "generated", "CODEX.md"),
   );
+  expect(readlinkSync(join(home, ".config", "opencode", "AGENTS.md"))).toBe(
+    join(rootDir, "generated", "OPENCODE.md"),
+  );
+});
+
+test("installs vendored RTK symlinks", () => {
+  const home = createHome();
+
+  const result = run(home);
+
+  expect(result.status).toBe(0);
+  expect(readlinkSync(join(home, ".claude", "RTK.md"))).toBe(
+    join(rootDir, "rules", "rtk", "claude.md"),
+  );
+  expect(readlinkSync(join(home, ".codex", "RTK.md"))).toBe(
+    join(rootDir, "rules", "rtk", "codex.md"),
+  );
+});
+
+test("removes the retired ~/.agents/AGENTS.md rule symlink", () => {
+  const home = createHome();
+  const legacy = join(home, ".agents", "AGENTS.md");
+  mkdirSync(dirname(legacy), { recursive: true });
+  symlinkSync(join(rootDir, "generated", "AGENTS.md"), legacy);
+
+  const result = run(home);
+
+  expect(result.status).toBe(0);
+  expect(existsSync(legacy)).toBe(false);
 });
 
 test("installs managed Claude gateway agent symlinks", () => {

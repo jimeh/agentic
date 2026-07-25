@@ -50,12 +50,13 @@ mise run hooks:install
 
 ## What's Inside
 
-- **`rules/`** — Source Markdown for global behavior rules. `base.md` is shared
-  by all targets, while `agents.md` and `claude.md` append target-specific
-  guidance.
-- **`generated/`** — Rendered global `AGENTS.md` and `CLAUDE.md` files. These
-  are symlinked into agent config directories; edit `rules/` and run
-  `mise run rules:build` instead of editing generated files directly.
+- **`rules/`** — Source Markdown for global behavior rules. Each render target
+  declares itself with `type: agentic-rules` frontmatter and composes its
+  content with `<!-- include: path -->` directives. See `rules/README.md`.
+- **`generated/`** — Rendered global rule files (`CLAUDE.md`, `CODEX.md`,
+  `OPENCODE.md`). These are symlinked into agent config directories; edit
+  `rules/` and run `mise run rules:build` instead of editing generated files
+  directly.
 - **`agent-config.toml`** — Installer config for fixed symlinks, skill symlink
   roots, stale-link cleanup paths, Claude plugin marketplaces, and
   auto-installed Claude plugins. It points editors at
@@ -152,6 +153,13 @@ permission prompts.
 
 Handles all `-C` syntax variants (space, `=`, bare, quoted) and compound
 commands (`&&`, `;`).
+
+### [rtk](plugins/rtk/)
+
+A `PreToolUse` hook that routes Bash commands through rtk, a token-optimizing
+CLI proxy that filters verbose command output. Packaging it as a plugin keeps
+the wiring version-controlled, rather than letting `rtk init` patch the managed
+`claude/settings.json`. Fails open when rtk is not on `PATH`.
 
 ### [git-commands](plugins/git-commands/)
 

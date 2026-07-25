@@ -2,8 +2,10 @@
 
 symlinks = [
   { source = "generated/CLAUDE.md", target = "~/.claude/CLAUDE.md" },
-  { source = "generated/AGENTS.md", target = "~/.agents/AGENTS.md" },
-  { source = "generated/AGENTS.md", target = "~/.codex/AGENTS.md" },
+  { source = "generated/CODEX.md", target = "~/.codex/AGENTS.md" },
+  { source = "generated/OPENCODE.md", target = "~/.config/opencode/AGENTS.md" },
+  { source = "rules/rtk/claude.md", target = "~/.claude/RTK.md" },
+  { source = "rules/rtk/codex.md", target = "~/.codex/RTK.md" },
   { source = "claude/settings.json", target = "~/.claude/settings.json" },
   { source = "claude/keybindings.json", target = "~/.claude/keybindings.json" },
   { source = "claude/statusline.sh", target = "~/.claude/statusline.sh" },
@@ -19,6 +21,7 @@ symlinks = [
 ]
 
 staleSymlinkCleanup = [
+  { sourceDir = "generated", targetDir = "~/.agents" },
   { sourceDir = "bin", targetDir = "~/.local/bin" },
   { sourceDir = "claude/commands", targetDir = "~/.claude/commands" },
   { sourceDir = "claude/agents", targetDir = "~/.claude/agents" },
@@ -59,3 +62,11 @@ marketplaces = [
 ]
 
 plugins = []
+
+# Plugins published by this repository. The rtk plugin registers the PreToolUse
+# hook that rtk's own installer would otherwise write into claude/settings.json,
+# keeping that managed file free of tool-written drift.
+[claude.localMarketplace]
+manifest = ".claude-plugin/marketplace.json"
+source = "."
+plugins = ["rtk"]

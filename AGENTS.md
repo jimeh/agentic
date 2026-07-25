@@ -109,11 +109,17 @@ with metadata (name, version, description, source path, category).
 
 ### Global Rules
 
-Global instructions are rendered from Markdown sources under `rules/`.
-`rules/base.md` is shared by all targets, and `rules/agents.md` or
-`rules/claude.md` can append target-specific guidance. Run
-`mise run rules:build` after editing these files; `mise run lint` checks the
-rendered files in `generated/` are current.
+Global instructions are rendered from Markdown sources under `rules/`. A source
+becomes a render target by declaring `type: agentic-rules` and a `filename` in
+its frontmatter; the renderer discovers targets by scanning, so adding one means
+creating a file rather than editing TypeScript. Sources compose content with
+`<!-- include: path -->` directives, resolved relative to the including file.
+Includes may nest, must stay inside `rules/`, and cycles are rejected.
+
+`rules/base.md` is shared by all targets and `rules/agents.md` by the non-Claude
+ones; neither is a target itself. Run `mise run rules:build` after editing these
+files; `mise run lint` checks the rendered files in `generated/` are current and
+reports generated files no source claims. See `rules/README.md` for the layout.
 
 ### Agent-Specific Config
 
@@ -214,3 +220,17 @@ not `>file`). See `.editorconfig` for shfmt flags.
 - For gone-branch cleanup, `git branch -v` shows `[gone]` and `git branch -vv`
   adds the upstream ref. Prefer `git for-each-ref` for scripts that need stable
   gone-branch detection.
+- Codex reads `~/.codex/AGENTS.md` only and never falls back to
+  `~/.agents/AGENTS.md`; with no file at the former, it loads no global
+  instructions at all. Verify what a session actually sees with
+  `codex debug prompt-input`, which renders the model-visible prompt.
+- Codex does not expand `@path` references — they reach the model as literal
+  text. Content that must reach Codex has to be inlined, which is why
+  `rules/codex.md` includes `rules/rtk/codex.md` rather than referencing it.
+- opencode reads `~/.config/opencode/AGENTS.md`, falling back to
+  `~/.claude/CLAUDE.md` only when that file is absent. Populating the former
+  stops opencode inheriting Claude-only rules.
+- `rtk init -g` writes through symlinks, so it updates `rules/rtk/*.md` in this
+  repo. The Codex variant also re-appends an `@.../RTK.md` line to
+  `~/.codex/AGENTS.md`; that edit lands in generated output and is discarded by
+  the next `mise run rules:build`.

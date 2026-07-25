@@ -1,7 +1,9 @@
-<!--
-Add Claude-specific global rules here. This file is appended after
-rules/base.md when `agent-config rules build` renders generated/CLAUDE.md.
--->
+---
+type: agentic-rules
+filename: CLAUDE.md
+---
+
+<!-- include: base.md -->
 
 ## Execution Mode
 
@@ -123,3 +125,5 @@ design, code quality, and copy. Update the table when available models change.
   extracting data.
 - For desktop apps, simulators, or other non-browser GUI flows, use the direct
   GUI tooling available in the current harness.
+
+@RTK.md

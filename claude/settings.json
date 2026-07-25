@@ -169,9 +169,11 @@
     "plugin-dev@claude-plugins-official": true,
     "ruby-lsp@claude-plugins-official": true,
     "rust-analyzer-lsp@claude-plugins-official": true,
-    "typescript-lsp@claude-plugins-official": true
+    "typescript-lsp@claude-plugins-official": true,
+    "rtk@jimeh-agentic": true
   },
   "extraKnownMarketplaces": {},
+  "model": "opus[1m]",
   "effortLevel": "high",
   "autoUpdatesChannel": "latest",
   "tui": "fullscreen",
@@ -182,6 +184,5 @@
   "preferredNotifChannel": "ghostty",
   "switchModelsOnFlag": false,
   "teammateMode": "auto",
-  "skipAutoPermissionPrompt": true,
-  "model": "claude-fable-5[1m]"
+  "skipAutoPermissionPrompt": true
 }

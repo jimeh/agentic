@@ -16,6 +16,16 @@
       "category": "productivity"
     },
     {
+      "name": "rtk",
+      "description": "Routes Bash commands through rtk, a token-optimizing CLI proxy",
+      "version": "0.1.0",
+      "author": {
+        "name": "jimeh"
+      },
+      "source": "./plugins/rtk",
+      "category": "productivity"
+    },
+    {
       "name": "git-commands",
       "description": "Git workflow slash commands: commit, push, PR, rebase, and branch cleanup",
       "version": "0.2.2",

@@ -1,22 +1,282 @@
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import {
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
+import { dirname, join, relative, resolve, sep } from "node:path";
+import matter from "gray-matter";
 
-type Target = {
-  output: string;
-  overlay: string;
+/** Frontmatter marker identifying a Markdown file as a render target. */
+const RULES_TYPE = "agentic-rules";
+
+/** Directory holding rule sources, relative to the repository root. */
+const SOURCE_DIR = "rules";
+
+/** Directory receiving rendered output, relative to the repository root. */
+const OUTPUT_DIR = "generated";
+
+/**
+ * Files under the source directory that are neither render targets nor
+ * included by one. Documentation lives alongside the sources it describes.
+ */
+const ORPHAN_EXEMPT = new Set(["README.md"]);
+
+/**
+ * Directories holding content owned by an external tool.
+ *
+ * `rules/rtk/` mirrors the RTK files rtk generates. Claude reads its copy
+ * through rtk's own `@RTK.md` reference rather than an include, so that file is
+ * legitimately unreferenced here and must not trip the orphan check.
+ */
+const VENDORED_DIRS = new Set(["rtk"]);
+
+/** Maximum include nesting depth, guarding against pathological chains. */
+const MAX_INCLUDE_DEPTH = 32;
+
+const INCLUDE_PATTERN =
+  /^[ \t]*<!--[ \t]*include:[ \t]*(.+?)[ \t]*-->[ \t]*$/gm;
+
+type Source = {
+  /** Absolute path to the Markdown source. */
+  path: string;
+  /** Output file name within the generated directory. */
+  filename: string;
 };
 
-function targets(rootDir: string): Target[] {
-  return [
-    {
-      output: join(rootDir, "generated", "AGENTS.md"),
-      overlay: join(rootDir, "rules", "agents.md"),
-    },
-    {
-      output: join(rootDir, "generated", "CLAUDE.md"),
-      overlay: join(rootDir, "rules", "claude.md"),
-    },
-  ];
+function markdownFiles(dir: string): string[] {
+  if (!existsSync(dir)) {
+    return [];
+  }
+
+  const found: string[] = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const path = join(dir, entry.name);
+    if (entry.isDirectory()) {
+      found.push(...markdownFiles(path));
+    } else if (entry.isFile() && entry.name.endsWith(".md")) {
+      found.push(path);
+    }
+  }
+
+  return found.sort();
+}
+
+function parse(path: string): { data: Record<string, unknown>; body: string } {
+  try {
+    const { data, content } = matter(readFileSync(path, "utf8"));
+    return { data: data as Record<string, unknown>, body: content };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`${path}: invalid frontmatter (${message})`);
+  }
+}
+
+/**
+ * Resolve an include target, rejecting anything outside the source directory.
+ *
+ * Sources under `rules/rtk/` are symlinks owned by an external tool, so an
+ * include path is not necessarily trusted input. Confining resolution to the
+ * source tree keeps a malformed or tool-written include from reaching home
+ * directory files or repository secrets.
+ */
+function resolveInclude(
+  sourceDir: string,
+  fromPath: string,
+  target: string,
+): string {
+  const resolved = resolve(dirname(fromPath), target);
+  if (resolved !== sourceDir && !resolved.startsWith(`${sourceDir}${sep}`)) {
+    throw new Error(
+      `${fromPath}: include '${target}' resolves outside ${SOURCE_DIR}/`,
+    );
+  }
+  if (!existsSync(resolved) || !statSync(resolved).isFile()) {
+    throw new Error(`${fromPath}: include '${target}' not found`);
+  }
+
+  return resolved;
+}
+
+/**
+ * Expand `<!-- include: path -->` directives, returning the rendered body and
+ * recording every file reached so unreferenced sources can be reported.
+ */
+function expand(
+  sourceDir: string,
+  path: string,
+  seen: Set<string>,
+  stack: string[],
+): string {
+  if (stack.includes(path)) {
+    const cycle = [...stack, path]
+      .map((entry) => relative(sourceDir, entry))
+      .join(" → ");
+    throw new Error(`include cycle: ${cycle}`);
+  }
+  if (stack.length >= MAX_INCLUDE_DEPTH) {
+    throw new Error(`${path}: include nesting exceeds ${MAX_INCLUDE_DEPTH}`);
+  }
+
+  const { body } = parse(path);
+  const nextStack = [...stack, path];
+
+  return body.replace(INCLUDE_PATTERN, (_match, target: string) => {
+    const included = resolveInclude(sourceDir, path, target);
+    seen.add(included);
+    return expand(sourceDir, included, seen, nextStack).trim();
+  });
+}
+
+/**
+ * Collapse the blank-line runs left where an include expanded to nothing, so an
+ * empty shared source does not leave a gap in the rendered output.
+ */
+function normalize(content: string): string {
+  return `${content.replace(/\n{3,}/g, "\n\n").trim()}\n`;
+}
+
+/** Collect every Markdown file under `rules/` that declares a render target. */
+function collectSources(sourceDir: string): Source[] {
+  const sources: Source[] = [];
+  const byFilename = new Map<string, string>();
+
+  for (const path of markdownFiles(sourceDir)) {
+    const { data } = parse(path);
+    if (data.type !== RULES_TYPE) {
+      continue;
+    }
+
+    const filename = data.filename;
+    if (typeof filename !== "string" || filename.trim() === "") {
+      throw new Error(`${path}: missing frontmatter filename`);
+    }
+    if (filename.includes("/") || filename.includes(sep)) {
+      throw new Error(
+        `${path}: filename '${filename}' must be a bare file name`,
+      );
+    }
+
+    const existing = byFilename.get(filename);
+    if (existing) {
+      throw new Error(
+        `duplicate filename '${filename}': ${existing} and ${path}`,
+      );
+    }
+
+    byFilename.set(filename, path);
+    sources.push({ path, filename });
+  }
+
+  return sources;
+}
+
+type Rendered = {
+  source: Source;
+  output: string;
+  content: string;
+};
+
+/**
+ * Render every declared target, validating that each source is reachable.
+ *
+ * A Markdown file under `rules/` that neither declares a target nor is included
+ * by one is almost always a mistake — typically a typo in the frontmatter that
+ * silently drops a target from the build.
+ */
+function render(rootDir: string): Rendered[] {
+  const sourceDir = resolve(rootDir, SOURCE_DIR);
+  const sources = collectSources(sourceDir);
+  const seen = new Set(sources.map((source) => source.path));
+
+  const rendered = sources.map((source) => ({
+    source,
+    output: join(rootDir, OUTPUT_DIR, source.filename),
+    content: normalize(expand(sourceDir, source.path, seen, [])),
+  }));
+
+  const orphans = markdownFiles(sourceDir).filter((path) => {
+    const rel = relative(sourceDir, path);
+    return (
+      !seen.has(path) &&
+      !ORPHAN_EXEMPT.has(rel) &&
+      !VENDORED_DIRS.has(rel.split(sep)[0])
+    );
+  });
+  if (orphans.length > 0) {
+    const list = orphans.map((path) => relative(rootDir, path)).join(", ");
+    throw new Error(
+      `unreferenced rule sources (no frontmatter target, not included): ${list}`,
+    );
+  }
+
+  return rendered;
+}
+
+/** Report generated files no longer claimed by any source. */
+function staleOutputs(rootDir: string, rendered: Rendered[]): string[] {
+  const outputDir = join(rootDir, OUTPUT_DIR);
+  if (!existsSync(outputDir)) {
+    return [];
+  }
+
+  const expected = new Set(rendered.map((entry) => entry.source.filename));
+
+  return readdirSync(outputDir, { withFileTypes: true })
+    .filter(
+      (entry) =>
+        entry.isFile() &&
+        entry.name.endsWith(".md") &&
+        !expected.has(entry.name) &&
+        !ORPHAN_EXEMPT.has(entry.name),
+    )
+    .map((entry) => join(outputDir, entry.name))
+    .sort();
+}
+
+export function buildRules(root: string): void {
+  const rootDir = resolve(root);
+  const rendered = render(rootDir);
+
+  for (const entry of rendered) {
+    mkdirSync(dirname(entry.output), { recursive: true });
+    writeFileSync(entry.output, entry.content);
+  }
+}
+
+export function checkRules(root: string): boolean {
+  const rootDir = resolve(root);
+  const rendered = render(rootDir);
+  let ok = true;
+
+  for (const entry of rendered) {
+    let actual = "";
+    try {
+      actual = readFileSync(entry.output, "utf8");
+    } catch {
+      console.error(
+        `ERROR: ${entry.output} is missing; run agent-config rules build`,
+      );
+      ok = false;
+      continue;
+    }
+
+    if (actual !== entry.content) {
+      console.error(
+        `ERROR: ${entry.output} is stale; run agent-config rules build`,
+      );
+      ok = false;
+    }
+  }
+
+  for (const stale of staleOutputs(rootDir, rendered)) {
+    console.error(`ERROR: ${stale} is not claimed by any rule source`);
+    ok = false;
+  }
+
+  return ok;
 }
 
 function usage(exitCode = 2): never {
@@ -67,77 +327,14 @@ function parseArgs(args: string[]): {
   return { command, root: resolve(root) };
 }
 
-function stripTopLevelComments(markdown: string): string {
-  return markdown.replace(/^<!--[\s\S]*?-->\n?/, "").trim();
-}
-
-export function renderRuleTarget(rootDir: string, overlayPath: string): string {
-  const base = readFileSync(
-    join(rootDir, "rules", "base.md"),
-    "utf8",
-  ).trimEnd();
-  const overlay = stripTopLevelComments(readFileSync(overlayPath, "utf8"));
-  const parts = [base];
-
-  if (overlay !== "") {
-    parts.push(overlay);
-  }
-
-  return `${parts.join("\n\n")}\n`;
-}
-
-function writeTarget(rootDir: string, target: Target): void {
-  mkdirSync(dirname(target.output), { recursive: true });
-  writeFileSync(target.output, renderRuleTarget(rootDir, target.overlay));
-}
-
-function checkTarget(rootDir: string, target: Target): boolean {
-  const expected = renderRuleTarget(rootDir, target.overlay);
-  let actual = "";
-
-  try {
-    actual = readFileSync(target.output, "utf8");
-  } catch {
-    console.error(
-      `ERROR: ${target.output} is missing; run agent-config rules build`,
-    );
-    return false;
-  }
-
-  if (actual !== expected) {
-    console.error(
-      `ERROR: ${target.output} is stale; run agent-config rules build`,
-    );
-    return false;
-  }
-
-  return true;
-}
-
-export function buildRules(root: string): void {
-  const ruleTargets = targets(resolve(root));
-  for (const target of ruleTargets) {
-    writeTarget(resolve(root), target);
-  }
-}
-
-export function checkRules(root: string): boolean {
-  const resolvedRoot = resolve(root);
-  const ruleTargets = targets(resolvedRoot);
-  return ruleTargets.every((target) => checkTarget(resolvedRoot, target));
-}
-
 export function rulesCommand(args: string[]): number {
   const { command, root } = parseArgs(args);
-  const ruleTargets = targets(root);
 
   if (command === "check") {
-    return ruleTargets.every((target) => checkTarget(root, target)) ? 0 : 1;
+    return checkRules(root) ? 0 : 1;
   }
 
-  for (const target of ruleTargets) {
-    writeTarget(root, target);
-  }
+  buildRules(root);
 
   return 0;
 }
