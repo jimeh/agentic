@@ -165,8 +165,10 @@ invoked a named skill whose documented workflow requires it.
 - Give each delegated task clear scope, inputs, outputs, and acceptance
   criteria. Split work before delegating; one deliverable per agent.
 - Never delegate final judgement.
-- Delegated implementation requires isolation such as a separate worktree. Never
-  let parallel implementation agents edit the same checkout.
+- Give delegated implementation a dedicated worktree for substantial or parallel
+  tasks, and never let multiple implementation agents edit the same checkout.
+  The current checkout is for small, low-risk edits where isolation adds more
+  overhead than value.
 - Reconcile delegated results before acting on them.
 - Do not silently add agents or reviewers beyond the requested or documented
   workflow scope.
@@ -199,9 +201,11 @@ design, code quality, and copy. Update the table when available models change.
 - Read the scores as tendencies, not a ranking to compute with. A higher
   intelligence score does not mean better output: Opus often writes better code
   than Fable, the smarter model. Judge the work, not the numbers.
-- Spawned agents default to the current session's model. Claude subagents do not
-  inherit it automatically, so pass `model` explicitly to match the parent.
-  Consult this table when a subagent should span models rather than match.
+- Match the current session's model when spawning agents, unless the work calls
+  for a different one. Nothing inherits it automatically: Claude subagents fall
+  back to a default when `model` is omitted, and `sol` and `terra` pin their
+  own. Pass `model` explicitly. Consult this table when a subagent should span
+  models rather than match.
 - Opus is the usual choice for delegated Claude work: investigation,
   implementation, verification, review, planning, decomposition, architecture,
   API and UX decisions, and synthesis.
