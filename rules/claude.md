@@ -12,8 +12,7 @@ filename: CLAUDE.md
   reviews unless the user explicitly asks for multi-agent execution, subagents,
   or a workflow, or invokes a named skill whose documented workflow requires
   them.
-- For ordinary single-agent work, do not apply the model routing table. The
-  current model owns investigation, implementation, verification, and review.
+- For ordinary single-agent work, do not apply the model routing table.
 - You may suggest multi-agent execution when it would materially help, but wait
   for approval before starting it.
 
@@ -29,8 +28,10 @@ invoked a named skill whose documented workflow requires it.
 - Give each delegated task clear scope, inputs, outputs, and acceptance
   criteria. Split work before delegating; one deliverable per agent.
 - Never delegate final judgement.
-- Do not let parallel implementation agents edit the same checkout. Use isolated
-  worktrees.
+- Give delegated implementation a dedicated worktree for substantial or parallel
+  tasks, and never let multiple implementation agents edit the same checkout.
+  The current checkout is for small, low-risk edits where isolation adds more
+  overhead than value.
 - Reconcile delegated results before acting on them.
 - Do not silently add agents or reviewers beyond the requested or documented
   workflow scope.
@@ -40,46 +41,60 @@ invoked a named skill whose documented workflow requires it.
 - Within the requested scope, use the matching repo-owned skill for bounded
   delegation such as investigation, implementation, review, reproduction, data
   extraction, or computer use.
-- Use native Claude subagents when the user explicitly requests them, a selected
-  workflow requires a separate Claude context, or delegated work should run on a
-  GPT model exposed through the configured gateway.
+- Use native Claude subagents when the user explicitly requests them or a
+  selected workflow requires a separate Claude context.
 - Use workflows for deterministic fan-out/fan-in within a task: parallel sweeps,
   staged find-then-verify pipelines, or migrations over a work list.
 - For long-running delegated work, ask for a report file and poll for it.
 
 ### Model Routing
 
-Cost is the effective cost to me, including actual spend and scarcity from usage
-limits. It does not include model-selection or invocation friction. Intelligence
-is how hard a problem the model handles unsupervised. Taste covers UI/UX, API
+This table informs a choice rather than deciding it. Cost is the effective cost
+to me, including actual spend and scarcity from usage limits. Intelligence is
+how hard a problem the model handles unsupervised. Taste covers UI/UX, API
 design, code quality, and copy. Update the table when available models change.
 
-| Claude Code model | agent          | cost | intelligence | taste | role                   |
-| ----------------- | -------------- | ---: | -----------: | ----: | ---------------------- |
-| gpt-5.6-sol       | `sol`          |    8 |            9 |     7 | substantive execution  |
-| gpt-5.6-terra     | `terra`        |    5 |            8 |     7 | mechanical execution   |
-| fable-5           | current Claude |   10 |            9 |     9 | judgement and planning |
+| Claude Code model | invoke as        | cost | intelligence | taste | tends to suit          |
+| ----------------- | ---------------- | ---: | -----------: | ----: | ---------------------- |
+| gpt-5.6-terra     | `terra`          |    2 |            6 |     7 | mechanical execution   |
+| gpt-5.6-sol       | `sol`            |    4 |            9 |     7 | substantive execution  |
+| opus-5            | `model: "opus"`  |    5 |            9 |    10 | default Claude work    |
+| fable-5           | `model: "fable"` |   10 |           10 |     9 | exceptional complexity |
 
+- Read the scores as tendencies, not a ranking to compute with. A higher
+  intelligence score does not mean better output: Opus often writes better code
+  than Fable, the smarter model. Judge the work, not the numbers.
+- Match the current session's model when spawning agents, unless the work calls
+  for a different one. Nothing inherits it automatically: Claude subagents fall
+  back to a default when `model` is omitted, and `sol` and `terra` pin their
+  own. Pass `model` explicitly. Consult this table when a subagent should span
+  models rather than match.
+- Opus is the usual choice for delegated Claude work: investigation,
+  implementation, verification, review, planning, decomposition, architecture,
+  API and UX decisions, and synthesis.
+- Fable suits exceptionally hard problems — ambiguous root-cause work Opus has
+  stalled on, high-stakes architecture, or synthesis across large conflicting
+  evidence. A `model: "fable"` subagent with a scoped brief is usually enough;
+  the current session stays orchestrator and keeps final judgement.
+- Sol suits bounded implementation, large read-only analysis, independent
+  review, technical reasoning, and broad evidence gathering. Prefer Claude
+  models unless the user asks for GPT or Codex, a skill or workflow needs that
+  engine, or the work calls for it — cross-model review independence, bulk
+  read-only throughput, or capacity running alongside the current session.
+- Terra suits simple, bounded mechanical work after the hard planning and
+  reasoning are complete. Give it a settled plan, explicit steps, and concrete
+  acceptance criteria; keep unresolved judgement in Opus or Sol.
 - The `sol` and `terra` custom agents pin their GPT models; omit the Agent
   tool's per-call `model` parameter when invoking them.
-- These are defaults, not limits. Judge output quality, not the price tag.
-- Cost is only a tie-breaker; for anything that ships, intelligence > taste >
-  cost.
-- Use the `sol` agent for bounded implementation, large read-only analysis,
-  independent review, technical reasoning, and broad evidence gathering.
-- Use the `terra` agent only for simple, bounded mechanical work after the hard
-  planning and reasoning are complete. Give it a settled plan, explicit steps,
-  and concrete acceptance criteria; keep unresolved judgement in Fable or Sol.
-- Use `fable-5` in the current Claude session for complex or ambiguous
-  investigation, debugging, root-cause analysis, high-level planning,
-  decomposition, architecture, API and UX decisions, agent orchestration,
-  synthesis, and final judgement.
 - Do not use Haiku.
 - If delegated output is below the bar, iterate with the selected agent or take
   the work back into the current session. Ask before adding another worker
   beyond the approved scope.
 
 ### GPT Models in Claude Code
+
+Apply this section when routing work to GPT models. It covers how to reach them,
+not when to choose them.
 
 - The `sol` and `terra` agents resolve their GPT models only when Claude Code
   was launched against CLIProxyAPI. The agent definitions are always listed
@@ -100,23 +115,21 @@ design, code quality, and copy. Update the table when available models change.
 - Use the raw `codex` CLI only when the user explicitly asks for that separate
   execution surface, or as a last-resort fallback when the `codex-*` skills are
   unavailable in direct mode.
-- Implementation delegation requires isolation such as a separate worktree.
 
 ### Independent Review
 
-- Use an independent reviewer only when the user requests one or the selected
-  workflow explicitly requires one.
-- Review Fable-authored diffs through a fresh `sol` agent. Review Sol- or
-  Terra-authored diffs directly in the current Fable session; do not send them
-  back to the authoring model for same-model review.
-- The reviewer must run in a separate context from the authoring agent.
-  Cross-model review improves independence, but the orchestrator retains final
-  judgement and reconciles the findings.
+- When a selected skill or workflow defines its own review channels, follow it.
+  The rest of this section is the default for reviews it does not specify.
+- Review any diff in a fresh context, whatever authored it. Never continue the
+  authoring context or hand the diff back to the authoring agent.
+- A fresh context on the same model is the baseline, and a different model is
+  more independent. Use `fable` when the stakes justify a harder reviewer, and
+  route to `sol` or a `codex-*` skill for cross-engine independence when the
+  user asks for it or the workflow requires it.
 - Spawned Claude reviewers and workers do not inherit the session model; pass
-  `model: "fable"` explicitly on the Agent call. Never let a delegated Claude
-  fall back to Opus, Sonnet, or Haiku by omission.
-- Add a second reviewer only when the user requests one or the selected workflow
-  explicitly requires one.
+  `model` explicitly on the Agent call, either to match the current session or
+  to span models deliberately. Never let a delegated Claude fall back to Sonnet
+  or Haiku by omission.
 
 ## Browser and GUI Automation
 
