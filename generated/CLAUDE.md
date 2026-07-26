@@ -48,6 +48,10 @@
   when the logic it covers is reverted or broken is not coverage. Do not mock
   the subject under test, and keep tests deterministic; a flaky test is a gap
   that reports itself as coverage.
+- Before relying on a new test, see it fail — run it against the pre-change
+  code, or against a deliberate perturbation where that is not possible. Always
+  restore the implementation afterwards and confirm the diff is clean before
+  final verification.
 - How thoroughly a path is tested scales with its risk. Whether a failure path
   is covered at all does not. Argue for lighter coverage from the specific code
   — what it can do wrong and what would notice — never from effort, time, or how

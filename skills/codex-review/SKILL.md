@@ -132,11 +132,13 @@ For each finding include:
 - concrete failure mode
 - suggested fix direction
 
-Then give an explicit verdict on tests, even with no other findings: which
-new behaviors and failure paths lack coverage, whether the tests assert
-observable behavior or just restate the implementation, whether any would
-pass over a broken implementation, and whether they would catch a
-regression in the touched area.
+Then give a separate test verdict, even with no other findings:
+- whether coverage is adequate, and why
+- whether material happy, failure, boundary, and regression paths are
+  covered
+- which changed or affected behaviors remain untested
+- whether the tests assert observable behavior or just restate the
+  implementation, and whether any would pass over a broken implementation
 
 Do not edit files. If there are no substantive findings, say so.
 ```

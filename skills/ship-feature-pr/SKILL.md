@@ -148,10 +148,10 @@ leave alone as a non-goal. Where automated tests genuinely do not apply, say why
 in the spec and name the verification evidence standing in for them.
 
 Freeze the result into a concise implementation spec covering the objective,
-constraints, expected file scope, success criteria, the testing strategy and the
-verification commands that prove it, risks, and non-goals. Identify scope early
-enough to compare it with the captured dirty state before moving branches or
-integrating work.
+constraints, expected file scope, success criteria, the testing strategy with
+the exact focused and broader verification commands that prove it, risks, and
+non-goals. Identify scope early enough to compare it with the captured dirty
+state before moving branches or integrating work.
 
 ### 3. Prepare the Delivery Branch
 
@@ -193,9 +193,13 @@ When it finishes:
    path that test exercises. Judge what you find against the test quality
    contract; an unexplained gap is a correction, not a note.
 2. Run the new and changed tests yourself first — a full-suite run can hide
-   tests that never executed — then the broader project checks. Spot-check that
-   the new tests fail when the logic they cover is deliberately broken. A suite
-   that stays green through that break is not covering the path it claims.
+   tests that never executed — then the broader project checks. Establish
+   negative evidence for substantive behavior: run the new tests against the
+   pre-change code, or against a temporary perturbation where that is not
+   possible, and confirm they fail. A test that passes either way is not
+   covering the path it claims. Always restore the implementation afterwards,
+   confirm the diff matches what it was before the perturbation, and rerun the
+   focused tests before moving on.
 3. Send focused corrections back through the same implementer session. Take over
    after two unsuccessful correction rounds.
 4. Integrate the complete result, including new files, into the feature branch
@@ -245,12 +249,13 @@ explicitly when they find no substantive issues. Keep prompts compact; do not
 paste large diffs, logs, reports, or path lists into them.
 
 Require a separate, explicit verdict on tests from both reviewers, returned even
-when they have nothing else to report: which new behaviors and failure paths
-lack coverage, whether the tests assert observable behavior or merely restate
-the implementation, whether mocking or nondeterminism lets a test pass over a
-broken implementation, and whether the tests over the touched area would
-actually catch a regression. An absent or perfunctory test verdict makes the
-review incomplete; ask for it rather than accepting the result.
+when they have nothing else to report: which new behaviors and affected existing
+paths lack coverage across happy, failure, boundary, and regression cases,
+whether the tests assert observable behavior or merely restate the
+implementation, whether mocking or nondeterminism lets a test pass over a broken
+implementation, and whether the tests over the touched area would actually catch
+a regression. An absent or perfunctory test verdict makes the review incomplete;
+ask for it rather than accepting the result.
 
 Keep each review read-only and retain any session handle that allows later
 continuation. Accept a result only after the review completed successfully and
@@ -274,8 +279,9 @@ concise reasons for dismissals.
 
 Treat a confirmed coverage gap as a finding like any other: close it, or put it
 to the user for explicit acceptance. Do not silently reclassify it as residual
-risk. Fixes to behavior need their own tests; a fix that lands without one
-repeats the failure the review just caught.
+risk. Add a regression test for every confirmed behavioral or correctness
+failure; a fix that lands without one repeats the failure the review just
+caught.
 
 Fix confirmed findings through the same implementer session when practical, then
 run checks, commit only the fix scope, and push from the delivery checkout.
