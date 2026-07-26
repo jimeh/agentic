@@ -48,6 +48,10 @@ Do not invoke the orchestrator's own CLI merely for isolation or model pinning
 when native tooling is available. A same-engine CLI is a fallback only when
 native tooling is unavailable or lacks a required capability.
 
+Explicit user instruction may override the implementer engine. When it does,
+keep both review channels and weigh the reviewer independent of the implementer
+most heavily, as in step 7.
+
 ### Context continuity
 
 Use fresh agents for independent initial perspectives. Reuse the implementer for
