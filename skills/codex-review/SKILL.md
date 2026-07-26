@@ -119,7 +119,8 @@ Look for:
 - correctness
 - bugs
 - edge cases
-- test quality and coverage gaps
+- missing coverage of changed and affected behavior
+- weak tests: poor assertions, excessive mocking, nondeterminism
 - maintainability
 - unintended behavior
 
@@ -133,8 +134,9 @@ For each finding include:
 
 Then give an explicit verdict on tests, even with no other findings: which
 new behaviors and failure paths lack coverage, whether the tests assert
-observable behavior or just restate the implementation, and whether they
-would catch a regression in the touched area.
+observable behavior or just restate the implementation, whether any would
+pass over a broken implementation, and whether they would catch a
+regression in the touched area.
 
 Do not edit files. If there are no substantive findings, say so.
 ```

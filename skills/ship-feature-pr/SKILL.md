@@ -58,18 +58,34 @@ Tests are the primary evidence that the feature is correct. Planner,
 implementer, orchestrator, and both reviewers hold the same bar:
 
 - New and changed behavior is covered on both its happy path and its failure
-  paths — errors, boundaries, and the conditions the code explicitly handles.
+  paths — errors, boundaries, and the conditions the code explicitly handles —
+  along with existing behavior the change could regress.
 - Tests assert observable behavior rather than implementation shape, and fail
-  for the reason they claim to test.
+  for the reason they claim to test. Mocking the subject under test, or letting
+  a test turn on timing, ordering, or the environment, produces a gap that
+  reports itself as coverage.
 - Coverage that would survive reverting or breaking the logic it covers is not
   coverage.
 - A green suite shows nothing regressed. It is never by itself evidence that the
   new work is tested.
 
+How thoroughly a path is tested scales with its risk; whether a failure path is
+covered at all does not. Ground any case for lighter coverage in the specific
+code — what it can do wrong and what would notice — and record that reasoning in
+the spec where a reviewer can challenge it. Effort, schedule, and how confident
+the implementer feels are not justifications.
+
 Thin existing tests around the change raise the cost of meeting this bar; they
 never lower it. Standing up the scaffolding a first real test needs is in scope
 for the feature. Back-filling coverage for code the feature does not touch is
 not.
+
+Skip automated tests only when the change is genuinely untestable in this
+project — documentation, prose, and similar artifacts with no applicable
+harness. A testable project whose relevant area merely lacks tests does not
+qualify: build the scaffolding, or ask the user how to proceed. When tests are
+genuinely skipped, name the alternative evidence and the residual risk, keep the
+PR draft, and obtain explicit user acceptance before marking it ready.
 
 ### Context continuity
 
@@ -128,7 +144,8 @@ the baseline is thin or absent, decide what the feature's own tests need in
 order to be real — fixtures, a harness, the first test file for a module — and
 put that work in the plan, so its cost is visible and approvable rather than
 discovered and skipped mid-implementation. Record test debt you deliberately
-leave alone as a non-goal.
+leave alone as a non-goal. Where automated tests genuinely do not apply, say why
+in the spec and name the verification evidence standing in for them.
 
 Freeze the result into a concise implementation spec covering the objective,
 constraints, expected file scope, success criteria, the testing strategy and the
@@ -175,9 +192,10 @@ When it finishes:
    substantive behavior it adds, identify the test covering it and the failure
    path that test exercises. Judge what you find against the test quality
    contract; an unexplained gap is a correction, not a note.
-2. Run appropriate project checks yourself, and spot-check that new tests fail
-   when the logic they cover is deliberately broken. A suite that stays green
-   through that break is not covering the path it claims.
+2. Run the new and changed tests yourself first — a full-suite run can hide
+   tests that never executed — then the broader project checks. Spot-check that
+   the new tests fail when the logic they cover is deliberately broken. A suite
+   that stays green through that break is not covering the path it claims.
 3. Send focused corrections back through the same implementer session. Take over
    after two unsuccessful correction rounds.
 4. Integrate the complete result, including new files, into the feature branch
@@ -229,9 +247,10 @@ paste large diffs, logs, reports, or path lists into them.
 Require a separate, explicit verdict on tests from both reviewers, returned even
 when they have nothing else to report: which new behaviors and failure paths
 lack coverage, whether the tests assert observable behavior or merely restate
-the implementation, and whether the tests over the touched area would actually
-catch a regression. An absent or perfunctory test verdict makes the review
-incomplete; ask for it rather than accepting the result.
+the implementation, whether mocking or nondeterminism lets a test pass over a
+broken implementation, and whether the tests over the touched area would
+actually catch a regression. An absent or perfunctory test verdict makes the
+review incomplete; ask for it rather than accepting the result.
 
 Keep each review read-only and retain any session handle that allows later
 continuation. Accept a result only after the review completed successfully and
@@ -299,14 +318,15 @@ handback is blocked, retain the checkout holding the feature branch, keep the PR
 draft, and report its path and the blocker. Use another final local destination
 only with explicit user acceptance.
 
-Mark the PR ready only when both reviewer channels cover the final state, every
-identified test-coverage gap is either closed or explicitly accepted by the
+Mark the PR ready only when both reviewer channels cover the final state, you
+can explain your confidence in the change from test evidence rather than assert
+it, every identified test-coverage gap is closed or explicitly accepted by the
 user, required CI is green, handback is verified, and temporary checkout cleanup
-is safe. Keep it draft while substantive findings or required user decisions
-remain unresolved.
+is safe. Keep it draft while substantive findings, unaccepted test exceptions,
+or required user decisions remain unresolved.
 
 Report the PR URL and base, what shipped and any deviations from the approved
-plan, review decisions, checks and CI, how the change is covered by tests along
-with any accepted gaps and still-untested areas, delivery-checkout path, final
-branch and revision, upstream state, preserved pre-existing changes, and any
-retained checkout or residual risk.
+plan, review decisions, the new and changed tests with the scenarios they cover,
+focused and broader check results and CI, any accepted gaps or still-untested
+areas, delivery-checkout path, final branch and revision, upstream state,
+preserved pre-existing changes, and any retained checkout or residual risk.
