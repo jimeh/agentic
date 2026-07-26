@@ -61,9 +61,10 @@ implementer, orchestrator, and both reviewers hold the same bar:
   paths — errors, boundaries, and the conditions the code explicitly handles —
   along with existing behavior the change could regress.
 - Tests assert observable behavior rather than implementation shape, and fail
-  for the reason they claim to test. Mocking the subject under test, or letting
-  a test turn on timing, ordering, or the environment, produces a gap that
-  reports itself as coverage.
+  for the reason they claim to test. Mocking external boundaries is fine where
+  it is needed; mocking the behavior under test, or letting a test turn on
+  timing, ordering, or the environment, produces a gap that reports itself as
+  coverage.
 - Coverage that would survive reverting or breaking the logic it covers is not
   coverage.
 - A green suite shows nothing regressed. It is never by itself evidence that the
@@ -280,8 +281,8 @@ concise reasons for dismissals.
 Treat a confirmed coverage gap as a finding like any other: close it, or put it
 to the user for explicit acceptance. Do not silently reclassify it as residual
 risk. Add a regression test for every confirmed behavioral or correctness
-failure; a fix that lands without one repeats the failure the review just
-caught.
+failure, unless the user has explicitly accepted a testing exception covering
+it; a fix that lands without one repeats the failure the review just caught.
 
 Fix confirmed findings through the same implementer session when practical, then
 run checks, commit only the fix scope, and push from the delivery checkout.

@@ -43,11 +43,12 @@
 
 - Cover new and changed behavior when the project has a test suite, on both the
   happy path and the failure paths — errors, boundaries, and the conditions the
-  code explicitly handles.
+  code explicitly handles — along with existing behavior the change could
+  regress.
 - Assert observable behavior, not implementation shape. A test that still passes
-  when the logic it covers is reverted or broken is not coverage. Do not mock
-  the subject under test, and keep tests deterministic; a flaky test is a gap
-  that reports itself as coverage.
+  when the logic it covers is reverted or broken is not coverage. Mock external
+  boundaries only where you need to, never the behavior under test, and keep
+  tests deterministic; a flaky test is a gap that reports itself as coverage.
 - Before relying on a new test, see it fail — run it against the pre-change
   code, or against a deliberate perturbation where that is not possible. Always
   restore the implementation afterwards and confirm the diff is clean before

@@ -161,8 +161,9 @@ In the user-facing response:
   reviewed.
 - Do not imply Codex performed tests unless the report shows that it did.
 - Relay the test verdict even when there are no other findings, after checking
-  the cited tests yourself. If Codex did not give one, say so rather than
-  implying coverage was assessed.
+  the cited tests yourself. Treat an absent or perfunctory verdict as an
+  incomplete review: request it before accepting the result, and if it stays
+  missing, say so rather than implying coverage was assessed.
 
 Use this shape:
 
