@@ -149,8 +149,7 @@ the workflow.
   reviews unless the user explicitly asks for multi-agent execution, subagents,
   or a workflow, or invokes a named skill whose documented workflow requires
   them.
-- For ordinary single-agent work, do not apply the model routing table. The
-  current model owns investigation, implementation, verification, and review.
+- For ordinary single-agent work, do not apply the model routing table.
 - You may suggest multi-agent execution when it would materially help, but wait
   for approval before starting it.
 
@@ -166,8 +165,8 @@ invoked a named skill whose documented workflow requires it.
 - Give each delegated task clear scope, inputs, outputs, and acceptance
   criteria. Split work before delegating; one deliverable per agent.
 - Never delegate final judgement.
-- Do not let parallel implementation agents edit the same checkout. Use isolated
-  worktrees.
+- Delegated implementation requires isolation such as a separate worktree. Never
+  let parallel implementation agents edit the same checkout.
 - Reconcile delegated results before acting on them.
 - Do not silently add agents or reviewers beyond the requested or documented
   workflow scope.
@@ -177,9 +176,8 @@ invoked a named skill whose documented workflow requires it.
 - Within the requested scope, use the matching repo-owned skill for bounded
   delegation such as investigation, implementation, review, reproduction, data
   extraction, or computer use.
-- Use native Claude subagents when the user explicitly requests them, a selected
-  workflow requires a separate Claude context, or delegated work should run on a
-  GPT model exposed through the configured gateway.
+- Use native Claude subagents when the user explicitly requests them or a
+  selected workflow requires a separate Claude context.
 - Use workflows for deterministic fan-out/fan-in within a task: parallel sweeps,
   staged find-then-verify pipelines, or migrations over a work list.
 - For long-running delegated work, ask for a report file and poll for it.
@@ -216,8 +214,8 @@ design, code quality, and copy. Update the table when available models change.
   judgement.
 - The `sol` and `terra` custom agents pin their GPT models; omit the Agent
   tool's per-call `model` parameter when invoking them.
-- These are defaults, not limits. Judge output quality, not the price tag.
-- Cost is only a tie-breaker; for anything that ships, intelligence > taste >
+- These are defaults, not limits. Judge output quality, not the price tag: cost
+  is only a tie-breaker, and for anything that ships, intelligence > taste >
   cost.
 - Use the `sol` agent for bounded implementation, large read-only analysis,
   independent review, technical reasoning, and broad evidence gathering.
@@ -253,29 +251,21 @@ not when to choose them.
 - Use the raw `codex` CLI only when the user explicitly asks for that separate
   execution surface, or as a last-resort fallback when the `codex-*` skills are
   unavailable in direct mode.
-- Implementation delegation requires isolation such as a separate worktree.
 
 ### Independent Review
 
-- Use an independent reviewer only when the user requests one or the selected
-  workflow explicitly requires one.
 - When a selected skill or workflow defines its own review channels, follow it.
   The rest of this section is the default for reviews it does not specify.
 - Review any diff in a fresh context, whatever authored it. Never continue the
   authoring context or hand the diff back to the authoring agent.
-- A fresh context on the same model is the baseline. Use `fable` when the stakes
-  justify a harder reviewer, and route to `sol` or a `codex-*` skill for
-  cross-engine independence when the user asks for it or the workflow requires
-  it.
-- A different model improves independence and a fresh context on the same model
-  is weaker, but the orchestrator retains final judgement and reconciles the
-  findings either way.
+- A fresh context on the same model is the baseline, and a different model is
+  more independent. Use `fable` when the stakes justify a harder reviewer, and
+  route to `sol` or a `codex-*` skill for cross-engine independence when the
+  user asks for it or the workflow requires it.
 - Spawned Claude reviewers and workers do not inherit the session model; pass
   `model` explicitly on the Agent call, either to match the current session or
   to span models deliberately. Never let a delegated Claude fall back to Sonnet
   or Haiku by omission.
-- Add a second reviewer only when the user requests one or the selected workflow
-  explicitly requires one.
 
 ## Browser and GUI Automation
 
