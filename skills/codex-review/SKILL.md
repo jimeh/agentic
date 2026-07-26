@@ -132,12 +132,17 @@ For each finding include:
 - concrete failure mode
 - suggested fix direction
 
+Give a separate test verdict even if there are no other findings:
+- whether coverage is adequate and why
+- whether material happy, failure, boundary, and regression paths are covered
+- which material changed or affected behaviors remain untested
+- whether the tests assert observable behavior and would catch a regression
+
 Do not edit files. If there are no substantive findings, say so.
 ```
 
-Assess whether tests reliably cover material happy, failure, boundary, and
-regression paths. State whether coverage is adequate and identify material
-untested behavior or residual test risk even when there are no other findings.
+Treat an absent or perfunctory test verdict as an incomplete review and request
+it before accepting the result.
 
 Add only context that changes review quality: requirements, invariants, threat
 model, expected behavior, or known risky files. Avoid long paragraphs.
@@ -156,6 +161,8 @@ In the user-facing response:
 - If Codex found nothing, say that clearly and identify exactly what it
   reviewed.
 - Do not imply Codex performed tests unless the report shows that it did.
+- Relay the test verdict even when there are no other findings, after verifying
+  its claims against the changed behavior and tests.
 
 Use this shape:
 
@@ -169,6 +176,7 @@ Unverified Codex suggestions:
 - <suggestion, if worth mentioning>
 
 No substantive findings from Codex.
+Test verdict: <coverage gaps, or adequate and why>
 Residual risk: <untested area, if any>
 ```
 

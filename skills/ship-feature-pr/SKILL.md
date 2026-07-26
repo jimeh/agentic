@@ -118,15 +118,19 @@ the feedback.
 
 Sanity-check the plan against the actual code before freezing it. Inspect the
 related existing tests and identify any coverage or test-harness gaps the
-feature must address.
+feature must address. Put required fixtures, harness work, or a module's first
+test file in the expected scope so its cost is visible rather than discovered
+and skipped during implementation. Record unrelated existing test debt as a
+non-goal.
 
 Freeze the result into a concise implementation spec covering the objective,
 constraints, expected file scope, success criteria, risks, non-goals, and a
-testing strategy. Map expected behavior and material risks to focused happy,
-failure, boundary, and regression scenarios as applicable. If automated tests do
-not apply, explain why and name the alternative verification evidence. Identify
-scope early enough to compare it with the captured dirty state before moving
-branches or integrating work.
+testing strategy with exact focused and broader verification commands. Map
+expected behavior and material risks to focused happy, failure, boundary, and
+regression scenarios as applicable. If automated tests do not apply, explain why
+and name the alternative verification evidence. Identify scope early enough to
+compare it with the captured dirty state before moving branches or integrating
+work.
 
 ### 3. Prepare the Delivery Branch
 
@@ -154,16 +158,19 @@ delivery checkout. Direct implementation there is acceptable when the change is
 small enough that delegation would add more cost than perspective; disclose that
 in the final report.
 
-Give the implementer the frozen spec, including its testing strategy. Have it
-use focused tests as an incremental correctness loop where practical, and do not
-accept the implementation as complete merely because the pre-existing suite
-passes. When it finishes:
+Give the implementer the frozen spec, including its testing strategy and exact
+verification commands. Have it use focused tests as an incremental correctness
+loop where practical, and do not accept the implementation as complete merely
+because the pre-existing suite passes. When it finishes:
 
 1. Review the complete production and test diff as a contributor. Map changed
    behavior to test scenarios and judge whether the tests are reliable and would
    catch plausible defects.
 2. Run the focused new or changed tests yourself, then run appropriate broader
-   project checks. Treat implementer claims as advisory.
+   project checks. Where practical and safe for substantive behavior, establish
+   negative evidence by running focused tests against the pre-change behavior or
+   a temporary perturbation. Restore the implementation, confirm the intended
+   diff, and rerun the focused tests. Treat implementer claims as advisory.
 3. Send focused corrections back through the same implementer session. Take over
    after two unsuccessful correction rounds.
 4. Integrate the complete result, including new files, into the feature branch
@@ -214,10 +221,12 @@ assertions, unrealistic or excessive mocking, nondeterminism, and tests that
 would pass despite a broken implementation.
 
 Require each finding to state its severity, location, concrete failure mode, and
-suggested direction. Require each review to state whether test coverage is
-adequate and identify any material untested behavior or residual test risk, even
-when it finds no other substantive issue. Keep prompts compact; do not paste
-large diffs, logs, reports, or path lists into them.
+suggested direction. Require a separate test verdict even when the reviewer
+finds no other substantive issue: whether coverage is adequate and why, plus any
+material untested behavior or residual test risk. Treat an absent or perfunctory
+verdict as an incomplete review and request it before accepting the result. Keep
+prompts compact; do not paste large diffs, logs, reports, or path lists into
+them.
 
 Keep each review read-only and retain any session handle that allows later
 continuation. Accept a result only after the review completed successfully and
@@ -238,6 +247,9 @@ but leave the PR draft and report the coverage gap.
 Treat reviewer findings as evidence, not authority. Verify each one against the
 code, weigh the reviewer independent of the implementer most heavily, and record
 concise reasons for dismissals.
+
+Treat each confirmed material coverage gap as a finding: close it or obtain the
+user's explicit acceptance. Do not silently downgrade it to residual risk.
 
 Fix confirmed findings through the same implementer session when practical.
 Normally add a regression test for every confirmed behavioral or correctness

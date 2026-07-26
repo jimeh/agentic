@@ -38,8 +38,24 @@
   refactor unrelated code.
 - Read the relevant code before editing. Build context from the actual codebase,
   not assumptions.
-- Include tests for new functionality when the project has an existing test
-  suite.
+
+## Testing
+
+- Cover new and changed behavior with reliable tests proportional to risk when
+  automated testing is practical. Include successful behavior and material
+  failure, boundary, and regression paths.
+- Assert observable behavior rather than implementation shape. Prefer tests that
+  would fail if the covered behavior were reverted or broken.
+- Treat thin or missing nearby coverage as extra work, not permission to leave
+  touched behavior untested. Add the fixtures or harness needed for your changes
+  while keeping unrelated test debt out of scope.
+- Use focused tests as a running correctness check while working. A green
+  existing suite alone does not establish that new work is adequately covered.
+- Where practical, confirm new or changed tests fail against the pre-change or
+  deliberately perturbed behavior before relying on them. Restore the
+  implementation before final verification.
+- When meaningful automated tests are impractical, state why and provide
+  alternative verification evidence and the remaining risk.
 
 ## Verification
 
