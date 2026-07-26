@@ -60,6 +60,22 @@ their sessions can continue. Fresh reviewers are fallbacks for unavailable or
 invalid continuations, or for changes that materially broaden the reviewed
 scope.
 
+### Testing confidence
+
+Treat tests as evidence of correctness, not a box-check. New or changed behavior
+normally requires reliable automated tests proportional to its risk, covering
+successful behavior and material failure, boundary, and regression paths.
+Existing thin coverage is not a reason to omit tests; extend the nearest
+appropriate test seam or harness as part of the feature. Prefer behavior-focused
+assertions, minimal mocking, and deterministic tests.
+
+Green CI and an unchanged existing suite do not establish adequate coverage. Do
+not call the implementation complete or the pull request ready until the
+orchestrator can explain its confidence from test evidence. If meaningful
+automated tests are genuinely impractical, document the alternative evidence and
+residual risk, keep the pull request draft, and obtain explicit user acceptance
+before marking it ready.
+
 ## Workflow
 
 ### 1. Intake
@@ -100,12 +116,17 @@ autonomy, obtain approval for a provisional plan before implementation. If the
 user rejects a plan, revise and re-present it rather than implementing around
 the feedback.
 
-Sanity-check the plan against the actual code before freezing it.
+Sanity-check the plan against the actual code before freezing it. Inspect the
+related existing tests and identify any coverage or test-harness gaps the
+feature must address.
 
 Freeze the result into a concise implementation spec covering the objective,
-constraints, expected file scope, success criteria, testing, risks, and
-non-goals. Identify scope early enough to compare it with the captured dirty
-state before moving branches or integrating work.
+constraints, expected file scope, success criteria, risks, non-goals, and a
+testing strategy. Map expected behavior and material risks to focused happy,
+failure, boundary, and regression scenarios as applicable. If automated tests do
+not apply, explain why and name the alternative verification evidence. Identify
+scope early enough to compare it with the captured dirty state before moving
+branches or integrating work.
 
 ### 3. Prepare the Delivery Branch
 
@@ -133,11 +154,16 @@ delivery checkout. Direct implementation there is acceptable when the change is
 small enough that delegation would add more cost than perspective; disclose that
 in the final report.
 
-Give the implementer the frozen spec and relevant verification expectations.
-When it finishes:
+Give the implementer the frozen spec, including its testing strategy. Have it
+use focused tests as an incremental correctness loop where practical, and do not
+accept the implementation as complete merely because the pre-existing suite
+passes. When it finishes:
 
-1. Review the complete result as a contributor diff.
-2. Run appropriate project checks yourself.
+1. Review the complete production and test diff as a contributor. Map changed
+   behavior to test scenarios and judge whether the tests are reliable and would
+   catch plausible defects.
+2. Run the focused new or changed tests yourself, then run appropriate broader
+   project checks. Treat implementer claims as advisory.
 3. Send focused corrections back through the same implementer session. Take over
    after two unsuccessful correction rounds.
 4. Integrate the complete result, including new files, into the feature branch
@@ -180,11 +206,18 @@ session when this workflow expects reviewer continuity.
 
 Give both reviewers the repository, target base and feature state, and a
 condensed implementation spec. Ask them to inspect the repository themselves for
-requirement mismatches, correctness problems, edge cases, missing or weak tests,
-security issues, and unintended behavior. Require each finding to state its
-severity, location, concrete failure mode, and suggested direction, and require
-reviewers to say explicitly when they find no substantive issues. Keep prompts
-compact; do not paste large diffs, logs, reports, or path lists into them.
+requirement mismatches, correctness problems, edge cases, security issues, and
+unintended behavior. Require them to assess whether the tests completely and
+reliably exercise the changed behavior and affected existing paths, including
+material happy, failure, boundary, and regression cases. Have them look for weak
+assertions, unrealistic or excessive mocking, nondeterminism, and tests that
+would pass despite a broken implementation.
+
+Require each finding to state its severity, location, concrete failure mode, and
+suggested direction. Require each review to state whether test coverage is
+adequate and identify any material untested behavior or residual test risk, even
+when it finds no other substantive issue. Keep prompts compact; do not paste
+large diffs, logs, reports, or path lists into them.
 
 Keep each review read-only and retain any session handle that allows later
 continuation. Accept a result only after the review completed successfully and
@@ -206,8 +239,10 @@ Treat reviewer findings as evidence, not authority. Verify each one against the
 code, weigh the reviewer independent of the implementer most heavily, and record
 concise reasons for dismissals.
 
-Fix confirmed findings through the same implementer session when practical, then
-run checks, commit only the fix scope, and push from the delivery checkout.
+Fix confirmed findings through the same implementer session when practical.
+Normally add a regression test for every confirmed behavioral or correctness
+failure. Review the test delta, run focused tests and broader checks, commit
+only the fix scope, and push from the delivery checkout.
 
 Resume the original reviewer sessions for focused fix verification when
 possible. Give each reviewer the last revision it accepted, the new verified
@@ -247,12 +282,14 @@ handback is blocked, retain the checkout holding the feature branch, keep the PR
 draft, and report its path and the blocker. Use another final local destination
 only with explicit user acceptance.
 
-Mark the PR ready only when both reviewer channels cover the final state,
-required CI is green, handback is verified, and temporary checkout cleanup is
-safe. Keep it draft while substantive findings or required user decisions remain
-unresolved.
+Mark the PR ready only when both reviewer channels cover the final state, test
+evidence establishes adequate confidence, required CI is green, handback is
+verified, and temporary checkout cleanup is safe. Keep it draft while
+substantive findings, significant test gaps, unaccepted test exceptions, or
+other required user decisions remain unresolved.
 
 Report the PR URL and base, what shipped and any deviations from the approved
-plan, review decisions, checks and CI, delivery-checkout path, final branch and
-revision, upstream state, preserved pre-existing changes, and any retained
-checkout or residual risk.
+plan, review decisions, new or changed tests and the scenarios they cover,
+focused and broader checks with their results, CI, any untested behavior or
+residual risk, delivery-checkout path, final branch and revision, upstream
+state, preserved pre-existing changes, and any retained checkout.

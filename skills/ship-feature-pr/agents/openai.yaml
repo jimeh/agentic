@@ -7,5 +7,5 @@ interface:
     channels, integrate and open the draft PR from this checkout, reuse the
     initial reviewers for fix verification when valid and use fresh fallbacks
     otherwise, and mark it ready only after both review channels cover the final
-    state, findings and decisions are resolved, and CI, handback, and cleanup
-    pass."
+    state, testing establishes high confidence, findings and decisions are
+    resolved, and CI, handback, and cleanup pass."

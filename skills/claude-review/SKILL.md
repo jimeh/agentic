@@ -121,6 +121,8 @@ Look for:
 - correctness
 - bugs
 - edge cases
+- missing coverage of changed and affected behavior
+- weak tests, including poor assertions, excessive mocking, and nondeterminism
 - maintainability
 - unintended behavior
 
@@ -134,6 +136,10 @@ For each finding include:
 
 Do not edit files. If there are no substantive findings, say so.
 ```
+
+Assess whether tests reliably cover material happy, failure, boundary, and
+regression paths. State whether coverage is adequate and identify material
+untested behavior or residual test risk even when there are no other findings.
 
 Add only context that changes review quality: requirements, invariants, threat
 model, expected behavior, or known risky files. Avoid long paragraphs.
