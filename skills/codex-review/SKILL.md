@@ -136,7 +136,8 @@ Give a separate test verdict even if there are no other findings:
 - whether coverage is adequate and why
 - whether material happy, failure, boundary, and regression paths are covered
 - which material changed or affected behaviors remain untested
-- whether the tests assert observable behavior and would catch a regression
+- whether the tests assert observable behavior, would fail over a broken
+  implementation, and would catch a regression
 
 Do not edit files. If there are no substantive findings, say so.
 ```

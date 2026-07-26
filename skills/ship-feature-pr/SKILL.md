@@ -69,12 +69,17 @@ Existing thin coverage is not a reason to omit tests; extend the nearest
 appropriate test seam or harness as part of the feature. Prefer behavior-focused
 assertions, minimal mocking, and deterministic tests.
 
+Use risk to set testing depth, not whether material behavior is tested. Ground
+lighter coverage in concrete failure modes and detection mechanisms, never
+effort, schedule, or self-assessed confidence.
+
 Green CI and an unchanged existing suite do not establish adequate coverage. Do
 not call the implementation complete or the pull request ready until the
 orchestrator can explain its confidence from test evidence. If meaningful
 automated tests are genuinely impractical, document the alternative evidence and
 residual risk, keep the pull request draft, and obtain explicit user acceptance
-before marking it ready.
+before marking it ready. Missing nearby tests or a harness does not qualify;
+build the required scaffolding or ask the user how to proceed.
 
 ## Workflow
 
@@ -116,12 +121,13 @@ autonomy, obtain approval for a provisional plan before implementation. If the
 user rejects a plan, revise and re-present it rather than implementing around
 the feedback.
 
-Sanity-check the plan against the actual code before freezing it. Inspect the
-related existing tests and identify any coverage or test-harness gaps the
-feature must address. Put required fixtures, harness work, or a module's first
-test file in the expected scope so its cost is visible rather than discovered
-and skipped during implementation. Record unrelated existing test debt as a
-non-goal.
+Sanity-check the plan against the actual code before freezing it. Map the
+related existing tests: what exists, whether it exercises material failure and
+boundary paths, and whether it would catch affected regressions. Identify
+coverage or test-harness gaps the feature must address. Put required fixtures,
+harness work, or a module's first test file in the expected scope so its cost is
+visible rather than discovered and skipped during implementation. Record
+unrelated existing test debt as a non-goal.
 
 Freeze the result into a concise implementation spec covering the objective,
 constraints, expected file scope, success criteria, risks, non-goals, and a
@@ -168,9 +174,11 @@ because the pre-existing suite passes. When it finishes:
    catch plausible defects.
 2. Run the focused new or changed tests yourself, then run appropriate broader
    project checks. Where practical and safe for substantive behavior, establish
-   negative evidence by running focused tests against the pre-change behavior or
-   a temporary perturbation. Restore the implementation, confirm the intended
-   diff, and rerun the focused tests. Treat implementer claims as advisory.
+   negative evidence by running focused tests against the pre-change behavior.
+   Use a temporary perturbation only when the pre-change behavior cannot provide
+   that evidence. Restore the implementation, confirm the diff matches its
+   pre-perturbation state, and rerun the focused tests. Treat implementer claims
+   as advisory.
 3. Send focused corrections back through the same implementer session. Take over
    after two unsuccessful correction rounds.
 4. Integrate the complete result, including new files, into the feature branch
@@ -223,10 +231,10 @@ would pass despite a broken implementation.
 Require each finding to state its severity, location, concrete failure mode, and
 suggested direction. Require a separate test verdict even when the reviewer
 finds no other substantive issue: whether coverage is adequate and why, plus any
-material untested behavior or residual test risk. Treat an absent or perfunctory
-verdict as an incomplete review and request it before accepting the result. Keep
-prompts compact; do not paste large diffs, logs, reports, or path lists into
-them.
+material untested behavior or residual test risk, and whether any test would
+pass over a broken implementation. Treat an absent or perfunctory verdict as an
+incomplete review and request it before accepting the result. Keep prompts
+compact; do not paste large diffs, logs, reports, or path lists into them.
 
 Keep each review read-only and retain any session handle that allows later
 continuation. Accept a result only after the review completed successfully and
@@ -252,9 +260,10 @@ Treat each confirmed material coverage gap as a finding: close it or obtain the
 user's explicit acceptance. Do not silently downgrade it to residual risk.
 
 Fix confirmed findings through the same implementer session when practical.
-Normally add a regression test for every confirmed behavioral or correctness
-failure. Review the test delta, run focused tests and broader checks, commit
-only the fix scope, and push from the delivery checkout.
+Require a regression test for every confirmed behavioral or correctness failure
+unless the user explicitly accepted the testing exception. Review the test
+delta, run focused tests and broader checks, commit only the fix scope, and push
+from the delivery checkout.
 
 Resume the original reviewer sessions for focused fix verification when
 possible. Give each reviewer the last revision it accepted, the new verified
@@ -294,11 +303,12 @@ handback is blocked, retain the checkout holding the feature branch, keep the PR
 draft, and report its path and the blocker. Use another final local destination
 only with explicit user acceptance.
 
-Mark the PR ready only when both reviewer channels cover the final state, test
-evidence establishes adequate confidence, required CI is green, handback is
-verified, and temporary checkout cleanup is safe. Keep it draft while
-substantive findings, significant test gaps, unaccepted test exceptions, or
-other required user decisions remain unresolved.
+Mark the PR ready only when both reviewer channels cover the final state,
+confidence is explainable from test evidence, every confirmed material coverage
+gap is closed or explicitly accepted by the user, required CI is green, handback
+is verified, and temporary checkout cleanup is safe. Keep it draft while
+substantive findings, unaccepted test exceptions, or other required user
+decisions remain unresolved.
 
 Report the PR URL and base, what shipped and any deviations from the approved
 plan, review decisions, new or changed tests and the scenarios they cover,

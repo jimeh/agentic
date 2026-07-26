@@ -44,11 +44,16 @@
 - Cover new and changed behavior with reliable tests proportional to risk when
   automated testing is practical. Include successful behavior and material
   failure, boundary, and regression paths.
-- Assert observable behavior rather than implementation shape. Prefer tests that
-  would fail if the covered behavior were reverted or broken.
+- Use risk to set testing depth, not to excuse untested material behavior.
+  Justify lighter coverage from concrete failure modes and detection mechanisms,
+  never effort, schedule, or self-assessed confidence.
+- Assert observable behavior rather than implementation shape. Mock external
+  boundaries only when needed, not the behavior under test. Keep tests
+  deterministic, and treat flakiness as a coverage gap.
 - Treat thin or missing nearby coverage as extra work, not permission to leave
   touched behavior untested. Add the fixtures or harness needed for your changes
-  while keeping unrelated test debt out of scope.
+  while keeping unrelated test debt out of scope. A missing harness alone does
+  not make automated tests impractical; build the scaffolding or ask the user.
 - Use focused tests as a running correctness check while working. A green
   existing suite alone does not establish that new work is adequately covered.
 - Where practical, confirm new or changed tests fail against the pre-change or
