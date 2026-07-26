@@ -121,6 +121,8 @@ Look for:
 - correctness
 - bugs
 - edge cases
+- missing coverage of changed and affected behavior
+- weak tests: poor assertions, excessive mocking, nondeterminism
 - maintainability
 - unintended behavior
 
@@ -131,6 +133,14 @@ For each finding include:
 - file and line reference
 - concrete failure mode
 - suggested fix direction
+
+Then give a separate test verdict, even with no other findings:
+- whether coverage is adequate, and why
+- whether material happy, failure, boundary, and regression paths are
+  covered
+- which changed or affected behaviors remain untested
+- whether the tests assert observable behavior or just restate the
+  implementation, and whether any would pass over a broken implementation
 
 Do not edit files. If there are no substantive findings, say so.
 ```
@@ -152,6 +162,10 @@ In the user-facing response:
 - If Claude found nothing, say that clearly and identify exactly what it
   reviewed.
 - Do not imply Claude performed tests unless the report shows that it did.
+- Relay the test verdict even when there are no other findings, after checking
+  the cited tests yourself. Treat an absent or perfunctory verdict as an
+  incomplete review: request it before accepting the result, and if it stays
+  missing, say so rather than implying coverage was assessed.
 
 Use this shape:
 
@@ -165,6 +179,7 @@ Unverified Claude suggestions:
 - <suggestion, if worth mentioning>
 
 No substantive findings from Claude.
+Test verdict: <coverage gaps, or adequate and why>
 Residual risk: <untested area, if any>
 ```
 
