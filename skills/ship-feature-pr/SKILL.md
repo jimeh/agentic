@@ -52,6 +52,25 @@ Explicit user instruction may override the implementer engine. When it does,
 keep both review channels and weigh the reviewer independent of the implementer
 most heavily, as in step 7.
 
+### Test quality
+
+Tests are the primary evidence that the feature is correct. Planner,
+implementer, orchestrator, and both reviewers hold the same bar:
+
+- New and changed behavior is covered on both its happy path and its failure
+  paths — errors, boundaries, and the conditions the code explicitly handles.
+- Tests assert observable behavior rather than implementation shape, and fail
+  for the reason they claim to test.
+- Coverage that would survive reverting or breaking the logic it covers is not
+  coverage.
+- A green suite shows nothing regressed. It is never by itself evidence that the
+  new work is tested.
+
+Thin existing tests around the change raise the cost of meeting this bar; they
+never lower it. Standing up the scaffolding a first real test needs is in scope
+for the feature. Back-filling coverage for code the feature does not touch is
+not.
+
 ### Context continuity
 
 Use fresh agents for independent initial perspectives. Reuse the implementer for
@@ -102,10 +121,20 @@ the feedback.
 
 Sanity-check the plan against the actual code before freezing it.
 
+Map the tests that already cover the areas the feature will touch: what exists,
+whether it exercises failure paths, and whether it would catch a regression.
+This informs the approach; it is not a mandate to repair what is there. Where
+the baseline is thin or absent, decide what the feature's own tests need in
+order to be real — fixtures, a harness, the first test file for a module — and
+put that work in the plan, so its cost is visible and approvable rather than
+discovered and skipped mid-implementation. Record test debt you deliberately
+leave alone as a non-goal.
+
 Freeze the result into a concise implementation spec covering the objective,
-constraints, expected file scope, success criteria, testing, risks, and
-non-goals. Identify scope early enough to compare it with the captured dirty
-state before moving branches or integrating work.
+constraints, expected file scope, success criteria, the testing strategy and the
+verification commands that prove it, risks, and non-goals. Identify scope early
+enough to compare it with the captured dirty state before moving branches or
+integrating work.
 
 ### 3. Prepare the Delivery Branch
 
@@ -133,11 +162,22 @@ delivery checkout. Direct implementation there is acceptable when the change is
 small enough that delegation would add more cost than perspective; disclose that
 in the final report.
 
-Give the implementer the frozen spec and relevant verification expectations.
+Give the implementer the frozen spec, the testing strategy, and the exact
+verification commands. Require it to use tests as its running check on
+correctness while it works rather than a step at the end, and to treat the work
+as unfinished until it has well-grounded confidence in the implementation —
+which for anything non-trivial means tests it has watched fail for the right
+reason and then pass.
+
 When it finishes:
 
-1. Review the complete result as a contributor diff.
-2. Run appropriate project checks yourself.
+1. Review the complete result as a contributor diff, tests included. For each
+   substantive behavior it adds, identify the test covering it and the failure
+   path that test exercises. Judge what you find against the test quality
+   contract; an unexplained gap is a correction, not a note.
+2. Run appropriate project checks yourself, and spot-check that new tests fail
+   when the logic they cover is deliberately broken. A suite that stays green
+   through that break is not covering the path it claims.
 3. Send focused corrections back through the same implementer session. Take over
    after two unsuccessful correction rounds.
 4. Integrate the complete result, including new files, into the feature branch
@@ -180,11 +220,18 @@ session when this workflow expects reviewer continuity.
 
 Give both reviewers the repository, target base and feature state, and a
 condensed implementation spec. Ask them to inspect the repository themselves for
-requirement mismatches, correctness problems, edge cases, missing or weak tests,
-security issues, and unintended behavior. Require each finding to state its
-severity, location, concrete failure mode, and suggested direction, and require
-reviewers to say explicitly when they find no substantive issues. Keep prompts
-compact; do not paste large diffs, logs, reports, or path lists into them.
+requirement mismatches, correctness problems, edge cases, security issues, and
+unintended behavior. Require each finding to state its severity, location,
+concrete failure mode, and suggested direction, and require reviewers to say
+explicitly when they find no substantive issues. Keep prompts compact; do not
+paste large diffs, logs, reports, or path lists into them.
+
+Require a separate, explicit verdict on tests from both reviewers, returned even
+when they have nothing else to report: which new behaviors and failure paths
+lack coverage, whether the tests assert observable behavior or merely restate
+the implementation, and whether the tests over the touched area would actually
+catch a regression. An absent or perfunctory test verdict makes the review
+incomplete; ask for it rather than accepting the result.
 
 Keep each review read-only and retain any session handle that allows later
 continuation. Accept a result only after the review completed successfully and
@@ -205,6 +252,11 @@ but leave the PR draft and report the coverage gap.
 Treat reviewer findings as evidence, not authority. Verify each one against the
 code, weigh the reviewer independent of the implementer most heavily, and record
 concise reasons for dismissals.
+
+Treat a confirmed coverage gap as a finding like any other: close it, or put it
+to the user for explicit acceptance. Do not silently reclassify it as residual
+risk. Fixes to behavior need their own tests; a fix that lands without one
+repeats the failure the review just caught.
 
 Fix confirmed findings through the same implementer session when practical, then
 run checks, commit only the fix scope, and push from the delivery checkout.
@@ -247,12 +299,14 @@ handback is blocked, retain the checkout holding the feature branch, keep the PR
 draft, and report its path and the blocker. Use another final local destination
 only with explicit user acceptance.
 
-Mark the PR ready only when both reviewer channels cover the final state,
-required CI is green, handback is verified, and temporary checkout cleanup is
-safe. Keep it draft while substantive findings or required user decisions remain
-unresolved.
+Mark the PR ready only when both reviewer channels cover the final state, every
+identified test-coverage gap is either closed or explicitly accepted by the
+user, required CI is green, handback is verified, and temporary checkout cleanup
+is safe. Keep it draft while substantive findings or required user decisions
+remain unresolved.
 
 Report the PR URL and base, what shipped and any deviations from the approved
-plan, review decisions, checks and CI, delivery-checkout path, final branch and
-revision, upstream state, preserved pre-existing changes, and any retained
-checkout or residual risk.
+plan, review decisions, checks and CI, how the change is covered by tests along
+with any accepted gaps and still-untested areas, delivery-checkout path, final
+branch and revision, upstream state, preserved pre-existing changes, and any
+retained checkout or residual risk.

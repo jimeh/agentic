@@ -38,10 +38,27 @@
   refactor unrelated code.
 - Read the relevant code before editing. Build context from the actual codebase,
   not assumptions.
-- Include tests for new functionality when the project has an existing test
-  suite.
+
+## Testing
+
+- Cover new and changed behavior when the project has a test suite, on both the
+  happy path and the failure paths — errors, boundaries, and the conditions the
+  code explicitly handles.
+- Assert observable behavior, not implementation shape. A test that still passes
+  when the logic it covers is reverted or broken is not coverage.
+- Thin or missing tests around the code you touch raise the cost of covering
+  your own work; they never lower the bar for it. Standing up the fixtures or
+  harness a first real test needs is part of the job. Back-filling coverage for
+  code you are not touching is not.
+- A green suite shows nothing regressed. It is never by itself evidence that new
+  work is tested.
 
 ## Verification
+
+- Use tests as the running check on correctness while you work, not a step
+  bolted on at the end. Work is not done until you have well-grounded confidence
+  it is correct, which for anything non-trivial means tests you have seen fail
+  for the right reason and then pass.
 
 - Verify changes with project commands appropriate to the change before
   presenting work as complete.

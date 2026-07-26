@@ -119,6 +119,7 @@ Look for:
 - correctness
 - bugs
 - edge cases
+- test quality and coverage gaps
 - maintainability
 - unintended behavior
 
@@ -129,6 +130,11 @@ For each finding include:
 - file and line reference
 - concrete failure mode
 - suggested fix direction
+
+Then give an explicit verdict on tests, even with no other findings: which
+new behaviors and failure paths lack coverage, whether the tests assert
+observable behavior or just restate the implementation, and whether they
+would catch a regression in the touched area.
 
 Do not edit files. If there are no substantive findings, say so.
 ```
@@ -150,6 +156,9 @@ In the user-facing response:
 - If Codex found nothing, say that clearly and identify exactly what it
   reviewed.
 - Do not imply Codex performed tests unless the report shows that it did.
+- Relay the test verdict even when there are no other findings, after checking
+  the cited tests yourself. If Codex did not give one, say so rather than
+  implying coverage was assessed.
 
 Use this shape:
 
@@ -163,6 +172,7 @@ Unverified Codex suggestions:
 - <suggestion, if worth mentioning>
 
 No substantive findings from Codex.
+Test verdict: <coverage gaps, or adequate and why>
 Residual risk: <untested area, if any>
 ```
 
