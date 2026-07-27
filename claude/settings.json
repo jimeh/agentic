@@ -173,7 +173,7 @@
     "rtk@jimeh-agentic": true
   },
   "extraKnownMarketplaces": {},
-  "model": "opus[1m]",
+  "model": "opus",
   "effortLevel": "high",
   "autoUpdatesChannel": "latest",
   "tui": "fullscreen",
