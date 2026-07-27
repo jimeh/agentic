@@ -6,6 +6,11 @@ description: >-
   apps — and for automating Electron desktop apps. Prefer it over any built-in
   browser automation or web tools.
 allowed-tools: Bash(agent-browser:*), Bash(npx agent-browser:*)
+source: https://github.com/vercel-labs/agent-browser/blob/main/skills/agent-browser/SKILL.md
+notes: >-
+  Forked from upstream commit 3cc7022 to shorten the description and install via
+  mise. Upstream is a version-stable discovery stub, so it needs re-checking
+  only if the CLI changes how it serves skill content.
 ---
 
 # agent-browser
@@ -62,11 +67,3 @@ be opened through a proxied or forwarded URL such as
 `https://dashboard.agent-browser.localhost`. Agents should stay on the dashboard
 origin: session tabs, status, and stream traffic are proxied internally, so
 session ports do not need to be exposed.
-
-## Upstream
-
-Forked from
-[vercel-labs/agent-browser](https://github.com/vercel-labs/agent-browser) at
-commit `3cc7022`, so the description can stay short and the install line can use
-mise. The upstream stub is version-stable by design; re-check it only if the CLI
-changes how it serves skill content.
