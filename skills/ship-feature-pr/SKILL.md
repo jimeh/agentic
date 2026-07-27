@@ -100,16 +100,30 @@ scope.
 
 ### 1. Intake
 
-Before changing local state, record enough of the delivery checkout to restore
-and verify it later:
+Before changing local state, record enough of the delivery checkout to verify it
+later:
 
 - invocation path, repository root, branch or detached state, and current head;
 - whether it is the root or a linked worktree and the current worktree mapping;
-- staged, unstaged, and untracked user changes, including their content where
-  needed to prove preservation.
+- a `git status --porcelain` snapshot of staged, unstaged, and untracked
+  changes.
 
-Do not stash, discard, stage, or otherwise normalize pre-existing work merely to
-start the workflow.
+The workflow needs a delivery checkout holding nothing unrelated to the feature.
+Classify whatever the snapshot reports:
+
+- Ignored paths are invisible to the workflow. Never commit or remove them.
+- Changes that are plainly the plan or spec for the feature about to ship —
+  typically produced by the planning discussion that led here — belong to it.
+  Commit them onto the feature branch in step 3 and disclose that in the final
+  report.
+- Anything else stops the workflow. Show the user what is there and ask whether
+  it belongs to the feature or the run should stop so they can commit or stash
+  it themselves. There is no third answer; the workflow does not carry unrelated
+  uncommitted work through branch moves, commits, and pushes.
+
+Do not stash, discard, or normalize pre-existing work to start the workflow. A
+repository that does not track plan documents should ignore them, which puts
+them in the first bucket.
 
 Establish the requested change and target base branch. Use the remote default
 branch when the user did not specify one, and state the assumption. Find the
@@ -163,9 +177,10 @@ the requested work; otherwise create a clean branch there or ask if local state
 makes that unsafe. A detached checkout at the intended base is a valid place to
 create the branch.
 
-Preserve non-overlapping user changes in place. Ask only when existing changes
-overlap the implementation scope or branch movement would put them at risk. Do
-not silently absorb user work into the feature.
+Commit the plan or spec file the intake gate assigned to the feature here, as
+its own commit, before any implementer worktree exists. The worktree is created
+from this tip and therefore contains it, so the spec can point the implementer
+at the path rather than inlining the content.
 
 If a separate orchestrator checkout is genuinely necessary, record its path and
 reason. Never remove it while it is the only safe local home of the feature
@@ -174,58 +189,141 @@ branch.
 ### 4. Implement and Integrate
 
 For non-trivial work, delegate to one fresh same-engine implementer in a
-separate worktree or clone, preferring native tooling and using the allowed
-same-engine CLI fallback only when necessary. Keep that agent away from the
-delivery checkout. Direct implementation there is acceptable when the change is
-small enough that delegation would add more cost than perspective; disclose that
-in the final report.
+separate worktree, preferring native tooling and using the allowed same-engine
+CLI fallback only when necessary. Keep that agent away from the delivery
+checkout. Direct implementation there is acceptable when the change is small
+enough that delegation would add more cost than perspective; disclose that in
+the final report.
+
+Create the worktree on its own branch off the current feature branch tip. Git
+refuses to check out a branch that is already checked out elsewhere, so the
+implementer cannot attach to the delivery branch by accident:
+
+```bash
+git worktree add -b impl/<slug> "$WORKTREE_DIR" <feature-branch>
+```
 
 Give the implementer the frozen spec, the testing strategy, and the exact
 verification commands. Require it to use tests as its running check on
 correctness while it works rather than a step at the end, and to treat the work
 as unfinished until it has well-grounded confidence in the implementation —
 which for anything non-trivial means tests it has watched fail for the right
-reason and then pass.
+reason and then pass. Tell it to leave Git alone and simply report what it did;
+the orchestrator owns every Git operation, including committing the work in the
+implementer's own worktree. Depending on a delegated agent to commit is what
+makes uncommitted work vanish silently later.
 
 When it finishes:
 
-1. Review the complete result as a contributor diff, tests included. For each
-   substantive behavior it adds, identify the test covering it and the failure
-   path that test exercises. Judge what you find against the test quality
-   contract; an unexplained gap is a correction, not a note.
-2. Run the new and changed tests yourself first — a full-suite run can hide
+1. Capture its work before inspecting it. Read what it reported doing, then
+   account for every path the worktree reports:
+
+   ```bash
+   cd "$WORKTREE_DIR"
+   git status --porcelain
+   ```
+
+   The report explains most paths; the rest are suspect. Delete strays, or add
+   genuine build artifacts to `.gitignore` where the repository should have been
+   ignoring them anyway. Ask the implementer about anything still ambiguous.
+   Then sweep:
+
+   ```bash
+   git add -A && git commit -m "impl: <slug>"
+   ```
+
+   Fix the worktree rather than the staging set. An excluded stray stays on
+   disk, survives the resets below — `git reset --hard` discards tracked
+   modifications but leaves untracked files in place — and can make a must-fail
+   test pass. Correcting the worktree first keeps `git add -A` safe to run
+   blind, which is what makes new files, renames, and deletions impossible to
+   drop. Nothing to commit is a valid outcome if the implementer committed on
+   its own; the branch tip is what matters, not who wrote it.
+
+2. Review the complete result as a contributor diff, tests included, without
+   leaving the delivery checkout:
+
+   ```bash
+   git diff <feature-branch>...impl/<slug>
+   git log --stat <feature-branch>..impl/<slug>
+   ```
+
+   For each substantive behavior it adds, identify the test covering it and the
+   failure path that test exercises. Judge what you find against the test
+   quality contract; an unexplained gap is a correction, not a note.
+
+3. Run the new and changed tests yourself first — a full-suite run can hide
    tests that never executed — then the broader project checks. Establish
    negative evidence for substantive behavior: run the new tests against the
-   pre-change code, or against a temporary perturbation where that is not
-   possible, and confirm they fail. A test that passes either way is not
-   covering the path it claims. Always restore the implementation afterwards,
-   confirm the diff matches what it was before the perturbation, and rerun the
-   focused tests before moving on.
-3. Send focused corrections back through the same implementer session. Take over
-   after two unsuccessful correction rounds.
-4. Integrate the complete result, including new files, into the feature branch
-   in the delivery checkout.
+   code as it stood before this round's work and confirm they fail. A test that
+   passes either way is not covering the path it claims.
 
-Do not transfer isolated work through a tracked-file-only diff; it can omit new
-files.
+   Do this in the implementer's worktree, which is disposable, rather than
+   perturbing the delivery checkout:
 
-Preserve the intake baseline throughout integration. Limit staging to approved
-feature paths and retain temporary implementation work until final delivery is
-verified.
+   ```bash
+   cd "$WORKTREE_DIR"
+   git checkout --detach                      # leave impl/<slug> where it is
+   git reset --hard <feature-branch>          # code before this round's work
+   git checkout impl/<slug> -- <test-paths>   # its tests, nothing else
+   <focused test command>                     # must fail
+   git checkout -f impl/<slug>                # restored exactly, reattached
+   ```
+
+   Detach first. `git reset --hard` moves whatever branch is checked out, so
+   running it while attached would drag `impl/<slug>` backwards and destroy the
+   work under test. Detached, the branch ref is untouched and the final checkout
+   restores the worktree exactly. The fix-round reset in step 7 moves
+   `impl/<slug>` deliberately; this one must not.
+
+   `git reset --hard` does not touch ignored paths, which is what keeps the
+   worktree warm between rounds. Where the project builds incrementally, clear
+   its build output first: a stale artifact compiled from the implemented source
+   can satisfy the test after the source is reverted, and the run then proves
+   nothing.
+
+   Judge why each test failed. For behavior that did not exist before, a build
+   or import error is the expected failure. For changed behavior, the test
+   should reach its assertion and fail there; a build error instead means the
+   run proved nothing about that path. A test that unexpectedly passes is
+   evidence about the test or the harness, not permission to move on.
+
+4. Send focused corrections back through the same implementer session. It
+   continues in the same worktree; do not reset it here, because nothing has
+   been integrated yet and the reset target is still the pre-implementation tip,
+   which would discard the very work being corrected. Capture each round with
+   step 1 as it finishes. Take over after two unsuccessful correction rounds.
+
+5. Integrate from the delivery checkout:
+
+   ```bash
+   git merge-base --is-ancestor <feature-branch> impl/<slug>
+   git merge --squash impl/<slug>
+   ```
+
+   The ancestry check fails when `impl/<slug>` no longer builds on the delivery
+   tip; stop and reconcile rather than squashing stale work over the branch. It
+   is the only integration state to track, and it is derived rather than
+   remembered.
+
+`merge --squash` stages the complete result — new files, renames, and deletions
+included — and commits nothing, so those two commands serve every round
+identically.
+
+Never `git add -A` or `git commit -a` in the delivery checkout. The staged
+squash result is the feature scope; test runs and tooling can drop generated
+files into the checkout at any point in the workflow. Keep the implementer
+worktree and its branch until delivery is verified in step 8.
 
 ### 5. Commit, Push, and Open the Draft PR
 
 Use the `commit-push-pr` skill for commit conventions, push behavior, template
 detection, and PR copy, but create the pull request as a draft.
 
-Commit only the approved feature scope. When unrelated changes are already
-staged, use a scoped commit approach that excludes them while leaving their
-index state and content exactly as found. Verify that property before and after
-every feature commit, including fix commits, and verify that new feature files
-were included.
-
-Before pushing, verify that the captured non-feature index and worktree state
-remains unchanged; stop if it does not.
+Commit the staged squash result. The intake gate and the staging rule in step 4
+already bound the scope, so no per-commit exclusion logic is needed: confirm
+`git status` shows nothing unexpected staged, that new feature files were
+included, and that nothing outside the feature was swept in.
 
 Push and create the pull request from the delivery checkout. The PR remains a
 draft until review, CI, and local delivery all pass.
@@ -284,8 +382,21 @@ risk. Add a regression test for every confirmed behavioral or correctness
 failure, unless the user has explicitly accepted a testing exception covering
 it; a fix that lands without one repeats the failure the review just caught.
 
-Fix confirmed findings through the same implementer session when practical, then
-run checks, commit only the fix scope, and push from the delivery checkout.
+Fix confirmed findings through the same implementer session when practical.
+Unlike the correction rounds inside step 4, a round here follows work that
+already landed, so reset the worktree onto the delivery tip before re-prompting:
+
+```bash
+cd "$WORKTREE_DIR"
+git reset --hard <feature-branch>   # attached: moves impl/<slug> on purpose
+```
+
+Sequence it yourself — integrate and commit the previous round, then reset, then
+re-prompt — so the implementer works from the state that actually landed,
+including any adjustment made during review. The reset is safe because you
+committed its work in step 1 rather than relying on it to do so. Then capture,
+review, and integrate exactly as in step 4, run checks, commit, and push from
+the delivery checkout.
 
 Resume the original reviewer sessions for focused fix verification when
 possible. Give each reviewer the last revision it accepted, the new verified
@@ -317,13 +428,24 @@ Before cleanup, verify in the delivery checkout that:
 
 - the expected feature branch is attached there;
 - its head matches the pushed remote branch and tracks the expected upstream;
-- all pre-existing staged, unstaged, and untracked changes remain intact;
+- nothing unexpected remains in the working tree: compare against the intake
+  snapshot and account for anything new;
 - the worktree mapping contains no unintended branch attachment.
 
-Only then remove workflow-created worktrees and verify the mapping again. If
-handback is blocked, retain the checkout holding the feature branch, keep the PR
-draft, and report its path and the blocker. Use another final local destination
-only with explicit user acceptance.
+Only then remove workflow-created worktrees and their branches, and verify the
+mapping again:
+
+```bash
+git worktree remove "$WORKTREE_DIR"
+git branch -D impl/<slug>
+```
+
+A squash integration leaves `impl/<slug>` unmerged as far as Git is concerned,
+so deleting it needs `-D`; the branch is safe to drop because its content
+already landed on the feature branch and is pushed. If handback is blocked,
+retain the checkout holding the feature branch, keep the PR draft, and report
+its path and the blocker. Use another final local destination only with explicit
+user acceptance.
 
 Mark the PR ready only when both reviewer channels cover the final state, you
 can explain your confidence in the change from test evidence rather than assert

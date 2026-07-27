@@ -62,14 +62,19 @@ Bad candidates:
 4. Create a temporary artifact directory for the prompt and report.
 5. Write a concise prompt.
 6. Run `codex exec` with workspace write access in the intended checkout.
-7. Inspect `git status` and `git diff`.
+7. Inspect `git status`, `git diff`, and the diff since the recorded starting
+   tip. Codex may have committed on its own, which leaves the first two empty
+   while the branch has moved.
 8. Run or check focused verification yourself.
-9. For non-trivial changes, review the diff yourself as an independent reviewer
-   before treating the work as complete — judge it like a contributor PR. Do not
-   route the diff to `codex-review`: gpt-5.6-sol re-reviewing its own output is
-   weak independence. For substantial diffs, also get a fresh Claude subagent
-   review; the orchestrating session wrote the spec and is not fully neutral.
-   This gate is mandatory; adjust or reject the result based on what it finds.
+9. For non-trivial changes, review the complete result yourself as an
+   independent reviewer before treating the work as complete — uncommitted
+   changes and anything committed since the starting tip — and judge it like a
+   contributor PR. A review that inspected only the working tree passes
+   vacuously when Codex committed its work. Do not route the diff to
+   `codex-review`: gpt-5.6-sol re-reviewing its own output is weak independence.
+   For substantial diffs, also get a fresh Claude subagent review; the
+   orchestrating session wrote the spec and is not fully neutral. This gate is
+   mandatory; adjust or reject the result based on what it finds.
 10. Deliver the result (see Delivery below).
 11. Report what changed, what was verified, and what remains.
 
@@ -79,8 +84,10 @@ Use isolated work when practical:
 
 - Create a dedicated worktree and branch for substantial or parallel tasks.
 - Keep Codex away from unrelated user changes.
-- Ask Codex to return a patch or clean diff, not commits, unless commits were
-  explicitly requested.
+- Ask Codex to leave Git alone and report what it did. Claude owns every Git
+  operation, including committing Codex's work in the worktree it ran in.
+  Depending on Codex to commit is what makes uncommitted work vanish silently
+  during later integration.
 - Do not let multiple implementation agents edit the same checkout.
 
 Use the current checkout only for small, low-risk edits where isolation adds
@@ -103,9 +110,13 @@ TASK_SLUG="<short-task-slug>"
 WORKTREE_PARENT="$(mktemp -d "${TMPDIR:-/tmp}/codex-worktree.XXXXXX")"
 WORKTREE_DIR="$WORKTREE_PARENT/worktree"
 BRANCH="codex/$TASK_SLUG"
+START_TIP="$(git rev-parse HEAD)"
 
 git worktree add -b "$BRANCH" "$WORKTREE_DIR" HEAD
 ```
+
+Keep `START_TIP`. It is what makes the result reviewable no matter how Codex
+left it — working tree, commits, or both.
 
 Run Codex in that worktree:
 
@@ -132,7 +143,30 @@ After Codex finishes, inspect the result from the worktree:
 cd "$WORKTREE_DIR"
 git status --short
 git diff
+git diff "$START_TIP" HEAD   # anything Codex committed on its own
 ```
+
+The last command is not optional. If Codex committed, the first two are empty
+and a review that stops there inspects nothing at all.
+
+Account for every path the status reports. Codex's report explains most of them;
+the rest are suspect. Delete strays, or add genuine build artifacts to
+`.gitignore` where the repository should have been ignoring them anyway, and ask
+Codex about anything still ambiguous. Fix the worktree rather than the staging
+set, so the sweep below stays safe to run blind and later resets cannot leave a
+stray behind — `git reset --hard` discards tracked modifications but leaves
+untracked files in place.
+
+For branch-based delivery, capture the result yourself once it looks right:
+
+```bash
+git add -A && git commit -m "codex: <slug>"
+```
+
+The message is throwaway if the destination squashes it. Nothing to commit is a
+valid outcome when Codex committed on its own — the branch tip is what matters,
+not who wrote it — but only once the diff against `START_TIP` has actually been
+reviewed.
 
 If the implementation depends on uncommitted work in the original checkout,
 either keep the task in the current checkout or explicitly transfer only the
@@ -154,7 +188,21 @@ Two constraints always hold:
 - A human reviews the work before it ships; for standalone changes that usually
   means a pull request.
 
-To apply a worktree result onto another checkout:
+To apply a worktree result onto another checkout of the same repository, use the
+shared object database rather than a patch. From the destination checkout:
+
+```bash
+git merge-base --is-ancestor HEAD "$BRANCH"
+git merge --squash "$BRANCH"
+```
+
+The ancestry check confirms the worktree branch still builds on the destination
+tip; stop and reconcile if it fails. `git merge --squash` then stages the
+complete result — new files, renames, and deletions included — and commits
+nothing, leaving the commit message and scope to the orchestrating session.
+
+A patch is only needed for a genuine separate clone, which does not share the
+object database:
 
 ```bash
 (cd "$WORKTREE_DIR" && git add -A &&
@@ -162,7 +210,7 @@ To apply a worktree result onto another checkout:
 git apply "$ARTIFACT_DIR/change.patch"
 ```
 
-Staging inside the throwaway worktree is required so newly created files are
+Staging inside the source checkout is required so newly created files are
 included in the patch; `git diff HEAD` alone would drop them.
 
 ## Cleanup
@@ -175,8 +223,10 @@ git worktree remove "$WORKTREE_DIR"
 rm -rf "$WORKTREE_PARENT" "$ARTIFACT_DIR"
 ```
 
-Delete the local `codex/<slug>` branch once it is merged or rejected. Keep the
-branch while a PR based on it is still open.
+Delete the local `codex/<slug>` branch once its result is integrated or
+rejected. A squash integration leaves it unmerged as far as Git is concerned, so
+that needs `git branch -D`. Keep the branch while a PR based on it is still
+open.
 
 ## Current Checkout Command Shape
 
@@ -208,6 +258,22 @@ target checkout and set the sandbox through config:
   -o "$REPORT" \
   - < "$PROMPT")
 ```
+
+When a previous round was already integrated into the destination, start the
+next round from the integrated state, including any adjustment made during
+review. Do this yourself, before re-prompting, and only after capturing the
+previous round:
+
+```bash
+(cd "$WORKTREE_DIR" && git reset --hard <destination-branch>)
+```
+
+The reset is safe because you committed Codex's work rather than relying on it
+to do so. It keeps every round a plain `git merge --squash` from the destination
+checkout, and removes any need to track which commits were already integrated.
+Do not reset before a round whose predecessor has not been integrated; the
+target would still be the pre-implementation tip, and the reset would discard
+the work being corrected.
 
 Write the follow-up prompt to a fresh file first; state only what is wrong and
 what proof is expected. With parallel Codex runs in flight, resume by session id
