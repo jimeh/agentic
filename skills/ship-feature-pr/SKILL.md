@@ -253,40 +253,40 @@ When it finishes:
    quality contract; an unexplained gap is a correction, not a note.
 
 3. Run the new and changed tests yourself first — a full-suite run can hide
-   tests that never executed — then the broader project checks. Establish
-   negative evidence for substantive behavior: run the new tests against the
-   code as it stood before this round's work and confirm they fail. A test that
-   passes either way is not covering the path it claims.
+   tests that never executed — then the broader project checks. Confirm from the
+   runner's output that each new test actually ran, by name or by count. A test
+   the collector never picked up is the one failure reading cannot catch, and a
+   green suite reports it as coverage.
 
-   Do this in the implementer's worktree, which is disposable, rather than
-   perturbing the delivery checkout:
+   Then establish negative evidence for the behaviors the feature turns on.
+   Perturb the behavior a test claims to cover — flip a return, drop a branch,
+   change a constant — and confirm that test fails. Do it in the implementer's
+   worktree, which is disposable:
 
    ```bash
    cd "$WORKTREE_DIR"
-   git checkout --detach                      # leave impl/<slug> where it is
-   git reset --hard <feature-branch>          # code before this round's work
-   git checkout impl/<slug> -- <test-paths>   # its tests, nothing else
-   <focused test command>                     # must fail
-   git checkout -f impl/<slug>                # restored exactly, reattached
+   <break one behavior under test>
+   <the spec's focused test command>   # must fail, at its assertion
+   git checkout -f impl/<slug>         # restored exactly
    ```
 
-   Detach first. `git reset --hard` moves whatever branch is checked out, so
-   running it while attached would drag `impl/<slug>` backwards and destroy the
-   work under test. Detached, the branch ref is untouched and the final checkout
-   restores the worktree exactly. The fix-round reset in step 7 moves
-   `impl/<slug>` deliberately; this one must not.
+   Perturb rather than reverting the implementation wholesale. It proves the
+   test detects that specific behavior instead of merely needing the feature to
+   exist, it needs no partial checkout of test files and their fixtures, and it
+   works unchanged where tests are co-located with the code they cover. Use the
+   focused command frozen into the spec; this is not a suite run.
 
-   `git reset --hard` does not touch ignored paths, which is what keeps the
-   worktree warm between rounds. Where the project builds incrementally, clear
-   its build output first: a stale artifact compiled from the implemented source
-   can satisfy the test after the source is reverted, and the run then proves
-   nothing.
+   Judge why each test failed. It should reach its assertion and fail there. A
+   build or import error means the perturbation broke compilation rather than
+   behavior — narrow it and retry. A test that still passes is evidence about
+   the test or the harness, not permission to move on; check that the run
+   rebuilt from the source you changed before concluding anything about the
+   test.
 
-   Judge why each test failed. For behavior that did not exist before, a build
-   or import error is the expected failure. For changed behavior, the test
-   should reach its assertion and fail there; a build error instead means the
-   run proved nothing about that path. A test that unexpectedly passes is
-   evidence about the test or the harness, not permission to move on.
+   Reading carries the rest, and carries it well: assertions on implementation
+   shape, mocks standing in for the behavior under test, and assertions that
+   cannot fail are all visible on the page. Spend perturbation on the behaviors
+   whose correctness the feature actually rests on.
 
 4. Send focused corrections back through the same implementer session. It
    continues in the same worktree; do not reset it here, because nothing has
