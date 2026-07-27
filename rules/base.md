@@ -41,8 +41,10 @@
   existing behavior the change could regress.
 - Assert observable behavior, not implementation shape. Mock external boundaries
   only where needed, never the behavior under test.
-- Before relying on a new test, see it fail: perturb the behavior it covers,
-  confirm it fails at its assertion, then restore and confirm a clean diff.
+- Before relying on a new test, see it fail. Writing the test first gives that
+  for free: it fails against real pre-change code, with nothing to restore. Once
+  the code exists, perturb the behavior the test covers instead, confirm it
+  fails at its assertion, then restore and confirm a clean diff.
 - Confirm from the runner's output that a new test actually ran, by name or
   count. A test the collector never picked up reads as coverage.
 - How thoroughly a path is tested scales with its risk; whether a failure path
