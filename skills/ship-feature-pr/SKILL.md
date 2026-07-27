@@ -276,10 +276,17 @@ When it finishes:
    restores the worktree exactly. The fix-round reset in step 7 moves
    `impl/<slug>` deliberately; this one must not.
 
+   `git reset --hard` does not touch ignored paths, which is what keeps the
+   worktree warm between rounds. Where the project builds incrementally, clear
+   its build output first: a stale artifact compiled from the implemented source
+   can satisfy the test after the source is reverted, and the run then proves
+   nothing.
+
    Judge why each test failed. For behavior that did not exist before, a build
    or import error is the expected failure. For changed behavior, the test
    should reach its assertion and fail there; a build error instead means the
-   run proved nothing about that path.
+   run proved nothing about that path. A test that unexpectedly passes is
+   evidence about the test or the harness, not permission to move on.
 
 4. Send focused corrections back through the same implementer session. It
    continues in the same worktree; do not reset it here, because nothing has

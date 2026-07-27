@@ -62,14 +62,19 @@ Bad candidates:
 4. Create a temporary artifact directory for the prompt and report.
 5. Write a concise prompt.
 6. Run `codex exec` with workspace write access in the intended checkout.
-7. Inspect `git status` and `git diff`.
+7. Inspect `git status`, `git diff`, and the diff since the recorded starting
+   tip. Codex may have committed on its own, which leaves the first two empty
+   while the branch has moved.
 8. Run or check focused verification yourself.
-9. For non-trivial changes, review the diff yourself as an independent reviewer
-   before treating the work as complete — judge it like a contributor PR. Do not
-   route the diff to `codex-review`: gpt-5.6-sol re-reviewing its own output is
-   weak independence. For substantial diffs, also get a fresh Claude subagent
-   review; the orchestrating session wrote the spec and is not fully neutral.
-   This gate is mandatory; adjust or reject the result based on what it finds.
+9. For non-trivial changes, review the complete result yourself as an
+   independent reviewer before treating the work as complete — uncommitted
+   changes and anything committed since the starting tip — and judge it like a
+   contributor PR. A review that inspected only the working tree passes
+   vacuously when Codex committed its work. Do not route the diff to
+   `codex-review`: gpt-5.6-sol re-reviewing its own output is weak independence.
+   For substantial diffs, also get a fresh Claude subagent review; the
+   orchestrating session wrote the spec and is not fully neutral. This gate is
+   mandatory; adjust or reject the result based on what it finds.
 10. Deliver the result (see Delivery below).
 11. Report what changed, what was verified, and what remains.
 
@@ -105,9 +110,13 @@ TASK_SLUG="<short-task-slug>"
 WORKTREE_PARENT="$(mktemp -d "${TMPDIR:-/tmp}/codex-worktree.XXXXXX")"
 WORKTREE_DIR="$WORKTREE_PARENT/worktree"
 BRANCH="codex/$TASK_SLUG"
+START_TIP="$(git rev-parse HEAD)"
 
 git worktree add -b "$BRANCH" "$WORKTREE_DIR" HEAD
 ```
+
+Keep `START_TIP`. It is what makes the result reviewable no matter how Codex
+left it — working tree, commits, or both.
 
 Run Codex in that worktree:
 
@@ -134,7 +143,11 @@ After Codex finishes, inspect the result from the worktree:
 cd "$WORKTREE_DIR"
 git status --short
 git diff
+git diff "$START_TIP" HEAD   # anything Codex committed on its own
 ```
+
+The last command is not optional. If Codex committed, the first two are empty
+and a review that stops there inspects nothing at all.
 
 Account for every path the status reports. Codex's report explains most of them;
 the rest are suspect. Delete strays, or add genuine build artifacts to
@@ -151,8 +164,9 @@ git add -A && git commit -m "codex: <slug>"
 ```
 
 The message is throwaway if the destination squashes it. Nothing to commit is a
-valid outcome when Codex committed on its own; the branch tip is what matters,
-not who wrote it.
+valid outcome when Codex committed on its own — the branch tip is what matters,
+not who wrote it — but only once the diff against `START_TIP` has actually been
+reviewed.
 
 If the implementation depends on uncommitted work in the original checkout,
 either keep the task in the current checkout or explicitly transfer only the
