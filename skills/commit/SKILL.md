@@ -24,18 +24,12 @@ Run all four commands to understand the current state:
 ### 2. Check Agent Docs
 
 If the project has an AGENTS.md or CLAUDE.md, review it against the current
-changes. If changes introduce new conventions, commands, architecture, or
-patterns that should be documented (or invalidate existing docs), update the
-relevant file as part of this commit. Only update if clearly warranted — avoid
-adding noise.
+changes. If they introduce conventions, commands, architecture, or patterns
+worth recording — or invalidate what is already there — update the relevant file
+as part of this commit. Only when clearly warranted; avoid adding noise.
 
-Things worth documenting:
-
-- Non-obvious conventions or patterns not apparent from code structure alone
-- Surprising behaviors, gotchas, or workarounds discovered during development
-- Implicit dependencies or ordering constraints between components
-- Environment-specific quirks (platform differences, tool version sensitivities)
-- Undocumented requirements or constraints found through trial and error
+The "Documenting Discoveries" section of the global rules defines what
+qualifies.
 
 ### 3. Branch Safety
 

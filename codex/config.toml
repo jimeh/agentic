@@ -201,167 +201,56 @@ git-pr-instructions = '''
 Commit current changes, push to remote, and open a pull request in a single
 workflow.
 
+This skill owns the sequence and the `gh` mechanics. It deliberately does not
+restate conventions that live elsewhere:
+
+- **Commit guidance** — the `commit` skill: context gathering, the agent-docs
+  check, message conventions, staged-only mode, ignored-file rules.
+- **PR title and body** — the `write-pr-copy` skill: template handling,
+  motivation-first descriptions, Manual QA, copy hygiene, honesty rules.
+
 ## Workflow
 
-### 1. Gather Context
+### 1. Commit
 
-Run these commands to understand the current state:
+Follow the `commit` skill end to end, with one addition it leaves conditional:
+if the current branch is `main`, `master`, or the repository's default or
+protected branch, create a branch named for the changes with
+`git checkout -b <descriptive-name>` before committing. Never rename those
+branches.
 
-- `git status` — see tracked/untracked files
-- `git diff HEAD` — see all staged and unstaged changes
-- `git branch --show-current` — identify current branch
-- `git log --oneline -10` — match existing commit message style
-
-### 2. Detect PR Template
-
-Always run a PR template search before writing the PR body, even if you do not
-expect one to exist.
-
-```bash
-find . -maxdepth 4 \
-  \( -path './.git' -o -path './node_modules' -o -path './vendor' \) -prune \
-  -o \( -iname 'pull_request_template*' \
-  -o -ipath '*/pull_request_template/*' \) -print 2>/dev/null
-```
-
-Record the result as one of:
-
-- `No PR template found`
-- `One PR template found: <path>`
-- `Multiple PR templates found: <paths>`
-
-If one template is found, read it before drafting the PR body. If multiple
-templates are found and no obvious default exists, ask which one to use.
-
-Do not run `gh pr create` until the template status is known.
-
-Template detection is internal workflow state. Do not include template status
-metadata in the PR title or body, including lines like `No PR template found`,
-`PR template: No PR template found`, or the path of the selected template unless
-the repository's template explicitly asks for it.
-
-### 3. Check Agent Docs
-
-If the project has an AGENTS.md or CLAUDE.md, review it against the current
-changes. If changes introduce new conventions, commands, architecture, or
-patterns that should be documented (or invalidate existing docs), update the
-relevant file as part of this commit. Only update if clearly warranted — avoid
-adding noise.
-
-Things worth documenting:
-
-- Non-obvious conventions or patterns not apparent from code structure alone
-- Surprising behaviors, gotchas, or workarounds discovered during development
-- Implicit dependencies or ordering constraints between components
-- Environment-specific quirks (platform differences, tool version sensitivities)
-- Undocumented requirements or constraints found through trial and error
-
-### 4. Branch
-
-If on `main`, `master`, or the repository's default/protected branch, create a
-new branch named for the changes with `git checkout -b <descriptive-name>`.
-Never rename these branches.
-
-Only use `git branch -m <descriptive-name>` when already on a non-main branch
-whose name appears generated, random, or unrelated to the current work, such as
-UUIDs, hex strings, meaningless sequences, or 1-3 unrelated words like
-"brave-fox".
-
-If the branch name is meaningful or user-provided, keep it.
-
-### 5. Commit
-
-Stage all relevant changes and create a single commit with a conventional commit
-message. Lead with why over what. The commit body should start with the reason
-for the change; technical overview and implementation notes come after. Make the
-problem, context, or reason for the change clear before describing
-implementation details when that reason is supported by the available evidence.
-If the rationale is unclear, do not guess; ask the user.
-
-If the reason behind a change is not clear from context, ask the user before
-committing.
-
-Never stage or commit files ignored by git unless the user explicitly asks. Do
-not use `git add -f`, `git add --force`, or equivalent to include ignored files.
-
-When asked to commit only staged changes, run `git diff --staged` to see exactly
-what is staged, base the commit message solely on those changes, and do NOT
-stage additional files.
-
-### 6. Push
+### 2. Push
 
 Push the branch to origin with `git push -u origin <branch>`.
 
-### 7. Understand Full Scope
+### 3. Understand Full Scope
 
-Run `git log` and `git diff main...HEAD` (or master) to see all changes since
-the base branch. This ensures the PR description covers everything, not just the
-latest commit.
+Run `git log` and `git diff main...HEAD` (or `master`) to see every change since
+the base branch. The PR describes the branch, not the latest commit.
 
-### 8. Create PR
+### 4. Write the Copy
 
-Use `gh pr create` to open the pull request.
+Follow the `write-pr-copy` skill to produce the title and body, including its PR
+template detection. Do not run `gh pr create` before the template status is
+known.
 
-- **Title**: use conventional commits format when the repo follows that
-  convention. Keep the title to one clear line that describes the branch's
-  purpose, not the mechanics of creating the PR. Prefer wording that would read
-  well as a bullet in a user-facing changelog when the change has user-visible
-  impact. For internal-only changes, frame the title around the durable project
-  outcome rather than the implementation task.
-- **PR template**: use the template selected in step 2 as the PR body structure.
-  Preserve meaningful headings and checklists, replacing placeholders with
-  concrete branch-specific content. If no template was found, write a concise
-  body from the branch diff.
-- **Description**: lead with the motivation and purpose behind the change —
-  before technical details. Start with the problem, context, or reason the
-  change is needed when that can be supported by the available evidence, then
-  cover the implementation. If the rationale is unclear, do not guess; stick to
-  the confirmed scope of the branch or ask the user. Cover the full scope of all
-  commits. Do NOT list individual commits — the PR already shows those.
-- **Manual QA**: include manual QA steps only when they are useful, concrete,
-  and tied to the behavior changed by the branch. Prefer reviewer workflows or
-  user-visible scenarios over commands. Do not fill this section with generic
-  test commands, CI commands, or "CI should pass"; CI already covers automated
-  checks. If there are no meaningful manual steps, omit the section or mark it
-  not applicable only when the selected template requires an answer.
-- **PR copy hygiene**:
-  - Never include machine-local details in a PR title or body: absolute local
-    filesystem paths, usernames, home directories, host-specific locations, or
-    similar local-only context.
-  - Include a Testing section only when actual validation results provide useful
-    context to reviewers. Mention commands only when they were actually run and
-    their results are meaningful; keep Testing notes distinct from Manual QA.
-  - For docs-only or content-only changes, omit Testing when it would merely
-    list generic lint, format, test, or CI-equivalent commands, unless the
-    selected PR template requires the section.
-  - If the selected PR template requires a Testing section and validation was
-    not run or is unknown, state that plainly without inventing commands or
-    results.
-  - When useful validation involved a machine-local path, rewrite the note with
-    a repository-relative command or path, or concise prose; never copy the raw
-    local invocation.
-- **Honesty**: do not invent rationale, test coverage, or manual validation
-  that is not grounded in the diff, commits, template, or user request. Note
-  important assumptions only when they affect review.
+### 5. Create the PR
 
-Before creating the PR, verify:
+Open it with `gh pr create`, using that title and body.
 
-- PR template search command was run
-- Any matched template file was read
-- PR body follows the selected template, or no template was found
-- PR title and body do not include template-search metadata
-- PR title and body contain no machine-local details
-- Any Testing section adds useful reviewer context or is required by the template
+Before creating, verify:
+
+- the PR template search was run, and any matched template was read
+- the body follows the selected template, or no template was found
+- title and body carry no template-search metadata and no machine-local details
+- any Testing section adds real reviewer context, or is required by the template
 
 ## Guidelines
 
 - Use parallel tool calls where possible to minimize round-trips
 - Minimize text output — focus on tool calls
-- Prefer conventional commits format, but defer to project conventions
 - Pass commit messages and PR bodies via heredocs to avoid shell interpretation
   of backticks and other special characters in multi-line strings
-- Treat `.gitignore` and other git exclude rules as authoritative for default
-  commit scope
 '''
 conversationDetailMode = "STEPS_COMMANDS"
 preventSleepWhileRunning = true

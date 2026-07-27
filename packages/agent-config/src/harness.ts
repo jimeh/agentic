@@ -52,27 +52,6 @@ type ThirdpartyLockEntry = {
 };
 
 const slugPattern = /^[a-z0-9]+(-[a-z0-9]+)*$/;
-const prCopyInstructionPaths = [
-  "skills/commit-push-pr/SKILL.md",
-  "skills/write-pr-copy/SKILL.md",
-  "plugins/git-commands/commands/commit-push-pr.md",
-];
-const prCopyHygieneRules = [
-  "Never include machine-local details in a PR title or body",
-  "absolute local filesystem paths, usernames, home directories, " +
-    "host-specific locations",
-  "Include a Testing section only when actual validation results provide " +
-    "useful context to reviewers",
-  "keep Testing notes distinct from Manual QA",
-  "For docs-only or content-only changes, omit Testing when it would merely " +
-    "list generic lint, format, test, or CI-equivalent commands",
-  "unless the selected PR template requires the section",
-  "If the selected PR template requires a Testing section and validation " +
-    "was not run or is unknown, state that plainly without inventing " +
-    "commands or results",
-  "rewrite the note with a repository-relative command or path, or concise " +
-    "prose; never copy the raw local invocation",
-];
 let failed = false;
 
 function usage(exitCode = 2): never {
@@ -195,21 +174,10 @@ export function extractGitPrInstructions(content: string): string | null {
   return normalizeWhitespace(remaining.slice(0, closingDelimiter.index));
 }
 
+// Codex does not expand `@` references, so codex/config.toml has to inline the
+// commit-push-pr body rather than point at it. That copy is a platform
+// constraint, and this check is what stops it drifting.
 function checkPrCopyInstructions(): void {
-  for (const path of prCopyInstructionPaths) {
-    if (!existsSync(path)) {
-      reportError(`${path}: missing PR copy instructions`);
-      continue;
-    }
-
-    const content = normalizeWhitespace(readFileSync(path, "utf8"));
-    for (const rule of prCopyHygieneRules) {
-      if (!content.includes(rule)) {
-        reportError(`${path}: missing PR copy hygiene rule '${rule}'`);
-      }
-    }
-  }
-
   const skillPath = "skills/commit-push-pr/SKILL.md";
   const codexConfigPath = "codex/config.toml";
   if (!existsSync(skillPath) || !existsSync(codexConfigPath)) {
