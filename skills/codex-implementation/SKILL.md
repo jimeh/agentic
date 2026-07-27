@@ -79,8 +79,12 @@ Use isolated work when practical:
 
 - Create a dedicated worktree and branch for substantial or parallel tasks.
 - Keep Codex away from unrelated user changes.
-- Ask Codex to return a patch or clean diff, not commits, unless commits were
-  explicitly requested.
+- In an isolated worktree, have Codex commit its work on that worktree's branch.
+  A worktree shares the repository's object database, so those commits are
+  visible from any other checkout of the same repository immediately, with no
+  patch file, copy, or fetch.
+- In the current checkout, ask Codex to leave changes uncommitted unless commits
+  were explicitly requested.
 - Do not let multiple implementation agents edit the same checkout.
 
 Use the current checkout only for small, low-risk edits where isolation adds
@@ -154,7 +158,21 @@ Two constraints always hold:
 - A human reviews the work before it ships; for standalone changes that usually
   means a pull request.
 
-To apply a worktree result onto another checkout:
+To apply a worktree result onto another checkout of the same repository, use the
+shared object database rather than a patch. From the destination checkout:
+
+```bash
+git merge-base --is-ancestor HEAD "$BRANCH"
+git merge --squash "$BRANCH"
+```
+
+The ancestry check confirms the worktree branch still builds on the destination
+tip; stop and reconcile if it fails. `git merge --squash` then stages the
+complete result — new files, renames, and deletions included — and commits
+nothing, leaving the commit message and scope to the orchestrating session.
+
+A patch is only needed for a genuine separate clone, which does not share the
+object database:
 
 ```bash
 (cd "$WORKTREE_DIR" && git add -A &&
@@ -162,7 +180,7 @@ To apply a worktree result onto another checkout:
 git apply "$ARTIFACT_DIR/change.patch"
 ```
 
-Staging inside the throwaway worktree is required so newly created files are
+Staging inside the source checkout is required so newly created files are
 included in the patch; `git diff HEAD` alone would drop them.
 
 ## Cleanup
@@ -175,8 +193,10 @@ git worktree remove "$WORKTREE_DIR"
 rm -rf "$WORKTREE_PARENT" "$ARTIFACT_DIR"
 ```
 
-Delete the local `codex/<slug>` branch once it is merged or rejected. Keep the
-branch while a PR based on it is still open.
+Delete the local `codex/<slug>` branch once its result is integrated or
+rejected. A squash integration leaves it unmerged as far as Git is concerned, so
+that needs `git branch -D`. Keep the branch while a PR based on it is still
+open.
 
 ## Current Checkout Command Shape
 
@@ -208,6 +228,17 @@ target checkout and set the sandbox through config:
   -o "$REPORT" \
   - < "$PROMPT")
 ```
+
+When a previous round was already integrated into the destination, have the next
+round start from the integrated state, including any adjustment made during
+review:
+
+```bash
+(cd "$WORKTREE_DIR" && git reset --hard <destination-branch>)
+```
+
+That keeps every round a plain `git merge --squash` from the destination
+checkout, and removes any need to track which commits were already integrated.
 
 Write the follow-up prompt to a fresh file first; state only what is wrong and
 what proof is expected. With parallel Codex runs in flight, resume by session id
