@@ -208,13 +208,39 @@ verification commands. Require it to use tests as its running check on
 correctness while it works rather than a step at the end, and to treat the work
 as unfinished until it has well-grounded confidence in the implementation —
 which for anything non-trivial means tests it has watched fail for the right
-reason and then pass. Require it to commit its work on `impl/<slug>`; a worktree
-shares the repository's object database, so those commits are visible from the
-delivery checkout as soon as they exist, with no patch file, copy, or fetch.
+reason and then pass. Tell it to leave Git alone and simply report what it did;
+the orchestrator owns every Git operation, including committing the work in the
+implementer's own worktree. Depending on a delegated agent to commit is what
+makes uncommitted work vanish silently later.
 
 When it finishes:
 
-1. Review the complete result as a contributor diff, tests included, without
+1. Capture its work before inspecting it. Read what it reported doing, then
+   account for every path the worktree reports:
+
+   ```bash
+   cd "$WORKTREE_DIR"
+   git status --porcelain
+   ```
+
+   The report explains most paths; the rest are suspect. Delete strays, or add
+   genuine build artifacts to `.gitignore` where the repository should have been
+   ignoring them anyway. Ask the implementer about anything still ambiguous.
+   Then sweep:
+
+   ```bash
+   git add -A && git commit -m "impl: <slug>"
+   ```
+
+   Fix the worktree rather than the staging set. An excluded stray stays on
+   disk, survives the resets below — `git reset --hard` discards tracked
+   modifications but leaves untracked files in place — and can make a must-fail
+   test pass. Correcting the worktree first keeps `git add -A` safe to run
+   blind, which is what makes new files, renames, and deletions impossible to
+   drop. Nothing to commit is a valid outcome if the implementer committed on
+   its own; the branch tip is what matters, not who wrote it.
+
+2. Review the complete result as a contributor diff, tests included, without
    leaving the delivery checkout:
 
    ```bash
@@ -226,11 +252,11 @@ When it finishes:
    failure path that test exercises. Judge what you find against the test
    quality contract; an unexplained gap is a correction, not a note.
 
-2. Run the new and changed tests yourself first — a full-suite run can hide
+3. Run the new and changed tests yourself first — a full-suite run can hide
    tests that never executed — then the broader project checks. Establish
    negative evidence for substantive behavior: run the new tests against the
-   pre-change code and confirm they fail. A test that passes either way is not
-   covering the path it claims.
+   code as it stood before this round's work and confirm they fail. A test that
+   passes either way is not covering the path it claims.
 
    Do this in the implementer's worktree, which is disposable, rather than
    perturbing the delivery checkout:
@@ -238,40 +264,40 @@ When it finishes:
    ```bash
    cd "$WORKTREE_DIR"
    git checkout --detach                      # leave impl/<slug> where it is
-   git reset --hard <feature-branch>          # pre-change code
+   git reset --hard <feature-branch>          # code before this round's work
    git checkout impl/<slug> -- <test-paths>   # its tests, nothing else
    <focused test command>                     # must fail
    git checkout -f impl/<slug>                # restored exactly, reattached
    ```
 
    Detach first. `git reset --hard` moves whatever branch is checked out, so
-   running it while attached would drag `impl/<slug>` to the pre-change commit
-   and destroy the implementer's work. Detached, the branch ref is untouched and
-   the final checkout restores the worktree exactly. The correction reset in
-   step 3 moves `impl/<slug>` deliberately; this one must not.
+   running it while attached would drag `impl/<slug>` backwards and destroy the
+   work under test. Detached, the branch ref is untouched and the final checkout
+   restores the worktree exactly. The fix-round reset in step 7 moves
+   `impl/<slug>` deliberately; this one must not.
 
    Judge why each test failed. For behavior that did not exist before, a build
    or import error is the expected failure. For changed behavior, the test
    should reach its assertion and fail there; a build error instead means the
    run proved nothing about that path.
 
-3. Send focused corrections back through the same implementer session. Require
-   each round to begin with `git reset --hard <feature-branch>` in its worktree,
-   so it works from the state that actually landed, including any adjustment
-   made during review, and to confirm a clean `git status` afterwards. Take over
-   after two unsuccessful correction rounds.
+4. Send focused corrections back through the same implementer session. It
+   continues in the same worktree; do not reset it here, because nothing has
+   been integrated yet and the reset target is still the pre-implementation tip,
+   which would discard the very work being corrected. Capture each round with
+   step 1 as it finishes. Take over after two unsuccessful correction rounds.
 
-4. Integrate from the delivery checkout:
+5. Integrate from the delivery checkout:
 
    ```bash
    git merge-base --is-ancestor <feature-branch> impl/<slug>
    git merge --squash impl/<slug>
    ```
 
-   The ancestry check fails when the implementer skipped its reset or otherwise
-   diverged; stop and reconcile rather than squashing stale work over the
-   branch. It is the only integration state to track, and it is derived rather
-   than remembered.
+   The ancestry check fails when `impl/<slug>` no longer builds on the delivery
+   tip; stop and reconcile rather than squashing stale work over the branch. It
+   is the only integration state to track, and it is derived rather than
+   remembered.
 
 `merge --squash` stages the complete result — new files, renames, and deletions
 included — and commits nothing, so those two commands serve every round
@@ -349,9 +375,21 @@ risk. Add a regression test for every confirmed behavioral or correctness
 failure, unless the user has explicitly accepted a testing exception covering
 it; a fix that lands without one repeats the failure the review just caught.
 
-Fix confirmed findings through the same implementer session when practical,
-using the same reset-and-squash cycle as step 4, then run checks, commit, and
-push from the delivery checkout.
+Fix confirmed findings through the same implementer session when practical.
+Unlike the correction rounds inside step 4, a round here follows work that
+already landed, so reset the worktree onto the delivery tip before re-prompting:
+
+```bash
+cd "$WORKTREE_DIR"
+git reset --hard <feature-branch>   # attached: moves impl/<slug> on purpose
+```
+
+Sequence it yourself — integrate and commit the previous round, then reset, then
+re-prompt — so the implementer works from the state that actually landed,
+including any adjustment made during review. The reset is safe because you
+committed its work in step 1 rather than relying on it to do so. Then capture,
+review, and integrate exactly as in step 4, run checks, commit, and push from
+the delivery checkout.
 
 Resume the original reviewer sessions for focused fix verification when
 possible. Give each reviewer the last revision it accepted, the new verified

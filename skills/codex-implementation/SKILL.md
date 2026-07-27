@@ -79,12 +79,10 @@ Use isolated work when practical:
 
 - Create a dedicated worktree and branch for substantial or parallel tasks.
 - Keep Codex away from unrelated user changes.
-- In an isolated worktree, have Codex commit its work on that worktree's branch.
-  A worktree shares the repository's object database, so those commits are
-  visible from any other checkout of the same repository immediately, with no
-  patch file, copy, or fetch.
-- In the current checkout, ask Codex to leave changes uncommitted unless commits
-  were explicitly requested.
+- Ask Codex to leave Git alone and report what it did. Claude owns every Git
+  operation, including committing Codex's work in the worktree it ran in.
+  Depending on Codex to commit is what makes uncommitted work vanish silently
+  during later integration.
 - Do not let multiple implementation agents edit the same checkout.
 
 Use the current checkout only for small, low-risk edits where isolation adds
@@ -137,6 +135,24 @@ cd "$WORKTREE_DIR"
 git status --short
 git diff
 ```
+
+Account for every path the status reports. Codex's report explains most of them;
+the rest are suspect. Delete strays, or add genuine build artifacts to
+`.gitignore` where the repository should have been ignoring them anyway, and ask
+Codex about anything still ambiguous. Fix the worktree rather than the staging
+set, so the sweep below stays safe to run blind and later resets cannot leave a
+stray behind — `git reset --hard` discards tracked modifications but leaves
+untracked files in place.
+
+For branch-based delivery, capture the result yourself once it looks right:
+
+```bash
+git add -A && git commit -m "codex: <slug>"
+```
+
+The message is throwaway if the destination squashes it. Nothing to commit is a
+valid outcome when Codex committed on its own; the branch tip is what matters,
+not who wrote it.
 
 If the implementation depends on uncommitted work in the original checkout,
 either keep the task in the current checkout or explicitly transfer only the
@@ -229,16 +245,21 @@ target checkout and set the sandbox through config:
   - < "$PROMPT")
 ```
 
-When a previous round was already integrated into the destination, have the next
-round start from the integrated state, including any adjustment made during
-review:
+When a previous round was already integrated into the destination, start the
+next round from the integrated state, including any adjustment made during
+review. Do this yourself, before re-prompting, and only after capturing the
+previous round:
 
 ```bash
 (cd "$WORKTREE_DIR" && git reset --hard <destination-branch>)
 ```
 
-That keeps every round a plain `git merge --squash` from the destination
+The reset is safe because you committed Codex's work rather than relying on it
+to do so. It keeps every round a plain `git merge --squash` from the destination
 checkout, and removes any need to track which commits were already integrated.
+Do not reset before a round whose predecessor has not been integrated; the
+target would still be the pre-implementation tip, and the reset would discard
+the work being corrected.
 
 Write the follow-up prompt to a fresh file first; state only what is wrong and
 what proof is expected. With parallel Codex runs in flight, resume by session id
