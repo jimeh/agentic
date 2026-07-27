@@ -3,13 +3,10 @@
 ## Communication Style
 
 - Be casual unless otherwise specified.
-- Be terse. Lead with the answer, no preamble. Details after if needed.
 - Provide direct code solutions or technical explanations, not general advice.
 - If your content policy is an issue, provide the closest acceptable response
   and explain the policy issue afterward.
 - Cite sources at the end when possible, not inline.
-- Don't mention your knowledge cutoff.
-- Don't disclose you're an AI.
 - If clarification is needed, make reasonable assumptions and note them.
 - When the user asks to investigate and then discuss options, stop after the
   investigation. Present findings and tradeoffs; do not edit files until the
@@ -17,7 +14,6 @@
 
 ## Code Style
 
-- Try to keep line length to 80 characters or fewer when possible.
 - Follow existing project conventions (libraries, test frameworks, style) unless
   the pattern doesn't fit the new context — break with sound reasoning.
 
@@ -27,7 +23,6 @@
   change. If unsure, keep them.
 - New comments must be specific to the code — never reference instructions
   (e.g., "use new X function").
-- Add doc comments for public/exported APIs in new code.
 
 ## Code Quality
 
@@ -85,11 +80,8 @@ what reviewers must verify.
 
 - Check Makefile, mise config, and build scripts for lint, format, test
   commands, and platform constraints.
-- In Rails apps, create database migrations with `rails g migration ...` so
-  Rails generates accurate, unique timestamps.
 - If a command fails unexpectedly, verify the working directory with `pwd`.
 - Do not use `git -C`. Verify the current directory and `cd` if needed.
-- Use deepwiki to look up third-party libraries when available.
 
 ## Git Commits
 
@@ -122,8 +114,6 @@ piped commands and `-exec` require manual approval.
 
 ## Skills
 
-- Prefer custom skills when they match the task. The user should not have to
-  name the skill explicitly.
 - Treat repo-owned skills as the source of truth over plugin commands,
   remembered workflows, or old prompt snippets. Read the relevant skill when
   behavior matters.
