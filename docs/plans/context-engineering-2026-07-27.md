@@ -3,9 +3,8 @@
 Status: **completed**, landed in [#31][pr]. Kept as the record of what was
 decided and why.
 
-Inputs: the [Claude 5 context-engineering post][post], a local `/doctor` report
-of this machine's Claude Code setup (not committed — it is machine-specific
-telemetry), and a read of `rules/`, `skills/`, `plugins/`, `agent-config.toml`.
+Inputs: the [Claude 5 context-engineering post][post], a `/doctor` report from
+Claude Code, and a read of `rules/`, `skills/`, `plugins/`, `agent-config.toml`.
 
 Revision 4 — all review questions answered; no blocking questions remain. Six
 phases, ordered so each shrinks the surface of the next. Landing as **one PR,
