@@ -58,18 +58,16 @@ mise run lint:workflows      # check GitHub Actions syntax/security
 - **Vendored third-party skills**: any `thirdparty/skills/*/` dir with a
   `SKILL.md` → the same global skill targets
 
-Managed Claude subagents live under `claude/agents/` and are linked individually
-into `~/.claude/agents/`, allowing unrelated local agents to coexist. The `sol`
-and `terra` agents pin their gateway models while accepting role-specific
-instructions at invocation time. Terra is reserved for simple mechanical work
-after the hard planning and reasoning are complete.
+Managed Claude subagents can live under `claude/agents/` and are linked
+individually into `~/.claude/agents/`, allowing unrelated local agents to
+coexist. None are currently defined; the `staleSymlinkCleanup` entry for that
+directory remains so previously installed links are removed.
 
 Skill symlink entries accept `only`/`exclude` glob lists to scope which skills
-an entry links. GPT models run directly in Claude Code, so `codex-*` wrapper
-skills are excluded from both skill roots while their sources remain available
-for reversible or manual use. `claude-*` skills are linked into
-`~/.agents/skills/` only, so Claude never loads skills that delegate work back
-to itself.
+an entry links. `codex-*` wrapper skills link only into `~/.claude/skills/` —
+they are the handoff path from Claude to the Codex CLI. `claude-*` skills are
+linked into `~/.agents/skills/` only, so Claude never loads skills that delegate
+work back to itself.
 
 To add a new skill, just create the directory — the installer picks it up
 automatically. Stale symlinks are cleaned up on each run, including links that

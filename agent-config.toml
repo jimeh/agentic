@@ -9,8 +9,6 @@ symlinks = [
   { source = "claude/settings.json", target = "~/.claude/settings.json" },
   { source = "claude/keybindings.json", target = "~/.claude/keybindings.json" },
   { source = "claude/statusline.sh", target = "~/.claude/statusline.sh" },
-  { source = "claude/agents/sol.md", target = "~/.claude/agents/sol.md" },
-  { source = "claude/agents/terra.md", target = "~/.claude/agents/terra.md" },
   { source = "codex/config.toml", target = "~/.codex/config.toml" },
   { source = "codex/hooks.json", target = "~/.codex/hooks.json" },
   { source = "codex/pets", target = "~/.codex/pets" },
@@ -32,11 +30,10 @@ staleSymlinkCleanup = [
 ]
 
 # Ordinary skills load in both executors. codex-* skills load only in Claude
-# Code as the direct-mode fallback when no CLIProxyAPI gateway backs the
-# sol/terra agents (rules/claude.md "GPT Models in Claude Code"); claude-*
-# skills remain available only to non-Claude executors that delegate work to
-# the Claude CLI. Neither family loads in its own executor, so an executor
-# never loads the orchestrator's playbook for itself.
+# Code, where they are the handoff path to the Codex CLI; claude-* skills remain
+# available only to non-Claude executors that delegate work to the Claude CLI.
+# Neither family loads in its own executor, so an executor never loads the
+# orchestrator's playbook for itself.
 [[skillSymlinks]]
 sourceRoot = "skills"
 exclude = ["codex-*", "claude-*"]

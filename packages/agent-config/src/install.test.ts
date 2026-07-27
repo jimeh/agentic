@@ -176,18 +176,17 @@ test("removes the retired ~/.agents/AGENTS.md rule symlink", () => {
   expect(existsSync(legacy)).toBe(false);
 });
 
-test("installs managed Claude gateway agent symlinks", () => {
+test("removes managed agent symlinks whose source is gone", () => {
   const home = createHome();
+  const agentsDir = join(home, ".claude", "agents");
+  mkdirSync(agentsDir, { recursive: true });
+  const orphan = join(agentsDir, "sol.md");
+  symlinkSync(join(rootDir, "claude", "agents", "sol.md"), orphan);
 
   const result = run(home);
 
   expect(result.status).toBe(0);
-  expect(readlinkSync(join(home, ".claude", "agents", "sol.md"))).toBe(
-    join(rootDir, "claude", "agents", "sol.md"),
-  );
-  expect(readlinkSync(join(home, ".claude", "agents", "terra.md"))).toBe(
-    join(rootDir, "claude", "agents", "terra.md"),
-  );
+  expect(() => lstatSync(orphan)).toThrow();
 });
 
 test("installs managed CLI wrapper symlinks", () => {

@@ -49,72 +49,26 @@ invoked a named skill whose documented workflow requires it.
 
 ### Model Routing
 
-This table informs a choice rather than deciding it. Cost is the effective cost
-to me, including actual spend and scarcity from usage limits. Intelligence is
-how hard a problem the model handles unsupervised. Taste covers UI/UX, API
-design, code quality, and copy. Update the table when available models change.
-
-| Claude Code model | invoke as        | cost | intelligence | taste | tends to suit          |
-| ----------------- | ---------------- | ---: | -----------: | ----: | ---------------------- |
-| gpt-5.6-terra     | `terra`          |    2 |            6 |     7 | mechanical execution   |
-| gpt-5.6-sol       | `sol`            |    4 |            9 |     7 | substantive execution  |
-| opus-5            | `model: "opus"`  |    5 |            9 |    10 | default Claude work    |
-| fable-5           | `model: "fable"` |   10 |           10 |     9 | exceptional complexity |
-
-- Read the scores as tendencies, not a ranking to compute with. A higher
-  intelligence score does not mean better output: Opus often writes better code
-  than Fable, the smarter model. Judge the work, not the numbers.
-- Match the current session's model when spawning agents, unless the work calls
-  for a different one. Nothing inherits it automatically: Claude subagents fall
-  back to a default when `model` is omitted, and `sol` and `terra` pin their
-  own. Pass `model` explicitly. Consult this table when a subagent should span
-  models rather than match.
 - Opus is the usual choice for delegated Claude work: investigation,
   implementation, verification, review, planning, decomposition, architecture,
   API and UX decisions, and synthesis.
 - Fable suits exceptionally hard problems — ambiguous root-cause work Opus has
   stalled on, high-stakes architecture, or synthesis across large conflicting
   evidence. A `model: "fable"` subagent with a scoped brief is usually enough;
-  the current session stays orchestrator and keeps final judgement.
-- Sol suits bounded implementation, large read-only analysis, independent
-  review, technical reasoning, and broad evidence gathering. Prefer Claude
+  the current session stays orchestrator and keeps final judgement. Fable is the
+  smarter model, but Opus often writes better code; judge the work rather than
+  the ranking.
+- Hand GPT work to the `codex-*` skills, which wrap the Codex CLI. Prefer Claude
   models unless the user asks for GPT or Codex, a skill or workflow needs that
   engine, or the work calls for it — cross-model review independence, bulk
   read-only throughput, or capacity running alongside the current session.
-- Terra suits simple, bounded mechanical work after the hard planning and
-  reasoning are complete. Give it a settled plan, explicit steps, and concrete
-  acceptance criteria; keep unresolved judgement in Opus or Sol.
-- The `sol` and `terra` custom agents pin their GPT models; omit the Agent
-  tool's per-call `model` parameter when invoking them.
+- Match the current session's model when spawning Claude agents, unless the work
+  calls for a different one. Subagents fall back to a default when `model` is
+  omitted, so pass it explicitly.
 - Do not use Haiku.
 - If delegated output is below the bar, iterate with the selected agent or take
   the work back into the current session. Ask before adding another worker
   beyond the approved scope.
-
-### GPT Models in Claude Code
-
-Apply this section when routing work to GPT models. It covers how to reach them,
-not when to choose them.
-
-- The `sol` and `terra` agents resolve their GPT models only when Claude Code
-  was launched against CLIProxyAPI. The agent definitions are always listed
-  regardless, so listing alone proves nothing.
-- Before first routing GPT work in a session, probe once with
-  `printenv ANTHROPIC_BASE_URL` and cache the result for the session:
-  - Set → gateway mode. Route delegated GPT work through the `sol` or `terra`
-    custom agent, or through Workflow model selection. Do not use `codex-*`
-    wrapper skills for routing.
-  - Unset → direct mode. `sol`/`terra` model pins will not resolve; do not spawn
-    them. Route GPT work through the `codex-*` skills instead (`codex-review`,
-    `codex-implementation`, `codex-analysis`, `codex-first`,
-    `codex-computer-use`), which wrap the codex CLI. Note the routing mode in
-    the final report.
-- Where a skill or workflow names a GPT/Codex reviewer or worker by engine,
-  satisfy it with the mechanism the current mode provides; the engine
-  requirement, not the mechanism, is the contract.
-- Use the raw `codex` CLI only when the user explicitly asks for that separate
-  execution surface, or as a last-resort fallback when the `codex-*` skills are
-  unavailable in direct mode.
 
 ### Independent Review
 
@@ -124,8 +78,8 @@ not when to choose them.
   authoring context or hand the diff back to the authoring agent.
 - A fresh context on the same model is the baseline, and a different model is
   more independent. Use `fable` when the stakes justify a harder reviewer, and
-  route to `sol` or a `codex-*` skill for cross-engine independence when the
-  user asks for it or the workflow requires it.
+  route to a `codex-*` skill for cross-engine independence when the user asks
+  for it or the workflow requires it.
 - Spawned Claude reviewers and workers do not inherit the session model; pass
   `model` explicitly on the Agent call, either to match the current session or
   to span models deliberately. Never let a delegated Claude fall back to Sonnet
