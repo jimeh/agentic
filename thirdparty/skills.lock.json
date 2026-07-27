@@ -1,16 +1,6 @@
 {
   "version": 1,
   "skills": {
-    "agent-browser": {
-      "manifestSourceId": "agent-browser",
-      "sourceType": "git",
-      "sourceUrl": "https://github.com/vercel-labs/agent-browser.git",
-      "ref": "main",
-      "resolvedCommit": "3cc7022271235694b5b5ce8aaea8bbfaa66e8cd5",
-      "upstreamPath": "skills/agent-browser",
-      "contentHash": "sha256:e8db7de3a6cf970efd0bd7753552aa7fca25c08d6fc4b98c3b7fff7ad19228b4",
-      "skillsCliVersion": null
-    },
     "airplan": {
       "manifestSourceId": "airplan",
       "sourceType": "git",

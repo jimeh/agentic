@@ -436,6 +436,50 @@ test("cleanup removes links scoped out of a target root", () => {
   );
 });
 
+test("relinks a skill forked from thirdparty into the first-party root", () => {
+  const home = createHome();
+  const root = createRoot();
+  mkdirSync(join(root, "skills", "forked-thing"), { recursive: true });
+  writeFileSync(join(root, "skills", "forked-thing", "SKILL.md"), "# forked\n");
+  mkdirSync(join(root, "thirdparty", "skills", "other-thing"), {
+    recursive: true,
+  });
+  writeFileSync(
+    join(root, "thirdparty", "skills", "other-thing", "SKILL.md"),
+    "# other\n",
+  );
+  writeFileSync(
+    join(root, "agent-config.toml"),
+    [
+      "symlinks = []",
+      "skillSymlinks = [",
+      '  { sourceRoot = "skills", targetRoots = ["~/.claude/skills"] },',
+      '  { sourceRoot = "thirdparty/skills", targetRoots = [',
+      '    "~/.claude/skills",',
+      "  ] },",
+      "]",
+      "staleSymlinkCleanup = [",
+      '  { sourceDir = "skills", targetDir = "~/.claude/skills" },',
+      '  { sourceDir = "thirdparty/skills", targetDir = "~/.claude/skills" },',
+      "]",
+      "[claude]",
+      "marketplaces = []",
+      "plugins = []",
+      "",
+    ].join("\n"),
+  );
+  // The link the previous install left behind, pointing at the vendored copy
+  // that the fork deleted.
+  const link = join(home, ".claude", "skills", "forked-thing");
+  mkdirSync(join(home, ".claude", "skills"), { recursive: true });
+  symlinkSync(join(root, "thirdparty", "skills", "forked-thing"), link);
+
+  const result = run(home, ["--root", root]);
+
+  expect(result.status).toBe(0);
+  expect(readlinkSync(link)).toBe(join(root, "skills", "forked-thing"));
+});
+
 test("rejects empty only/exclude pattern lists", () => {
   const home = createHome();
   const root = createRoot();

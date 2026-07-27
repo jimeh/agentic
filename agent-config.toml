@@ -34,9 +34,17 @@ staleSymlinkCleanup = [
 # available only to non-Claude executors that delegate work to the Claude CLI.
 # Neither family loads in its own executor, so an executor never loads the
 # orchestrator's playbook for itself.
+# frontend-design-systems and vuln-scan-orchestrator are scoped out rather than
+# deleted: both are unused, and every skill description is resident context, so
+# an unused one degrades routing for the rest. Delete the name to restore it.
 [[skillSymlinks]]
 sourceRoot = "skills"
-exclude = ["codex-*", "claude-*"]
+exclude = [
+  "codex-*",
+  "claude-*",
+  "frontend-design-systems",
+  "vuln-scan-orchestrator",
+]
 targetRoots = ["~/.claude/skills", "~/.agents/skills"]
 
 [[skillSymlinks]]

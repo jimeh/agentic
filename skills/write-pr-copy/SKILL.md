@@ -1,12 +1,9 @@
 ---
 name: write-pr-copy
 description: >-
-  Draft pull request titles and descriptions from repository context without
-  creating, pushing, or submitting the pull request. Use when the user asks to
-  write, draft, rewrite, polish, summarize, or fill in PR title/body text, or
-  when a pull request template should be completed from the current branch
-  changes. Always detect and read repository pull request templates before
-  drafting the PR body.
+  Write or polish a pull request title and body without creating, pushing, or
+  submitting anything. The single source for PR copy guidance; commit-push-pr
+  references it when opening a real PR.
 ---
 
 # Write PR Copy

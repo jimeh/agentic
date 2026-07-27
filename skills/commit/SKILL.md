@@ -1,9 +1,9 @@
 ---
 name: commit
 description: >-
-  This skill should be used when the user asks to "commit my changes", "create
-  a commit", "commit this", "make a commit", "git commit", or otherwise
-  requests creating a git commit from current changes.
+  Create a well-crafted git commit from the current changes. The single source
+  for commit conventions in this repo; other skills reference it rather than
+  restating them.
 ---
 
 # Git Commit

@@ -1,11 +1,9 @@
 ---
 name: commit-push-pr
 description: >-
-  This skill should be used when the user asks to "create a pull request",
-  "open a PR", "submit a PR", "send a PR", "make a PR for this", "PR these
-  changes", or otherwise requests creating a pull request from current
-  changes. Always detect, read, and use repository pull request templates
-  before creating the PR body.
+  Commit, push, and open a pull request in one workflow. Owns template
+  detection, push, and PR creation; defers commit conventions to the commit
+  skill and PR title/body guidance to write-pr-copy.
 ---
 
 # Git Commit, Push & PR
