@@ -222,6 +222,64 @@ test("relinks legacy RULES.md symlinks without force", () => {
   );
 });
 
+test("relinks a managed link whose in-repo source moved, without force", () => {
+  const home = createHome();
+  const root = createRoot();
+  writeFileSync(join(root, "current.md"), "current\n");
+  writeFileSync(
+    join(root, "agent-config.toml"),
+    [
+      'symlinks = [{ source = "current.md", target = "~/.claude/thing.md" }]',
+      "skillSymlinks = []",
+      // Deliberately empty: linking must heal the link on its own, without
+      // relying on a staleSymlinkCleanup entry covering this target.
+      "staleSymlinkCleanup = []",
+      "[claude]",
+      "marketplaces = []",
+      "plugins = []",
+      "",
+    ].join("\n"),
+  );
+  const link = join(home, ".claude", "thing.md");
+  mkdirSync(join(home, ".claude"), { recursive: true });
+  // Points at a path inside the repo that no longer exists, exactly as a
+  // previous install would leave it after the source moved.
+  symlinkSync(join(root, "moved-away.md"), link);
+
+  const result = run(home, ["--root", root]);
+
+  expect(result.status).toBe(0);
+  expect(readlinkSync(link)).toBe(join(root, "current.md"));
+});
+
+test("leaves a link pointing outside the repo alone without force", () => {
+  const home = createHome();
+  const root = createRoot();
+  writeFileSync(join(root, "current.md"), "current\n");
+  writeFileSync(
+    join(root, "agent-config.toml"),
+    [
+      'symlinks = [{ source = "current.md", target = "~/.claude/thing.md" }]',
+      "skillSymlinks = []",
+      "staleSymlinkCleanup = []",
+      "[claude]",
+      "marketplaces = []",
+      "plugins = []",
+      "",
+    ].join("\n"),
+  );
+  const outside = join(home, "my-own-notes.md");
+  writeFileSync(outside, "mine\n");
+  const link = join(home, ".claude", "thing.md");
+  mkdirSync(join(home, ".claude"), { recursive: true });
+  symlinkSync(outside, link);
+
+  const result = run(home, ["--root", root]);
+
+  expect(result.status).toBe(0);
+  expect(readlinkSync(link)).toBe(outside);
+});
+
 test("dry-run does not create symlinks", () => {
   const home = createHome();
 
