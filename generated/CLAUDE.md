@@ -49,10 +49,16 @@
   when the logic it covers is reverted or broken is not coverage. Mock external
   boundaries only where you need to, never the behavior under test, and keep
   tests deterministic; a flaky test is a gap that reports itself as coverage.
-- Before relying on a new test, see it fail — run it against the pre-change
-  code, or against a deliberate perturbation where that is not possible. Always
-  restore the implementation afterwards and confirm the diff is clean before
-  final verification.
+- Before relying on a new test, see it fail — perturb the behavior it covers and
+  confirm it fails at its assertion, or run it against the pre-change code where
+  that is simpler. Perturbing is usually the cheaper proof: it needs no partial
+  checkout, works where tests sit alongside the code they cover, and shows the
+  test detects that behavior rather than merely needing the feature to exist.
+  Always restore the implementation afterwards and confirm the diff is clean
+  before final verification.
+- Confirm from the runner's output that a new test actually ran, by name or by
+  count. A test the collector never picked up is the failure reading cannot
+  catch, and a green suite reports it as coverage.
 - How thoroughly a path is tested scales with its risk. Whether a failure path
   is covered at all does not. Argue for lighter coverage from the specific code
   — what it can do wrong and what would notice — never from effort, time, or how
