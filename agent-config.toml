@@ -9,8 +9,6 @@ symlinks = [
   { source = "claude/settings.json", target = "~/.claude/settings.json" },
   { source = "claude/keybindings.json", target = "~/.claude/keybindings.json" },
   { source = "claude/statusline.sh", target = "~/.claude/statusline.sh" },
-  { source = "claude/agents/sol.md", target = "~/.claude/agents/sol.md" },
-  { source = "claude/agents/terra.md", target = "~/.claude/agents/terra.md" },
   { source = "codex/config.toml", target = "~/.codex/config.toml" },
   { source = "codex/hooks.json", target = "~/.codex/hooks.json" },
   { source = "codex/pets", target = "~/.codex/pets" },
@@ -32,19 +30,34 @@ staleSymlinkCleanup = [
 ]
 
 # Ordinary skills load in both executors. codex-* skills load only in Claude
-# Code as the direct-mode fallback when no CLIProxyAPI gateway backs the
-# sol/terra agents (rules/claude.md "GPT Models in Claude Code"); claude-*
-# skills remain available only to non-Claude executors that delegate work to
-# the Claude CLI. Neither family loads in its own executor, so an executor
-# never loads the orchestrator's playbook for itself.
+# Code, where they are the handoff path to the Codex CLI; claude-* skills remain
+# available only to non-Claude executors that delegate work to the Claude CLI.
+# Neither family loads in its own executor, so an executor never loads the
+# orchestrator's playbook for itself.
+# frontend-design-systems and vuln-scan-orchestrator are scoped out rather than
+# deleted: both are unused, and every skill description is resident context, so
+# an unused one degrades routing for the rest. Delete the name to restore it.
 [[skillSymlinks]]
 sourceRoot = "skills"
-exclude = ["codex-*", "claude-*"]
+exclude = [
+  "codex-*",
+  "claude-*",
+  "frontend-design-systems",
+  "multi-agent-execution",
+  "vuln-scan-orchestrator",
+]
 targetRoots = ["~/.claude/skills", "~/.agents/skills"]
 
 [[skillSymlinks]]
 sourceRoot = "skills"
 only = ["codex-*"]
+targetRoots = ["~/.claude/skills"]
+
+# multi-agent-execution holds Claude's own delegation and model-routing rules,
+# so it stays out of the executors that delegate work back to Claude.
+[[skillSymlinks]]
+sourceRoot = "skills"
+only = ["multi-agent-execution"]
 targetRoots = ["~/.claude/skills"]
 
 [[skillSymlinks]]

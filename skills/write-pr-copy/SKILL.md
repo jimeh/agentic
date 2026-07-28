@@ -1,12 +1,9 @@
 ---
 name: write-pr-copy
 description: >-
-  Draft pull request titles and descriptions from repository context without
-  creating, pushing, or submitting the pull request. Use when the user asks to
-  write, draft, rewrite, polish, summarize, or fill in PR title/body text, or
-  when a pull request template should be completed from the current branch
-  changes. Always detect and read repository pull request templates before
-  drafting the PR body.
+  Write or polish a pull request title and body without creating, pushing, or
+  submitting anything. The single source for PR copy guidance; commit-push-pr
+  references it when opening a real PR.
 ---
 
 # Write PR Copy
@@ -29,9 +26,12 @@ Run these commands to understand the branch before writing:
 
 Then inspect the full branch scope, not just the last commit:
 
-- Prefer `git diff main...HEAD` and `git log --oneline main..HEAD`
-- Fall back to `master` if `main` is not present
-- If another base is clearly correct from local context, use it
+- Resolve the base with `git rev-parse --abbrev-ref origin/HEAD` rather than
+  assuming `main` or `master`. It returns a full remote ref such as
+  `origin/main`, so use it as-is without prepending another `origin/`.
+- Read the branch with `git diff <base>...HEAD` and
+  `git log --oneline <base>..HEAD`
+- If another base is clearly correct from local context, use it instead
 - If the base is still ambiguous, state the assumption briefly in the output
 
 ### 2. Detect PR Template

@@ -2,12 +2,9 @@
 name: html-planning
 description: >-
   Create or update self-contained HTML plans and technical documents. Use when
-  the user explicitly requests HTML, when updating an existing HTML document,
-  or when a concrete visual or spatial layout would communicate the content
-  materially better than Markdown. Default to Markdown for documents that fit
-  headings, prose, lists, tables, code blocks, and straightforward diagrams,
-  regardless of length. Do not use HTML merely to make a document polished or
-  browser-ready; Markdown can be rendered or uploaded separately.
+  the user asks for HTML, when updating an existing HTML document, or when
+  visual or spatial layout communicates materially better than Markdown.
+  Default to Markdown otherwise, however long the document.
 ---
 
 # HTML Planning

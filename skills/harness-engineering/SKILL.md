@@ -1,14 +1,10 @@
 ---
 name: harness-engineering
 description: >-
-  Audit, design, and incrementally improve repositories so coding agents can
-  work reliably through legible project knowledge, runnable feedback loops,
-  enforceable architecture rules, and cleanup processes. Use when asked to make
-  a project suitable for harness engineering, improve agent autonomy, create an
-  agent-ready repo structure, audit agent readiness, encode architecture or
-  taste rules into checks, improve AGENTS.md/docs beyond instruction-file
-  cleanup, or turn repeated agent failures into durable repo-local tooling and
-  documentation.
+  Shape a repository so coding agents work reliably in it: legible project
+  knowledge, runnable feedback loops, enforceable architecture rules, cleanup
+  processes. Use for agent-readiness audits and for turning repeated agent
+  failures into durable repo-local tooling — beyond editing instruction files.
 ---
 
 # Harness Engineering

@@ -479,23 +479,28 @@ function backupAndLink(source: string, target: string, options: Options): void {
   if (existsOrSymlink(target)) {
     if (lstatSync(target).isSymbolicLink()) {
       const linkTarget = symlinkTargetPath(target);
-      const legacyRules = normalizePath(join(rootDir, "RULES.md"));
-
-      if (linkTarget === legacyRules) {
-        if (options.dryRun) {
-          info(`would relink legacy ${target} → ${source}`);
-        } else {
-          info(`relink legacy ${target} → ${source}`);
-          rmSync(target, { force: true });
-          createSymlink(source, target);
-        }
-        return;
-      }
 
       const realTarget = resolveSymlink(target);
       const realSource = resolveSymlink(source);
       if (realTarget && realSource && realTarget === realSource) {
         info(`skip ${target} (already linked)`);
+        return;
+      }
+
+      // A link already pointing into this repo is one a previous install
+      // created, so correcting it needs no --force and no backup: there is
+      // nothing of the user's to preserve. This is what lets a source move
+      // between roots, or get renamed or deleted, without leaving the old
+      // link stranded — resolveSymlink returns null for a dangling link, so
+      // the equality check above cannot catch that case.
+      if (linkTarget.startsWith(`${normalizePath(rootDir)}/`)) {
+        if (options.dryRun) {
+          info(`would relink ${target} → ${source}`);
+        } else {
+          info(`relink ${target} → ${source}`);
+          rmSync(target, { force: true });
+          createSymlink(source, target);
+        }
         return;
       }
     }

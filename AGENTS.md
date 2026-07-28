@@ -6,47 +6,8 @@ Shared configuration and rules for AI coding agents (Claude Code, Codex, etc).
 
 ## Commands
 
-```bash
-mise run deps:install             # install npm deps with minimum release age
-```
-
-```bash
-mise run setup                    # install deps and local git hooks
-mise run setup:ci                 # install CI deps from lockfile
-mise run deps:install             # install project dependencies
-mise run deps:install:ci          # install deps from lockfile for CI
-mise run agent-config:install     # install agent config symlinks/plugins
-mise run agent-config:force       # replace installed agent config symlinks
-mise run agent-config:dry-run     # preview agent config installation
-mise run agent-config:schema:build # generate agent config JSON schema
-mise run agent-config:schema:check # check agent config schema is current
-mise run hooks:install            # install Lefthook git hooks
-mise run thirdparty:add-skills -- <source> # add upstream skills to manifest
-mise run thirdparty:update-skills         # update vendored third-party skills
-mise run thirdparty:update-skills:dry-run # preview third-party skill updates
-mise run thirdparty:update-skills:check   # check vendored skills upstream
-mise run rules:build        # render global AGENTS.md/CLAUDE.md files
-mise run rules:check        # check rendered global rules are up to date
-mise run actions:update     # update and pin GitHub Actions with Pinact
-mise run treeboot           # bootstrap a new worktree
-mise run treeboot:check     # validate Treeboot bootstrap config
-mise run format              # format Markdown/TypeScript
-mise run format:check        # check file formatting
-mise run lint                # run lint and agent metadata checks
-mise run check               # run format check, lint, and typecheck
-mise run test                # run Bun and plugin tests
-mise run test:unit           # run Bun tests
-mise run test:plugins        # run plugin shell tests
-mise run verify              # run lint and tests
-mise run typecheck           # type-check TypeScript
-mise run format:oxfmt        # format files with oxfmt
-mise run format:oxfmt:check  # check oxfmt formatting
-mise run lint:oxlint         # lint TypeScript with oxlint
-mise run lint:markdownlint   # lint with markdownlint only
-mise run lint:shell          # lint shell scripts with shellcheck
-mise run lint:agent-harness  # check skill/plugin metadata invariants
-mise run lint:workflows      # check GitHub Actions syntax/security
-```
+Run `mise tasks` for the full list with descriptions. Note that
+`mise run thirdparty:add-skills` takes its source argument after `--`.
 
 ## Architecture
 
@@ -58,18 +19,16 @@ mise run lint:workflows      # check GitHub Actions syntax/security
 - **Vendored third-party skills**: any `thirdparty/skills/*/` dir with a
   `SKILL.md` → the same global skill targets
 
-Managed Claude subagents live under `claude/agents/` and are linked individually
-into `~/.claude/agents/`, allowing unrelated local agents to coexist. The `sol`
-and `terra` agents pin their gateway models while accepting role-specific
-instructions at invocation time. Terra is reserved for simple mechanical work
-after the hard planning and reasoning are complete.
+Managed Claude subagents can live under `claude/agents/` and are linked
+individually into `~/.claude/agents/`, allowing unrelated local agents to
+coexist. None are currently defined; the `staleSymlinkCleanup` entry for that
+directory remains so previously installed links are removed.
 
 Skill symlink entries accept `only`/`exclude` glob lists to scope which skills
-an entry links. GPT models run directly in Claude Code, so `codex-*` wrapper
-skills are excluded from both skill roots while their sources remain available
-for reversible or manual use. `claude-*` skills are linked into
-`~/.agents/skills/` only, so Claude never loads skills that delegate work back
-to itself.
+an entry links. `codex-*` wrapper skills link only into `~/.claude/skills/` —
+they are the handoff path from Claude to the Codex CLI. `claude-*` skills are
+linked into `~/.agents/skills/` only, so Claude never loads skills that delegate
+work back to itself.
 
 To add a new skill, just create the directory — the installer picks it up
 automatically. Stale symlinks are cleaned up on each run, including links that
@@ -121,11 +80,6 @@ ones; neither is a target itself. Run `mise run rules:build` after editing these
 files; `mise run lint` checks the rendered files in `generated/` are current and
 reports generated files no source claims. See `rules/README.md` for the layout.
 
-### Agent-Specific Config
-
-- `claude/` — Claude Code settings, statusline script
-- `codex/` — OpenAI Codex config (TOML)
-
 ## Testing
 
 Plugin tests live in `plugins/*/tests/*.test.sh` and run with
@@ -144,15 +98,8 @@ which also runs as part of `mise run lint`.
 
 ## Plugin Versioning
 
-Plugins use semantic versioning (MAJOR.MINOR.PATCH). When committing changes to
-a plugin, bump the version based on the change type:
-
-- **patch** (0.1.0 → 0.1.1): bug fixes, wording tweaks, minor adjustments
-- **minor** (0.1.1 → 0.2.0): new commands, new features, non-breaking changes
-- **major** (0.2.0 → 1.0.0): breaking changes (renamed commands, removed
-  functionality, changed behavior)
-
-Update the version in **both** files:
+Plugins use semantic versioning. When committing a plugin change, bump its
+version in **both** files:
 
 1. `plugins/<name>/.claude-plugin/plugin.json`
 2. `.claude-plugin/marketplace.json`
@@ -217,6 +164,13 @@ not `>file`). See `.editorconfig` for shfmt flags.
 - When testing `agent-config install` with a temporary `HOME`, tools resolved
   through mise shims can fail trust checks. Prefer POSIX tools for setup helpers
   where possible, and validate symlink cleanup before plugin setup side effects.
+- A temporary `HOME` does not isolate `agent-config install`. It links
+  `~/.claude/settings.json` to the repo's `claude/settings.json`, then Claude
+  plugin setup writes through that symlink — so the run mutates tracked repo
+  files, including stamping `extraKnownMarketplaces` with the absolute path of
+  whichever checkout it ran from. Exercise install behavior through
+  `install.test.ts` with a synthetic `--root` instead; those tests never point
+  at the real repo config.
 - For gone-branch cleanup, `git branch -v` shows `[gone]` and `git branch -vv`
   adds the upstream ref. Prefer `git for-each-ref` for scripts that need stable
   gone-branch detection.

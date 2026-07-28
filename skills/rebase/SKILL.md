@@ -1,11 +1,8 @@
 ---
 name: rebase
 description: >-
-  Rebases the current branch onto the upstream default branch and checks whether
-  newly landed upstream changes affect the branch's design. Triggers when the
-  user says "rebase onto main", "rebase my branch", "update my branch from
-  main", "rebase onto master", "sync with main", or otherwise requests rebasing
-  onto the default branch.
+  Rebase the current branch onto the upstream default branch, then check
+  whether newly landed upstream changes undercut the branch's design.
 ---
 
 # Git Rebase

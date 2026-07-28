@@ -1,14 +1,9 @@
 ---
 name: codex-implementation
 description: >-
-  Delegate bounded implementation work to Codex CLI / gpt-5.6-sol and then
-  have Claude inspect, verify, and deliver the result where the work belongs.
-  Use when the user asks Claude to have Codex or gpt-5.6-sol implement code,
-  when model-routing calls for Codex implementation, or when a scoped task is
-  well-defined, mechanically implementable, independently verifiable, and
-  unlikely to require architectural, product, API, or UX judgement. Do not use
-  for planning, architecture, exploratory debugging, ambiguous requirements,
-  product decisions, UX decisions, or open-ended features.
+  Delegate bounded, well-specified implementation work to the Codex CLI, then
+  inspect, verify, and deliver the result as Claude. Not for planning,
+  architecture, ambiguous requirements, or product and UX decisions.
 ---
 
 # Codex Implementation

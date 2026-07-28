@@ -1,14 +1,10 @@
 ---
 name: ship-feature-pr
 description: >-
-  Orchestrate a feature end to end into a reviewed pull request: gather the
-  feature and base branch, reuse an existing plan or create one, implement,
-  commit and push, open a draft PR, run one Codex and one Claude reviewer in
-  parallel, reconcile their findings, wait for CI, and mark the PR ready. Use
-  when the user asks to ship a feature as a PR, run the feature PR pipeline,
-  take a change end to end into a pull request, or orchestrate
-  plan-implement-review for a PR. Do not use for tiny single edits, commit-only
-  or PR-only requests, or review-only requests; dedicated skills cover those.
+  Take a feature end to end into a reviewed pull request: plan, implement,
+  commit, push, open a draft PR, run independent Claude and Codex reviews,
+  reconcile findings, wait for CI, mark it ready. Not for tiny edits, or for
+  commit-only, PR-only, or review-only requests.
 ---
 
 # Ship Feature PR
@@ -371,6 +367,11 @@ when its budget or deadline is exhausted, continue with the evidence available
 but leave the PR draft and report the coverage gap.
 
 ### 7. Reconcile, Fix, and Re-review
+
+Reconcile both reviews into a single list before changing anything: fold
+duplicate findings together, and settle any disagreement against the code
+yourself so the implementer gets settled work rather than a conflict. Acting on
+whichever review returns first sends it down a path the other may contradict.
 
 Treat reviewer findings as evidence, not authority. Verify each one against the
 code, weigh the reviewer independent of the implementer most heavily, and record

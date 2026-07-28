@@ -1,14 +1,9 @@
 ---
 name: codex-analysis
 description: >-
-  Ask Codex CLI / gpt-5.6-sol to perform read-only analysis, investigation, or
-  data extraction over large context such as large logs, large PDFs,
-  implementation specs, broad code searches, generated artifacts, datasets,
-  traces, or multi-file evidence. Use when Claude needs Codex's throughput for
-  non-destructive reading, summarization, comparison, extraction, triage, or
-  root-cause investigation. Do not use for code edits, code review,
-  architecture, product decisions, UX decisions, final judgement, or runtime
-  GUI verification.
+  Hand read-only analysis over large context — big logs, PDFs, broad searches,
+  datasets, traces, multi-file evidence — to the Codex CLI for throughput.
+  Read-only: no edits, no code review, no final judgement.
 ---
 
 # Codex Analysis

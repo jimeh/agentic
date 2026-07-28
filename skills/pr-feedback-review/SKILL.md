@@ -1,12 +1,8 @@
 ---
 name: pr-feedback-review
 description: >-
-  Analyze GitHub pull request review feedback and turn it into a deduplicated,
-  prioritized action plan. Use when the user asks to review PR feedback, check
-  PR comments, summarize reviewer feedback, figure out what feedback is on a
-  PR, determine what still needs action, dedupe repeated review comments,
-  address PR feedback, plan PR fixes, or ask what still needs action on this
-  PR.
+  Turn GitHub pull request review feedback into a deduplicated, prioritized
+  action plan. Use to work out what a PR's reviewers still need addressed.
 ---
 
 # GitHub PR Review Action Plan

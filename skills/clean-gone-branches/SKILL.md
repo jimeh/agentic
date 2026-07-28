@@ -1,14 +1,9 @@
 ---
 name: clean-gone-branches
 description: >-
-  Clean up stale local Git branches whose upstream remote branches are marked
-  [gone], including removing associated Git worktrees before branch deletion.
-  Use when the user asks to clean gone branches, remove branches deleted from
-  the remote, prune stale local Git branches, delete branches with [gone]
-  status, or run the clean-gone-branches Git workflow. By default, preview the
-  gone branches with the bundled dry-run script and ask for confirmation before
-  deleting; skip confirmation only when the user explicitly asks to delete all
-  gone branches immediately or without confirmation.
+  Delete local Git branches whose upstream is marked [gone], removing their
+  worktrees first. Previews and asks for confirmation unless told to delete
+  without it.
 ---
 
 # Clean Gone Branches
