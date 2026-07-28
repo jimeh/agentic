@@ -28,19 +28,7 @@ Once initialized, the project-local slash commands handle the workflow:
 | `/fd-verify`  | Post-implementation: commit, proofread, verify            |
 | `/fd-close`   | Complete/close an FD, archive, update index and changelog |
 
-## Install
+## Deprecated
 
-```bash
-# Add the marketplace (once)
-claude plugin marketplace add jimeh/agentic
-
-# Install the plugin
-claude plugin install fd@jimeh-agentic
-```
-
-Or from within Claude Code:
-
-```text
-/plugin marketplace add jimeh/agentic
-/plugin install fd@jimeh-agentic
-```
+This plugin is no longer published in the `jimeh-agentic` marketplace. Its
+source remains here for reference.

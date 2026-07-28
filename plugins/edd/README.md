@@ -59,8 +59,7 @@ Show feature index with status summary.
 
 Archive a completed, deferred, or dropped feature.
 
-## Install
+## Deprecated
 
-```bash
-claude plugin install edd@jimeh-agentic
-```
+This plugin is no longer published in the `jimeh-agentic` marketplace. Its
+source remains here for reference.

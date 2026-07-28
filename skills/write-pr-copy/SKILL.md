@@ -26,13 +26,18 @@ Run these commands to understand the branch before writing:
 
 Then inspect the full branch scope, not just the last commit:
 
-- Resolve the base with `git rev-parse --abbrev-ref origin/HEAD` rather than
-  assuming `main` or `master`. It returns a full remote ref such as
-  `origin/main`, so use it as-is without prepending another `origin/`.
+- Resolve the default branch from the live remote rather than assuming `main` or
+  `master`, or trusting a possibly stale local `origin/HEAD`. For GitHub, query
+  `gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name'`;
+  otherwise, or when `gh` is unavailable, inspect
+  `git ls-remote --symref origin HEAD`.
+- Use the resulting branch as a full remote ref such as `origin/main`. Fetch
+  that branch before reading it so the comparison is current.
 - Read the branch with `git diff <base>...HEAD` and
   `git log --oneline <base>..HEAD`
 - If another base is clearly correct from local context, use it instead
-- If the base is still ambiguous, state the assumption briefly in the output
+- If live resolution fails and the base is still ambiguous, ask rather than
+  silently falling back to local `origin/HEAD`
 
 ### 2. Detect PR Template
 

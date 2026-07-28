@@ -19,11 +19,14 @@ problem, change the surrounding design, or make local commits too broad.
 Run these commands in parallel to understand the current state:
 
 - `git branch --show-current` — identify the current branch
-- `git rev-parse --abbrev-ref origin/HEAD` — determine the default branch
 - `git status --short` — check for uncommitted changes
 
-Use the `origin/HEAD` output as the full upstream ref, for example
-`origin/main`. Do not prepend another `origin/` to it later.
+Resolve the default branch from the live remote rather than trusting a possibly
+stale local `origin/HEAD`. For GitHub, query
+`gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name'`; otherwise,
+or when `gh` is unavailable, inspect `git ls-remote --symref origin HEAD`.
+Record the branch name and its full remote ref, for example `origin/main`. Stop
+and ask if live resolution fails and no other base is clearly correct.
 
 ### 2. Stash Uncommitted Changes
 
@@ -38,14 +41,12 @@ Remember whether a stash was created for step 6.
 ### 3. Fetch Latest
 
 ```bash
-git fetch origin
+git fetch origin "$default_branch"
 ```
 
-After fetching, resolve and record the exact refs used for the integration
-review:
+After fetching, record the exact commits used for the integration review:
 
 ```bash
-upstream_ref="$(git rev-parse --abbrev-ref origin/HEAD)"
 pre_rebase_head="$(git rev-parse HEAD)"
 pre_rebase_base="$(git merge-base HEAD "$upstream_ref")"
 ```

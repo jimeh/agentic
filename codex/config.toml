@@ -205,43 +205,41 @@ restate conventions that live elsewhere:
 
 ## Workflow
 
-### 1. Commit
+### 1. Resolve the Base
+
+Follow the live default-branch resolution in the `write-pr-copy` skill and
+record both the branch name and its full remote ref before changing repository
+or remote state. Stop if the base remains ambiguous.
+
+### 2. Commit
 
 Follow the `commit` skill end to end, with one addition it leaves conditional:
-if the current branch is `main`, `master`, or the repository's default or
-protected branch, create a branch named for the changes with
+if the current branch is `main`, `master`, or the resolved default or protected
+branch, create a branch named for the changes with
 `git checkout -b <descriptive-name>` before committing. Never rename those
 branches.
 
-### 2. Push
+### 3. Push
 
 Push the branch to origin with `git push -u origin <branch>`.
 
-### 3. Understand Full Scope
+### 4. Understand Full Scope
 
-Resolve the base branch rather than assuming it — not every repository defaults
-to `main` or `master`:
-
-```bash
-base="$(git rev-parse --abbrev-ref origin/HEAD)"   # e.g. origin/main
-```
-
-That output is already a full remote ref, so use it as-is; do not prepend
-another `origin/`. Then read every change the branch carries, since the PR
-describes the branch and not the latest commit:
+Use the recorded full remote ref as `base`. Read every change the branch
+carries, since the PR describes the branch and not the latest commit:
 
 ```bash
 git log --oneline "$base"..HEAD
 git diff "$base"...HEAD
 ```
 
-### 4. Write the Copy
+### 5. Write the Copy
 
 Follow the `write-pr-copy` skill to produce the title and body, including its PR
 template detection. Do not run `gh pr create` before the template status is
 known.
 
-### 5. Create the PR
+### 6. Create the PR
 
 Open it with `gh pr create`, using that title and body.
 

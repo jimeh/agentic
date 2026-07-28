@@ -73,6 +73,15 @@ export const agentConfigSchema = {
         target: {
           $ref: "#/$defs/homePath",
         },
+        relinkFrom: {
+          description:
+            "Former repo-relative sources that may be relinked without --force.",
+          type: "array",
+          minItems: 1,
+          items: {
+            $ref: "#/$defs/nonEmptyString",
+          },
+        },
       },
     },
     skillSymlink: {

@@ -100,19 +100,7 @@ snippets you can paste into any AI coding assistant. Works well with text
 expansion apps (Raycast, TextExpander, Alfred, Espanso, etc.) — set up a short
 trigger for each phase and append your context at the end.
 
-## Install
+## Deprecated
 
-```bash
-# Add the marketplace (once)
-claude plugin marketplace add jimeh/agentic
-
-# Install the plugin
-claude plugin install phased-work@jimeh-agentic
-```
-
-Or from within Claude Code:
-
-```text
-/plugin marketplace add jimeh/agentic
-/plugin install phased-work@jimeh-agentic
-```
+This plugin is no longer published in the `jimeh-agentic` marketplace. Its
+source and agent-agnostic snippets remain here for reference.

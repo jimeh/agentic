@@ -43,8 +43,9 @@ their source default. Agent config installation stays offline; run
 `mise run thirdparty:update-skills` explicitly to refresh already-configured
 vendored content.
 
-**Commands** live in plugins under `plugins/*/commands/`. Each plugin has a
-`.claude-plugin/plugin.json` manifest and auto-discovered `.md` command files.
+Legacy commands remain under `plugins/*/commands/`. Each plugin has a
+`.claude-plugin/plugin.json` manifest and auto-discovered `.md` command files,
+but only RTK is published; the other plugin sources are deprecated.
 
 **Plugins** are installed via the Claude CLI, not symlinks. The
 `agent-config install` command reads `agent-config.toml` to register Claude
@@ -59,12 +60,15 @@ checks it is current via `mise run agent-config:schema:check`.
 
 In `agent-config.toml`, source paths are repo-relative. Home-side target paths
 must start with `~/`: `symlinks[].target`, `skillSymlinks[].targetRoots[]`, and
-`staleSymlinkCleanup[].targetDir`.
+`staleSymlinkCleanup[].targetDir`. Fixed symlinks may declare repo-relative
+`relinkFrom` sources that the installer can replace without `--force`; an
+undeclared mismatched link is preserved.
 
 ### Marketplace Manifest
 
-`.claude-plugin/marketplace.json` at the repo root lists all publishable plugins
-with metadata (name, version, description, source path, category).
+`.claude-plugin/marketplace.json` at the repo root lists supported published
+plugins with metadata (name, version, description, source path, category). Local
+plugin manifests may remain unpublished.
 
 ### Global Rules
 
@@ -90,19 +94,20 @@ on success. TypeScript tests live beside package implementation files as
 Agent harness checks live in `packages/agent-config` and run as part of
 `mise run lint`. They verify that skill frontmatter names are slug-safe and
 match their directories, vendored third-party skill locks match the checked-in
-content, and Claude plugin versions match the marketplace. They also keep the
-PR-copy hygiene rules aligned across the authoritative `commit-push-pr` skill,
-the related PR-copy skill and Claude command, and the embedded Codex PR
-instructions. Rendered global rule drift is checked by `mise run rules:check`,
-which also runs as part of `mise run lint`.
+content, local plugin manifests remain valid, and each published plugin matches
+its marketplace entry. They also keep the Codex commit and PR instruction blocks
+aligned with their authoritative skills. Rendered global rule drift is checked
+by `mise run rules:check`, which also runs as part of `mise run lint`.
 
 ## Plugin Versioning
 
-Plugins use semantic versioning. When committing a plugin change, bump its
+Plugins use semantic versioning. When changing a published plugin, bump its
 version in **both** files:
 
 1. `plugins/<name>/.claude-plugin/plugin.json`
 2. `.claude-plugin/marketplace.json`
+
+Unpublished plugin sources have no marketplace version to update.
 
 ## Before Committing
 

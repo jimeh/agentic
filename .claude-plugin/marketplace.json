@@ -6,16 +6,6 @@
   },
   "plugins": [
     {
-      "name": "strip-git-cwd",
-      "description": "Strips redundant git -C flags and cd prefixes when the path matches the current working directory",
-      "version": "0.2.0",
-      "author": {
-        "name": "jimeh"
-      },
-      "source": "./plugins/strip-git-cwd",
-      "category": "productivity"
-    },
-    {
       "name": "rtk",
       "description": "Routes Bash commands through rtk, a token-optimizing CLI proxy",
       "version": "0.1.0",
@@ -23,56 +13,6 @@
         "name": "jimeh"
       },
       "source": "./plugins/rtk",
-      "category": "productivity"
-    },
-    {
-      "name": "git-commands",
-      "description": "Git workflow slash commands: commit, push, PR, rebase, and branch cleanup",
-      "version": "0.2.2",
-      "author": {
-        "name": "jimeh"
-      },
-      "source": "./plugins/git-commands",
-      "category": "productivity"
-    },
-    {
-      "name": "agents-md",
-      "description": "AGENTS.md management: generate, refactor, and convert from CLAUDE.md",
-      "version": "0.2.2",
-      "author": {
-        "name": "jimeh"
-      },
-      "source": "./plugins/agents-md",
-      "category": "productivity"
-    },
-    {
-      "name": "phased-work",
-      "description": "Research-plan-implement workflow: phased commands for disciplined AI-assisted development",
-      "version": "0.4.4",
-      "author": {
-        "name": "jimeh"
-      },
-      "source": "./plugins/phased-work",
-      "category": "productivity"
-    },
-    {
-      "name": "fd",
-      "description": "Feature Design (FD) system: lightweight feature tracking with templates, index, and slash commands",
-      "version": "0.1.0",
-      "author": {
-        "name": "manuelschipper"
-      },
-      "source": "./plugins/fd",
-      "category": "productivity"
-    },
-    {
-      "name": "edd",
-      "description": "Eval-Driven Development: evals-first feature workflow with sub-agents for spec, implementation, and verification",
-      "version": "0.1.2",
-      "author": {
-        "name": "jimeh"
-      },
-      "source": "./plugins/edd",
       "category": "productivity"
     }
   ]
