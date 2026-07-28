@@ -368,6 +368,11 @@ but leave the PR draft and report the coverage gap.
 
 ### 7. Reconcile, Fix, and Re-review
 
+Reconcile both reviews into a single list before changing anything: fold
+duplicate findings together, and settle any disagreement against the code
+yourself so the implementer gets settled work rather than a conflict. Acting on
+whichever review returns first sends it down a path the other may contradict.
+
 Treat reviewer findings as evidence, not authority. Verify each one against the
 code, weigh the reviewer independent of the implementer most heavily, and record
 concise reasons for dismissals.
