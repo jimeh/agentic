@@ -219,12 +219,32 @@ function assertOptionalSourceArray(
   value: unknown,
   path: string,
 ): string[] | undefined {
-  const sources = assertOptionalStringArray(value, path);
-  if (sources && sources.length === 0) {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  const sources = assertArray(value, path, assertRepoRelativePath);
+  if (sources.length === 0) {
     throw new Error(`${path}: expected at least one source path`);
   }
 
   return sources;
+}
+
+function assertRepoRelativePath(value: unknown, path: string): string {
+  const sourcePath = assertString(value, path);
+  const windowsAbsolute = /^[a-zA-Z]:/.test(sourcePath);
+  const hasParentSegment = sourcePath.split(/[\\/]/).includes("..");
+  if (
+    sourcePath.startsWith("/") ||
+    sourcePath.startsWith("\\") ||
+    windowsAbsolute ||
+    hasParentSegment
+  ) {
+    throw new Error(`${path}: expected repo-relative path without .. segments`);
+  }
+
+  return sourcePath;
 }
 
 function assertHomePath(value: unknown, path: string): string {

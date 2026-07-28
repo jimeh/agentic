@@ -625,6 +625,43 @@ test("rejects empty relinkFrom source lists", () => {
   );
 });
 
+for (const source of [
+  "/outside.md",
+  "../outside.md",
+  "nested/../../outside.md",
+  "C:\\outside.md",
+  "\\\\server\\share\\outside.md",
+]) {
+  test(`rejects unsafe relinkFrom source ${JSON.stringify(source)}`, () => {
+    const home = createHome();
+    const root = createRoot();
+    writeFileSync(join(root, "current.md"), "current\n");
+    writeFileSync(
+      join(root, "agent-config.toml"),
+      [
+        "symlinks = [{",
+        '  source = "current.md",',
+        '  target = "~/.claude/thing.md",',
+        `  relinkFrom = [${JSON.stringify(source)}],`,
+        "}]",
+        "skillSymlinks = []",
+        "staleSymlinkCleanup = []",
+        "[claude]",
+        "marketplaces = []",
+        "plugins = []",
+        "",
+      ].join("\n"),
+    );
+
+    const result = run(home, ["--root", root]);
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain(
+      "$.symlinks[0].relinkFrom[0]: expected repo-relative path without .. segments",
+    );
+  });
+}
+
 test("cleanup replaces links whose planned source moved roots", () => {
   const home = createHome();
   const root = createRoot();

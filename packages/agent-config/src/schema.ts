@@ -58,6 +58,12 @@ export const agentConfigSchema = {
       type: "string",
       minLength: 1,
     },
+    repoRelativePath: {
+      type: "string",
+      minLength: 1,
+      pattern:
+        "^(?![/\\\\])(?![a-zA-Z]:)(?!.*(?:^|[/\\\\])\\.\\.(?:[/\\\\]|$)).+$",
+    },
     homePath: {
       type: "string",
       pattern: "^~/.+",
@@ -79,7 +85,7 @@ export const agentConfigSchema = {
           type: "array",
           minItems: 1,
           items: {
-            $ref: "#/$defs/nonEmptyString",
+            $ref: "#/$defs/repoRelativePath",
           },
         },
       },

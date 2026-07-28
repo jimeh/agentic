@@ -208,8 +208,12 @@ restate conventions that live elsewhere:
 ### 1. Resolve the Base
 
 Follow the live default-branch resolution in the `write-pr-copy` skill and
-record both the branch name and its full remote ref before changing repository
-or remote state. Stop if the base remains ambiguous.
+retain its `default_branch` and `base` bindings before changing repository or
+remote state. Stop if the base remains ambiguous.
+
+```bash
+base="origin/$default_branch"
+```
 
 ### 2. Commit
 
@@ -225,10 +229,12 @@ Push the branch to origin with `git push -u origin <branch>`.
 
 ### 4. Understand Full Scope
 
-Use the recorded full remote ref as `base`. Read every change the branch
-carries, since the PR describes the branch and not the latest commit:
+Refresh the resolved remote-tracking ref, then read every change the branch
+carries using the bound `base`, since the PR describes the branch and not the
+latest commit:
 
 ```bash
+git fetch origin
 git log --oneline "$base"..HEAD
 git diff "$base"...HEAD
 ```

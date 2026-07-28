@@ -24,9 +24,21 @@ Run these commands in parallel to understand the current state:
 Resolve the default branch from the live remote rather than trusting a possibly
 stale local `origin/HEAD`. For GitHub, query
 `gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name'`; otherwise,
-or when `gh` is unavailable, inspect `git ls-remote --symref origin HEAD`.
-Record the branch name and its full remote ref, for example `origin/main`. Stop
-and ask if live resolution fails and no other base is clearly correct.
+or when `gh` is unavailable, inspect `git ls-remote --symref origin HEAD`. Bind
+the same variables used by the PR workflows:
+
+```bash
+default_branch="$(gh repo view \
+  --json defaultBranchRef \
+  --jq '.defaultBranchRef.name' 2>/dev/null)" || true
+if [ -z "$default_branch" ]; then
+  default_branch="$(git ls-remote --symref origin HEAD 2>/dev/null |
+    sed -n 's#^ref: refs/heads/\([^[:space:]]*\)[[:space:]][[:space:]]*HEAD$#\1#p')"
+fi
+base="origin/$default_branch"
+```
+
+Stop and ask if `default_branch` is empty and no other base is clearly correct.
 
 ### 2. Stash Uncommitted Changes
 
@@ -41,14 +53,14 @@ Remember whether a stash was created for step 6.
 ### 3. Fetch Latest
 
 ```bash
-git fetch origin "$default_branch"
+git fetch origin
 ```
 
 After fetching, record the exact commits used for the integration review:
 
 ```bash
 pre_rebase_head="$(git rev-parse HEAD)"
-pre_rebase_base="$(git merge-base HEAD "$upstream_ref")"
+pre_rebase_base="$(git merge-base HEAD "$base")"
 ```
 
 ### 4. Review Incoming Upstream Changes
@@ -66,8 +78,8 @@ git diff --name-only "$pre_rebase_base"...HEAD
 Then inspect upstream commits that touched the same files or nearby systems:
 
 ```bash
-git log --oneline --stat "$pre_rebase_base".."$upstream_ref" -- <paths>
-git diff --name-status "$pre_rebase_base".."$upstream_ref" -- <paths>
+git log --oneline --stat "$pre_rebase_base".."$base" -- <paths>
+git diff --name-status "$pre_rebase_base".."$base" -- <paths>
 ```
 
 Replace `<paths>` with the files or directories identified from the branch
@@ -91,7 +103,7 @@ While reviewing, ask:
 Rebase the current branch onto the full upstream ref recorded above:
 
 ```bash
-git rebase "$upstream_ref"
+git rebase "$base"
 ```
 
 ### 6. Restore Stashed Changes
@@ -108,15 +120,15 @@ After the rebase, inspect whether the branch still makes sense on top of the new
 upstream state:
 
 ```bash
-git range-diff "$pre_rebase_base".."$pre_rebase_head" "$upstream_ref"..HEAD
-git diff --check "$upstream_ref"...HEAD
-git diff --stat "$upstream_ref"...HEAD
+git range-diff "$pre_rebase_base".."$pre_rebase_head" "$base"..HEAD
+git diff --check "$base"...HEAD
+git diff --stat "$base"...HEAD
 ```
 
 Use `range-diff` to confirm the branch commits survived as intended, not just
 that Git replayed them mechanically. If `range-diff` is unavailable or noisy,
-fall back to `git log --oneline "$upstream_ref"..HEAD` and targeted
-`git diff "$upstream_ref"...HEAD -- <paths>`.
+fall back to `git log --oneline "$base"..HEAD` and targeted
+`git diff "$base"...HEAD -- <paths>`.
 
 Adapt the branch during the rebase only when the upstream changes make the
 current changeset wrong, duplicate, inconsistent, or impossible to validate. If

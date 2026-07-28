@@ -9,6 +9,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, expect, test } from "bun:test";
 import { spawnSync } from "node:child_process";
+import { agentConfigSchema } from "./schema";
 
 const cli = join(import.meta.dir, "..", "bin", "agent-config.ts");
 const bun = process.execPath;
@@ -57,4 +58,24 @@ test("check fails when schema file is stale", () => {
 
   expect(result.status).toBe(1);
   expect(result.stderr).toContain("is stale");
+});
+
+test("relinkFrom schema only allows repo-relative paths", () => {
+  const pattern = new RegExp(agentConfigSchema.$defs.repoRelativePath.pattern);
+  const relinkFrom =
+    agentConfigSchema.$defs.symlink.properties.relinkFrom.items;
+
+  expect(relinkFrom.$ref).toBe("#/$defs/repoRelativePath");
+  expect(pattern.test("RULES.md")).toBe(true);
+  expect(pattern.test("rules/legacy.md")).toBe(true);
+
+  for (const source of [
+    "/outside.md",
+    "../outside.md",
+    "nested/../../outside.md",
+    "C:\\outside.md",
+    "\\\\server\\share\\outside.md",
+  ]) {
+    expect(pattern.test(source)).toBe(false);
+  }
 });

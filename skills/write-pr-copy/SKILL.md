@@ -26,18 +26,32 @@ Run these commands to understand the branch before writing:
 
 Then inspect the full branch scope, not just the last commit:
 
-- Resolve the default branch from the live remote rather than assuming `main` or
-  `master`, or trusting a possibly stale local `origin/HEAD`. For GitHub, query
-  `gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name'`;
-  otherwise, or when `gh` is unavailable, inspect
-  `git ls-remote --symref origin HEAD`.
-- Use the resulting branch as a full remote ref such as `origin/main`. Fetch
-  that branch before reading it so the comparison is current.
-- Read the branch with `git diff <base>...HEAD` and
-  `git log --oneline <base>..HEAD`
+- Resolve and bind the live default branch instead of assuming `main` or
+  `master`, or trusting a possibly stale local `origin/HEAD`:
+
+  ```bash
+  default_branch="$(gh repo view \
+    --json defaultBranchRef \
+    --jq '.defaultBranchRef.name' 2>/dev/null)" || true
+  if [ -z "$default_branch" ]; then
+    default_branch="$(git ls-remote --symref origin HEAD 2>/dev/null |
+      sed -n 's#^ref: refs/heads/\([^[:space:]]*\)[[:space:]][[:space:]]*HEAD$#\1#p')"
+  fi
+  base="origin/$default_branch"
+  ```
+
+- If `default_branch` is empty, stop and ask rather than executing the remaining
+  commands.
+- Refresh the remote-tracking ref, then read the full branch scope using the
+  bound `base`:
+
+  ```bash
+  git fetch origin
+  git log --oneline "$base"..HEAD
+  git diff "$base"...HEAD
+  ```
+
 - If another base is clearly correct from local context, use it instead
-- If live resolution fails and the base is still ambiguous, ask rather than
-  silently falling back to local `origin/HEAD`
 
 ### 2. Detect PR Template
 
