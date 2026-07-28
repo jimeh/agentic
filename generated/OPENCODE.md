@@ -119,6 +119,8 @@ piped commands and `-exec` require manual approval.
 - Treat repo-owned skills as the source of truth over plugin commands,
   remembered workflows, or old prompt snippets. Read the relevant skill when
   behavior matters.
+- A skill's documented workflow governs within its scope, including how and when
+  it delegates. These rules are the default for everything it does not cover.
 
 ## Dependencies
 

@@ -119,6 +119,8 @@ piped commands and `-exec` require manual approval.
 - Treat repo-owned skills as the source of truth over plugin commands,
   remembered workflows, or old prompt snippets. Read the relevant skill when
   behavior matters.
+- A skill's documented workflow governs within its scope, including how and when
+  it delegates. These rules are the default for everything it does not cover.
 
 ## Dependencies
 
@@ -154,14 +156,7 @@ the workflow.
 
 ## Execution Mode
 
-- Do the work directly in the current Claude session by default.
-- Do not delegate, spawn subagents, launch workflows, or request independent
-  reviews unless the user explicitly asks for multi-agent execution, subagents,
-  or a workflow, or invokes a named skill whose documented workflow requires
-  them.
-- You may suggest multi-agent execution when it would materially help, but wait
-  for approval before starting it.
-- Once the user opts in, load the `multi-agent-execution` skill for
-  decomposition, model routing, and independent review.
+- When multi-agent execution is in play, load the `multi-agent-execution` skill
+  for decomposition, model routing, and independent review.
 
 @RTK.md
