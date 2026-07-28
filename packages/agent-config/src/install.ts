@@ -232,7 +232,11 @@ function assertOptionalSourceArray(
 }
 
 function assertRepoRelativePath(value: unknown, path: string): string {
-  const sourcePath = assertString(value, path);
+  if (typeof value !== "string" || value === "") {
+    throw new Error(`${path}: expected non-empty string`);
+  }
+
+  const sourcePath = value;
   const windowsAbsolute = /^[a-zA-Z]:/.test(sourcePath);
   const hasParentSegment = sourcePath.split(/[\\/]/).includes("..");
   if (
