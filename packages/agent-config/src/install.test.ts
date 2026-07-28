@@ -625,6 +625,35 @@ test("rejects empty relinkFrom source lists", () => {
   );
 });
 
+test("rejects empty relinkFrom source entries", () => {
+  const home = createHome();
+  const root = createRoot();
+  writeFileSync(join(root, "current.md"), "current\n");
+  writeFileSync(
+    join(root, "agent-config.toml"),
+    [
+      "symlinks = [{",
+      '  source = "current.md",',
+      '  target = "~/.claude/thing.md",',
+      '  relinkFrom = [""],',
+      "}]",
+      "skillSymlinks = []",
+      "staleSymlinkCleanup = []",
+      "[claude]",
+      "marketplaces = []",
+      "plugins = []",
+      "",
+    ].join("\n"),
+  );
+
+  const result = run(home, ["--root", root]);
+
+  expect(result.status).toBe(1);
+  expect(result.stderr).toContain(
+    "$.symlinks[0].relinkFrom[0]: expected non-empty string",
+  );
+});
+
 for (const source of [
   "/outside.md",
   "../outside.md",
