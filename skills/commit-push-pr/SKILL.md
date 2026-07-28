@@ -35,8 +35,21 @@ Push the branch to origin with `git push -u origin <branch>`.
 
 ### 3. Understand Full Scope
 
-Run `git log` and `git diff main...HEAD` (or `master`) to see every change since
-the base branch. The PR describes the branch, not the latest commit.
+Resolve the base branch rather than assuming it — not every repository defaults
+to `main` or `master`:
+
+```bash
+base="$(git rev-parse --abbrev-ref origin/HEAD)"   # e.g. origin/main
+```
+
+That output is already a full remote ref, so use it as-is; do not prepend
+another `origin/`. Then read every change the branch carries, since the PR
+describes the branch and not the latest commit:
+
+```bash
+git log --oneline "$base"..HEAD
+git diff "$base"...HEAD
+```
 
 ### 4. Write the Copy
 

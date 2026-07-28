@@ -151,13 +151,23 @@ function normalizeWhitespace(content: string): string {
   return content.replace(/\s+/g, " ").trim();
 }
 
-/** Extract normalized git PR instructions from the tracked Codex TOML. */
-export function extractGitPrInstructions(content: string): string | null {
-  const assignment = /^git-pr-instructions[ \t]*=[ \t]*'''/m.exec(content);
+/**
+ * Extract a normalized multi-line instruction block from the tracked Codex
+ * TOML. Handles both `'''` and `"""` delimiters, since the tracked keys do not
+ * agree on which they use.
+ */
+export function extractInstructions(
+  content: string,
+  key: string,
+): string | null {
+  const assignment = new RegExp(`^${key}[ \\t]*=[ \\t]*('''|""")`, "m").exec(
+    content,
+  );
   if (!assignment) {
     return null;
   }
 
+  const delimiter = assignment[1];
   let valueStart = assignment.index + assignment[0].length;
   if (content.startsWith("\r\n", valueStart)) {
     valueStart += 2;
@@ -166,7 +176,10 @@ export function extractGitPrInstructions(content: string): string | null {
   }
 
   const remaining = content.slice(valueStart);
-  const closingDelimiter = /^'''[ \t]*(?:#.*)?\r?$/m.exec(remaining);
+  const closingDelimiter = new RegExp(
+    `^${delimiter}[ \\t]*(?:#.*)?\\r?$`,
+    "m",
+  ).exec(remaining);
   if (!closingDelimiter) {
     return null;
   }
@@ -174,26 +187,37 @@ export function extractGitPrInstructions(content: string): string | null {
   return normalizeWhitespace(remaining.slice(0, closingDelimiter.index));
 }
 
-// Codex does not expand `@` references, so codex/config.toml has to inline the
-// commit-push-pr body rather than point at it. That copy is a platform
-// constraint, and this check is what stops it drifting.
-function checkPrCopyInstructions(): void {
-  const skillPath = "skills/commit-push-pr/SKILL.md";
+// Codex does not expand `@` references, so codex/config.toml has to inline
+// these skill bodies rather than point at them. Those copies are a platform
+// constraint, and this check is what stops them drifting — the commit block
+// silently went stale exactly once, while no check covered it.
+const codexMirroredInstructions = [
+  { key: "git-commit-instructions", skillPath: "skills/commit/SKILL.md" },
+  {
+    key: "git-pr-instructions",
+    skillPath: "skills/commit-push-pr/SKILL.md",
+  },
+];
+
+function checkCodexInstructionMirrors(): void {
   const codexConfigPath = "codex/config.toml";
-  if (!existsSync(skillPath) || !existsSync(codexConfigPath)) {
+  if (!existsSync(codexConfigPath)) {
     return;
   }
 
-  const skillBody = normalizeWhitespace(
-    matter(readFileSync(skillPath, "utf8")).content,
-  );
-  const gitPrInstructions = extractGitPrInstructions(
-    readFileSync(codexConfigPath, "utf8"),
-  );
-  if (gitPrInstructions !== skillBody) {
-    reportError(
-      `${codexConfigPath}: git-pr-instructions must mirror ${skillPath}`,
+  const config = readFileSync(codexConfigPath, "utf8");
+  for (const { key, skillPath } of codexMirroredInstructions) {
+    if (!existsSync(skillPath)) {
+      reportError(`${skillPath}: missing skill mirrored by ${key}`);
+      continue;
+    }
+
+    const skillBody = normalizeWhitespace(
+      matter(readFileSync(skillPath, "utf8")).content,
     );
+    if (extractInstructions(config, key) !== skillBody) {
+      reportError(`${codexConfigPath}: ${key} must mirror ${skillPath}`);
+    }
   }
 }
 
@@ -521,7 +545,7 @@ export function checkAgentHarness(args: string[] = []): number {
     process.chdir(root);
     checkSkillNames();
     checkPluginVersions();
-    checkPrCopyInstructions();
+    checkCodexInstructionMirrors();
     checkThirdpartySkills();
   } finally {
     process.chdir(previousCwd);

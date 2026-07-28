@@ -311,6 +311,14 @@ dead weight and becomes load-bearing.
   copies aligned. With one source it has nothing to align. **Delete the check**
   and its `prCopyHygieneRules` list.
 
+> **As shipped:** the hygiene-rule alignment was deleted, but the
+> `codex/config.toml` mirror check in the same function was kept — Codex cannot
+> expand `@` references, so that inlined copy is a platform constraint rather
+> than accidental duplication. Review then found `git-commit-instructions` had
+> already gone stale precisely because no check covered it, so the mirror was
+> generalised to both blocks instead of narrowed. See
+> `fix(harness): mirror the Codex commit block too`.
+
 On the name: **keep `write-pr-copy`.** The verb phrasing is what makes it route
 on "write me a PR description", which is still a first-class standalone use.
 `pr-copy` would read more like a reference doc and pair more neatly with
@@ -398,6 +406,13 @@ bytes and never covered it, so there is no test to delete alongside.
   restore.
 - No new test for removed behavior; the evidence is that the surviving
   invariants still catch what they own.
+
+> **As shipped:** only the hygiene-rule alignment was deleted; the Codex mirror
+> stayed and was later extended to `git-commit-instructions`. Both mirrors are
+> now proved by perturbing each block independently, and `harness.test.ts`
+> covers the extractor across both TOML delimiters. The claim above that there
+> was nothing to test turned out to be the reason the commit block drifted
+> unnoticed in the first place.
 
 ### Phases 2 and 3 — config changes with existing coverage
 

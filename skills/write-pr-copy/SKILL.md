@@ -26,9 +26,12 @@ Run these commands to understand the branch before writing:
 
 Then inspect the full branch scope, not just the last commit:
 
-- Prefer `git diff main...HEAD` and `git log --oneline main..HEAD`
-- Fall back to `master` if `main` is not present
-- If another base is clearly correct from local context, use it
+- Resolve the base with `git rev-parse --abbrev-ref origin/HEAD` rather than
+  assuming `main` or `master`. It returns a full remote ref such as
+  `origin/main`, so use it as-is without prepending another `origin/`.
+- Read the branch with `git diff <base>...HEAD` and
+  `git log --oneline <base>..HEAD`
+- If another base is clearly correct from local context, use it instead
 - If the base is still ambiguous, state the assumption briefly in the output
 
 ### 2. Detect PR Template
