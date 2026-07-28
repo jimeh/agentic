@@ -1,7 +1,9 @@
 #:schema ./schemas/agent-config.schema.json
 
 symlinks = [
-  { source = "generated/CLAUDE.md", target = "~/.claude/CLAUDE.md" },
+  { source = "generated/CLAUDE.md", target = "~/.claude/CLAUDE.md", relinkFrom = [
+    "RULES.md",
+  ] },
   { source = "generated/CODEX.md", target = "~/.codex/AGENTS.md" },
   { source = "generated/OPENCODE.md", target = "~/.config/opencode/AGENTS.md" },
   { source = "rules/rtk/claude.md", target = "~/.claude/RTK.md" },

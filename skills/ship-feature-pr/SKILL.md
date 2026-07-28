@@ -15,8 +15,9 @@ Delegate implementation and independent review where those perspectives add
 value.
 
 Invoking this skill authorizes the branch, worktree, commit, push, and pull
-request mutations needed by the workflow. It does not authorize merging,
-deploying, or releasing.
+request mutations needed by the workflow, along with the implementer and
+reviewer agents it names. It does not authorize merging, deploying, or
+releasing.
 
 ## Core Contracts
 

@@ -2,15 +2,16 @@
 name: multi-agent-execution
 description: >-
   How to delegate work across subagents and workflows: decomposition, model
-  routing, and independent review. Load once the user has opted into
-  multi-agent execution, or when a named skill's workflow requires it.
+  routing, and independent review. Load when the user requests multi-agent
+  execution or an invoked skill's workflow calls for delegation.
 ---
 
 # Multi-Agent Execution
 
-Apply this skill only after the user has opted into multi-agent execution or
-invoked a named skill whose documented workflow requires it. The default stays
-what the global rules say: do the work directly in the current session.
+Use this skill when multi-agent execution is active, either because the user
+requested it or an invoked workflow calls for delegation. The invoking workflow
+decides whether and when to delegate; this skill governs decomposition, routing,
+isolation, and review once that decision is made.
 
 ## Delegation
 
@@ -33,7 +34,7 @@ what the global rules say: do the work directly in the current session.
   delegation such as investigation, implementation, review, reproduction, data
   extraction, or computer use.
 - Use native Claude subagents when the user explicitly requests them or a
-  selected workflow requires a separate Claude context.
+  selected workflow calls for a separate Claude context.
 - Use workflows for deterministic fan-out/fan-in within a task: parallel sweeps,
   staged find-then-verify pipelines, or migrations over a work list.
 - For long-running delegated work, ask for a report file and poll for it.
@@ -70,7 +71,7 @@ what the global rules say: do the work directly in the current session.
 - A fresh context on the same model is the baseline, and a different model is
   more independent. Use `fable` when the stakes justify a harder reviewer, and
   route to a `codex-*` skill for cross-engine independence when the user asks
-  for it or the workflow requires it.
+  for it or the workflow calls for it.
 - Spawned Claude reviewers and workers do not inherit the session model; pass
   `model` explicitly on the Agent call, either to match the current session or
   to span models deliberately. Never let a delegated Claude fall back to Sonnet

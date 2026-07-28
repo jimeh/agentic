@@ -229,7 +229,11 @@ test("relinks a managed link whose in-repo source moved, without force", () => {
   writeFileSync(
     join(root, "agent-config.toml"),
     [
-      'symlinks = [{ source = "current.md", target = "~/.claude/thing.md" }]',
+      "symlinks = [{",
+      '  source = "current.md",',
+      '  target = "~/.claude/thing.md",',
+      '  relinkFrom = ["moved-away.md"],',
+      "}]",
       "skillSymlinks = []",
       // Deliberately empty: linking must heal the link on its own, without
       // relying on a staleSymlinkCleanup entry covering this target.
@@ -278,6 +282,34 @@ test("leaves a link pointing outside the repo alone without force", () => {
 
   expect(result.status).toBe(0);
   expect(readlinkSync(link)).toBe(outside);
+});
+
+test("leaves an undeclared in-repo link alone without force", () => {
+  const home = createHome();
+  const root = createRoot();
+  writeFileSync(join(root, "current.md"), "current\n");
+  writeFileSync(join(root, "my-own-notes.md"), "mine\n");
+  writeFileSync(
+    join(root, "agent-config.toml"),
+    [
+      'symlinks = [{ source = "current.md", target = "~/.claude/thing.md" }]',
+      "skillSymlinks = []",
+      "staleSymlinkCleanup = []",
+      "[claude]",
+      "marketplaces = []",
+      "plugins = []",
+      "",
+    ].join("\n"),
+  );
+  const link = join(home, ".claude", "thing.md");
+  mkdirSync(join(home, ".claude"), { recursive: true });
+  symlinkSync(join(root, "my-own-notes.md"), link);
+
+  const result = run(home, ["--root", root]);
+
+  expect(result.status).toBe(0);
+  expect(readlinkSync(link)).toBe(join(root, "my-own-notes.md"));
+  expect(result.stderr).toContain("already exists, use --force");
 });
 
 test("dry-run does not create symlinks", () => {
@@ -563,6 +595,101 @@ test("rejects empty only/exclude pattern lists", () => {
     "$.skillSymlinks[0].only: expected at least one glob pattern",
   );
 });
+
+test("rejects empty relinkFrom source lists", () => {
+  const home = createHome();
+  const root = createRoot();
+  writeFileSync(join(root, "current.md"), "current\n");
+  writeFileSync(
+    join(root, "agent-config.toml"),
+    [
+      "symlinks = [{",
+      '  source = "current.md",',
+      '  target = "~/.claude/thing.md",',
+      "  relinkFrom = [],",
+      "}]",
+      "skillSymlinks = []",
+      "staleSymlinkCleanup = []",
+      "[claude]",
+      "marketplaces = []",
+      "plugins = []",
+      "",
+    ].join("\n"),
+  );
+
+  const result = run(home, ["--root", root]);
+
+  expect(result.status).toBe(1);
+  expect(result.stderr).toContain(
+    "$.symlinks[0].relinkFrom: expected at least one source path",
+  );
+});
+
+test("rejects empty relinkFrom source entries", () => {
+  const home = createHome();
+  const root = createRoot();
+  writeFileSync(join(root, "current.md"), "current\n");
+  writeFileSync(
+    join(root, "agent-config.toml"),
+    [
+      "symlinks = [{",
+      '  source = "current.md",',
+      '  target = "~/.claude/thing.md",',
+      '  relinkFrom = [""],',
+      "}]",
+      "skillSymlinks = []",
+      "staleSymlinkCleanup = []",
+      "[claude]",
+      "marketplaces = []",
+      "plugins = []",
+      "",
+    ].join("\n"),
+  );
+
+  const result = run(home, ["--root", root]);
+
+  expect(result.status).toBe(1);
+  expect(result.stderr).toContain(
+    "$.symlinks[0].relinkFrom[0]: expected non-empty string",
+  );
+});
+
+for (const source of [
+  "/outside.md",
+  "../outside.md",
+  "nested/../../outside.md",
+  "C:\\outside.md",
+  "\\\\server\\share\\outside.md",
+]) {
+  test(`rejects unsafe relinkFrom source ${JSON.stringify(source)}`, () => {
+    const home = createHome();
+    const root = createRoot();
+    writeFileSync(join(root, "current.md"), "current\n");
+    writeFileSync(
+      join(root, "agent-config.toml"),
+      [
+        "symlinks = [{",
+        '  source = "current.md",',
+        '  target = "~/.claude/thing.md",',
+        `  relinkFrom = [${JSON.stringify(source)}],`,
+        "}]",
+        "skillSymlinks = []",
+        "staleSymlinkCleanup = []",
+        "[claude]",
+        "marketplaces = []",
+        "plugins = []",
+        "",
+      ].join("\n"),
+    );
+
+    const result = run(home, ["--root", root]);
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain(
+      "$.symlinks[0].relinkFrom[0]: expected repo-relative path without .. segments",
+    );
+  });
+}
 
 test("cleanup replaces links whose planned source moved roots", () => {
   const home = createHome();

@@ -18,6 +18,7 @@ import { spawnSync } from "node:child_process";
 type SymlinkEntry = {
   source: string;
   target: string;
+  relinkFrom?: string[];
 };
 
 type SkillSymlinkConfig = {
@@ -214,6 +215,42 @@ function assertOptionalPatternArray(
   return patterns;
 }
 
+function assertOptionalSourceArray(
+  value: unknown,
+  path: string,
+): string[] | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  const sources = assertArray(value, path, assertRepoRelativePath);
+  if (sources.length === 0) {
+    throw new Error(`${path}: expected at least one source path`);
+  }
+
+  return sources;
+}
+
+function assertRepoRelativePath(value: unknown, path: string): string {
+  if (typeof value !== "string" || value === "") {
+    throw new Error(`${path}: expected non-empty string`);
+  }
+
+  const sourcePath = value;
+  const windowsAbsolute = /^[a-zA-Z]:/.test(sourcePath);
+  const hasParentSegment = sourcePath.split(/[\\/]/).includes("..");
+  if (
+    sourcePath.startsWith("/") ||
+    sourcePath.startsWith("\\") ||
+    windowsAbsolute ||
+    hasParentSegment
+  ) {
+    throw new Error(`${path}: expected repo-relative path without .. segments`);
+  }
+
+  return sourcePath;
+}
+
 function assertHomePath(value: unknown, path: string): string {
   const homePathValue = assertString(value, path);
   if (!homePathValue.startsWith("~/")) {
@@ -286,6 +323,10 @@ function readConfig(): AgentConfig {
       return {
         source: assertString(object.source, `${path}.source`),
         target: assertHomePath(object.target, `${path}.target`),
+        relinkFrom: assertOptionalSourceArray(
+          object.relinkFrom,
+          `${path}.relinkFrom`,
+        ),
       };
     }),
     skillSymlinks: assertArray(
@@ -369,7 +410,7 @@ function readLocalMarketplace(
 function discoverSymlinks(config: AgentConfig): SymlinkEntry[] {
   return [
     ...config.symlinks.map((entry) => ({
-      source: entry.source,
+      ...entry,
       target: homePath(entry.target),
     })),
     ...config.skillSymlinks.flatMap((entry) => discoverSkillSymlinks(entry)),
@@ -471,7 +512,12 @@ function backupPath(target: string): string {
   return candidate;
 }
 
-function backupAndLink(source: string, target: string, options: Options): void {
+function backupAndLink(
+  source: string,
+  target: string,
+  relinkFrom: string[],
+  options: Options,
+): void {
   if (!options.dryRun) {
     mkdirSync(dirname(target), { recursive: true });
   }
@@ -487,13 +533,13 @@ function backupAndLink(source: string, target: string, options: Options): void {
         return;
       }
 
-      // A link already pointing into this repo is one a previous install
-      // created, so correcting it needs no --force and no backup: there is
-      // nothing of the user's to preserve. This is what lets a source move
-      // between roots, or get renamed or deleted, without leaving the old
-      // link stranded — resolveSymlink returns null for a dangling link, so
-      // the equality check above cannot catch that case.
-      if (linkTarget.startsWith(`${normalizePath(rootDir)}/`)) {
+      // Only explicitly declared former sources prove installer ownership.
+      // Merely pointing somewhere inside this repo is insufficient: the user
+      // may have created that link independently.
+      const declaredFormerSource = relinkFrom.some(
+        (formerSource) => linkTarget === normalizePath(formerSource),
+      );
+      if (declaredFormerSource) {
         if (options.dryRun) {
           info(`would relink ${target} → ${source}`);
         } else {
@@ -529,7 +575,12 @@ function backupAndLink(source: string, target: string, options: Options): void {
 
 function createSymlinks(entries: SymlinkEntry[], options: Options): void {
   for (const entry of entries) {
-    backupAndLink(join(rootDir, entry.source), entry.target, options);
+    backupAndLink(
+      join(rootDir, entry.source),
+      entry.target,
+      (entry.relinkFrom ?? []).map(rootPath),
+      options,
+    );
   }
 }
 

@@ -58,6 +58,12 @@ export const agentConfigSchema = {
       type: "string",
       minLength: 1,
     },
+    repoRelativePath: {
+      type: "string",
+      minLength: 1,
+      pattern:
+        "^(?![/\\\\])(?![a-zA-Z]:)(?!.*(?:^|[/\\\\])\\.\\.(?:[/\\\\]|$)).+$",
+    },
     homePath: {
       type: "string",
       pattern: "^~/.+",
@@ -72,6 +78,15 @@ export const agentConfigSchema = {
         },
         target: {
           $ref: "#/$defs/homePath",
+        },
+        relinkFrom: {
+          description:
+            "Former repo-relative sources that may be relinked without --force.",
+          type: "array",
+          minItems: 1,
+          items: {
+            $ref: "#/$defs/repoRelativePath",
+          },
         },
       },
     },

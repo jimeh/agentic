@@ -31,19 +31,7 @@ the rest into separate docs under `docs/agents/`, and flags instructions that
 are redundant or too vague to be actionable. When refactoring an AGENTS.md,
 ensures a `CLAUDE.md` exists with an `@AGENTS.md` reference.
 
-## Install
+## Deprecated
 
-```bash
-# Add the marketplace (once)
-claude plugin marketplace add jimeh/agentic
-
-# Install the plugin
-claude plugin install agents-md@jimeh-agentic
-```
-
-Or from within Claude Code:
-
-```text
-/plugin marketplace add jimeh/agentic
-/plugin install agents-md@jimeh-agentic
-```
+This plugin is no longer published in the `jimeh-agentic` marketplace. Its
+source remains here for reference.

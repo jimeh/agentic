@@ -41,22 +41,11 @@ default it previews the gone branches with a dry run (after `git fetch --prune`)
 and asks for confirmation before deleting; ask to delete without confirmation to
 skip the prompt. Reports what was cleaned up, or that no cleanup was needed.
 
-## Install
+## Deprecated
 
-```bash
-# Add the marketplace (once)
-claude plugin marketplace add jimeh/agentic
-
-# Install the plugin
-claude plugin install git-commands@jimeh-agentic
-```
-
-Or from within Claude Code:
-
-```text
-/plugin marketplace add jimeh/agentic
-/plugin install git-commands@jimeh-agentic
-```
+This plugin is no longer published in the `jimeh-agentic` marketplace. Its
+source remains here for reference; use the corresponding repo-managed skills for
+current Git workflows.
 
 ## Origins
 

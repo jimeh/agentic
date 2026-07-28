@@ -32,19 +32,7 @@ normal permission flow.
 Both patterns compose — `cd /path && git -C /path status` becomes `git status`.
 Compound commands (`&&`, `||`, `;`) are handled.
 
-## Install
+## Deprecated
 
-```bash
-# Add the marketplace (once)
-claude plugin marketplace add jimeh/agentic
-
-# Install the plugin
-claude plugin install strip-git-cwd@jimeh-agentic
-```
-
-Or from within Claude Code:
-
-```text
-/plugin marketplace add jimeh/agentic
-/plugin install strip-git-cwd@jimeh-agentic
-```
+This plugin is no longer published in the `jimeh-agentic` marketplace. Its
+source remains here for reference.

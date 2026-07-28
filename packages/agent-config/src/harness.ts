@@ -241,7 +241,7 @@ function checkSkillNames(): void {
   }
 }
 
-function checkPluginVersions(): void {
+function checkPluginManifestsAndMarketplace(): void {
   const marketplacePath = ".claude-plugin/marketplace.json";
 
   if (!existsSync(marketplacePath)) {
@@ -255,6 +255,8 @@ function checkPluginVersions(): void {
   }
 
   const marketplacePlugins = marketplace.plugins ?? [];
+  const localPlugins = new Map<string, string>();
+
   for (const pluginDir of subdirs("plugins")) {
     const manifestPath = join(pluginDir, ".claude-plugin", "plugin.json");
     if (!existsSync(manifestPath)) {
@@ -285,20 +287,38 @@ function checkPluginVersions(): void {
       continue;
     }
 
-    const matches = marketplacePlugins.filter((plugin) => plugin.name === name);
-    if (matches.length !== 1) {
-      reportError(
-        `${marketplacePath}: expected one entry for plugin '${name}'`,
-      );
+    if (localPlugins.has(name)) {
+      reportError(`${manifestPath}: duplicate local plugin name '${name}'`);
+      continue;
+    }
+    localPlugins.set(name, version);
+  }
+
+  const publishedNames = new Set<string>();
+  for (const marketPlugin of marketplacePlugins) {
+    const name = marketPlugin.name ?? "";
+    if (!slugPattern.test(name)) {
+      reportError(`${marketplacePath}: plugin name '${name}' is not a slug`);
       continue;
     }
 
-    const [marketPlugin] = matches;
-    if (marketPlugin.version !== version) {
+    if (publishedNames.has(name)) {
+      reportError(`${marketplacePath}: duplicate entry for plugin '${name}'`);
+      continue;
+    }
+    publishedNames.add(name);
+
+    const localVersion = localPlugins.get(name);
+    if (!localVersion) {
+      reportError(`${marketplacePath}: plugin '${name}' has no local manifest`);
+      continue;
+    }
+
+    if (marketPlugin.version !== localVersion) {
       const marketplaceVersion = marketPlugin.version;
       reportError(
         [
-          `${name}: plugin version ${version}`,
+          `${name}: plugin version ${localVersion}`,
           `!= marketplace ${marketplaceVersion}`,
         ].join(" "),
       );
@@ -544,7 +564,7 @@ export function checkAgentHarness(args: string[] = []): number {
   try {
     process.chdir(root);
     checkSkillNames();
-    checkPluginVersions();
+    checkPluginManifestsAndMarketplace();
     checkCodexInstructionMirrors();
     checkThirdpartySkills();
   } finally {

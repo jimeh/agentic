@@ -67,7 +67,7 @@ mise run hooks:install
 - **`skills/`** — Custom skills (auto-discovered by the agent config installer).
 - **`thirdparty/`** — Vendored third-party skills plus manifest and lock
   metadata.
-- **`plugins/`** — Claude Code plugins, published via a local marketplace.
+- **`plugins/`** — RTK plus source retained for deprecated Claude Code plugins.
 - **`packages/agent-config/`** — CLI package for installing agent configs,
   rendering generated rules, running plugin tests, and checking harness
   invariants.
@@ -76,9 +76,8 @@ mise run hooks:install
 Skills are auto-discovered — drop a directory in the right place, re-run the
 agent config installer, done. Vendored third-party skills under
 `thirdparty/skills/` are installed the same way, but only the explicit update
-task fetches from upstream. Commands live in plugins. Plugins are registered and
-installed via the Claude CLI (`claude plugin marketplace add` /
-`claude plugin install`).
+task fetches from upstream. RTK is the only plugin published through the local
+Claude marketplace; the other plugin sources are retained but deprecated.
 
 Update vendored third-party skills with:
 
@@ -143,7 +142,11 @@ mise lock --minimum-release-age 3d
 
 ## Plugins
 
-### [strip-git-cwd](plugins/strip-git-cwd/)
+RTK is the only supported plugin published by this repository. The other plugin
+sources under `plugins/` are deprecated and retained for reference; they are no
+longer available from the marketplace.
+
+### Deprecated: [strip-git-cwd](plugins/strip-git-cwd/)
 
 A `PreToolUse` hook that strips redundant `git -C <cwd>` flags from Bash
 commands when the path matches the current working directory. Claude Code tends
@@ -154,14 +157,14 @@ permission prompts.
 Handles all `-C` syntax variants (space, `=`, bare, quoted) and compound
 commands (`&&`, `;`).
 
-### [rtk](plugins/rtk/)
+### Supported: [rtk](plugins/rtk/)
 
 A `PreToolUse` hook that routes Bash commands through rtk, a token-optimizing
 CLI proxy that filters verbose command output. Packaging it as a plugin keeps
 the wiring version-controlled, rather than letting `rtk init` patch the managed
 `claude/settings.json`. Fails open when rtk is not on `PATH`.
 
-### [git-commands](plugins/git-commands/)
+### Deprecated: [git-commands](plugins/git-commands/)
 
 Slash commands for common git workflows:
 
@@ -172,7 +175,7 @@ Slash commands for common git workflows:
 
 Derived from the official `commit-commands` plugin, heavily modified.
 
-### [agents-md](plugins/agents-md/)
+### Deprecated: [agents-md](plugins/agents-md/)
 
 Slash commands for managing AGENTS.md files:
 
@@ -180,7 +183,7 @@ Slash commands for managing AGENTS.md files:
 - `/generate-agents-md` — Generate AGENTS.md from codebase analysis.
 - `/refactor-agents-md` — Refactor AGENTS.md for progressive disclosure.
 
-### [phased-work](plugins/phased-work/)
+### Deprecated: [phased-work](plugins/phased-work/)
 
 A disciplined research-plan-implement workflow. Instead of jumping straight to
 code, you move through distinct phases so every decision is reviewed before
@@ -196,7 +199,7 @@ implementation begins.
 Also includes [agent-agnostic prompt snippets](plugins/phased-work/snippets.md)
 for use with any AI coding assistant.
 
-### [fd](plugins/fd/)
+### Deprecated: [fd](plugins/fd/)
 
 Initializes a lightweight Feature Design (FD) tracking system in any project.
 Scaffolds directory structure, templates, index, project-local slash commands,
@@ -209,8 +212,8 @@ Based on the
 
 ### Standalone Installation
 
-You can install individual plugins directly without cloning the repo. First add
-the marketplace, then install whichever plugins you want:
+You can install RTK directly without cloning the repo. First add the
+marketplace:
 
 ```bash
 # CLI
@@ -220,14 +223,14 @@ claude plugin marketplace add jimeh/agentic
 /plugin marketplace add jimeh/agentic
 ```
 
-Then install plugins:
+Then install RTK:
 
 ```bash
 # CLI
-claude plugin install git-commands@jimeh-agentic
+claude plugin install rtk@jimeh-agentic
 
 # Or from within Claude Code
-/plugin install git-commands@jimeh-agentic
+/plugin install rtk@jimeh-agentic
 ```
 
 ### Agent Config Installation
