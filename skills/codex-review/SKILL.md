@@ -33,7 +33,8 @@ unless the environment proves otherwise.
    intended worktree.
 3. Create a temporary artifact directory.
 4. Gather only the context Codex needs: user request, target, base branch or
-   commit, relevant requirements, and risky areas.
+   commit, relevant requirements, risky areas, supplied validation evidence, and
+   any caller-provided execution policy.
 5. Write a concise prompt if custom instructions are needed.
 6. Run `codex review` with a scope flag, or with a custom prompt when extra
    context matters (the two cannot be combined). Use `codex exec -s read-only`
@@ -92,6 +93,11 @@ the reviewed scope materially broadens.
 Do not retry automatically when Codex reports no issues. If the run times out or
 fails, report that and decide whether direct review is still useful.
 
+Honor the caller's execution policy. When valid implementer evidence and CI
+already cover execution, inspect first and do not rerun broad suites, builds,
+lint, or CI-equivalent checks. Run a focused reproducer only when needed to
+verify a concrete suspected defect, and report the command and result.
+
 Once the review lifecycle is complete, remove the artifact directory so prompts
 and reports do not accumulate.
 
@@ -109,6 +115,7 @@ Review this implementation.
 Target: <uncommitted changes | branch vs base | commit | files>
 Repository: <absolute repo path>
 Context: <one or two task-specific sentences, only if needed>
+Execution policy: <caller policy, supplied evidence, and allowed reproducers>
 
 Look for:
 - correctness
@@ -139,7 +146,8 @@ Do not edit files. If there are no substantive findings, say so.
 ```
 
 Add only context that changes review quality: requirements, invariants, threat
-model, expected behavior, or known risky files. Avoid long paragraphs.
+model, expected behavior, known risky files, or execution constraints. Omit the
+execution-policy line when the caller provided none. Avoid long paragraphs.
 
 ## Reporting Strategy
 

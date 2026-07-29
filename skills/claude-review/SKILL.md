@@ -39,7 +39,8 @@ otherwise.
    intended worktree.
 3. Create a temporary artifact directory.
 4. Gather only the context Claude needs: user request, target, base branch or
-   commit, relevant requirements, and risky areas.
+   commit, relevant requirements, risky areas, supplied validation evidence, and
+   any caller-provided execution policy.
 5. Write a concise review prompt that names the target.
 6. Run headless `claude -p` in plan mode with safe mode so the session stays
    read-only and the target repo's customizations cannot execute.
@@ -88,6 +89,10 @@ Run notes:
 - For long reviews, run in the background and read `$REPORT` when the run exits.
   Do not kill quiet runs prematurely; long silences are normal.
 - Parallel independent reviews are fine: separate prompt and report files.
+- Honor the caller's execution policy. When valid implementer evidence and CI
+  already cover execution, inspect first and do not rerun broad suites, builds,
+  lint, or CI-equivalent checks. Run a focused reproducer only when needed to
+  verify a concrete suspected defect, and report the command and result.
 - Resume the same reviewer for focused fix verification when possible. Give it
   revision boundaries and concise finding summaries, then have it inspect the
   delta from the repository rather than pasting prior reports or large diffs.
@@ -116,6 +121,7 @@ Review this implementation.
 Target: <uncommitted changes | branch vs base | commit | files>
 Repository: <absolute repo path>
 Context: <one or two task-specific sentences, only if needed>
+Execution policy: <caller policy, supplied evidence, and allowed reproducers>
 
 Look for:
 - correctness
@@ -146,7 +152,8 @@ Do not edit files. If there are no substantive findings, say so.
 ```
 
 Add only context that changes review quality: requirements, invariants, threat
-model, expected behavior, or known risky files. Avoid long paragraphs.
+model, expected behavior, known risky files, or execution constraints. Omit the
+execution-policy line when the caller provided none. Avoid long paragraphs.
 
 ## Reporting Strategy
 
