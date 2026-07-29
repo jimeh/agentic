@@ -11,6 +11,7 @@ approval_policy = "never"
 sandbox_mode = "danger-full-access"
 
 [features]
+hooks = true
 apply_patch_freeform = true
 multi_agent = true
 runtime_metrics = true
@@ -84,6 +85,13 @@ name = "build-web-apps:stripe-best-practices"
 enabled = false
 
 [mcp_servers]
+[mcp_servers.codegraph]
+command = "codegraph"
+args = ["serve", "--mcp"]
+
+[mcp_servers.codegraph.tools.codegraph_explore]
+approval_mode = "approve"
+
 [mcp_servers.deepwiki]
 enabled = true
 url = "https://mcp.deepwiki.com/mcp"

@@ -11,3 +11,5 @@ filename: CLAUDE.md
   for decomposition, model routing, and independent review.
 
 @RTK.md
+
+<!-- include: codegraph.md -->

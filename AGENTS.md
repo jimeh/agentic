@@ -144,7 +144,8 @@ enabled so task tools install automatically. Run
 `mise lock --minimum-release-age 3d` after changing Mise tools. `.pinact.yaml`
 sets Pinact's GitHub Actions minimum release age to three days; use
 `mise run actions:update` to update pinned workflow actions. `.treeboot.toml`
-runs `mise run setup` for new worktree bootstraps; validate it with
+runs `mise run setup` for new worktree bootstraps, including a full
+initialization of the ignored `.codegraph/` index; validate it with
 `mise run treeboot:check`.
 
 The root `package.json` is a Bun workspace for packages under `packages/`.

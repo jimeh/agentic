@@ -138,6 +138,7 @@
       "mcp__claude_ai_DeepWiki__ask_question",
       "mcp__claude_ai_DeepWiki__read_wiki_contents",
       "mcp__claude_ai_DeepWiki__read_wiki_structure",
+      "mcp__codegraph__*",
       "mcp__context7__get-library-docs",
       "mcp__context7__query-docs",
       "mcp__context7__resolve-library-id",
@@ -155,6 +156,7 @@
     ],
     "defaultMode": "auto"
   },
+  "model": "claude-fable-5[1m]",
   "statusLine": {
     "type": "command",
     "command": "~/.claude/statusline.sh",
@@ -172,7 +174,6 @@
     "rtk@jimeh-agentic": true
   },
   "extraKnownMarketplaces": {},
-  "model": "opus",
   "effortLevel": "high",
   "autoUpdatesChannel": "latest",
   "tui": "fullscreen",

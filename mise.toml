@@ -22,6 +22,7 @@ oxlint = "1"
 pinact = "4"
 shellcheck = "0"
 zizmor = "1"
+"github:colbymchenry/codegraph" = "1"
 "github:jimeh/treeboot" = "0"
 
 # --- Tasks ---
@@ -29,8 +30,12 @@ zizmor = "1"
 # Setup and dependencies
 
 [tasks.setup]
-description = "Install dependencies and local git hooks"
-run = ["mise run deps:install", "mise run hooks:install"]
+description = "Install dependencies, local git hooks, and CodeGraph index"
+run = [
+  "mise run deps:install",
+  "mise run hooks:install",
+  "mise run codegraph:setup",
+]
 
 [tasks."setup:ci"]
 description = "Install dependencies from the lockfile for CI"
@@ -47,6 +52,10 @@ run = "bun install --frozen-lockfile"
 [tasks."hooks:install"]
 description = "Install Lefthook git hooks"
 run = "lefthook install --reset-hooks-path"
+
+[tasks."codegraph:setup"]
+description = "Initialize the local CodeGraph index"
+run = "codegraph init"
 
 # Agent configuration
 

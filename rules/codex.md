@@ -8,3 +8,5 @@ filename: CODEX.md
 <!-- include: agents.md -->
 
 <!-- include: rtk/codex.md -->
+
+<!-- include: codegraph.md -->

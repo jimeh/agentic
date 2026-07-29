@@ -22,15 +22,16 @@ and cycles are rejected.
 
 ## Layout
 
-| Source        | Output        | Composition             |
-| ------------- | ------------- | ----------------------- |
-| `claude.md`   | `CLAUDE.md`   | base                    |
-| `codex.md`    | `CODEX.md`    | base, agents, rtk/codex |
-| `opencode.md` | `OPENCODE.md` | base, agents            |
+| Source        | Output        | Composition                        |
+| ------------- | ------------- | ---------------------------------- |
+| `claude.md`   | `CLAUDE.md`   | base, codegraph                    |
+| `codex.md`    | `CODEX.md`    | base, agents, rtk/codex, codegraph |
+| `opencode.md` | `OPENCODE.md` | base, agents, codegraph            |
 
 `base.md` is shared by every target. `agents.md` holds guidance shared by
 non-Claude agents; it is currently empty and exists so Codex and opencode have a
-common place for rules that should not reach Claude.
+common place for rules that should not reach Claude. `codegraph.md` holds the
+CodeGraph guidance shared by every target.
 
 Claude keeps rtk's own `@RTK.md` reference rather than inlining, because Claude
 expands `@` references natively. Codex does not expand them, so its RTK content
