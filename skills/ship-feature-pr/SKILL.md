@@ -52,7 +52,8 @@ most heavily, as in step 7.
 ### Test quality
 
 Tests are the primary evidence that the feature is correct. Planner,
-implementer, orchestrator, and both reviewers hold the same bar:
+implementer, orchestrator, and both reviewers hold the same acceptance bar, but
+they do not each regenerate the same evidence:
 
 - New and changed behavior is covered on both its happy path and its failure
   paths — errors, boundaries, and the conditions the code explicitly handles —
@@ -84,6 +85,28 @@ harness. A testable project whose relevant area merely lacks tests does not
 qualify: build the scaffolding, or ask the user how to proceed. When tests are
 genuinely skipped, name the alternative evidence and the residual risk, keep the
 PR draft, and obtain explicit user acceptance before marking it ready.
+
+### Evidence ownership
+
+Assign each kind of evidence once:
+
+- The implementer owns focused red/green execution, targeted mutation evidence,
+  and affected local checks while building the feature.
+- The orchestrator owns evidence sufficiency. Inspect the implementation and
+  fill only missing, ambiguous, or invalidated evidence; do not automatically
+  repeat trusted implementer commands.
+- Reviewers own independent reasoning about requirements, code, and test
+  quality. They inspect first and run only focused reproducers needed to verify
+  concrete findings, not broad suites or CI-equivalent checks.
+- CI owns clean-environment, cross-platform, and repository-wide gates it
+  actually runs.
+
+Keep a compact evidence ledger through the workflow. For each result record the
+captured revision, command, focused or broad scope, outcome and test count or
+names, behavior or failure path proved, mutation result where applicable, and
+environment limitations. Evidence carries forward when its revision is an
+ancestor of the new head and the intervening delta cannot affect what it proves.
+Classify every correction before deciding what it invalidates.
 
 ### Context continuity
 
@@ -134,6 +157,10 @@ before mutation. Select the native same-engine channel when possible and its
 allowed fallback otherwise. Missing native tooling alone is not a blocker;
 missing both same-engine options or the foreign reviewer is.
 
+Set a post-draft correction-cycle budget. Default to two cycles; choose a higher
+limit only when the user or repository requires it, or when declared risk
+justifies it before review starts.
+
 ### 2. Plan
 
 Reuse a settled plan when it still matches the request. Resolve small,
@@ -159,11 +186,15 @@ discovered and skipped mid-implementation. Record test debt you deliberately
 leave alone as a non-goal. Where automated tests genuinely do not apply, say why
 in the spec and name the verification evidence standing in for them.
 
-Freeze the result into a concise implementation spec covering the objective,
-constraints, expected file scope, success criteria, the testing strategy with
-the exact focused and broader verification commands that prove it, risks, and
-non-goals. Identify scope early enough to compare it with the captured dirty
-state before moving branches or integrating work.
+Freeze the result into a concise implementation spec. Link to canonical behavior
+and architecture sources instead of copying them. Cover the objective,
+constraints, expected file scope, success criteria, risks, and non-goals. Add a
+closure matrix for each observable behavior, failure path, boundary, regression
+risk, and supported-platform concern: name the test or evidence that closes it,
+or mark it as an accepted non-goal. Identify exact focused commands and
+intended-final-head gates, including which gates CI supplies. Identify scope
+early enough to compare it with the captured dirty state before moving branches
+or integrating work.
 
 ### 3. Prepare the Delivery Branch
 
@@ -208,7 +239,9 @@ which for anything non-trivial means tests it has watched fail for the right
 reason and then pass. Tell it to leave Git alone and simply report what it did;
 the orchestrator owns every Git operation, including committing the work in the
 implementer's own worktree. Depending on a delegated agent to commit is what
-makes uncommitted work vanish silently later.
+makes uncommitted work vanish silently later. Require the implementer to return
+the completed closure matrix and compact evidence ledger, including the test
+names or counts that prove new tests were collected.
 
 When it finishes:
 
@@ -220,22 +253,18 @@ When it finishes:
    git status --porcelain
    ```
 
-   The report explains most paths; the rest are suspect. Delete strays, or add
-   genuine build artifacts to `.gitignore` where the repository should have been
-   ignoring them anyway. Ask the implementer about anything still ambiguous.
-   Then sweep:
+   Resolve unexplained paths with the implementer. Delete strays or ignore
+   genuine build artifacts where the repository should already do so, then
+   sweep:
 
    ```bash
    git add -A && git commit -m "impl: <slug>"
    ```
 
-   Fix the worktree rather than the staging set. An excluded stray stays on
-   disk, survives the resets below — `git reset --hard` discards tracked
-   modifications but leaves untracked files in place — and can make a must-fail
-   test pass. Correcting the worktree first keeps `git add -A` safe to run
-   blind, which is what makes new files, renames, and deletions impossible to
-   drop. Nothing to commit is a valid outcome if the implementer committed on
-   its own; the branch tip is what matters, not who wrote it.
+   Fix the worktree rather than narrowing the staging set. Untracked strays
+   survive resets and can affect tests; a complete worktree makes `git add -A`
+   safe for new files, renames, and deletions. Nothing to commit is valid if the
+   implementer committed; the branch tip is what matters.
 
 2. Review the complete result as a contributor diff, tests included, without
    leaving the delivery checkout:
@@ -249,16 +278,14 @@ When it finishes:
    failure path that test exercises. Judge what you find against the test
    quality contract; an unexplained gap is a correction, not a note.
 
-3. Run the new and changed tests yourself first — a full-suite run can hide
-   tests that never executed — then the broader project checks. Confirm from the
-   runner's output that each new test actually ran, by name or by count. A test
-   the collector never picked up is the one failure reading cannot catch, and a
-   green suite reports it as coverage.
+3. Bind the implementer's evidence to the captured commit, then inspect the
+   closure matrix and runner output. Confirm that each new test ran by name or
+   count. Run only missing, ambiguous, or invalidated focused checks yourself;
+   do not repeat broader checks that valid evidence or CI will supply.
 
-   Then establish negative evidence for the behaviors the feature turns on.
-   Perturb the behavior a test claims to cover — flip a return, drop a branch,
-   change a constant — and confirm that test fails. Do it in the implementer's
-   worktree, which is disposable:
+   For missing negative evidence, perturb the claimed behavior in the disposable
+   worktree, run the frozen focused command, and require failure at the intended
+   assertion:
 
    ```bash
    cd "$WORKTREE_DIR"
@@ -267,23 +294,10 @@ When it finishes:
    git checkout -f impl/<slug>         # restored exactly
    ```
 
-   Perturb rather than reverting the implementation wholesale. It proves the
-   test detects that specific behavior instead of merely needing the feature to
-   exist, it needs no partial checkout of test files and their fixtures, and it
-   works unchanged where tests are co-located with the code they cover. Use the
-   focused command frozen into the spec; this is not a suite run.
-
-   Judge why each test failed. It should reach its assertion and fail there. A
-   build or import error means the perturbation broke compilation rather than
-   behavior — narrow it and retry. A test that still passes is evidence about
-   the test or the harness, not permission to move on; check that the run
-   rebuilt from the source you changed before concluding anything about the
-   test.
-
-   Reading carries the rest, and carries it well: assertions on implementation
-   shape, mocks standing in for the behavior under test, and assertions that
-   cannot fail are all visible on the page. Spend perturbation on the behaviors
-   whose correctness the feature actually rests on.
+   A build or import failure does not prove behavior; narrow the perturbation
+   and retry. If the test passes, check that the run rebuilt the changed source.
+   Do not repeat valid implementer mutations. Inspect assertions and mocks for
+   the remaining test-quality judgment.
 
 4. Send focused corrections back through the same implementer session. It
    continues in the same worktree; do not reset it here, because nothing has
@@ -298,19 +312,14 @@ When it finishes:
    git merge --squash impl/<slug>
    ```
 
-   The ancestry check fails when `impl/<slug>` no longer builds on the delivery
-   tip; stop and reconcile rather than squashing stale work over the branch. It
-   is the only integration state to track, and it is derived rather than
-   remembered.
+   If the ancestry check fails, reconcile stale work before squashing.
 
 `merge --squash` stages the complete result — new files, renames, and deletions
-included — and commits nothing, so those two commands serve every round
-identically.
+included — without committing.
 
 Never `git add -A` or `git commit -a` in the delivery checkout. The staged
-squash result is the feature scope; test runs and tooling can drop generated
-files into the checkout at any point in the workflow. Keep the implementer
-worktree and its branch until delivery is verified in step 8.
+squash result is the feature scope. Keep the implementer worktree and branch
+until delivery is verified in step 8.
 
 ### 5. Commit, Push, and Open the Draft PR
 
@@ -325,6 +334,11 @@ included, and that nothing outside the feature was swept in.
 Push and create the pull request from the delivery checkout. The PR remains a
 draft until review, CI, and local delivery all pass.
 
+Immediately read the PR back and verify its title, body, base, head, and draft
+state. Start initial CI and both reviews concurrently. Initial CI is useful
+feedback, but it is a delivery gate only if this remains the intended final
+head.
+
 ### 6. Run the Initial Dual Review
 
 Run two fresh reviewers in parallel against the pushed feature state:
@@ -336,13 +350,16 @@ For CLI-backed foreign review, use `claude-review` or `codex-review` as
 appropriate and follow its read-only safety guidance. Preserve a resumable
 session when this workflow expects reviewer continuity.
 
-Give both reviewers the repository, target base and feature state, and a
-condensed implementation spec. Ask them to inspect the repository themselves for
-requirement mismatches, correctness problems, edge cases, security issues, and
-unintended behavior. Require each finding to state its severity, location,
-concrete failure mode, and suggested direction, and require reviewers to say
-explicitly when they find no substantive issues. Keep prompts compact; do not
-paste large diffs, logs, reports, or path lists into them.
+Give both reviewers the repository, target base and feature state, a condensed
+implementation spec, and the evidence ledger. Give an explicit execution policy:
+inspect first; do not run broad suites, builds, lint, or CI-equivalent checks
+already covered by valid evidence. Allow a focused reproducer only to verify a
+concrete suspected defect, and require the reviewer to report it. Ask reviewers
+to inspect for requirement mismatches, correctness problems, edge cases,
+security issues, and unintended behavior. Require each finding to state its
+severity, location, concrete failure mode, and suggested direction, and require
+reviewers to say explicitly when they find no substantive issues. Keep prompts
+compact; do not paste large diffs, logs, reports, or path lists.
 
 Require a separate, explicit verdict on tests from both reviewers, returned even
 when they have nothing else to report: which new behaviors and affected existing
@@ -373,6 +390,8 @@ Reconcile both reviews into a single list before changing anything: fold
 duplicate findings together, and settle any disagreement against the code
 yourself so the implementer gets settled work rather than a conflict. Acting on
 whichever review returns first sends it down a path the other may contradict.
+Batch all confirmed findings into one settled correction list and normally
+produce one push for the cycle.
 
 Treat reviewer findings as evidence, not authority. Verify each one against the
 code, weigh the reviewer independent of the implementer most heavily, and record
@@ -383,6 +402,13 @@ to the user for explicit acceptance. Do not silently reclassify it as residual
 risk. Add a regression test for every confirmed behavioral or correctness
 failure, unless the user has explicitly accepted a testing exception covering
 it; a fix that lands without one repeats the failure the review just caught.
+Record a finding that merely rediscovers an unclosed plan row as a pre-review
+completeness miss.
+
+Classify the correction list as production behavior, public contract, tests or
+CI fixtures only, documentation only, or material scope expansion. Use that
+classification to invalidate only affected evidence and select focused checks,
+mutation work, and reviewer scope.
 
 Fix confirmed findings through the same implementer session when practical.
 Unlike the correction rounds inside step 4, a round here follows work that
@@ -396,35 +422,49 @@ git reset --hard <feature-branch>   # attached: moves impl/<slug> on purpose
 Sequence it yourself — integrate and commit the previous round, then reset, then
 re-prompt — so the implementer works from the state that actually landed,
 including any adjustment made during review. The reset is safe because you
-committed its work in step 1 rather than relying on it to do so. Then capture,
-review, and integrate exactly as in step 4, run checks, commit, and push from
-the delivery checkout.
+committed its work in step 1 rather than relying on it to do so. Capture,
+inspect, and integrate as in step 4, run only the correction tier selected by
+the classification, then commit and push once from the delivery checkout.
 
-Resume the original reviewer sessions for focused fix verification when
-possible. Give each reviewer the last revision it accepted, the new verified
-remote tip, and concise summaries of the relevant findings. Ensure the reviewer
-can access both revisions in the repository checkout it is inspecting, then have
-it inspect only the intervening changes and affected paths. Do not paste
+Resume the original reviewer sessions for focused fix verification by default.
+Give each reviewer its last reviewed revision, the new verified remote tip, and
+concise summaries of the relevant findings. When the reviewed revision is an
+ancestor of the new tip, have the reviewer inspect only the intervening delta
+and affected paths; unchanged review coverage carries forward. Do not paste
 generated diffs, long path lists, or prior reports into the prompt.
 
 Require each continued review to complete successfully and identify the new tip
 it covered. If continuation is unavailable or invalid, use a fresh reviewer
-through the same engine channel. If the fixes materially expand the
-implementation beyond the original findings, use fresh reviewers for both
-channels and review the expanded scope.
+through the same engine channel. If the fixes materially expand or invalidate
+the accepted scope, use fresh reviewers for both channels and review the
+expanded scope.
 
-Limit the loop to two fix rounds. Surface anything still open rather than
-continuing indefinitely.
+Count each post-draft correction push as one cycle. Do not wait for or debug CI
+on a head another planned correction will supersede. When material user-directed
+scope is added after an accepted head, explicitly re-baseline the validation
+matrix and cycle budget or offer a follow-up PR; do not count it silently as a
+review correction. At the configured ceiling, keep the PR draft and surface a
+decision: split or narrow the PR, accept documented residual risk, or explicitly
+authorize another cycle.
 
 ### 8. Deliver
 
-Wait for required CI checks that cover the final pushed remote state; ignore
-results from earlier pushes. Route actionable CI failures through the same
-bounded fix and review loop. Do not mark the PR ready before local delivery is
-complete.
+Declare the intended final head. Run affected broader local checks and
+repository gates once on that head, excluding checks CI genuinely duplicates
+unless repository policy requires a local run. For multi-platform repositories,
+preflight platform-gated fixtures, filesystem assumptions, and path or error
+rendering against the complete CI matrix.
 
-Use a context-appropriate deadline, but do not treat pending checks as failed
-before they finish or the deadline expires.
+Wait for required CI covering the final pushed state; ignore earlier heads.
+Route actionable failures through the bounded fix and review loop. Do not make
+the final ready transition before local delivery is complete.
+
+CodeRabbit is optional unless the user or repository requires it. Resolve its
+real trigger before waiting and start it after dual review, final validation,
+and CI are clean. A required ready transition is the sole exception to the
+final-ready rule; return the PR to draft if its findings reopen work. Require
+final-head coverage and allow one incremental correction round unless explicitly
+overridden.
 
 Before cleanup, verify in the delivery checkout that:
 
@@ -434,30 +474,26 @@ Before cleanup, verify in the delivery checkout that:
   snapshot and account for anything new;
 - the worktree mapping contains no unintended branch attachment.
 
-Only then remove workflow-created worktrees and their branches, and verify the
-mapping again:
+Only then remove workflow-created worktrees and branches:
 
 ```bash
 git worktree remove "$WORKTREE_DIR"
 git branch -D impl/<slug>
 ```
 
-A squash integration leaves `impl/<slug>` unmerged as far as Git is concerned,
-so deleting it needs `-D`; the branch is safe to drop because its content
-already landed on the feature branch and is pushed. If handback is blocked,
-retain the checkout holding the feature branch, keep the PR draft, and report
-its path and the blocker. Use another final local destination only with explicit
-user acceptance.
+Verify the mapping again. `-D` is required after squash integration. If handback
+is blocked, retain the checkout holding the feature branch, keep the PR draft,
+and report the blocker. Use another final destination only with explicit user
+acceptance.
 
-Mark the PR ready only when both reviewer channels cover the final state, you
-can explain your confidence in the change from test evidence rather than assert
-it, every identified test-coverage gap is closed or explicitly accepted by the
-user, required CI is green, handback is verified, and temporary checkout cleanup
-is safe. Keep it draft while substantive findings, unaccepted test exceptions,
-or required user decisions remain unresolved.
+Mark the PR ready only when both reviewer channels cover the final state, test
+evidence explains confidence, coverage gaps are closed or accepted, required CI
+is green, and handback and cleanup are safe. Otherwise keep it draft.
 
 Report the PR URL and base, what shipped and any deviations from the approved
 plan, review decisions, the new and changed tests with the scenarios they cover,
-focused and broader check results and CI, any accepted gaps or still-untested
-areas, delivery-checkout path, final branch and revision, upstream state,
-preserved pre-existing changes, and any retained checkout or residual risk.
+focused and final-head check results and CI, any accepted gaps or still-untested
+areas, final checkout, branch, revision and upstream, preserved changes, and
+residual risk. Add telemetry: time to draft, correction cycles and pushed heads,
+obsolete CI waves, pre-review completeness misses, broad versus focused reviews,
+and final-gate sources.
