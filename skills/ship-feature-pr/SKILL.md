@@ -51,47 +51,50 @@ most heavily, as in step 7.
 
 ### Test quality
 
-Tests are the primary evidence that the feature is correct. Planner,
-implementer, orchestrator, and both reviewers hold the same acceptance bar, but
-they do not each regenerate the same evidence:
+Use the strongest proportionate evidence for each material feature behavior.
+Automated tests are usually the best evidence for logic, explicit error
+handling, boundaries, and regressions when a stable harness exists, but they are
+not required for every touched line or low-risk presentation, configuration,
+generated-artifact, or mechanical change. Planner, implementer, orchestrator,
+and both reviewers hold the same acceptance bar, but they do not each regenerate
+the same evidence.
 
-- New and changed behavior is covered on both its happy path and its failure
-  paths — errors, boundaries, and the conditions the code explicitly handles —
-  along with existing behavior the change could regress.
-- Tests assert observable behavior rather than implementation shape, and fail
-  for the reason they claim to test. Mocking external boundaries is fine where
-  it is needed; mocking the behavior under test, or letting a test turn on
-  timing, ordering, or the environment, produces a gap that reports itself as
-  coverage.
-- Coverage that would survive reverting or breaking the logic it covers is not
-  coverage.
-- A green suite shows nothing regressed. It is never by itself evidence that the
-  new work is tested.
+When adding or changing tests:
 
-How thoroughly a path is tested scales with its risk; whether a failure path is
-covered at all does not. Ground any case for lighter coverage in the specific
-code — what it can do wrong and what would notice — and record that reasoning in
-the spec where a reviewer can challenge it. Effort, schedule, and how confident
-the implementer feels are not justifications.
+- Cover the material successful, failure, boundary, and regression scenarios
+  justified by concrete failure modes, not every permutation.
+- Assert observable behavior rather than implementation shape. Mock external
+  boundaries only where needed, never the behavior under test. Do not let
+  timing, ordering, caching, or the environment make a broken implementation
+  look covered.
+- Prefer a test-first failure at the intended assertion. When the implementation
+  already exists, require targeted negative evidence only when the behavior is
+  material and inspection cannot rule out a false-positive test. One
+  representative perturbation can cover a behavioral cluster; obvious direct
+  assertions and trivial tests do not need one.
+- Confirm that each new test ran by name or count. A green existing suite shows
+  only that covered behavior did not regress; it does not prove new behavior is
+  adequately tested.
 
-Thin existing tests around the change raise the cost of meeting this bar; they
-never lower it. Standing up the scaffolding a first real test needs is in scope
-for the feature. Back-filling coverage for code the feature does not touch is
-not.
+Choose which scenarios need explicit automated coverage by risk, regression
+likelihood, repository policy, and harness stability. Ground lighter coverage in
+the specific code — what it can do wrong and what other evidence would notice —
+rather than effort or confidence. Thin existing tests increase the cost of good
+coverage but do not automatically require a new harness. Building the first
+useful scaffolding is in scope when the feature's risk justifies it;
+back-filling unrelated coverage is not.
 
-Skip automated tests only when the change is genuinely untestable in this
-project — documentation, prose, and similar artifacts with no applicable
-harness. A testable project whose relevant area merely lacks tests does not
-qualify: build the scaffolding, or ask the user how to proceed. When tests are
-genuinely skipped, name the alternative evidence and the residual risk, keep the
-PR draft, and obtain explicit user acceptance before marking it ready.
+When automated tests are not proportionate, record the alternative static,
+build, runtime, or manual evidence and any meaningful residual risk. Keep the PR
+draft and obtain explicit user acceptance only when a material risk remains
+unclosed, not merely because no test was added.
 
 ### Evidence ownership
 
 Assign each kind of evidence once:
 
-- The implementer owns focused red/green execution, targeted mutation evidence,
-  and affected local checks while building the feature.
+- The implementer owns focused test execution, targeted negative evidence when
+  warranted, and affected local checks while building the feature.
 - The orchestrator owns evidence sufficiency. Inspect the implementation and
   fill only missing, ambiguous, or invalidated evidence; do not automatically
   repeat trusted implementer commands.
@@ -103,10 +106,11 @@ Assign each kind of evidence once:
 
 Keep a compact evidence ledger through the workflow. For each result record the
 captured revision, command, focused or broad scope, outcome and test count or
-names, behavior or failure path proved, mutation result where applicable, and
-environment limitations. Evidence carries forward when its revision is an
-ancestor of the new head and the intervening delta cannot affect what it proves.
-Classify every correction before deciding what it invalidates.
+names where applicable, behavior or failure path proved, negative-evidence
+result where applicable, and environment limitations. Evidence carries forward
+when its revision is an ancestor of the new head and the intervening delta
+cannot affect what it proves. Classify every correction before deciding what it
+invalidates.
 
 ### Context continuity
 
@@ -161,6 +165,21 @@ Set a post-draft correction-cycle budget. Default to two cycles; choose a higher
 limit only when the user or repository requires it, or when declared risk
 justifies it before review starts.
 
+Decide whether an external pull-request reviewer should participate. It is not
+part of the default workflow: the two internal engine perspectives remain the
+required independent review. Recommend an external reviewer for complex, large,
+architectural, security-sensitive, authorization, data or persistence,
+concurrency, lifecycle, multi-platform, or otherwise broad changes, and ask the
+user once whether to include it. For smaller features, deliver the internally
+reviewed PR first and mention that the user can request an external review
+afterward. A repository policy or an explicit user request makes the external
+review required.
+
+When an external reviewer is selected, identify its provider-specific skill or
+repository guidance before invoking it. This skill owns when external review is
+useful and how its findings enter the correction loop; the provider-specific
+workflow owns triggering, thread handling, and review-state closure.
+
 ### 2. Plan
 
 Reuse a settled plan when it still matches the request. Resolve small,
@@ -176,25 +195,24 @@ the feedback.
 
 Sanity-check the plan against the actual code before freezing it.
 
-Map the tests that already cover the areas the feature will touch: what exists,
-whether it exercises failure paths, and whether it would catch a regression.
-This informs the approach; it is not a mandate to repair what is there. Where
-the baseline is thin or absent, decide what the feature's own tests need in
-order to be real — fixtures, a harness, the first test file for a module — and
-put that work in the plan, so its cost is visible and approvable rather than
-discovered and skipped mid-implementation. Record test debt you deliberately
-leave alone as a non-goal. Where automated tests genuinely do not apply, say why
-in the spec and name the verification evidence standing in for them.
+Map the existing tests and other verification signals for the areas the feature
+will touch: what they prove, which material failure modes remain exposed, and
+whether they would catch a regression. This informs the approach; it is not a
+mandate to repair what is there. Where the baseline is thin or absent, decide
+whether the feature's risk justifies fixtures, a harness, or the first test file
+for a module, or whether focused static, build, runtime, or manual evidence is
+more proportionate. Put that choice and its cost in the plan. Record unrelated
+test debt as a non-goal.
 
 Freeze the result into a concise implementation spec. Link to canonical behavior
 and architecture sources instead of copying them. Cover the objective,
 constraints, expected file scope, success criteria, risks, and non-goals. Add a
-closure matrix for each observable behavior, failure path, boundary, regression
-risk, and supported-platform concern: name the test or evidence that closes it,
-or mark it as an accepted non-goal. Identify exact focused commands and
-intended-final-head gates, including which gates CI supplies. Identify scope
-early enough to compare it with the captured dirty state before moving branches
-or integrating work.
+closure matrix for each material observable behavior and material failure path,
+boundary, regression risk, and supported-platform concern: name the
+proportionate test or other evidence that closes it, or mark it as an accepted
+non-goal. Identify exact focused commands and intended-final-head gates,
+including which gates CI supplies. Identify scope early enough to compare it
+with the captured dirty state before moving branches or integrating work.
 
 ### 3. Prepare the Delivery Branch
 
@@ -231,17 +249,17 @@ implementer cannot attach to the delivery branch by accident:
 git worktree add -b impl/<slug> "$WORKTREE_DIR" <feature-branch>
 ```
 
-Give the implementer the frozen spec, the testing strategy, and the exact
-verification commands. Require it to use tests as its running check on
-correctness while it works rather than a step at the end, and to treat the work
-as unfinished until it has well-grounded confidence in the implementation —
-which for anything non-trivial means tests it has watched fail for the right
-reason and then pass. Tell it to leave Git alone and simply report what it did;
-the orchestrator owns every Git operation, including committing the work in the
-implementer's own worktree. Depending on a delegated agent to commit is what
-makes uncommitted work vanish silently later. Require the implementer to return
-the completed closure matrix and compact evidence ledger, including the test
-names or counts that prove new tests were collected.
+Give the implementer the frozen validation strategy and exact verification
+commands. Require it to use the selected evidence as a running check while it
+works rather than a step at the end. When tests are planned, prefer test-first
+failures at the intended assertion and require the implementer to report the new
+test names or counts; when tests are not proportionate, require the named
+alternative evidence and residual risk. Tell it to leave Git alone and simply
+report what it did; the orchestrator owns every Git operation, including
+committing the work in the implementer's own worktree. Depending on a delegated
+agent to commit is what makes uncommitted work vanish silently later. Require
+the implementer to return the completed closure matrix and compact evidence
+ledger.
 
 When it finishes:
 
@@ -274,18 +292,26 @@ When it finishes:
    git log --stat <feature-branch>..impl/<slug>
    ```
 
-   For each substantive behavior it adds, identify the test covering it and the
-   failure path that test exercises. Judge what you find against the test
-   quality contract; an unexplained gap is a correction, not a note.
+   For each substantive behavior it adds, identify the test or other evidence
+   that closes its material success and failure modes. Judge what you find
+   against the test-quality contract; a material unexplained risk is a
+   correction, not a note.
 
 3. Bind the implementer's evidence to the captured commit, then inspect the
    closure matrix and runner output. Confirm that each new test ran by name or
    count. Run only missing, ambiguous, or invalidated focused checks yourself;
    do not repeat broader checks that valid evidence or CI will supply.
 
-   For missing negative evidence, perturb the claimed behavior in the disposable
-   worktree, run the frozen focused command, and require failure at the intended
-   assertion:
+   Do not perturb every new test. A test-first failure at the intended assertion
+   is sufficient negative evidence. When no such failure exists, first inspect
+   the test and implementation. Perturb one representative behavior only when it
+   is material and indirect wiring, complex mocks, async timing, caching,
+   generated output, or similar factors leave a credible risk that the test
+   would pass over broken behavior. Obvious direct assertions and trivial tests
+   need no mutation.
+
+   When a targeted perturbation is warranted, perform it in the disposable
+   worktree and require failure at the intended assertion:
 
    ```bash
    cd "$WORKTREE_DIR"
@@ -296,8 +322,10 @@ When it finishes:
 
    A build or import failure does not prove behavior; narrow the perturbation
    and retry. If the test passes, check that the run rebuilt the changed source.
-   Do not repeat valid implementer mutations. Inspect assertions and mocks for
-   the remaining test-quality judgment.
+   Restore the implementation, verify the worktree matches the captured commit,
+   and rerun the focused test. Do not repeat valid implementer perturbations or
+   perform multiple mutations for the same behavioral cluster. Inspect
+   assertions and mocks for the remaining test-quality judgment.
 
 4. Send focused corrections back through the same implementer session. It
    continues in the same worktree; do not reset it here, because nothing has
@@ -361,14 +389,15 @@ severity, location, concrete failure mode, and suggested direction, and require
 reviewers to say explicitly when they find no substantive issues. Keep prompts
 compact; do not paste large diffs, logs, reports, or path lists.
 
-Require a separate, explicit verdict on tests from both reviewers, returned even
-when they have nothing else to report: which new behaviors and affected existing
-paths lack coverage across happy, failure, boundary, and regression cases,
-whether the tests assert observable behavior or merely restate the
-implementation, whether mocking or nondeterminism lets a test pass over a broken
-implementation, and whether the tests over the touched area would actually catch
-a regression. An absent or perfunctory test verdict makes the review incomplete;
-ask for it rather than accepting the result.
+Require a separate, explicit verdict on validation and tests from both
+reviewers, returned even when they have nothing else to report: whether the
+evidence is proportionate to the change's risk; which material successful,
+failure, boundary, or regression scenarios remain unclosed; whether absent
+automated coverage creates meaningful residual risk; and, for tests that were
+added or changed, whether they assert observable behavior or could pass over a
+broken implementation because of mocking, nondeterminism, or indirect wiring. An
+absent or perfunctory verdict makes the review incomplete; ask for it rather
+than accepting the result.
 
 Keep each review read-only and retain any session handle that allows later
 continuation. Accept a result only after the review completed successfully and
@@ -397,18 +426,42 @@ Treat reviewer findings as evidence, not authority. Verify each one against the
 code, weigh the reviewer independent of the implementer most heavily, and record
 concise reasons for dismissals.
 
-Treat a confirmed coverage gap as a finding like any other: close it, or put it
-to the user for explicit acceptance. Do not silently reclassify it as residual
-risk. Add a regression test for every confirmed behavioral or correctness
-failure, unless the user has explicitly accepted a testing exception covering
-it; a fix that lands without one repeats the failure the review just caught.
-Record a finding that merely rediscovers an unclosed plan row as a pre-review
-completeness miss.
+Treat a confirmed material validation gap as a finding like any other: close it,
+or put it to the user for explicit acceptance. Do not silently reclassify it as
+residual risk. Add a regression test for a confirmed material behavioral or
+correctness failure when a stable harness makes that proportionate; otherwise
+record the alternative evidence and why it closes the risk. Record a finding
+that merely rediscovers an unclosed plan row as a pre-review completeness miss.
 
 Classify the correction list as production behavior, public contract, tests or
 CI fixtures only, documentation only, or material scope expansion. Use that
 classification to invalidate only affected evidence and select focused checks,
-mutation work, and reviewer scope.
+negative-evidence work, and reviewer scope.
+
+Choose correction verification by risk and by which accepted reasoning the delta
+invalidates, not by raw line count:
+
+1. **Orchestrator verification** — use for documentation, hygiene, test-only,
+   mechanical, or otherwise obvious low-risk corrections that do not change
+   production behavior or invalidate either reviewer's reasoning. Inspect the
+   delta and run the focused evidence it affects; prior reviewer acceptance
+   carries forward.
+2. **Focused reviewer verification** — use when a localized correction changes
+   production behavior or closes a subtle finding, but its effects remain within
+   one reviewer's finding or expertise. Resume only that original reviewer and
+   ask it to verify the finding and affected delta.
+3. **Dual reviewer verification** — use when a correction changes architecture,
+   a public contract, security or authorization, data or persistence,
+   concurrency, lifecycle, supported-platform behavior, materially expands
+   scope, or otherwise invalidates both reviews. Resume both reviewers, or use
+   fresh reviewers when the scope is no longer a continuation.
+
+Apply the same tiers to corrections prompted by an external reviewer. The
+external reviewer can be the focused reviewer when its own technical finding
+needs confirmation, but do not automatically re-run every reviewer after every
+push. Technical verification and pull-request review-state closure are separate
+questions: a provider may still need to revisit a small fix to clear a blocking
+decision even when orchestrator verification is sufficient for confidence.
 
 Fix confirmed findings through the same implementer session when practical.
 Unlike the correction rounds inside step 4, a round here follows work that
@@ -423,21 +476,21 @@ Sequence it yourself — integrate and commit the previous round, then reset, th
 re-prompt — so the implementer works from the state that actually landed,
 including any adjustment made during review. The reset is safe because you
 committed its work in step 1 rather than relying on it to do so. Capture,
-inspect, and integrate as in step 4, run only the correction tier selected by
+inspect, and integrate as in step 4, run only the verification tier selected by
 the classification, then commit and push once from the delivery checkout.
 
-Resume the original reviewer sessions for focused fix verification by default.
-Give each reviewer its last reviewed revision, the new verified remote tip, and
-concise summaries of the relevant findings. When the reviewed revision is an
-ancestor of the new tip, have the reviewer inspect only the intervening delta
-and affected paths; unchanged review coverage carries forward. Do not paste
-generated diffs, long path lists, or prior reports into the prompt.
+For a focused or dual re-review, give each resumed reviewer its last reviewed
+revision, the new verified remote tip, and concise summaries of the relevant
+findings. When the reviewed revision is an ancestor of the new tip, have it
+inspect only the intervening delta and affected paths; unchanged review coverage
+carries forward. Do not paste generated diffs, long path lists, or prior reports
+into the prompt.
 
 Require each continued review to complete successfully and identify the new tip
 it covered. If continuation is unavailable or invalid, use a fresh reviewer
 through the same engine channel. If the fixes materially expand or invalidate
-the accepted scope, use fresh reviewers for both channels and review the
-expanded scope.
+the accepted scope, use fresh reviewers for both channels. Preserve the other
+channel's accepted coverage when the classification did not invalidate it.
 
 Count each post-draft correction push as one cycle. Do not wait for or debug CI
 on a head another planned correction will supersede. When material user-directed
@@ -459,12 +512,15 @@ Wait for required CI covering the final pushed state; ignore earlier heads.
 Route actionable failures through the bounded fix and review loop. Do not make
 the final ready transition before local delivery is complete.
 
-CodeRabbit is optional unless the user or repository requires it. Resolve its
-real trigger before waiting and start it after dual review, final validation,
-and CI are clean. A required ready transition is the sole exception to the
-final-ready rule; return the PR to draft if its findings reopen work. Require
-final-head coverage and allow one incremental correction round unless explicitly
-overridden.
+If an external reviewer was selected or required, invoke it once on an
+internally accepted candidate after the initial dual review and relevant local
+validation. Do not trigger it automatically on every push. Reconcile its
+findings through step 7 and charge every resulting post-draft push to the same
+correction-cycle budget. Follow its provider-specific skill or repository rules
+for invocation, unresolved threads, rereview, and clearing a blocking review
+decision. Do not mark the PR ready while a required external review remains
+blocking; clear it through reviewer acceptance or an explicitly authorized
+administrative action.
 
 Before cleanup, verify in the delivery checkout that:
 
@@ -486,14 +542,17 @@ is blocked, retain the checkout holding the feature branch, keep the PR draft,
 and report the blocker. Use another final destination only with explicit user
 acceptance.
 
-Mark the PR ready only when both reviewer channels cover the final state, test
-evidence explains confidence, coverage gaps are closed or accepted, required CI
-is green, and handback and cleanup are safe. Otherwise keep it draft.
+Mark the PR ready only when initial dual-review coverage plus the selected
+verification tier covers every later delta, proportionate verification evidence
+explains confidence, material gaps are closed or accepted, any selected or
+required external review is non-blocking, required CI is green on the intended
+final head, and handback and cleanup are safe. Otherwise keep it draft.
 
 Report the PR URL and base, what shipped and any deviations from the approved
-plan, review decisions, the new and changed tests with the scenarios they cover,
-focused and final-head check results and CI, any accepted gaps or still-untested
-areas, final checkout, branch, revision and upstream, preserved changes, and
-residual risk. Add telemetry: time to draft, correction cycles and pushed heads,
-obsolete CI waves, pre-review completeness misses, broad versus focused reviews,
+plan, review decisions, new and changed tests where applicable, alternative
+verification evidence, focused and final-head check results and CI, any accepted
+gaps or residual risk, final checkout, branch, revision and upstream, and
+preserved changes. Add telemetry: time to draft, correction cycles and pushed
+heads, obsolete CI waves, pre-review completeness misses, orchestrator-only
+versus focused versus dual correction verification, external-review invocations,
 and final-gate sources.

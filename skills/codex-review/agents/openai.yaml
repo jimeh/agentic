@@ -3,4 +3,4 @@ interface:
   short_description: "Review code changes with Codex"
   default_prompt:
     "Use $codex-review to have Codex review the current changes for correctness,
-    test quality, and coverage."
+    proportionate validation evidence, test quality, and residual risk."

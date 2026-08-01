@@ -36,29 +36,35 @@
 
 ## Testing
 
-- Cover new and changed behavior on both the happy path and the failure paths —
-  errors, boundaries, the conditions the code explicitly handles — along with
-  existing behavior the change could regress.
+Automated tests are not required merely because a file changed. Choose them in
+proportion to behavioral risk, regression likelihood, repository policy, and the
+cost and stability of the available harness. Material logic, explicit error
+handling, boundaries, and bug regressions usually merit tests; low-risk prose,
+presentation, configuration, generated artifacts, or mechanical changes may be
+better verified with focused static, build, or runtime evidence.
+
+When adding or changing automated tests:
+
+- Cover the material successful, failure, boundary, and regression scenarios
+  justified by the change's concrete failure modes. Not every permutation or
+  touched line needs a test.
 - Assert observable behavior, not implementation shape. Mock external boundaries
   only where needed, never the behavior under test.
-- Before relying on a new test, see it fail. Writing the test first gives that
-  for free: it fails against real pre-change code, with nothing to restore. Once
-  the code exists, perturb the behavior the test covers instead, confirm it
-  fails at its assertion, then restore and confirm a clean diff.
+- Prefer seeing a new test fail at its intended assertion before it passes. A
+  test-first failure provides that evidence. When the implementation already
+  exists, use a targeted perturbation only if the behavior is material and
+  inspection cannot rule out a false-positive test; one representative
+  perturbation can cover a behavioral cluster. Skip it for obvious direct
+  assertions and trivial tests.
 - Confirm from the runner's output that a new test actually ran, by name or
   count. A test the collector never picked up reads as coverage.
-- How thoroughly a path is tested scales with its risk; whether a failure path
-  is covered at all does not. Argue for lighter coverage from the specific code,
-  never from effort or confidence.
-- Thin tests around the code you touch raise the cost of covering your own work;
-  they never lower the bar. Back-filling coverage for code you are not touching
-  is out of scope.
-- A green suite shows nothing regressed. It is never by itself evidence that new
-  work is tested.
-- Skip automated tests only when the change is genuinely untestable, such as
-  prose with no applicable harness. An untested area of a testable project does
-  not qualify — build the scaffolding, or ask. When you skip, name the
-  alternative evidence and the residual risk.
+- Treat a green existing suite as regression evidence, not proof that new
+  behavior is adequately tested.
+
+When automated tests are not proportionate, name the alternative verification
+evidence and any meaningful residual risk. Thin existing tests increase the cost
+of adding good coverage but do not by themselves require building a new harness;
+build scaffolding when the change's risk justifies it.
 
 The `ship-feature-pr` skill carries the full version of this contract, including
 what reviewers must verify.
@@ -67,10 +73,9 @@ what reviewers must verify.
 
 - Verify changes with project commands appropriate to the change before
   presenting work as complete.
-- Use tests as the running check on correctness while you work, not a step
-  bolted on at the end. Work is not done until you have well-grounded confidence
-  it is correct, which for anything non-trivial means tests you have seen fail
-  for the right reason and then pass.
+- Use the strongest proportionate evidence as a running check while you work,
+  not a step bolted on at the end. When automated tests are part of that
+  evidence, run them during implementation and apply the testing rules above.
 - If checks cannot run, state exactly why and what risk remains.
 - Ground conclusions in real diffs, logs, tests, screenshots, or runtime
   evidence, not inference.
@@ -106,6 +111,10 @@ The `commit` skill carries the full workflow.
 
 The `write-pr-copy` skill carries the full title and body guidance, and
 `commit-push-pr` the workflow that opens one.
+
+When CodeRabbit is selected for a pull request, or its feedback or review state
+needs handling, use the `coderabbit-review` skill. It is the source of truth for
+intentional triggering, thread-aware reconciliation, and review-state closure.
 
 ## Shell Commands
 

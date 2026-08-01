@@ -121,7 +121,7 @@ Look for:
 - correctness
 - bugs
 - edge cases
-- missing coverage of changed and affected behavior
+- validation evidence that is insufficient or disproportionate to the risk
 - weak tests: poor assertions, excessive mocking, nondeterminism
 - maintainability
 - unintended behavior
@@ -134,13 +134,13 @@ For each finding include:
 - concrete failure mode
 - suggested fix direction
 
-Then give a separate test verdict, even with no other findings:
-- whether coverage is adequate, and why
-- whether material happy, failure, boundary, and regression paths are
-  covered
-- which changed or affected behaviors remain untested
-- whether the tests assert observable behavior or just restate the
-  implementation, and whether any would pass over a broken implementation
+Then give a separate validation and test verdict, even with no other findings:
+- whether the supplied evidence is proportionate to the change's risk, and why
+- which material successful, failure, boundary, or regression scenarios remain
+  unclosed
+- whether absent automated coverage creates meaningful residual risk
+- for tests that were added or changed, whether they assert observable behavior
+  or could pass over a broken implementation
 
 Do not edit files. If there are no substantive findings, say so.
 ```
@@ -163,10 +163,10 @@ In the user-facing response:
 - If Codex found nothing, say that clearly and identify exactly what it
   reviewed.
 - Do not imply Codex performed tests unless the report shows that it did.
-- Relay the test verdict even when there are no other findings, after checking
-  the cited tests yourself. Treat an absent or perfunctory verdict as an
-  incomplete review: request it before accepting the result, and if it stays
-  missing, say so rather than implying coverage was assessed.
+- Relay the validation and test verdict even when there are no other findings,
+  after checking the cited evidence yourself. Treat an absent or perfunctory
+  verdict as an incomplete review: request it before accepting the result, and
+  if it stays missing, say so rather than implying validation was assessed.
 
 Use this shape:
 
@@ -180,8 +180,8 @@ Unverified Codex suggestions:
 - <suggestion, if worth mentioning>
 
 No substantive findings from Codex.
-Test verdict: <coverage gaps, or adequate and why>
-Residual risk: <untested area, if any>
+Validation and test verdict: <gaps, or proportionate evidence and why>
+Residual risk: <unclosed area, if any>
 ```
 
 Omit empty sections.

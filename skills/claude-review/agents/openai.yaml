@@ -3,5 +3,6 @@ interface:
   short_description: "Independent Claude review of a diff, branch, or commit"
   default_prompt:
     "Use $claude-review to get an independent Claude review of the current
-    changes, including correctness, test quality, and coverage; verify its
-    findings against the code and report them."
+    changes, including correctness, proportionate validation evidence, test
+    quality, and residual risk; verify its findings against the code and report
+    them."
