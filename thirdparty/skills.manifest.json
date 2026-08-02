@@ -60,8 +60,28 @@
       "ref": "main",
       "skills": [
         {
-          "name": "grill-me",
-          "path": "skills/productivity/grill-me"
+          "name": "domain-modeling",
+          "path": "skills/engineering/domain-modeling"
+        },
+        {
+          "name": "grilling",
+          "path": "skills/productivity/grilling"
+        },
+        {
+          "name": "research",
+          "path": "skills/engineering/research"
+        },
+        {
+          "name": "to-spec",
+          "path": "skills/engineering/to-spec"
+        },
+        {
+          "name": "to-tickets",
+          "path": "skills/engineering/to-tickets"
+        },
+        {
+          "name": "wayfinder",
+          "path": "skills/engineering/wayfinder"
         }
       ]
     },

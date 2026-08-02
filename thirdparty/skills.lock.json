@@ -11,6 +11,16 @@
       "contentHash": "sha256:b492e3258652f38680273180e06f2f3daa2f2542769de27bfe306180cb233b38",
       "skillsCliVersion": null
     },
+    "domain-modeling": {
+      "manifestSourceId": "mattpocock-skills",
+      "sourceType": "git",
+      "sourceUrl": "https://github.com/mattpocock/skills.git",
+      "ref": "main",
+      "resolvedCommit": "2ab958093e83e0ec752e6c1c5932da465bf23e0c",
+      "upstreamPath": "skills/engineering/domain-modeling",
+      "contentHash": "sha256:69824f9879fd42297891e6ecf7fe40d5203694c706e9156739ef6ee19617aebb",
+      "skillsCliVersion": null
+    },
     "frontend-design": {
       "manifestSourceId": "skills",
       "sourceType": "git",
@@ -21,14 +31,14 @@
       "contentHash": "sha256:15787d8f3c8bd24aa3907b736fdffa67a90c7639c0e8b7ad961013171b835ad0",
       "skillsCliVersion": null
     },
-    "grill-me": {
+    "grilling": {
       "manifestSourceId": "mattpocock-skills",
       "sourceType": "git",
       "sourceUrl": "https://github.com/mattpocock/skills.git",
       "ref": "main",
-      "resolvedCommit": "ed37663cc5fbef691ddfecd080dff42f7e7e350d",
-      "upstreamPath": "skills/productivity/grill-me",
-      "contentHash": "sha256:79054f4df616e91968cdbd0291485fbadc209e398abbe2a61035cef13deb5049",
+      "resolvedCommit": "2ab958093e83e0ec752e6c1c5932da465bf23e0c",
+      "upstreamPath": "skills/productivity/grilling",
+      "contentHash": "sha256:b68da68a35ddb269d1071a6db2b2982f3b13b45e7adf5d7b6f1dbd48cbd8fda7",
       "skillsCliVersion": null
     },
     "handoff": {
@@ -39,6 +49,16 @@
       "resolvedCommit": "4a3bdcbd1ecad94feed4bcec953d0b15f106ae2b",
       "upstreamPath": "skills/handoff",
       "contentHash": "sha256:fc076f67a527973739f065ad0b45a693fee1e0a529174d61a901a331989b00ec",
+      "skillsCliVersion": null
+    },
+    "research": {
+      "manifestSourceId": "mattpocock-skills",
+      "sourceType": "git",
+      "sourceUrl": "https://github.com/mattpocock/skills.git",
+      "ref": "main",
+      "resolvedCommit": "2ab958093e83e0ec752e6c1c5932da465bf23e0c",
+      "upstreamPath": "skills/engineering/research",
+      "contentHash": "sha256:e5ec04b72fd68c55bf37d72d170612f81014f2fb30c91af933f8e7f8ab7d5bec",
       "skillsCliVersion": null
     },
     "rust-async-patterns": {
@@ -71,6 +91,26 @@
       "contentHash": "sha256:74cb3db1b8b32f5cde33a350263e8e932f81819a0e89a0431b2474f356062008",
       "skillsCliVersion": null
     },
+    "to-spec": {
+      "manifestSourceId": "mattpocock-skills",
+      "sourceType": "git",
+      "sourceUrl": "https://github.com/mattpocock/skills.git",
+      "ref": "main",
+      "resolvedCommit": "2ab958093e83e0ec752e6c1c5932da465bf23e0c",
+      "upstreamPath": "skills/engineering/to-spec",
+      "contentHash": "sha256:908b6988ac405b87121a245329814fab9f57bbf1f9d99a0525299afd0ae14dcb",
+      "skillsCliVersion": null
+    },
+    "to-tickets": {
+      "manifestSourceId": "mattpocock-skills",
+      "sourceType": "git",
+      "sourceUrl": "https://github.com/mattpocock/skills.git",
+      "ref": "main",
+      "resolvedCommit": "2ab958093e83e0ec752e6c1c5932da465bf23e0c",
+      "upstreamPath": "skills/engineering/to-tickets",
+      "contentHash": "sha256:5a294a824e1684ffbdd965522f05ba633bbff7f1635b4ea4577cc133a26997fe",
+      "skillsCliVersion": null
+    },
     "vercel-react-best-practices": {
       "manifestSourceId": "vercel-agent-skills",
       "sourceType": "git",
@@ -79,6 +119,16 @@
       "resolvedCommit": "7c180d9044c9ae2b442b567aad4e42a28dd5ed62",
       "upstreamPath": "skills/react-best-practices",
       "contentHash": "sha256:b26955b4458a63d542406e6bb40e5a5e8e39dd622f8a630e6e3cd2fb356af544",
+      "skillsCliVersion": null
+    },
+    "wayfinder": {
+      "manifestSourceId": "mattpocock-skills",
+      "sourceType": "git",
+      "sourceUrl": "https://github.com/mattpocock/skills.git",
+      "ref": "main",
+      "resolvedCommit": "2ab958093e83e0ec752e6c1c5932da465bf23e0c",
+      "upstreamPath": "skills/engineering/wayfinder",
+      "contentHash": "sha256:d1e1bf1221977f48dca6b938f7858c6a5db4b0ca02f201d2e7e8782aecafc2b1",
       "skillsCliVersion": null
     },
     "web-design-guidelines": {
