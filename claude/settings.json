@@ -170,8 +170,7 @@
     "plugin-dev@claude-plugins-official": false,
     "ruby-lsp@claude-plugins-official": false,
     "rust-analyzer-lsp@claude-plugins-official": true,
-    "typescript-lsp@claude-plugins-official": true,
-    "rtk@jimeh-agentic": true
+    "typescript-lsp@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {},
   "effortLevel": "high",

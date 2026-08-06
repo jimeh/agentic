@@ -45,7 +45,7 @@ vendored content.
 
 Legacy commands remain under `plugins/*/commands/`. Each plugin has a
 `.claude-plugin/plugin.json` manifest and auto-discovered `.md` command files,
-but only RTK is published; the other plugin sources are deprecated.
+but all current plugin sources are deprecated and none are published.
 
 **Plugins** are installed via the Claude CLI, not symlinks. The
 `agent-config install` command reads `agent-config.toml` to register Claude
@@ -66,8 +66,9 @@ undeclared mismatched link is preserved.
 
 ### Marketplace Manifest
 
-`.claude-plugin/marketplace.json` at the repo root lists supported published
-plugins with metadata (name, version, description, source path, category). Local
+`.claude-plugin/marketplace.json` at the repo root is retained as the local
+marketplace manifest and currently publishes no plugins. Published entries use
+metadata including name, version, description, source path, and category. Local
 plugin manifests may remain unpublished.
 
 ### Global Rules
@@ -102,7 +103,7 @@ by `mise run rules:check`, which also runs as part of `mise run lint`.
 ## Plugin Versioning
 
 Plugins use semantic versioning. When changing a published plugin, bump its
-version in **both** files:
+version in **both** its manifest and marketplace entry:
 
 1. `plugins/<name>/.claude-plugin/plugin.json`
 2. `.claude-plugin/marketplace.json`

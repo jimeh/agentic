@@ -67,7 +67,7 @@ mise run hooks:install
 - **`skills/`** — Custom skills (auto-discovered by the agent config installer).
 - **`thirdparty/`** — Vendored third-party skills plus manifest and lock
   metadata.
-- **`plugins/`** — RTK plus source retained for deprecated Claude Code plugins.
+- **`plugins/`** — Source retained for deprecated Claude Code plugins.
 - **`packages/agent-config/`** — CLI package for installing agent configs,
   rendering generated rules, running plugin tests, and checking harness
   invariants.
@@ -76,8 +76,8 @@ mise run hooks:install
 Skills are auto-discovered — drop a directory in the right place, re-run the
 agent config installer, done. Vendored third-party skills under
 `thirdparty/skills/` are installed the same way, but only the explicit update
-task fetches from upstream. RTK is the only plugin published through the local
-Claude marketplace; the other plugin sources are retained but deprecated.
+task fetches from upstream. No plugins are currently published through the local
+Claude marketplace; the remaining plugin sources are retained but deprecated.
 
 Update vendored third-party skills with:
 
@@ -142,9 +142,9 @@ mise lock --minimum-release-age 3d
 
 ## Plugins
 
-RTK is the only supported plugin published by this repository. The other plugin
-sources under `plugins/` are deprecated and retained for reference; they are no
-longer available from the marketplace.
+No plugins are currently supported or published by this repository. Sources
+under `plugins/` are deprecated and retained for reference; they are not
+available from the marketplace.
 
 ### Deprecated: [strip-git-cwd](plugins/strip-git-cwd/)
 
@@ -156,13 +156,6 @@ permission prompts.
 
 Handles all `-C` syntax variants (space, `=`, bare, quoted) and compound
 commands (`&&`, `;`).
-
-### Supported: [rtk](plugins/rtk/)
-
-A `PreToolUse` hook that routes Bash commands through rtk, a token-optimizing
-CLI proxy that filters verbose command output. Packaging it as a plugin keeps
-the wiring version-controlled, rather than letting `rtk init` patch the managed
-`claude/settings.json`. Fails open when rtk is not on `PATH`.
 
 ### Deprecated: [git-commands](plugins/git-commands/)
 
@@ -209,29 +202,6 @@ and CLAUDE.md conventions for the full FD lifecycle.
 
 Based on the
 [Feature Design system by manuelschipper](https://gist.github.com/manuelschipper/149ebf6b2d150ccaccc84ee9a9df560f).
-
-### Standalone Installation
-
-You can install RTK directly without cloning the repo. First add the
-marketplace:
-
-```bash
-# CLI
-claude plugin marketplace add jimeh/agentic
-
-# Or from within Claude Code
-/plugin marketplace add jimeh/agentic
-```
-
-Then install RTK:
-
-```bash
-# CLI
-claude plugin install rtk@jimeh-agentic
-
-# Or from within Claude Code
-/plugin install rtk@jimeh-agentic
-```
 
 ### Agent Config Installation
 

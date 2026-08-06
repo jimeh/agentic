@@ -77,11 +77,3 @@ marketplaces = [
 ]
 
 plugins = []
-
-# Plugins published by this repository. The rtk plugin registers the PreToolUse
-# hook that rtk's own installer would otherwise write into claude/settings.json,
-# keeping that managed file free of tool-written drift.
-[claude.localMarketplace]
-manifest = ".claude-plugin/marketplace.json"
-source = "."
-plugins = ["rtk"]

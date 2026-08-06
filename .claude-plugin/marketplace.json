@@ -4,16 +4,5 @@
   "owner": {
     "name": "jimeh"
   },
-  "plugins": [
-    {
-      "name": "rtk",
-      "description": "Routes Bash commands through rtk, a token-optimizing CLI proxy",
-      "version": "0.1.0",
-      "author": {
-        "name": "jimeh"
-      },
-      "source": "./plugins/rtk",
-      "category": "productivity"
-    }
-  ]
+  "plugins": []
 }

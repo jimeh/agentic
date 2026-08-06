@@ -1,5 +1,0 @@
-{
-  "name": "rtk",
-  "version": "0.1.0",
-  "description": "Routes Bash commands through rtk, a token-optimizing CLI proxy"
-}
