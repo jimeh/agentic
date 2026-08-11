@@ -102,21 +102,6 @@ approval_mode = "approve"
 [mcp_servers.deepwiki.tools.ask_question]
 approval_mode = "approve"
 
-[mcp_servers.gitnexus]
-enabled = true
-command = 'mise'
-args = ['x', 'npm:gitnexus', '--', 'gitnexus', 'mcp']
-
-[mcp_servers.gitnexus.tools]
-[mcp_servers.gitnexus.tools.list_repos]
-approval_mode = "approve"
-
-[mcp_servers.gitnexus.tools.detect_changes]
-approval_mode = "approve"
-
-[mcp_servers.gitnexus.tools.query]
-approval_mode = "approve"
-
 [desktop]
 appearanceDarkCodeThemeId = "codex"
 usePointerCursors = false
