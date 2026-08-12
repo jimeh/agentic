@@ -1,0 +1,6 @@
+interface:
+  display_name: "Babysit Pull Request"
+  short_description: "Maintain an open PR through checks and review"
+  default_prompt:
+    "Use $babysit-pr to watch this pull request, address feedback, and get it
+    ready."

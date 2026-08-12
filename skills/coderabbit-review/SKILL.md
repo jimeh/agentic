@@ -1,149 +1,68 @@
 ---
 name: coderabbit-review
 description: >-
-  Intentionally trigger, inspect, reconcile, and close CodeRabbit reviews on
-  GitHub pull requests. Use when a user or workflow selects CodeRabbit as an
-  external reviewer, asks for an `@coderabbitai review`, wants CodeRabbit
-  findings addressed, or needs unresolved CodeRabbit threads, approval, or a
-  `CHANGES_REQUESTED` state verified. Do not use merely because a PR exists.
+  Handle CodeRabbit review on a GitHub pull request. Use when the user or another
+  workflow explicitly selects CodeRabbit, requests an `@coderabbitai review`,
+  wants its findings addressed, or needs its threads, approval, or blocking
+  review state closed. Do not use merely because a PR exists.
 ---
 
 # CodeRabbit Review
 
-Use CodeRabbit as an intentionally selected external reviewer. Keep automatic
-review churn out of active development, bind every accepted result to a commit,
-and inspect the thread graph rather than trusting a flat check or summary.
+Use CodeRabbit as an intentionally selected external reviewer. Bind its evidence
+to an exact commit and inspect review threads rather than trusting a flat
+status.
 
-## Core Contracts
+## Resolve the Review
 
-- Do not apply or rely on a `coderabbit:review` label. A positive opt-in label
-  can make later pushes eligible for automatic incremental reviews while it
-  remains present.
-- Do not enable or resume automatic reviews unless the user explicitly asks.
-- Use a top-level `@coderabbitai review` PR comment for an incremental review.
-  Use `@coderabbitai full review` only when the user requests a from-scratch
-  pass or prior review context is unusable.
-- Treat one explicit invocation as the default budget. A push does not itself
-  authorize another external review.
-- Treat CodeRabbit findings as evidence, not authority. Verify each finding
-  against the current code before changing or resolving anything.
-- Keep technical confidence separate from GitHub review-state closure. A small
-  fix may need only orchestrator verification even when CodeRabbit must still
-  clear a blocking review decision.
+Resolve the PR, current remote head, draft state, checks, review decision, and
+existing CodeRabbit reviews. Read `.coderabbit.yaml` when present, especially
+automatic and incremental review settings and the request-changes workflow.
 
-## 1. Resolve the Review Target
+Do not enable automatic review or apply a review-triggering label unless the
+user explicitly asks. Existing automatic review configuration may still cause
+review churn; report it rather than silently changing it.
 
-Resolve the repository, PR, base, current remote head, draft state,
-`reviewDecision`, checks, and existing CodeRabbit reviews. Read the repository's
-`.coderabbit.yaml` when present, especially:
+## Trigger and Wait
 
-- `reviews.auto_review.enabled`
-- `reviews.auto_review.auto_incremental_review`
-- `reviews.request_changes_workflow`
+Record the candidate SHA. Post `@coderabbitai review` as an exact top-level bot
+command for an incremental review. Use `@coderabbitai full review` only when the
+user requests a fresh pass or prior context is unusable. Bot commands are exempt
+from the human-facing comment provenance rules owned by `babysit-pr`.
 
-Do not edit CodeRabbit configuration unless the user asked for configuration
-work. If automatic review is already enabled, report that manual triggering
-alone cannot prevent service-side automatic reviews.
+Treat one explicit invocation as the default budget. Wait for a review or
+terminal outcome covering the candidate SHA. Check liveness before retrying and
+never retrigger an active review. A green check without a current review record
+does not establish completion.
 
-Record the candidate SHA before requesting review. Provider status or comments
-that cover another SHA are stale evidence.
+## Reconcile Findings
 
-## 2. Trigger Once and Wait
+Fetch thread-aware data, including thread and review ids, resolution and
+outdated state, latest replies, locations, reviewed commit, and URLs.
+Deduplicate summary findings, inline comments, and nitpicks. Verify each concern
+against the current code and classify it as valid, needs a decision, already
+fixed, invalid, or optional.
 
-Post the selected command as a new top-level PR comment. Do not put it in an
-inline thread or reuse a label as the trigger.
+When called by `babysit-pr` or `ship-feature-pr`, return confirmed findings to
+that workflow for batching, correction, validation, commit, and push. Preserve
+valid evidence across ancestor revisions when the delta cannot invalidate it.
+Request another CodeRabbit pass only when it must verify its own substantive
+finding, its perspective was materially invalidated, or its blocking review
+decision still needs closure.
 
-Wait for a review or explicit terminal outcome covering the recorded SHA. Use a
-bounded deadline, check liveness before retrying, and never retrigger while a
-review remains active. A green check without a current review record is not by
-itself review completion.
+## Close Review State
 
-## 3. Inspect Thread-Aware Feedback
+After corrections, inspect every remaining CodeRabbit thread against the current
+head. Reply with concise evidence when useful and apply the comment provenance
+rules from `babysit-pr` to human-facing replies. Resolve a thread only when its
+concern is fixed, invalid, or already satisfied. Never resolve a valid
+unaddressed concern merely to clear review state.
 
-Use GitHub's thread-aware GraphQL data whenever resolution state matters. Flat
-review and comment endpoints do not establish whether inline threads remain
-open.
+Thread resolution is not approval. When request-changes workflow is enabled,
+wait for and verify the resulting review decision and the checks that gate it.
+Do not use `@coderabbitai approve` as the normal closure path. Dismiss a review
+only with explicit authority and a recorded reason.
 
-For each CodeRabbit thread, capture:
-
-- thread id, resolution and outdated state;
-- latest comment id, body, URL, file, and line;
-- review id, state, and reviewed commit;
-- whether the concern still matches the current diff.
-
-Reconcile summary findings, inline threads, and nitpicks into one deduplicated
-list before fixes begin. Classify each concern as valid, needs a decision,
-already fixed, invalid, or optional. Explain dismissals briefly.
-
-## 4. Address Findings Through the Caller Workflow
-
-Batch confirmed findings into one correction list and one normal correction
-push. Feed the correction through the caller's normal risk-based re-review
-policy:
-
-- **Orchestrator verification** for documentation, hygiene, test-only cleanup,
-  or an obvious local fix whose focused evidence closes the risk.
-- **Focused reviewer verification** for a localized production fix, a subtle
-  finding, or a delta that invalidates one reviewer's reasoning. CodeRabbit may
-  be this reviewer when its context is the relevant independent perspective.
-- **Dual reviewer verification** for architecture, public contracts, security,
-  authentication, data or persistence, concurrency or lifecycle behavior,
-  multi-platform behavior, material scope expansion, or a correction that
-  invalidates both prior reviews. Include CodeRabbit too only when it was
-  selected or required and the external perspective is materially invalidated.
-
-Use risk and invalidated assumptions, not raw line count. Preserve review and
-test evidence for unchanged code when the reviewed SHA is an ancestor of the new
-head and the intervening delta cannot affect it.
-
-After the correction push, request another incremental CodeRabbit review only
-when one of these applies:
-
-- the focused tier selected CodeRabbit to verify its own technical finding;
-- the dual tier materially invalidated the selected external perspective; or
-- CodeRabbit still owns a `CHANGES_REQUESTED` decision that must be cleared.
-
-The last case is review-state closure, not a reason to escalate a small fix to
-dual technical review. When none applies, orchestrator verification can close a
-small non-blocking correction without spending another external review.
-
-## 5. Close Threads and Review State
-
-When CodeRabbit re-reviews a correction, inspect its unresolved threads again.
-For every thread it leaves open, verify the current head yourself:
-
-- If the issue is clearly fixed, reply with concise evidence when useful and
-  resolve the thread.
-- If the issue is clearly invalid or already satisfied, explain why and resolve
-  the thread.
-- If the issue remains valid or confidence is insufficient, leave it open and
-  return it for correction.
-
-Never resolve a valid unaddressed concern merely to clear review state. Resolve
-threads only when the caller already authorized review-state closure; otherwise
-ask once before the first GitHub state mutation.
-
-When `reviews.request_changes_workflow` is enabled, CodeRabbit can automatically
-approve after all of its comments are resolved and pre-merge checks are green.
-Wait for and verify the actual approval; thread resolution alone is not proof
-that GitHub's `CHANGES_REQUESTED` decision cleared.
-
-Do not use `@coderabbitai approve` as the normal closure path. If automatic
-approval does not arrive after a bounded wait, first verify configuration,
-unresolved threads, pre-merge checks, the reviewed SHA, and other reviewers'
-decisions. Report the remaining blocker. Dismiss a stale or invalid blocking
-review only with authority to perform that GitHub state mutation and a recorded
-reason.
-
-## 6. Report Completion
-
-Report:
-
-- PR and reviewed SHA;
-- command used and whether the review was incremental or full;
-- findings accepted, fixed, dismissed, or deferred;
-- correction verification tier and why it was sufficient;
-- unresolved CodeRabbit thread count;
-- latest CodeRabbit review state and GitHub `reviewDecision`;
-- whether automatic approval occurred and which checks gate it;
-- any automatic-review configuration that can still cause future push churn.
+Report the reviewed SHA, trigger used, accepted and dismissed findings,
+unresolved thread count, latest CodeRabbit review, GitHub review decision, and
+any configuration that can still cause automatic reviews.

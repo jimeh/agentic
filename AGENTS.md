@@ -96,9 +96,8 @@ Agent harness checks live in `packages/agent-config` and run as part of
 `mise run lint`. They verify that skill frontmatter names are slug-safe and
 match their directories, vendored third-party skill locks match the checked-in
 content, local plugin manifests remain valid, and each published plugin matches
-its marketplace entry. They also keep the Codex commit and PR instruction blocks
-aligned with their authoritative skills. Rendered global rule drift is checked
-by `mise run rules:check`, which also runs as part of `mise run lint`.
+its marketplace entry. Rendered global rule drift is checked by
+`mise run rules:check`, which also runs as part of `mise run lint`.
 
 ## Plugin Versioning
 
@@ -168,6 +167,9 @@ not `>file`). See `.editorconfig` for shfmt flags.
   `#:schema https://developers.openai.com/codex/config-schema.json` header for
   editor autocomplete/validation in tools like VS Code or Cursor with Even
   Better TOML.
+- Leave Codex's `git-commit-instructions` and `git-pr-instructions` unset. They
+  customize app buttons that are not used here; the installed `commit` and
+  `file-pr` skills own those workflows without mirrored config copies.
 - When testing `agent-config install` with a temporary `HOME`, tools resolved
   through mise shims can fail trust checks. Prefer POSIX tools for setup helpers
   where possible, and validate symlink cleanup before plugin setup side effects.
@@ -186,12 +188,7 @@ not `>file`). See `.editorconfig` for shfmt flags.
   instructions at all. Verify what a session actually sees with
   `codex debug prompt-input`, which renders the model-visible prompt.
 - Codex does not expand `@path` references — they reach the model as literal
-  text. Content that must reach Codex has to be inlined, which is why
-  `rules/codex.md` includes `rules/rtk/codex.md` rather than referencing it.
+  text. Content that must reach Codex has to be rendered inline.
 - opencode reads `~/.config/opencode/AGENTS.md`, falling back to
   `~/.claude/CLAUDE.md` only when that file is absent. Populating the former
   stops opencode inheriting Claude-only rules.
-- `rtk init -g` writes through symlinks, so it updates `rules/rtk/*.md` in this
-  repo. The Codex variant also re-appends an `@.../RTK.md` line to
-  `~/.codex/AGENTS.md`; that edit lands in generated output and is discarded by
-  the next `mise run rules:build`.

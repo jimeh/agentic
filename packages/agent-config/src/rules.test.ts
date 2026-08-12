@@ -178,10 +178,9 @@ test("reports sources that are neither targets nor included", () => {
   expect(result.stderr).toContain("stray.md");
 });
 
-test("exempts README.md and vendored directories from the orphan check", () => {
+test("exempts README.md from the orphan check", () => {
   const root = createProject({
     "rules/README.md": "# Docs\n",
-    "rules/rtk/claude.md": "# RTK\n",
     "rules/claude.md": target("CLAUDE.md", "Body.\n"),
   });
 

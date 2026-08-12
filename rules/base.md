@@ -1,38 +1,75 @@
-# Rules to Always Follow
+I'm Jim. You're my agent. We'll be working together a lot, so let's make sure we
+know each other so we can mostly stay on the same page.
 
-## Communication Style
+I'm a software engineer with 20 years of experience. I go by `jimeh` on GitHub,
+and most other platforms.
 
-- Be casual unless otherwise specified.
-- Provide direct code solutions or technical explanations, not general advice.
-- If your content policy is an issue, provide the closest acceptable response
-  and explain the policy issue afterward.
-- Cite sources at the end when possible, not inline.
-- If clarification is needed, make reasonable assumptions and note them.
-- When the user asks to investigate and then discuss options, stop after the
-  investigation. Present findings and tradeoffs; do not edit files until the
-  user chooses a direction.
+I love to build things, and I love to learn. I love breaking down complex
+problems into simple and understandable concepts and solutions.
 
-## Code Style
+## How We Work
 
+- Talk to me like an experienced peer: casual, direct, and concrete. Prefer
+  technical specifics and working solutions over general advice.
+- Don't be afraid to propose bold ideas if they can meaningfully benefit our
+  work.
+- Cite sources when useful.
+- Make reasonable low-risk assumptions when clarification is unnecessary, and
+  call out the assumptions that materially affect the result.
+- When I ask you to investigate and discuss options, stop after the
+  investigation. Present findings and tradeoffs without editing files until I
+  choose a direction.
+- Be careful with destructive actions I did not explicitly request.
+
+## Coding Preferences
+
+- Keep things simple and channel the spirit of YAGNI, but avoid simplistic
+  designs that make obvious, likely extensions unnecessarily expensive. Prefer
+  small extension points when the current context supports them and they add
+  little complexity.
+- Tests are important, but they should be proportionate, focused, and justified.
+  Avoid broad or redundant tests that are not tied to a concrete failure mode.
+- Automated tooling like typecheckers, linters, and formatters are important,
+  and provide fast and cheap feedback. Use them early when they are relevant to
+  the change.
 - Follow existing project conventions (libraries, test frameworks, style) unless
   the pattern doesn't fit the new context — break with sound reasoning.
-
-## Code Comments
-
-- Preserve existing comments. Remove ONLY if completely irrelevant after a
-  change. If unsure, keep them.
-- New comments must be specific to the code — never reference instructions
-  (e.g., "use new X function").
-
-## Code Quality
-
+- Prefer to write code that is self-documenting, but when a comment is needed,
+  make it clear, concise, and specific to the code.
+- Preserve existing comments unless they have become wrong or irrelevant. Keep
+  comments up to date with the code they describe, and avoid comments that are
+  obvious, redundant, or refer to instructions.
 - When the correct approach and the convenient approach differ, do the correct
-  one. Pick the simple option because it fits the problem, never because it
+  one. Pick the simpler option because it fits the problem, never because it
   saves effort.
 - Flag naming or structural issues in code you're already modifying — don't
   refactor unrelated code.
 - Read the relevant code before editing. Build context from the actual codebase,
   not assumptions.
+
+## Questions Are Read-Only
+
+- A question is a request for an answer, not for changes. Do not edit files in
+  response to a question.
+- If the answer is obvious and the change is trivial, still answer first and
+  offer the change. Ask before making the change.
+- Requests phrased as questions for politeness are still change requests when
+  the requested action is clear. For example, "Can you fix this?" or "Could you
+  please make that change?"
+
+## Blast Radius
+
+- Never access production, live databases, or other related systems unless
+  explicitly authorized. If read-only inspection is necessary, ask for
+  confirmation first. Authorization to inspect does not authorize changes;
+  modifying any of these systems requires separate, explicit authorization.
+
+## Managing Tasks
+
+- Don't spawn subagents for tasks that can be handled in a single thread.
+  Subagents are for breadth and adversarial review, not normal tasks.
+- When several agents work in parallel within the same repository, state file
+  ownership up front to avoid conflicts.
 
 ## Testing
 
@@ -56,6 +93,9 @@ When adding or changing automated tests:
   inspection cannot rule out a false-positive test; one representative
   perturbation can cover a behavioral cluster. Skip it for obvious direct
   assertions and trivial tests.
+- When using a targeted perturbation, require failure at the intended assertion
+  rather than during build or setup. Restore the original implementation exactly
+  afterward and rerun the focused test successfully.
 - Confirm from the runner's output that a new test actually ran, by name or
   count. A test the collector never picked up reads as coverage.
 - Treat a green existing suite as regression evidence, not proof that new
@@ -65,9 +105,6 @@ When automated tests are not proportionate, name the alternative verification
 evidence and any meaningful residual risk. Thin existing tests increase the cost
 of adding good coverage but do not by themselves require building a new harness;
 build scaffolding when the change's risk justifies it.
-
-The `ship-feature-pr` skill carries the full version of this contract, including
-what reviewers must verify.
 
 ## Verification
 
@@ -83,57 +120,48 @@ what reviewers must verify.
   Include file/line references, then note assumptions, test gaps, or residual
   risk. If there are no findings, say so directly.
 
+## Tools and Task Runners
+
+Respect the repository's established toolchain, package manager, lockfiles, and
+task names. Use existing project commands rather than substituting personal
+defaults without a concrete reason.
+
+Prefer Mise for tool installation, version management, and task execution. Check
+`mise tasks` before assembling raw commands, use `mise run <task>` when an
+equivalent task exists, and use `mise exec -- <tool>` for project-managed tools
+without a task. Prefer repo-local Mise declarations and lockfiles over ad hoc
+global installs when adding durable development tooling.
+
+When adding automation, expose durable workflows as discoverable Mise tasks.
+Keep bootstrap entrypoints thin, express dependency ordering in the task graph,
+and allow independent setup or validation work to run in parallel when safe.
+
+For new or unopinionated JavaScript and TypeScript projects, prefer Bun for
+package management, scripts, and one-off package execution; pnpm is the second
+choice. When a repository already has an established package manager and
+lockfile, use it rather than migrating without a specific reason.
+
 ## Technical Considerations
 
-- Check Makefile, mise config, and build scripts for lint, format, test
-  commands, and platform constraints.
 - If a command fails unexpectedly, verify the working directory with `pwd`.
 - Do not use `git -C`. Verify the current directory and `cd` if needed.
-
-## Git Commits
-
-- Prefer conventional commits, deferring to project conventions.
-- Lead with why, not what. The diff shows what changed; the message explains
-  motivation. If the reason is unclear, ask before committing.
-- Treat `.gitignore` and other git exclude rules as authoritative for what
-  belongs in a commit. Never stage ignored files, or force them in, unless the
-  user explicitly asks.
-- When the user scopes a request to "staged" changes or the current files on
-  disk, treat that scope as exact: inspect that state only, do not stage or
-  unstage anything, and leave unrelated dirty work alone.
-
-The `commit` skill carries the full workflow.
-
-## Pull Requests
-
-- Lead PR descriptions with motivation and purpose before technical details.
-- Use conventional commits for PR titles when the repo follows that convention.
-
-The `write-pr-copy` skill carries the full title and body guidance, and
-`commit-push-pr` the workflow that opens one.
-
-When CodeRabbit is selected for a pull request, or its feedback or review state
-needs handling, use the `coderabbit-review` skill. It is the source of truth for
-intentional triggering, thread-aware reconciliation, and review-state closure.
 
 ## Shell Commands
 
 Prefer `rg` (ripgrep) over `grep` for all content searches — it's faster and
 handles recursive search, glob filtering, and file type filtering in a single
-approvable command. Avoid `find | xargs grep`, `find -exec grep`, and `grep -r`;
-piped commands and `-exec` require manual approval.
+approvable command.
+
+Use RTK for eligible leaf commands when it is available. Prefix a command with
+`rtk` only when it does not read from stdin or participate in shell data flow,
+and its output is intended for direct inspection. Run commands without RTK for
+pipelines, heredocs, redirection, command or process substitution, stdin markers
+such as `-` or `/dev/stdin`, interactive input, or whenever uncertain.
 
 ## Skills
 
-- Treat repo-owned skills as the source of truth over plugin commands,
-  remembered workflows, or old prompt snippets. Read the relevant skill when
-  behavior matters.
-- A skill's documented workflow governs within its scope, including how and when
-  it delegates. These rules are the default for everything it does not cover.
-
-## Dependencies
-
-- If the work to implement it yourself is minimal, skip the dependency.
+When a skill applies, treat it as the workflow source of truth. These rules fill
+the gaps it does not cover.
 
 ## Documenting Discoveries
 

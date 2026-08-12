@@ -24,15 +24,6 @@ const OUTPUT_DIR = "generated";
  */
 const ORPHAN_EXEMPT = new Set(["README.md"]);
 
-/**
- * Directories holding content owned by an external tool.
- *
- * `rules/rtk/` mirrors the RTK files rtk generates. Claude reads its copy
- * through rtk's own `@RTK.md` reference rather than an include, so that file is
- * legitimately unreferenced here and must not trip the orphan check.
- */
-const VENDORED_DIRS = new Set(["rtk"]);
-
 /** Maximum include nesting depth, guarding against pathological chains. */
 const MAX_INCLUDE_DEPTH = 32;
 
@@ -77,10 +68,8 @@ function parse(path: string): { data: Record<string, unknown>; body: string } {
 /**
  * Resolve an include target, rejecting anything outside the source directory.
  *
- * Sources under `rules/rtk/` are symlinks owned by an external tool, so an
- * include path is not necessarily trusted input. Confining resolution to the
- * source tree keeps a malformed or tool-written include from reaching home
- * directory files or repository secrets.
+ * Confining resolution to the source tree keeps a malformed include from
+ * reaching home-directory files or repository secrets.
  */
 function resolveInclude(
   sourceDir: string,
@@ -199,11 +188,7 @@ function render(rootDir: string): Rendered[] {
 
   const orphans = markdownFiles(sourceDir).filter((path) => {
     const rel = relative(sourceDir, path);
-    return (
-      !seen.has(path) &&
-      !ORPHAN_EXEMPT.has(rel) &&
-      !VENDORED_DIRS.has(rel.split(sep)[0])
-    );
+    return !seen.has(path) && !ORPHAN_EXEMPT.has(rel);
   });
   if (orphans.length > 0) {
     const list = orphans.map((path) => relative(rootDir, path)).join(", ");

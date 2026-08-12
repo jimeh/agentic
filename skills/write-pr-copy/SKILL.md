@@ -1,163 +1,72 @@
 ---
 name: write-pr-copy
 description: >-
-  Write or polish a pull request title and body without creating, pushing, or
-  submitting anything. The single source for PR copy guidance; commit-push-pr
-  references it when opening a real PR.
+  Draft or revise a pull request title or description. Use when the user asks
+  for PR copy, when another skill needs title and body text, or when existing PR
+  copy needs rewriting. Do not create, update, or publish the pull request.
 ---
 
 # Write PR Copy
 
-## Overview
+Produce accurate PR-ready copy without mutating Git or GitHub.
 
-Draft PR-ready title and description text from the current branch state. Focus
-on writing clear, accurate copy that reflects the full scope of the branch
-without opening, updating, or publishing the PR.
+## Understand the Change
 
-## Workflow
+Use the user request, existing PR copy, repository instructions, and the full
+branch diff against its actual base. Inspect the branch's commits as supporting
+context, but describe the branch as one coherent change rather than a commit
+log.
 
-### 1. Gather Context
+Resolve the live remote default branch when the base is not supplied. Refresh
+the relevant remote ref before trusting a branch comparison. If the correct base
+materially changes the story and cannot be established, ask instead of guessing.
 
-Run these commands to understand the branch before writing:
+Look for the repository's pull request templates. Preserve meaningful headings
+and checklists, fill them with concrete information, and omit unused generic
+placeholders. Template discovery details do not belong in the resulting copy.
 
-- `git status --short` — see changed files at a glance
-- `git branch --show-current` — confirm the working branch
-- `git log --oneline -10` — infer commit/title style from recent history
+## Write the Title and Description
 
-Then inspect the full branch scope, not just the last commit:
+Keep the title to one clear line and follow repository style, including
+conventional commits when established. Prefer wording that reads well in a
+changelog for user-facing work; for internal work, name the durable project
+outcome.
 
-- Resolve and bind the live default branch instead of assuming `main` or
-  `master`, or trusting a possibly stale local `origin/HEAD`:
+Keep the description simple. Start with a clear, minimal account of the problem
+or reason for the change, usually grounded in the user's original request, then
+explain how it was solved and any important tradeoffs. Do not force a stock
+heading for the opening context; follow the repository's template when one
+exists.
 
-  ```bash
-  default_branch="$(gh repo view \
-    --json defaultBranchRef \
-    --jq '.defaultBranchRef.name' 2>/dev/null)" || true
-  if [ -z "$default_branch" ]; then
-    default_branch="$(git ls-remote --symref origin HEAD 2>/dev/null |
-      sed -n 's#^ref: refs/heads/\([^[:space:]]*\)[[:space:]][[:space:]]*HEAD$#\1#p')"
-  fi
-  base="origin/$default_branch"
-  ```
+- Cover the full branch scope without listing every file or commit.
+- Include a Testing section only when actual validation gives reviewers useful
+  context or the template requires it. Never invent commands or results.
+- Keep Testing distinct from Manual QA. Include manual steps only when they are
+  concrete reviewer or user workflows, not generic CI instructions.
+- Omit machine-local paths, usernames, home directories, host details, template
+  status, and internal workflow telemetry.
+- State meaningful limitations or residual risk plainly.
 
-- If `default_branch` is empty, stop and ask rather than executing the remaining
-  commands.
-- Refresh the remote-tracking ref, then read the full branch scope using the
-  bound `base`:
+If the user asks only for a title, return only the title. If they ask only for a
+description, return only the description.
 
-  ```bash
-  git fetch origin
-  git log --oneline "$base"..HEAD
-  git diff "$base"...HEAD
-  ```
+## Add Provenance
 
-- If another base is clearly correct from local context, use it instead
-
-### 2. Detect PR Template
-
-Always run a PR template search before writing the PR body, even if you do not
-expect one to exist.
-
-```bash
-find . -maxdepth 4 \
-  \( -path './.git' -o -path './node_modules' -o -path './vendor' \) -prune \
-  -o \( -iname 'pull_request_template*' \
-  -o -ipath '*/pull_request_template/*' \) -print 2>/dev/null
-```
-
-Record the result as one of:
-
-- `No PR template found`
-- `One PR template found: <path>`
-- `Multiple PR templates found: <paths>`
-
-If one template is found, read it and use it as the body structure. If multiple
-templates are found and no obvious default exists, ask which one to use.
-
-When using a template:
-
-- Preserve meaningful headings and checklists unless the user asks for a rewrite
-- Fill the template with concrete content from the branch instead of leaving
-  generic placeholders
-- Do not include template status metadata in the PR copy, including lines like
-  `No PR template found`, `PR template: No PR template found`, or the path of
-  the selected template unless the template explicitly asks for it
-
-### 3. Write Copy, Not Commands
-
-Produce PR copy only.
-
-- Do not push, open, or update a pull request unless the user explicitly asks
-- Do not enumerate commits one by one unless the user asks for that view
-- Lead with the problem, context, or reason for the change before describing the
-  implementation when that is supported by the available evidence
-- Make it clear why the change is needed, not just what changed, but do not
-  invent rationale that is not grounded in the diff, commits, template, or user
-  request
-- Match conventional-commit style titles when the repo history clearly uses them
-- Prefer PR title wording that would read well as a bullet in a user-facing
-  changelog when the change has user-visible impact. For internal-only changes,
-  frame the title around the durable project outcome rather than the
-  implementation task.
-- Include manual QA steps only when they are useful, concrete, and tied to the
-  behavior changed by the branch. Prefer reviewer workflows or user-visible
-  scenarios over commands. Do not fill manual QA with generic test commands, CI
-  commands, or "CI should pass".
-- If the user asks only for a title or only for a description, return only that
-
-### 4. Keep the Output Honest
-
-- Keep the title to one clear line
-- Keep the description concise, scannable, and grounded in the diff
-- Open the description with a short explanation of the need, motivation, or
-  user-facing context for the branch when that can be inferred from local
-  evidence
-- If the reason for the change is unclear and that context materially affects
-  the PR copy, ask the user instead of guessing
-- If the reason is still unknown, omit speculative context and stick to the
-  confirmed scope of the changes
-- Cover the branch as a coherent change, not a commit log
-- Never include machine-local details in a PR title or body: absolute local
-  filesystem paths, usernames, home directories, host-specific locations, or
-  similar local-only context.
-- Include a Testing section only when actual validation results provide useful
-  context to reviewers. Mention commands only when they were actually run and
-  their results are meaningful; keep Testing notes distinct from Manual QA.
-- For docs-only or content-only changes, omit Testing when it would merely list
-  generic lint, format, test, or CI-equivalent commands, unless the selected PR
-  template requires the section.
-- If the selected PR template requires a Testing section and validation was not
-  run or is unknown, state that plainly without inventing commands or results.
-- When useful validation involved a machine-local path, rewrite the note with a
-  repository-relative command or path, or concise prose; never copy the raw
-  local invocation.
-- Note important assumptions when the diff or base branch leaves room for doubt
-- Do not mention template status in generated PR copy; it is internal workflow
-  state, not reviewer context
-
-## Output Format
-
-Follow the user's requested format when one is specified.
-
-If the user does not specify a format and both fields are requested, use:
+When the agent authors or materially rewrites the description, append this
+footer after the template content:
 
 ```md
-Title
-<one-line PR title>
-
-Description
-<PR body or completed template>
+---
+_Description written on behalf of jimeh by `<model-slug>` using `<harness>`._
 ```
 
-If the user asks for a rewrite of existing PR copy, preserve the intended facts
-while improving clarity, structure, and emphasis.
+Use the actual model slug and harness supplied by the current runtime. Do not
+infer them from repository configuration; if either is unavailable, ask before
+returning copy intended for publication. Attribute the model that authored the
+final prose, not every model involved in the underlying work. Do not duplicate
+an existing footer. The footer describes authorship of the prose, not the code.
 
-If the user asks for a different structure, such as plain prose, separate
-sections, bullets, or template-only content, match that instead of forcing the
-default layout.
+## Return Copy Only
 
-## Boundaries
-
-Use this skill for drafting copy. If the user wants the pull request actually
-created, pushed, or published, switch to the broader commit/push/PR workflow
-instead of extending this skill beyond writing.
+Follow the user's requested output format. Otherwise return labeled `Title` and
+`Description` fields. Do not push, create, or edit a pull request.

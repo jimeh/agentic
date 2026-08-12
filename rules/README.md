@@ -22,27 +22,18 @@ and cycles are rejected.
 
 ## Layout
 
-| Source        | Output        | Composition                        |
-| ------------- | ------------- | ---------------------------------- |
-| `claude.md`   | `CLAUDE.md`   | base, codegraph                    |
-| `codex.md`    | `CODEX.md`    | base, agents, rtk/codex, codegraph |
-| `opencode.md` | `OPENCODE.md` | base, agents, codegraph            |
+| Source        | Output        | Composition             |
+| ------------- | ------------- | ----------------------- |
+| `claude.md`   | `CLAUDE.md`   | base, codegraph         |
+| `codex.md`    | `CODEX.md`    | base, agents, codegraph |
+| `opencode.md` | `OPENCODE.md` | base, agents, codegraph |
 
 `base.md` is shared by every target. `agents.md` holds guidance shared by
 non-Claude agents; it is currently empty and exists so Codex and opencode have a
 common place for rules that should not reach Claude. `codegraph.md` holds the
-CodeGraph guidance shared by every target.
-
-Claude keeps rtk's own `@RTK.md` reference rather than inlining, because Claude
-expands `@` references natively. Codex does not expand them, so its RTK content
-is inlined via an include. opencode gets no RTK content — its plugin rewrites
-commands in the tool hook.
-
-## rtk/
-
-`rtk/claude.md` and `rtk/codex.md` are symlinked to `~/.claude/RTK.md` and
-`~/.codex/RTK.md`, so `rtk init -g` writes through to this repository. Treat
-them as vendored content and let rtk regenerate them.
+CodeGraph guidance shared by every target. Shared RTK guidance lives in
+`base.md`, keeping its stdin and shell data-flow safety rule consistent across
+all harnesses.
 
 ## Building
 

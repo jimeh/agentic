@@ -1,6 +1,4 @@
 interface:
   display_name: "Git Commit"
-  short_description: "Stage changes and create a commit"
-  default_prompt:
-    "Use $commit to stage the current changes and write a well-formed commit
-    message."
+  short_description: "Create an exact, well-formed Git commit"
+  default_prompt: "Use $commit to commit exactly the intended current changes."

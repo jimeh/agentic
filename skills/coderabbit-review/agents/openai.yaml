@@ -1,6 +1,6 @@
 interface:
   display_name: "CodeRabbit Review"
-  short_description: "Trigger and close CodeRabbit PR reviews"
+  short_description: "Handle intentional CodeRabbit PR review"
   default_prompt:
-    "Use $coderabbit-review to intentionally trigger and reconcile CodeRabbit
-    feedback on this pull request."
+    "Use $coderabbit-review to trigger or reconcile CodeRabbit review on this
+    pull request."

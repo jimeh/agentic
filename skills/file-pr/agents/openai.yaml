@@ -1,0 +1,5 @@
+interface:
+  display_name: "File Pull Request"
+  short_description: "Push a branch and create its pull request"
+  default_prompt:
+    "Use $file-pr to push my committed branch and create a pull request."

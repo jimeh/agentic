@@ -150,18 +150,20 @@ test("installs generated global rule symlinks", () => {
   );
 });
 
-test("installs vendored RTK symlinks", () => {
+test("removes retired RTK rule symlinks", () => {
   const home = createHome();
+  const claudeLink = join(home, ".claude", "RTK.md");
+  const codexLink = join(home, ".codex", "RTK.md");
+  mkdirSync(dirname(claudeLink), { recursive: true });
+  mkdirSync(dirname(codexLink), { recursive: true });
+  symlinkSync(join(rootDir, "rules", "rtk", "claude.md"), claudeLink);
+  symlinkSync(join(rootDir, "rules", "rtk", "codex.md"), codexLink);
 
   const result = run(home);
 
   expect(result.status).toBe(0);
-  expect(readlinkSync(join(home, ".claude", "RTK.md"))).toBe(
-    join(rootDir, "rules", "rtk", "claude.md"),
-  );
-  expect(readlinkSync(join(home, ".codex", "RTK.md"))).toBe(
-    join(rootDir, "rules", "rtk", "codex.md"),
-  );
+  expect(() => lstatSync(claudeLink)).toThrow();
+  expect(() => lstatSync(codexLink)).toThrow();
 });
 
 test("removes the retired ~/.agents/AGENTS.md rule symlink", () => {

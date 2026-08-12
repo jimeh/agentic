@@ -1,12 +1,6 @@
 interface:
   display_name: "Ship Feature PR"
-  short_description: "Reuse or plan, implement, and review a feature PR"
+  short_description: "Implement and deliver a reviewed feature PR"
   default_prompt:
-    "Use $ship-feature-pr to ship this feature from the current checkout: reuse
-    or create a concise closure plan, choose proportionate validation evidence,
-    use targeted negative evidence only when risk warrants it, open a draft PR,
-    run dual inspection-first review, batch each correction cycle into one push,
-    carry valid evidence and reviewer acceptance across narrow deltas, verify
-    corrections with an orchestrator-only, focused, or dual tier chosen by risk,
-    use external review only when selected or required, and mark it ready only
-    when composed review coverage, required CI, handback, and cleanup pass."
+    "Use $ship-feature-pr to implement this feature and deliver it as a
+    reviewed, ready pull request."

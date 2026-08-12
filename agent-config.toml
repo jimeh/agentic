@@ -6,8 +6,6 @@ symlinks = [
   ] },
   { source = "generated/CODEX.md", target = "~/.codex/AGENTS.md" },
   { source = "generated/OPENCODE.md", target = "~/.config/opencode/AGENTS.md" },
-  { source = "rules/rtk/claude.md", target = "~/.claude/RTK.md" },
-  { source = "rules/rtk/codex.md", target = "~/.codex/RTK.md" },
   { source = "claude/settings.json", target = "~/.claude/settings.json" },
   { source = "claude/keybindings.json", target = "~/.claude/keybindings.json" },
   { source = "claude/statusline.sh", target = "~/.claude/statusline.sh" },
@@ -22,6 +20,8 @@ symlinks = [
 
 staleSymlinkCleanup = [
   { sourceDir = "generated", targetDir = "~/.agents" },
+  { sourceDir = "rules/rtk", targetDir = "~/.claude" },
+  { sourceDir = "rules/rtk", targetDir = "~/.codex" },
   { sourceDir = "bin", targetDir = "~/.local/bin" },
   { sourceDir = "claude/commands", targetDir = "~/.claude/commands" },
   { sourceDir = "claude/agents", targetDir = "~/.claude/agents" },

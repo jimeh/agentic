@@ -1,79 +1,68 @@
 ---
 name: commit
 description: >-
-  Create a well-crafted git commit from the current changes. The single source
-  for commit conventions in this repo; other skills reference it rather than
-  restating them.
+  Create a Git commit from the current working tree or index. Use when the user
+  asks to commit changes, including staged-only or explicitly scoped commits.
+  Do not push or open a pull request.
 ---
 
-# Git Commit
+# Commit
 
-Create a well-crafted git commit from the current working tree changes.
+Create exactly the commit the user asked for while preserving everything outside
+its scope.
 
-## Workflow
+## Establish Scope
 
-### 1. Gather Context
+Read the repository instructions, then inspect:
 
-Run all four commands to understand the current state:
+- `git status --short`
+- the staged and unstaged diffs relevant to the request
+- the current branch
+- recent commit subjects for repository style
 
-- `git status` — see tracked/untracked files
-- `git diff HEAD` — see all staged and unstaged changes
-- `git branch --show-current` — identify current branch
-- `git log --oneline -10` — match existing commit message style
+Treat user scope literally. "Staged" means the current index only; named paths
+mean those paths only. Do not stage, unstage, normalize, or otherwise alter
+unrelated work. Never include ignored files unless the user explicitly asks.
+When the user scopes the commit to the current files on disk, treat that
+snapshot as exact: do not edit those files or generate additional changes before
+staging the requested content.
 
-### 2. Check Agent Docs
+If the commit will leave unrelated staged entries behind, snapshot their staged
+status, index entries, and cached diff before committing. Use a commit mechanism
+that includes only the intended paths or hunks without rewriting the unrelated
+index.
 
-If the project has an AGENTS.md or CLAUDE.md, review it against the current
-changes. If they introduce conventions, commands, architecture, or patterns
-worth recording — or invalidate what is already there — update the relevant file
-as part of this commit. Only when clearly warranted; avoid adding noise.
+Create or rename a branch only when the user asked. Never rename a protected or
+default branch.
 
-The "Documenting Discoveries" section of the global rules defines what
-qualifies.
+## Prepare the Commit
 
-### 3. Branch Safety
+Review the complete commit diff and check whether the change revealed a durable,
+non-obvious convention that belongs in `AGENTS.md` or the project-level
+`CLAUDE.md`. Update agent documentation only when clearly warranted.
 
-If the user asks to commit on a new branch, first inspect the current branch.
+Run the strongest proportionate verification that has not already been run for
+this exact change. Do not manufacture a broad validation pass merely because a
+commit is being created.
 
-- If on `main`, `master`, or the repository's default/protected branch, create a
-  new branch with `git checkout -b <descriptive-name>`. Never rename these
-  branches.
-- Only use `git branch -m <descriptive-name>` when already on a non-main branch
-  whose name appears generated, random, or unrelated to the current work, such
-  as UUIDs, hex strings, meaningless sequences, or 1-3 unrelated words.
-- If the branch name is meaningful or user-provided, keep it.
+Stage only the intended changes. Before committing, verify the staged diff and
+run `git diff --staged --check` when it applies.
 
-### 4. Create the Commit
+## Write the Message
 
-Stage all relevant changes and create a single commit with a conventional commit
-message (e.g., `feat:`, `fix:`, `refactor:`). Lead the message with why over
-what — the diff shows what changed; the message explains motivation and purpose.
-The commit body should start with the reason for the change; technical overview
-and implementation notes come after. Make the problem, context, or reason for
-the change clear before describing implementation details when that reason is
-supported by the available evidence. If the rationale is unclear, do not guess;
-ask the user.
+Follow repository history, preferring conventional commits when no stronger
+local convention exists. Lead with the motivation or durable outcome rather than
+an inventory of changed files. Do not invent rationale; ask if the reason is
+material and genuinely unclear.
 
-If the reason behind a change is not clear from context, ask the user before
-committing.
+Use a body only when it adds useful context. Pass multiline messages safely so
+shell interpolation cannot alter them.
 
-Never stage or commit files ignored by git unless the user explicitly asks. Do
-not use `git add -f`, `git add --force`, or equivalent to include ignored files.
+## Verify the Result
 
-### Staged-Only Mode
+After committing, inspect the new commit and working tree. Confirm that:
 
-When asked to commit only staged changes:
-
-1. Run `git diff --staged` to see exactly what is staged
-2. Base the commit message solely on those changes
-3. Do NOT stage additional files
-
-## Guidelines
-
-- Prefer conventional commits format, but defer to project conventions
-- Pass commit messages via a heredoc to avoid shell interpretation of backticks
-  and other special characters in multi-line messages
-- Minimize text output — focus on tool calls
-- Call multiple tools in parallel when there are no dependencies between them
-- Treat `.gitignore` and other git exclude rules as authoritative for default
-  commit scope
+- the commit contains exactly the intended changes;
+- unrelated staged and unstaged work remains intact;
+- any snapshotted index state is byte-for-byte unchanged; and
+- no push or pull request mutation occurred.
