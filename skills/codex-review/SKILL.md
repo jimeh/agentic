@@ -3,7 +3,7 @@ name: codex-review
 description: >-
   Get an independent code review from the Codex CLI for a cross-engine
   perspective on a diff, commit, branch, or PR checkout. Not for reviews Claude
-  can do directly, or for diffs Codex itself authored.
+  can do directly.
 ---
 
 # Codex Review
@@ -18,9 +18,11 @@ reviewing Claude's own implementation, or getting a cheap second perspective on
 a plan or diff.
 
 Do not use it for small local reviews, formatting-only diffs, or to avoid
-reading the code yourself. Do not use it on diffs Codex itself authored:
-same-model review is weak independence, so Claude reviews those directly. Treat
-Codex's report as evidence, not authority.
+reading the code yourself. Fresh context provides context independence, not
+cross-engine diversity. Do not infer implementation provenance or describe a
+Codex review of known Codex-authored work as cross-engine. Honor explicit
+reviewer selection and `dual-review` workflows. Treat Codex's report as
+evidence, not authority.
 
 Assume `codex` is installed and configured to use the desired GPT/Codex model
 unless the environment proves otherwise.

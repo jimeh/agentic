@@ -1,0 +1,6 @@
+interface:
+  display_name: "Dual Review"
+  short_description: "Deep independent review by Codex and Claude"
+  default_prompt:
+    "Use $dual-review to run independent Codex and Claude reviews of this pull
+    request and reconcile the findings."

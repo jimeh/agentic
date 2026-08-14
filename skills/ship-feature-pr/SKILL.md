@@ -52,11 +52,10 @@ names or count when relevant, and environment limits. Evidence carries forward
 only when its revision is an ancestor and the intervening delta cannot affect
 what it proves.
 
-Before implementation, verify repository and base access plus both required
-internal review channels. Prefer native tooling for the same-engine channel; use
-the same-engine CLI only when native tooling is unavailable or lacks a required
-capability. If either engine remains unavailable, stop before mutation when
-practical; if it fails later, retain the draft and report the coverage gap.
+Before implementation, verify repository and base access plus both channels
+required by `dual-review`. If either engine remains unavailable, stop before
+mutation when practical; if it fails later, retain the draft and report the
+coverage gap.
 
 Set one post-draft correction budget, normally two pushes. All internal,
 external, CI-driven, and user-directed corrections after the draft count against
@@ -67,7 +66,7 @@ change is complex, large, architectural, security-sensitive, concerned with
 authorization, persistence, concurrency, lifecycle, multiple platforms, or
 otherwise benefits materially from another perspective, recommend one and ask
 once before invoking it. Otherwise omit external review by default. The
-independent Codex and Claude channels below remain the internal review gate.
+`dual-review` gate below remains required.
 
 ## Implement and Integrate
 
@@ -108,39 +107,19 @@ Use `file-pr` to push the delivery branch and create a draft pull request. Its
 `write-pr-copy` dependency owns the title, description, template, and provenance
 footer. Readback belongs to `file-pr`; do not duplicate its mechanics here.
 
-Record the pushed head SHA. Start CI and the two internal reviews concurrently
-when practical, but treat CI as a delivery gate only on the intended final head.
+Record the pushed head SHA. Start CI and `dual-review` concurrently when
+practical, but treat CI as a delivery gate only on the intended final head.
 
 ## Run Independent Review
 
-Run two fresh read-only reviewers against the pushed feature state:
+Use `dual-review` against the pushed exact head. Supply the repository, base and
+head revisions, condensed feature contract, and evidence ledger, and ask it to
+retain resumable reviewer sessions for follow-up.
 
-- one through the orchestrator's native same-engine review channel; and
-- one through the dedicated foreign-engine review skill.
-
-Use native agent tooling for the same engine when available. Use the appropriate
-`claude-review` or `codex-review` skill for the other engine. Do not simulate
-two engine perspectives with two instances of the same engine.
-
-Give reviewers the repository, base and head revisions, condensed feature
-contract, and evidence ledger. Ask them to inspect requirements, correctness,
-edge cases, security, unintended behavior, and whether verification is
-proportionate. Require concrete findings with severity, location, failure mode,
-and direction, plus an explicit no-findings verdict when appropriate.
-
-Require each reviewer, even with no code findings, to give a separate validation
-verdict: identify any unclosed material success, failure, boundary, or
-regression scenario, meaningful risk from absent coverage, and whether changed
-tests could pass over broken behavior.
-
-Reviewers should inspect before executing and avoid broad suites already covered
-by valid evidence or CI. Accept a review only when it completed successfully and
-identifies the revision it covered. Keep resumable reviewer sessions for focused
-follow-up when possible.
-
-Reconcile both reviews before changing anything. Deduplicate concerns, verify
-them against the code, explain dismissals, and batch confirmed findings into one
-correction round. A material unclosed verification gap is a finding, not a note.
+Accept only complete Codex and Claude coverage of the intended revision. Recheck
+the reconciled findings against the feature contract, then batch all confirmed
+findings into one correction round. Keep the PR draft when either review channel
+failed or the live head moved beyond the reviewed revision.
 
 ## Babysit to Readiness
 
@@ -156,7 +135,7 @@ Choose follow-up internal review by what the correction invalidates:
 - orchestrator verification for obvious documentation, hygiene, mechanical, or
   test-only corrections;
 - the relevant original reviewer for a localized production or subtle fix; and
-- both reviewer channels for architecture, public contracts, security,
+- `dual-review` continuation for architecture, public contracts, security,
   authentication, persistence, concurrency, lifecycle, supported-platform
   behavior, material scope expansion, or another change that invalidates both
   reviews.
