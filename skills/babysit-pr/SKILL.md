@@ -85,7 +85,8 @@ cannot invalidate it. Choose follow-up review by affected risk:
 - Re-run all required independent perspectives only for architecture, public
   contracts, security, authentication, persistence, concurrency, lifecycle,
   supported-platform behavior, material scope expansion, or another delta that
-  invalidates all prior reasoning.
+  invalidates all prior reasoning. Use `dual-review` continuation when the
+  caller requires both Codex and Claude coverage.
 
 Count every post-invocation correction push against one shared budget, including
 bot-driven corrections. Do not wait for or debug CI on a head that another known

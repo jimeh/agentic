@@ -8,8 +8,8 @@ description: >-
   model-routing calls for a Claude review perspective, or when Claude should
   audit a diff for bugs, regressions, missing tests, security issues, or
   requirement mismatches. Do not use for small reviews the current agent can
-  handle directly, for diffs Claude itself authored, or as a substitute for
-  reading and validating the code yourself.
+  handle directly or as a substitute for reading and validating the code
+  yourself.
 ---
 
 # Claude Review
@@ -24,9 +24,11 @@ reviewing another model's implementation, or getting a strong second perspective
 on a plan or diff.
 
 Do not use it for small local reviews, formatting-only diffs, or to avoid
-reading the code yourself. Do not use it on diffs Claude itself authored:
-same-model review is weak independence, so review those directly. Treat Claude's
-report as evidence, not authority.
+reading the code yourself. Fresh context provides context independence, not
+cross-engine diversity. Do not infer implementation provenance or describe a
+Claude review of known Claude-authored work as cross-engine. Honor explicit
+reviewer selection and `dual-review` workflows. Treat Claude's report as
+evidence, not authority.
 
 Assume `claude` is installed and authenticated unless the environment proves
 otherwise.
