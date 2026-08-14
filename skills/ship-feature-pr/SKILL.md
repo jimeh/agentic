@@ -66,7 +66,7 @@ change is complex, large, architectural, security-sensitive, concerned with
 authorization, persistence, concurrency, lifecycle, multiple platforms, or
 otherwise benefits materially from another perspective, recommend one and ask
 once before invoking it. Otherwise omit external review by default. The
-independent Codex and Claude channels below remain the internal review gate.
+`dual-review` gate below remains required.
 
 ## Implement and Integrate
 
@@ -107,8 +107,8 @@ Use `file-pr` to push the delivery branch and create a draft pull request. Its
 `write-pr-copy` dependency owns the title, description, template, and provenance
 footer. Readback belongs to `file-pr`; do not duplicate its mechanics here.
 
-Record the pushed head SHA. Start CI and the two internal reviews concurrently
-when practical, but treat CI as a delivery gate only on the intended final head.
+Record the pushed head SHA. Start CI and `dual-review` concurrently when
+practical, but treat CI as a delivery gate only on the intended final head.
 
 ## Run Independent Review
 

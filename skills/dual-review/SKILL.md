@@ -79,20 +79,22 @@ well-supported finding remains actionable. Deduplicate shared root causes,
 resolve disagreements from the evidence, explain dismissals, and treat material
 validation gaps as findings.
 
-Read back a pull request's live head after reconciliation. If it moved, report
-the captured review as stale rather than silently chasing the new revision.
+Read back a pull request's live base and head after reconciliation. If either
+moved, report the captured review as stale rather than silently chasing the new
+revision.
 
 ## Continue When Requested
 
-When a caller supplies prior sessions, reviewed revisions, findings, and a new
-immutable head, resume the original reviewers only when both targets remain
-available, the prior revision is an ancestor, and the scope is a genuine
-continuation. Have them inspect the intervening delta and identify the new head.
+When a caller supplies both prior reviewer sessions, findings, and prior and new
+immutable base-head pairs, resume both reviewers only when the sessions and
+revisions remain available, each prior revision is an ancestor of its new
+counterpart, and the scope is a genuine continuation. Have them inspect the
+effects of both base and head deltas and identify the new pair they covered.
 
 Use fresh reviewers when continuation is unavailable, revision identity is
-uncertain, or scope materially broadened. The caller decides when both
-perspectives need renewed review; this skill executes and reconciles that
-review.
+uncertain, incremental coverage is ambiguous, or scope materially broadened. The
+caller decides when both perspectives need renewed review; this skill executes
+and reconciles that review.
 
 ## Report
 
