@@ -1,0 +1,6 @@
+interface:
+  display_name: "HTML Communication"
+  short_description: "Communicate ideas through visual dark-mode HTML"
+  default_prompt:
+    "Use $html-communication to turn this into a clear, visual dark-mode HTML
+    page."
