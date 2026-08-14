@@ -101,6 +101,7 @@ reply with:
 
 ```md
 _Posted on behalf of jimeh by `<model-slug>` using `<harness>`._
+---
 ```
 
 Use the actual model slug and harness supplied by the current runtime. Do not

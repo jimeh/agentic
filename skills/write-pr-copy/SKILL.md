@@ -57,7 +57,7 @@ footer after the template content:
 
 ```md
 ---
-_Description written on behalf of jimeh by `<model-slug>` using `<harness>`._
+_Written on behalf of jimeh by `<model-slug>` using `<harness>`._
 ```
 
 Use the actual model slug and harness supplied by the current runtime. Do not
