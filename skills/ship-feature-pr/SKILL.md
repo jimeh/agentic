@@ -76,6 +76,8 @@ available to the implementer.
 
 For non-trivial work, use a fresh same-engine implementer. By default, let one
 implementer edit the delivery checkout so its changes remain directly visible.
+This workflow's topology choice is authoritative over a delegated implementation
+skill's generic default; the concrete isolation conditions below still apply.
 Give it exclusive mutation ownership of that checkout until it hands control
 back: the orchestrator may inspect files and diffs, but must not edit files,
 mutate Git state, or run potentially mutating commands concurrently. Require the
@@ -111,7 +113,9 @@ path against that checkout's starting baseline: the intake snapshot for shared
 work, or the recorded clean starting state for an isolated worktree. Inspect the
 complete diff and evidence, and send settled corrections back through the same
 session when practical. In the delivery checkout, use `commit` to create the
-feature commit and verify exact scope.
+feature commit with explicit feature-owned scope. Before and after each feature
+commit, compare non-feature staged, unstaged, and untracked state with the
+captured baseline. Stop before push if any unrelated state changed.
 
 For isolated work, capture the complete result on its implementation branch
 before moving it. Record the delivery tip from which each implementation branch
