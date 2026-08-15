@@ -74,11 +74,33 @@ Prepare the feature branch in the delivery checkout from a refreshed and
 verified base. Commit any tracked, feature-owned plan separately when it must be
 available to the implementer.
 
-For non-trivial work, use a fresh same-engine implementer in a separate worktree
-and branch. Direct implementation is acceptable when the change is small enough
-that delegation adds more overhead than perspective. Give the implementer the
-settled contract and focused verification expectations, and require it to leave
-Git operations to the orchestrator.
+For non-trivial work, use a fresh same-engine implementer. By default, let one
+implementer edit the delivery checkout so its changes remain directly visible.
+This workflow's topology choice is authoritative over a delegated implementation
+skill's generic default; the concrete isolation conditions below still apply.
+Give it exclusive mutation ownership of that checkout until it hands control
+back: the orchestrator may inspect files and diffs, but must not edit files,
+mutate Git state, or run potentially mutating commands concurrently. Require the
+implementer to leave Git operations to the orchestrator. If another writer
+appears, pause and account for the resulting state rather than guessing
+ownership.
+
+Use a separate worktree and branch for each implementer when multiple
+implementers run concurrently. Also isolate a single implementer when another
+actor must mutate the delivery checkout while it runs, or when the feature
+scope, local dirt, or broad tooling makes change attribution unsafe.
+Non-overlapping intake dirt alone does not require isolation. Keep
+implementation in the delivery checkout when destructive validation can run
+safely in its own disposable checkout after handoff. If that need arises while
+shared implementation is still moving, pause and capture it before validation or
+switch to isolation; otherwise isolate upfront when resets, perturbations,
+generated-output cleanup, watchers, services, or other environment state make
+that materially safer. Worktrees do not isolate shared processes, ports, caches,
+or external state; provision those separately when needed.
+
+Direct implementation by the orchestrator is acceptable when the change is small
+enough that delegation adds more overhead than perspective. Give any implementer
+the settled contract and focused verification expectations.
 
 The implementer owns focused tests and checks while building. The orchestrator
 owns inspection and evidence sufficiency, filling only missing or invalidated
@@ -86,20 +108,30 @@ evidence. Reviewers inspect independently and run focused reproducers only for
 concrete suspected defects. CI owns the clean-environment and repository-wide
 gates it actually runs.
 
-Before integration, account for every changed and untracked path in the
-implementation worktree, inspect the complete diff and evidence, and send
-settled corrections back through the same implementer session when practical.
-Capture the work on its implementation branch before moving it. Verify that its
-tip descends from the intended delivery tip, and reconcile stale work before
-integration.
+When the implementer hands back control, account for every changed and untracked
+path against that checkout's starting baseline: the intake snapshot for shared
+work, or the recorded clean starting state for an isolated worktree. Inspect the
+complete diff and evidence, and send settled corrections back through the same
+session when practical. In the delivery checkout, use `commit` to create the
+feature commit with explicit feature-owned scope. Before and after each feature
+commit, compare non-feature staged, unstaged, and untracked state with the
+captured baseline. Stop before push if any unrelated state changed.
 
-Integrate the complete implementation into the delivery checkout without
-sweeping in unrelated delivery-checkout changes. Use `commit` to create the
-feature commit and verify exact scope.
+For isolated work, capture the complete result on its implementation branch
+before moving it. Record the delivery tip from which each implementation branch
+started and verify that the branch descends from it. If the delivery head has
+advanced, reconcile the implementation branch onto the current delivery head
+before integration. Integrate without sweeping in unrelated delivery-checkout
+changes, but never move, reset, or remove another implementer's active branch or
+checkout. Keep the implementation worktree and session until handback.
 
-Keep the implementation worktree and session until handback. For later
-corrections, reuse the implementer when practical and realign its branch to the
-landed delivery head only after all previous work has been safely captured.
+For later corrections, reuse the implementer when practical. A shared-checkout
+implementer continues from the current delivery head. Realign an isolated
+implementation branch to the landed delivery head only after all previous work
+has been safely captured. Use a disposable worktree for destructive validation
+even when implementation itself occurred in the delivery checkout. Create it
+from a captured revision after shared-checkout handoff; do not copy or perturb a
+moving uncommitted implementation concurrently.
 
 ## File the Draft PR
 
