@@ -89,11 +89,12 @@ actor must mutate the delivery checkout while it runs, or when the feature
 scope, local dirt, or broad tooling makes change attribution unsafe.
 Non-overlapping intake dirt alone does not require isolation. Keep
 implementation in the delivery checkout when destructive validation can run
-safely in its own disposable checkout; otherwise isolate when resets,
-perturbations, generated-output cleanup, watchers, services, or other
-environment state make that materially safer. Worktrees do not isolate shared
-processes, ports, caches, or external state; provision those separately when
-needed.
+safely in its own disposable checkout after handoff. If that need arises while
+shared implementation is still moving, pause and capture it before validation or
+switch to isolation; otherwise isolate upfront when resets, perturbations,
+generated-output cleanup, watchers, services, or other environment state make
+that materially safer. Worktrees do not isolate shared processes, ports, caches,
+or external state; provision those separately when needed.
 
 Direct implementation by the orchestrator is acceptable when the change is small
 enough that delegation adds more overhead than perspective. Give any implementer
@@ -106,10 +107,11 @@ concrete suspected defects. CI owns the clean-environment and repository-wide
 gates it actually runs.
 
 When the implementer hands back control, account for every changed and untracked
-path against the intake baseline, inspect the complete diff and evidence, and
-send settled corrections back through the same session when practical. In the
-delivery checkout, use `commit` to create the feature commit and verify exact
-scope.
+path against that checkout's starting baseline: the intake snapshot for shared
+work, or the recorded clean starting state for an isolated worktree. Inspect the
+complete diff and evidence, and send settled corrections back through the same
+session when practical. In the delivery checkout, use `commit` to create the
+feature commit and verify exact scope.
 
 For isolated work, capture the complete result on its implementation branch
 before moving it. Record the delivery tip from which each implementation branch

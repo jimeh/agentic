@@ -22,11 +22,11 @@ isolation, and review once that decision is made.
 - Never delegate final judgement.
 - Give every concurrent implementation agent a dedicated worktree, and never let
   multiple implementation agents edit the same checkout. For one implementer,
-  use the topology selected by the invoking workflow; prefer the current
-  checkout when it can grant exclusive mutation ownership and safely account for
-  every change. Isolate when shared state, unrelated dirt, destructive
-  verification, or concurrent mutation creates concrete conflict or attribution
-  risk.
+  use the topology selected by the invoking workflow or delegated implementation
+  skill. When neither defines one, prefer the current checkout if it can grant
+  exclusive mutation ownership and safely account for every change. Isolate when
+  shared state, unrelated dirt, destructive verification, or concurrent mutation
+  creates concrete conflict or attribution risk.
 - Reconcile delegated results before acting on them.
 - Do not silently add agents or reviewers beyond the requested or documented
   workflow scope.
