@@ -15,9 +15,10 @@ Use this when shaping project docs for agent legibility.
 
 ## Principle
 
-The root instruction file should be a map. It should tell agents what the repo
-is, how to validate work, and where deeper truth lives. It should not be the
-whole manual.
+The root instruction file should be a map with enough compact, decision-shaping
+context to guide every change. It should tell agents what the repo is, how to
+validate work, what must not be compromised, and where deeper truth lives. It
+should not be the whole manual.
 
 ## Useful Structure
 
@@ -71,23 +72,11 @@ reference.
 
 ## Root AGENTS.md Contents
 
-Keep root instructions focused on:
-
-- one-sentence project purpose
-- unusual setup, package manager, or task runner facts
-- canonical task and validation commands
-- links to deeper docs
-- non-obvious global rules that apply to all edits
-- discovery hints for major domains or packages
-
-Avoid:
-
-- copied README content
-- long style guides
-- exhaustive directory trees
-- fragile file path inventories
-- rules that are already enforced by tools
-- vague quality advice
+Use [Project Instructions](./project-instructions.md#choose-the-content) as the
+source of truth for selecting and pruning root content. This map only adds the
+placement rule: keep enough compact, project-wide context in the root file to
+shape every change, then link conditional detail or place materially different
+rules closer to their subtree.
 
 ## Deeper Docs
 
