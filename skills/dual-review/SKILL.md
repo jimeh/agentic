@@ -38,11 +38,11 @@ contract from the implementation alone.
 
 ## Run Independent Reviewers
 
-Preflight both channels, set a finite attempt budget and overall deadline, then
-start exactly one fresh Codex reviewer and one fresh Claude reviewer
-concurrently when practical. Use a fresh native reviewer for the orchestrator's
-engine and the corresponding `claude-review` or `codex-review` skill for the
-other. Use the same-engine CLI only when native tooling is unavailable.
+Preflight both channels, then start exactly one fresh Codex reviewer and one
+fresh Claude reviewer concurrently when practical. Use a fresh native reviewer
+for the orchestrator's engine and the corresponding `claude-review` or
+`codex-review` skill for the other. Use the same-engine CLI only when native
+tooling is unavailable.
 
 Do not count the orchestrator as a reviewer. Give native reviewers the least
 inherited context available, do not expose either initial report to the other
@@ -62,9 +62,13 @@ separate validation and test-quality verdict.
 
 Use an inspection-first execution policy. Do not repeat broad checks already
 covered by valid evidence; allow focused reproducers only for concrete suspected
-defects. Keep resumable sessions when follow-up is expected, otherwise clean up
-one-shot artifacts. Check liveness before retrying and do not loop blindly on
-failures.
+defects. Start one initial attempt per reviewer and let each provider-specific
+skill own its process lifetime. A coordination deadline is a status and
+escalation checkpoint, not permission to interrupt a healthy reviewer, shorten
+its provider guidance, or restart it because the other reviewer or CI finished.
+Keep resumable sessions when follow-up is expected, otherwise clean up one-shot
+artifacts. Check liveness before retrying, retry only a diagnosed terminal or
+transient failure, and do not loop blindly.
 
 ## Reconcile the Reports
 

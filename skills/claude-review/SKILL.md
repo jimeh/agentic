@@ -88,8 +88,22 @@ review tier.
 
 Run notes:
 
-- For long reviews, run in the background and read `$REPORT` when the run exits.
-  Do not kill quiet runs prematurely; long silences are normal.
+- Start one initial Claude process and let it run to terminal exit. Run long
+  reviews in the background and read `$REPORT` only after the process exits.
+- Quiet stdout and stderr, an empty report, and low CPU usage are normal while
+  `claude -p` is inspecting or waiting on the model. None is evidence of a
+  stall, and another reviewer or CI finishing first is not a reason to interrupt
+  Claude.
+- Do not impose a hard process timeout unless the caller supplies a real
+  deadline. When an orchestration workflow needs a finite coordination
+  checkpoint and the caller supplied none, allow at least 60 minutes for the
+  initial review and prefer 90 minutes for a large repository or change set.
+  Treat that checkpoint as a time to inspect liveness and errors, not as
+  automatic authority to terminate a healthy process.
+- Terminate only for user cancellation, an explicit hard deadline, or concrete
+  failure or wedge evidence. If termination is necessary, preserve and resume
+  the explicit session when possible. Do not replace a quiet or interrupted run
+  with a fresh attempt merely to reset the clock.
 - Parallel independent reviews are fine: separate prompt and report files.
 - Honor the caller's execution policy. When valid implementer evidence and CI
   already cover execution, inspect first and do not rerun broad suites, builds,
@@ -103,9 +117,11 @@ Run notes:
   not, continuation is unavailable, or the reviewed scope materially broadens.
 
 Do not retry automatically when Claude reports no issues. A run that exits
-nonzero or leaves an empty or missing report has failed — read the stderr log
-and surface the failure; never treat it as a clean review. If the run times out
-or fails, report that and decide whether direct review is still useful.
+nonzero or leaves an empty or missing report after exit has failed — read the
+stderr log and surface the failure; never treat it as a clean review. Retry only
+after diagnosing a terminal failure as transient, and make at most one retry
+unless the caller directs otherwise. If the run fails or an explicit hard
+deadline expires, report that and decide whether direct review is still useful.
 
 Once the review lifecycle is complete, remove the artifact directory
 (`rm -rf "$ARTIFACT_DIR"`) so prompts and reports do not accumulate.
@@ -197,7 +213,8 @@ Omit empty sections.
 ## Failure Handling
 
 - If `claude` is unavailable, say so and review directly if practical.
-- If Claude times out, report the timeout. Do not loop blindly.
+- If an explicit hard deadline expires, report it. Do not loop blindly or
+  convert an orchestration checkpoint into a timeout.
 - If Claude gives vague findings, verify only the plausible ones and discard the
   rest.
 - If Claude's report conflicts with the code, trust the code.
