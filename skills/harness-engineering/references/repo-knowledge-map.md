@@ -72,26 +72,11 @@ reference.
 
 ## Root AGENTS.md Contents
 
-Keep root instructions focused on:
-
-- one-sentence project purpose
-- unusual setup, package manager, or task runner facts
-- canonical task and validation commands
-- links to deeper docs
-- non-obvious global rules that apply to all edits
-- compact vocabulary, non-negotiables, change-impact dimensions, or operational
-  hazards that materially affect most work
-- discovery hints for major domains or packages
-
-Avoid:
-
-- copied README content
-- long style guides
-- exhaustive directory trees
-- fragile file path inventories
-- rules that are already enforced by tools
-- vague quality advice
-- personal defaults that belong in global instructions
+Use [Project Instructions](./project-instructions.md#choose-the-content) as the
+source of truth for selecting and pruning root content. This map only adds the
+placement rule: keep enough compact, project-wide context in the root file to
+shape every change, then link conditional detail or place materially different
+rules closer to their subtree.
 
 ## Deeper Docs
 
