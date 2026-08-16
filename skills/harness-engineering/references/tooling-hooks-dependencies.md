@@ -64,9 +64,9 @@ pre-commit:
 
 Keep pre-commit fast. Avoid pre-push hooks by default.
 
-Add a whole-project typecheck job only when it is sound and consistently fits
-the measured hook budget. Otherwise keep typechecking in the canonical `check`
-task.
+Add a whole-project or dependency-aware typecheck job only when it is sound and
+consistently fits the measured hook budget. Otherwise keep typechecking in the
+canonical `check` task.
 
 Before handoff, verify setup installs the hook in a fresh clone or disposable
 worktree, measure a warm representative run, and exercise partial staging plus

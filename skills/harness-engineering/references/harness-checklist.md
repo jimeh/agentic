@@ -169,7 +169,7 @@ Use this compact shape when reporting checklist results:
 ```markdown
 ## Harness Checklist
 
-| Area | Status | Evidence | Decision | Trigger | Scope | Cost | Evidence owner | Gap or next check |
+| Area | Status | Evidence | Hook decision | Trigger | Scope | Cost | Evidence owner | Gap or next check |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | Local hooks | gap | `mise run check` 4s warm; no hook config | add | commit | staged files plus sound repo checks | 4s warm | pre-commit hook | wire the canonical check into Lefthook |
 

@@ -105,8 +105,10 @@ current failure.
 
 After review, classify accepted findings as task-local, documentation-worthy, or
 mechanically enforceable. Repetition is a strong signal, but a single late,
-surprising, or high-risk finding can justify a regression test, lint, or concise
-project instruction immediately.
+surprising, or high-risk finding can justify an immediate focused regression
+test, non-blocking detector, or concise project instruction. Promote a new
+blocking detector or lint after existing violations are fixed or recorded as
+explicit exceptions.
 
 ## Proof Artifacts
 
