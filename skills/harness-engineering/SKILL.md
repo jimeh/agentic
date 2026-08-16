@@ -2,9 +2,10 @@
 name: harness-engineering
 description: >-
   Shape a repository so coding agents work reliably in it: legible project
-  knowledge, runnable feedback loops, enforceable architecture rules, cleanup
-  processes. Use for agent-readiness audits and for turning repeated agent
-  failures into durable repo-local tooling — beyond editing instruction files.
+  knowledge, runnable feedback loops, early local enforcement, enforceable
+  architecture rules, and cleanup processes. Use for agent-readiness audits and
+  for turning repeated agent failures into durable repo-local tooling — beyond
+  editing instruction files.
 ---
 
 # Harness Engineering
@@ -22,13 +23,15 @@ handoffs, and review-only failures as missing repo capabilities: unclear maps,
 inaccessible signals, weak tests, unenforced boundaries, stale docs, or absent
 cleanup loops.
 
-Think in four parts:
+Think in five parts:
 
 - **Guides**: docs, skills, task names, examples, templates, and maps that steer
   agents before they act.
 - **Sensors**: fast feedback checks, tests, linters, type checks, logs, CI,
   screenshots, review agents, and other signals that let agents detect and
   correct mistakes.
+- **Enforcement**: the earliest sound trigger for each sensor, such as targeted
+  iteration, pre-commit, handoff, CI, or scheduled maintenance.
 - **Task surface**: stable commands agents can discover and run without
   guessing.
 - **Cleanup**: recurring checks and small refactors that keep the harness fresh.
@@ -46,6 +49,8 @@ Pick the smallest useful mode:
 - **Encode rules**: convert recurring review feedback into mechanical checks.
 - **Build feedback loops**: make app state, tests, logs, screenshots, or CI
   failures directly inspectable by agents.
+- **Place validation**: wire fast checks into pre-commit or another early
+  trigger while keeping broader checks explicit and avoiding duplicate evidence.
 - **Standardize task surface**: expose setup, dev, build, format, lint,
   typecheck, check, test, verify, doctor, and cleanup commands through existing
   project tooling or `mise`.
@@ -71,14 +76,20 @@ Inspect, in this order:
    `.github/copilot-instructions.md`.
 2. Setup and validation: `README.md`, `Makefile`, package scripts, task runners,
    CI workflows, test configs.
-3. Architecture and product docs: `docs/`, `ARCHITECTURE.md`, design docs, ADRs,
+3. Local enforcement: hook-manager config, `core.hooksPath`, setup/install
+   tasks, staged-file scope, write behavior, and measured warm runtime when
+   practical.
+4. Architecture and product docs: `docs/`, `ARCHITECTURE.md`, design docs, ADRs,
    schemas, generated references.
-4. Agent affordances: browser automation, local dev boot scripts, local skills,
+5. Agent affordances: browser automation, local dev boot scripts, local skills,
    log access, fixtures, seed data, screenshots, traces, PR/CI tooling.
-5. Mechanical constraints: linters, dependency rules, type checks, structural
+6. Mechanical constraints: linters, dependency rules, type checks, structural
    tests, naming checks, file size checks, custom diagnostics.
-6. Supply-chain controls: lockfiles, package-manager age gates, GitHub Actions
+7. Supply-chain controls: lockfiles, package-manager age gates, GitHub Actions
    pins, action/workflow linting, dependency update policy.
+8. Historical friction when evidence is available: accepted review findings,
+   recurring CI failures, corrective follow-up changes, and manual commands that
+   repeatedly appear in handoffs.
 
 Prefer `rg` and existing project commands. Do not assume missing docs are the
 main problem; missing executable feedback often matters more.
@@ -87,18 +98,30 @@ Use `references/harness-checklist.md` for audits or broad harness work. Treat
 each baseline item as pass, gap, or not applicable, with file or command
 evidence. For common ecosystems, formatter, linter, type/schema checks, tests,
 and CI workflow checks are expected unless the project has a documented reason
-to omit them.
+to omit them. If applicable fast canonical checks exist, treat absent
+commit-time feedback as a gap unless the audit gives a concrete reason it is not
+useful. In audit mode, recommend `add` only when such a check already exists in
+the current repository and a representative warm run fits the hook budget.
+Otherwise record `n/a` as the current decision with the condition for
+reconsidering it, even when the same audit recommends creating or measuring the
+check. Read `references/tooling-patterns.md` and
+`references/tooling-hooks-dependencies.md` when evaluating that decision.
 
 ### 3. Find the Missing Harness Capability
 
-Translate every friction point into a missing guide, sensor, task, or cleanup
-loop before choosing the artifact.
+Translate every friction point into a missing guide, sensor, enforcement point,
+task, or cleanup loop before choosing the artifact.
 
 For each recurring failure or desired autonomy level, ask:
 
 - **Can the agent find the right context?** If not, improve maps and indexes.
 - **Can the agent validate the outcome?** If not, add commands, tests, fixtures,
   browser flows, logs, or observability entry points.
+- **Does each sensor run at the earliest sound point?** If not, place it in the
+  targeted, pre-commit, handoff, CI, or scheduled loop where it gives useful
+  feedback without becoming slow or unsound.
+- **Who owns each piece of evidence?** Avoid rerunning the same broad check at
+  multiple tiers unless the later tier supplies materially different coverage.
 - **Can the agent avoid forbidden designs?** If not, encode boundaries as tests
   or lints instead of prose.
 - **Can the agent run the obvious command?** If not, standardize task names or
@@ -122,6 +145,8 @@ Prefer durable repo-local artifacts:
 - Project-local skills for procedural, conditional, or frequently reused agent
   workflows that should load only when triggered.
 - Scripts for repeatable setup, reproduction, validation, and cleanup.
+- Local hooks that invoke canonical project tasks instead of duplicating their
+  commands.
 - Tests or custom lints for rules that must not depend on attention.
 - Diagnostic messages that explain how an agent should remediate the failure.
 - Generated references when they can be refreshed mechanically.
@@ -151,7 +176,15 @@ For audits, output:
 - checklist highlights, especially missing automated validation
 - prioritized changes by leverage and effort
 - concrete files or checks to add
+- an explicit `add`, `keep`, `change`, or `n/a` decision for local hooks; use
+  `n/a` with a reconsideration condition when the decision is deferred
+- a validation ladder naming each check's trigger, scope, approximate cost, and
+  evidence owner
 - validation strategy
+
+When historical evidence is available, prioritize by observed frequency, failure
+cost, and feedback delay as well as implementation and maintenance effort.
+Separate broad sweeps into dependency-ordered, independently reviewable changes.
 
 For implementation, keep the first pass narrow. Add one or two compounding
 affordances, run relevant formatting/tests, and document any surprising
@@ -171,7 +204,8 @@ Read only what the current task needs:
 - `references/repo-knowledge-map.md`: progressive disclosure structures.
 - `references/enforceable-invariants.md`: turning taste and architecture into
   checks.
-- `references/feedback-loops.md`: validation, observability, and recovery loops.
+- `references/feedback-loops.md`: validation ownership, observability, and
+  recovery loops.
 - `references/entropy-cleanup.md`: recurring drift detection and cleanup.
 - `references/guides-and-sensors.md`: feed-forward guides, feedback sensors, and
   computational vs inferential controls.
@@ -200,8 +234,6 @@ Read only what the current task needs:
 - Wrap existing project tooling instead of replacing it. If `make`, `rake`,
   package scripts, or framework commands already exist, expose them through a
   standard task surface when useful.
-- Use fast staged-file pre-commit hooks when helpful. Do not add pre-push hooks
-  by default; leave longer checks to explicit agent runs or CI.
 - Treat supply-chain hardening as a default audit category.
 - Recommend GitNexus only when codebase size, unfamiliarity, impact analysis, or
   repeated navigation failures justify it; do not install or index it unless the

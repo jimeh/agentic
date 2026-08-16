@@ -7,10 +7,12 @@ proves the answer. Prefer concrete evidence over inferred readiness.
 ## Contents
 
 - [Project Map](#project-map)
+- [Observed Friction](#observed-friction)
 - [Task Surface](#task-surface)
 - [Formatting](#formatting)
 - [Linting and Static Checks](#linting-and-static-checks)
 - [Types, Schemas, and Contracts](#types-schemas-and-contracts)
+- [Local Feedback and Hooks](#local-feedback-and-hooks)
 - [Tests and Reproduction](#tests-and-reproduction)
 - [GitHub Actions](#github-actions)
 - [Dependency Intake](#dependency-intake)
@@ -27,6 +29,15 @@ proves the answer. Prefer concrete evidence over inferred readiness.
 - Deeper docs are linked from the root instructions instead of duplicated.
 - Non-obvious package managers, task runners, and generated files are named.
 - Stable grep hints or ownership boundaries replace brittle path catalogs.
+
+## Observed Friction
+
+- Recent accepted review findings are sampled when accessible.
+- Recurring CI failures, slow jobs, and common local reproduction commands are
+  identified from available evidence.
+- Corrective follow-up changes are traced back to the missing guide, sensor,
+  enforcement point, task, or cleanup loop.
+- Recommendations distinguish observed failures from checklist-only gaps.
 
 ## Task Surface
 
@@ -71,6 +82,30 @@ proves the answer. Prefer concrete evidence over inferred readiness.
 - Behavioral contracts live in versioned docs or tests.
 - Compatibility or migration rules are represented by tests or fixtures when
   they affect users.
+
+## Local Feedback and Hooks
+
+- Existing hook-manager config and `core.hooksPath` behavior are inspected.
+- `setup` installs hooks idempotently in fresh clones and linked worktrees.
+- Applicable fast checks have an explicit pre-commit add/keep/change/n/a
+  decision with evidence.
+- Audit mode uses `add` only for a canonical fast check that already exists in
+  the current repository and whose representative warm runtime fits the hook
+  budget. Otherwise report `n/a` with the condition for reconsidering it, even
+  when the roadmap proposes creating or measuring the check. Bootstrap work may
+  add and measure the check before wiring it into a hook.
+- Hooks invoke canonical project tasks or shared commands rather than
+  maintaining parallel validation logic.
+- Staged formatting and linting are scoped safely, including partial staging and
+  unusual filenames where those cases matter.
+- Typechecking runs in pre-commit only when its scope is sound and its measured
+  warm runtime fits the repository's hook budget.
+- Hook failures explain remediation, and automatic writes or staging are limited
+  to predictable tools.
+- CI or an explicit handoff task remains authoritative because hooks can be
+  bypassed.
+- Hook-owned checks are not manually repeated by default unless needed for early
+  feedback or failure diagnosis.
 
 ## Tests and Reproduction
 
@@ -134,13 +169,16 @@ Use this compact shape when reporting checklist results:
 ```markdown
 ## Harness Checklist
 
-| Area | Status | Evidence | Gap or next check |
-| --- | --- | --- | --- |
-| GitHub Actions | gap | `.github/workflows/ci.yml` | Add workflow checks |
+| Area | Status | Evidence | Hook decision | Trigger | Scope | Cost | Evidence owner | Gap or next check |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Local hooks | gap | `mise run check` 4s warm; no hook config | add | commit | staged files plus sound repo checks | 4s warm | pre-commit hook | wire the canonical check into Lefthook |
 
 ## Highest-Leverage Gaps
 
-1. Add `actionlint`, `zizmor --offline .`, and `pinact run --check`.
-2. <gap with concrete file or command>
-3. <gap with concrete file or command>
+1. <observed high-frequency or high-cost gap>
+2. <early-feedback gap with concrete file or command>
+3. <next gap by leverage and maintenance cost>
 ```
+
+For every applicable check, identify its earliest sound trigger and evidence
+owner. Explicitly report the local-hook decision even when it is n/a.

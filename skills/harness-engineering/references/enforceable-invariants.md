@@ -68,7 +68,8 @@ Diagnostics should include:
 
 ## Review Feedback Loop
 
-When the same review comment appears twice, consider whether it should become:
+When a review comment repeats, arrives late, or exposes a surprising high-risk
+failure, consider whether it should become:
 
 - a lint/test/check
 - a code generator or helper
