@@ -15,9 +15,10 @@ Use this when shaping project docs for agent legibility.
 
 ## Principle
 
-The root instruction file should be a map. It should tell agents what the repo
-is, how to validate work, and where deeper truth lives. It should not be the
-whole manual.
+The root instruction file should be a map with enough compact, decision-shaping
+context to guide every change. It should tell agents what the repo is, how to
+validate work, what must not be compromised, and where deeper truth lives. It
+should not be the whole manual.
 
 ## Useful Structure
 
@@ -78,6 +79,8 @@ Keep root instructions focused on:
 - canonical task and validation commands
 - links to deeper docs
 - non-obvious global rules that apply to all edits
+- compact vocabulary, non-negotiables, change-impact dimensions, or operational
+  hazards that materially affect most work
 - discovery hints for major domains or packages
 
 Avoid:
@@ -88,6 +91,7 @@ Avoid:
 - fragile file path inventories
 - rules that are already enforced by tools
 - vague quality advice
+- personal defaults that belong in global instructions
 
 ## Deeper Docs
 

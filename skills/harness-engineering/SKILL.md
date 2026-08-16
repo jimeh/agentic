@@ -44,6 +44,8 @@ Pick the smallest useful mode:
 
 - **Audit**: assess current readiness and propose prioritized changes.
 - **Bootstrap**: create initial docs, scripts, checks, or harness conventions.
+- **Refine project instructions**: derive or improve repo-specific `AGENTS.md`
+  guidance from project evidence and maintainer intent.
 - **Refactor knowledge**: turn scattered instructions into progressive
   disclosure.
 - **Encode rules**: convert recurring review feedback into mechanical checks.
@@ -87,9 +89,10 @@ Inspect, in this order:
    tests, naming checks, file size checks, custom diagnostics.
 7. Supply-chain controls: lockfiles, package-manager age gates, GitHub Actions
    pins, action/workflow linting, dependency update policy.
-8. Historical friction when evidence is available: accepted review findings,
-   recurring CI failures, corrective follow-up changes, and manual commands that
-   repeatedly appear in handoffs.
+8. Historical friction when evidence is available and its inspection is in
+   scope: accepted review findings, recurring CI failures, corrective follow-up
+   changes, repeated handoff notes, agent-session corrections, command misuse,
+   abandoned approaches, and unexpectedly slow tasks.
 
 Prefer `rg` and existing project commands. Do not assume missing docs are the
 main problem; missing executable feedback often matters more.
@@ -106,6 +109,12 @@ Otherwise record `n/a` as the current decision with the condition for
 reconsidering it, even when the same audit recommends creating or measuring the
 check. Read `references/tooling-patterns.md` and
 `references/tooling-hooks-dependencies.md` when evaluating that decision.
+
+When creating or refining project instructions, read
+`references/project-instructions.md` and `references/repo-knowledge-map.md`.
+Inspect before interviewing the user. Ask only targeted questions about tacit
+facts that materially change the result and cannot be established from project
+evidence.
 
 ### 3. Find the Missing Harness Capability
 
@@ -139,7 +148,9 @@ For each recurring failure or desired autonomy level, ask:
 
 Prefer durable repo-local artifacts:
 
-- Minimal root `AGENTS.md` as a map, not an encyclopedia.
+- Concise root `AGENTS.md` as a map plus the compact project model,
+  non-negotiables, vocabulary, impact dimensions, and hazards that should shape
+  nearly every change.
 - Deeper docs under `docs/` for architecture, product, testing, operations,
   quality, agent guidance, and execution plans.
 - Project-local skills for procedural, conditional, or frequently reused agent
@@ -186,6 +197,10 @@ When historical evidence is available, prioritize by observed frequency, failure
 cost, and feedback delay as well as implementation and maintenance effort.
 Separate broad sweeps into dependency-ordered, independently reviewable changes.
 
+For project-instruction work, trace retained guidance to repository evidence or
+explicit maintainer input. Scenario-check the result against representative
+changes before calling it complete.
+
 For implementation, keep the first pass narrow. Add one or two compounding
 affordances, run relevant formatting/tests, and document any surprising
 project-specific discovery in the project agent instructions.
@@ -202,6 +217,9 @@ Read only what the current task needs:
   checklist.
 - `references/readiness-rubric.md`: audit categories and maturity levels.
 - `references/repo-knowledge-map.md`: progressive disclosure structures.
+- `references/project-instructions.md`: evidence-led discovery, targeted
+  maintainer questions, content selection, and scenario checks for repo-specific
+  `AGENTS.md` files.
 - `references/enforceable-invariants.md`: turning taste and architecture into
   checks.
 - `references/feedback-loops.md`: validation ownership, observability, and

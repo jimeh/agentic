@@ -24,19 +24,29 @@ proves the answer. Prefer concrete evidence over inferred readiness.
 ## Project Map
 
 - Root `AGENTS.md` or equivalent exists and is short enough to scan.
+- Root instructions focus on changing the repository rather than duplicating
+  README onboarding or marketing content.
 - Root `CLAUDE.md` exists as `@AGENTS.md` when Claude Code compatibility is
   needed.
 - Deeper docs are linked from the root instructions instead of duplicated.
 - Non-obvious package managers, task runners, and generated files are named.
+- Relevant project vocabulary, non-negotiables, change-impact dimensions, and
+  operational hazards are concise and discoverable.
 - Stable grep hints or ownership boundaries replace brittle path catalogs.
 
 ## Observed Friction
 
 - Recent accepted review findings are sampled when accessible.
+- Agent-session corrections, command misuse, abandoned approaches, and
+  unexpectedly slow tasks are sampled when available and authorized.
 - Recurring CI failures, slow jobs, and common local reproduction commands are
   identified from available evidence.
 - Corrective follow-up changes are traced back to the missing guide, sensor,
   enforcement point, task, or cleanup loop.
+- Candidate controls are ranked by observed frequency, failure cost, and
+  feedback delay.
+- Consequential tacit gaps are confirmed with targeted maintainer questions
+  rather than generic questionnaires.
 - Recommendations distinguish observed failures from checklist-only gaps.
 
 ## Task Surface
