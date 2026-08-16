@@ -3,4 +3,5 @@ interface:
   short_description: "Shape repos for reliable agent work"
   default_prompt:
     "Use $harness-engineering to audit this project and propose changes that
-    make it more legible, enforceable, and verifiable for coding agents."
+    make it legible, verifiable, and enforced at the earliest sound feedback
+    point for coding agents."

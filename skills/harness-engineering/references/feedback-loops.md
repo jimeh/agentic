@@ -3,6 +3,17 @@
 Use this when agents need to validate their own work instead of relying on human
 inspection.
 
+## Contents
+
+- [Core Loop](#core-loop)
+- [Local Dev](#local-dev)
+- [Evidence Ownership](#evidence-ownership)
+- [UI Validation](#ui-validation)
+- [Observability](#observability)
+- [CI and PR Recovery](#ci-and-pr-recovery)
+- [Review Harvest](#review-harvest)
+- [Proof Artifacts](#proof-artifacts)
+
 ## Core Loop
 
 ```text
@@ -29,11 +40,26 @@ Useful affordances:
 
 Recommended command tiers:
 
-- `format:check`, `lint`, and `typecheck` catch common mistakes quickly.
-- `check` combines fast deterministic checks.
+- Targeted format, lint, typecheck, and tests give early feedback while editing.
+- Pre-commit runs the sound subset that stays fast on a warm checkout.
+- `check` combines fast deterministic checks for normal handoff.
 - `test` runs the normal test suite or default unit tests.
 - `verify` runs broader pre-handoff checks when warranted and not discouraged by
   project instructions.
+- CI owns platform, integration, and other coverage that is impractical locally.
+
+## Evidence Ownership
+
+Assign each sensor an earliest sound trigger, scope, approximate cost, and
+evidence owner. Reuse the same underlying task across tiers, but do not manually
+repeat an identical broad check unless the later run adds coverage, the earlier
+run was bypassed, or a failure needs diagnosis.
+
+Hooks normally own staged formatting and linting. A whole-project typecheck may
+also belong there when its warm runtime fits the hook budget; otherwise keep it
+in `check`. Do not typecheck only staged files when cross-file dependencies make
+that result unsound. Keep CI or an explicit handoff task authoritative because
+hooks can be bypassed.
 
 ## UI Validation
 
@@ -75,8 +101,12 @@ Agent-ready CI has:
 When CI fails repeatedly, improve the harness rather than only patching the
 current failure.
 
-Do not add pre-push hooks by default. Long checks should be explicit agent runs
-or CI checks, not surprise blockers during `git push`.
+## Review Harvest
+
+After review, classify accepted findings as task-local, documentation-worthy, or
+mechanically enforceable. Repetition is a strong signal, but a single late,
+surprising, or high-risk finding can justify a regression test, lint, or concise
+project instruction immediately.
 
 ## Proof Artifacts
 

@@ -44,6 +44,13 @@ agent validation or reduce repeated failures.
 - Local project skills live under `.agents/skills`, with `.claude/skills`
   symlinked there whenever local skills exist.
 
+### Observed Friction
+
+- Recent review, CI, setup, and corrective-change evidence is inspected when
+  accessible.
+- Recommendations identify the concrete failure or delay they prevent.
+- Observed recurring problems outrank speculative checklist completeness.
+
 ### Validation Surface
 
 - The project has clear setup, build, lint, typecheck, and test commands.
@@ -64,6 +71,21 @@ agent validation or reduce repeated failures.
   appropriate for the change.
 - Task descriptions are discoverable through the task runner.
 
+### Local Enforcement
+
+- Every applicable fast check has an explicit pre-commit add/keep/change/n/a
+  decision.
+- Repositories without a canonical executable check measured within the hook
+  budget are not penalized for missing hooks. Audits report `n/a` with the
+  condition for reconsidering the hook after the check exists and is measured.
+- Hook installation is part of setup and works in fresh clones and worktrees.
+- Hooks reuse canonical tasks, stay within a measured latency budget, and scope
+  staged-file operations safely.
+- Typechecking is automatic only when its scope is sound and fast enough.
+- Targeted work, hooks, handoff tasks, and CI have clear evidence ownership so
+  validation is not repeated without added coverage.
+- CI or an explicit handoff task remains authoritative when hooks are bypassed.
+
 ### Observability and Reproduction
 
 - Local dev exposes useful logs and error output.
@@ -77,7 +99,8 @@ agent validation or reduce repeated failures.
 - Dependency directions, layer boundaries, schemas, naming, and logging rules
   are mechanically checked when important.
 - Error messages tell an agent how to fix violations.
-- Review feedback that repeats becomes a lint, test, script, or doc update.
+- Review feedback that repeats, arrives late, or exposes a surprising high-risk
+  failure becomes a lint, test, script, or doc update when practical.
 - Boundaries are strict where they protect coherence and loose where local
   implementation freedom is cheap.
 
@@ -108,11 +131,11 @@ Use this compact format for audits:
 
 Overall: Level <n> - <one sentence>
 
-| Area | Level | Evidence | Next improvement |
-| --- | ---: | --- | --- |
-| Project map | 2 | ... | ... |
-| Task surface | 2 | ... | ... |
-| Supply-chain and automation | 1 | ... | ... |
+| Area | Level | Evidence | Hook decision | Trigger | Scope | Cost | Evidence owner | Next improvement |
+| --- | ---: | --- | --- | --- | --- | --- | --- | --- |
+| Project map | 2 | ... | n/a | editing | changed area | ... | author or agent | ... |
+| Local enforcement | 1 | ... | change | commit | ... | ... | pre-commit hook | ... |
+| Supply-chain and automation | 1 | ... | n/a | CI | repository | ... | CI | ... |
 
 ## Priority Changes
 

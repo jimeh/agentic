@@ -49,18 +49,35 @@ version-file setting for those tools instead of duplicating versions.
 ## Validation Tiers
 
 - **Targeted**: changed-package checks, focused tests, or commands named in the
-  local docs. Use during normal work.
+  local docs. Use during normal work for the fastest relevant feedback.
+- **Pre-commit**: staged or otherwise sound checks that normally finish within
+  about 10 seconds on a warm checkout. Measure and adjust this budget for the
+  repository rather than treating it as a rigid limit.
 - **Check**: fast deterministic project confidence. Use before handoff for most
-  small changes.
+  small changes; roughly one minute is a useful default budget.
 - **Verify**: full or near-CI validation. Use for broad, risky, release-facing,
   or final work when local instructions do not discourage it.
+- **CI**: authoritative platform, integration, and security coverage that is not
+  practical in every local loop.
 
 Respect project instructions that say full suites are slow or should be avoided
 unless explicitly needed.
 
+Assign each check to the earliest tier where it is sound and affordable. Reuse
+canonical tasks across tiers, but do not rerun identical broad work merely to
+populate every tier.
+
 ## Local Hooks
 
-Use hooks for fast local sensors only.
+Use hooks for fast local sensors only. For every audit, record an explicit
+`add`, `keep`, `change`, or `n/a` local-hook decision and give the evidence for
+it. Use `n/a` with a reconsideration condition when the decision is deferred.
+
+In audit mode, use `add` only when a canonical executable check already exists
+and a representative warm run fits the hook budget. Otherwise report `n/a`,
+recommend creating or measuring the validation surface first, and state when to
+reconsider hooks. During an authorized bootstrap, add hooks only after the new
+checks run reliably and fit the budget.
 
 Good pre-commit candidates:
 
@@ -68,6 +85,10 @@ Good pre-commit candidates:
 - lint staged files
 - check simple generated-file freshness
 - block obvious secrets or invalid metadata
+
+A whole-project or dependency-aware typecheck can run in pre-commit when its
+warm runtime fits the repository's budget. Keep it in `check` when it is slow;
+do not scope it to staged files when that would miss cross-file errors.
 
 Avoid pre-push hooks by default. They interrupt flow at the wrong time and make
 long checks feel punitive. Let agents run longer checks while working, or let CI
@@ -78,7 +99,9 @@ for tools whose write behavior is predictable, such as formatters. Prefer
 installing Lefthook through the project's runtime as a dev dependency when that
 fits the ecosystem, such as an npm package or Ruby gem. Use mise for Lefthook
 when the project does not have a suitable runtime-level dependency path or wants
-a shared cross-language tool pin.
+a shared cross-language tool pin. Install hooks through the canonical setup task
+and verify fresh-clone, worktree, partial-staging, and unusual-filename behavior
+in proportion to the repository's risk.
 
 ## CI and Workflow Hardening
 
