@@ -45,8 +45,8 @@ proves the answer. Prefer concrete evidence over inferred readiness.
   enforcement point, task, or cleanup loop.
 - Candidate controls are ranked by observed frequency, failure cost, and
   feedback delay.
-- Consequential tacit gaps are confirmed with targeted maintainer questions
-  rather than generic questionnaires.
+- Consequential tacit gaps are confirmed with targeted maintainer questions or
+  carried as explicit material assumptions, never generic questionnaires.
 - Recommendations distinguish observed failures from checklist-only gaps.
 
 ## Task Surface

@@ -153,7 +153,11 @@ an instruction merely because it already exists.
 
 Replay two or three representative changes before considering the instructions
 done. Prefer a common change, a historically troublesome change, and a boundary
-case. For each scenario, verify that a fresh agent can determine:
+case. When isolated agent sessions are available and proportionate, give a fresh
+evaluator the draft, its linked repository sources, and the scenario without the
+author's conclusions. Otherwise replay the scenario manually while limiting the
+evidence to what the draft makes discoverable, and record that weaker validation
+boundary. For each scenario, verify that the evaluator can determine:
 
 - which code and change-impact dimensions need consideration
 - which source of truth or deeper doc to consult

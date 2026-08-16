@@ -1,11 +1,11 @@
 ---
 name: harness-engineering
 description: >-
-  Shape a repository so coding agents work reliably in it: legible project
-  knowledge, runnable feedback loops, early local enforcement, enforceable
-  architecture rules, and cleanup processes. Use for agent-readiness audits and
-  for turning repeated agent failures into durable repo-local tooling — beyond
-  editing instruction files.
+  Shape a repository so coding agents work reliably in it: evidence-led project
+  instructions, legible knowledge, runnable feedback loops, early local
+  enforcement, enforceable architecture rules, and cleanup processes. Use for
+  agent-readiness audits, creating or refining repo-specific AGENTS.md files,
+  and turning repeated agent failures into durable repo-local tooling.
 ---
 
 # Harness Engineering
@@ -110,7 +110,7 @@ reconsidering it, even when the same audit recommends creating or measuring the
 check. Read `references/tooling-patterns.md` and
 `references/tooling-hooks-dependencies.md` when evaluating that decision.
 
-When creating or refining project instructions, read
+When creating, auditing, or refining project instructions, read
 `references/project-instructions.md` and `references/repo-knowledge-map.md`.
 Inspect before interviewing the user. Ask only targeted questions about tacit
 facts that materially change the result and cannot be established from project
@@ -148,9 +148,9 @@ For each recurring failure or desired autonomy level, ask:
 
 Prefer durable repo-local artifacts:
 
-- Concise root `AGENTS.md` as a map plus the compact project model,
-  non-negotiables, vocabulary, impact dimensions, and hazards that should shape
-  nearly every change.
+- Concise root `AGENTS.md` as a map plus any compact project model,
+  non-negotiables, vocabulary, impact dimensions, or hazards that materially
+  affect most work.
 - Deeper docs under `docs/` for architecture, product, testing, operations,
   quality, agent guidance, and execution plans.
 - Project-local skills for procedural, conditional, or frequently reused agent

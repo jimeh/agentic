@@ -2,6 +2,5 @@ interface:
   display_name: "Harness Engineering"
   short_description: "Shape repos for reliable agent work"
   default_prompt:
-    "Use $harness-engineering to audit this project and propose changes that
-    make it legible, verifiable, and enforced at the earliest sound feedback
-    point for coding agents."
+    "Use $harness-engineering to audit this project and improve its
+    repo-specific instructions and feedback loops for reliable agent work."
