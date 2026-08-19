@@ -1,19 +1,27 @@
 ---
 name: babysit-pr
 description: >-
-  Steward an open GitHub pull request until its requested completion condition.
-  Use when the user asks to watch, babysit, monitor, or get a PR ready; wait for
-  CI or reviews; address feedback; reply to or resolve review threads; or push
-  follow-up fixes. Do not merge unless explicitly asked.
+  Handle post-filing work on an open GitHub pull request. Use when the user asks
+  to post a comment, publish findings from a review, or share other feedback;
+  watch, babysit, monitor, or get a PR ready; wait for CI or reviews; address
+  feedback; reply to or resolve review threads; or push follow-up fixes. Do not
+  merge unless explicitly asked.
 ---
 
 # Babysit PR
 
-Own the maintenance loop for an existing pull request. Invocation authorizes
-relevant code fixes, proportionate validation, commits, normal pushes to the PR
-branch, human-facing replies, thread resolution, and draft-to-ready transition
-needed to reach the requested condition. It does not authorize force-pushing,
-dismissing human reviews, merging, deploying, or releasing.
+Own post-filing interaction and maintenance for an existing pull request. For a
+bounded request such as posting a single comment or set of review findings,
+resolve the target, verify the content and revision when relevant, publish it
+with the attribution required below, read it back, report the result, and stop.
+Do not enter the maintenance loop, change code, or act on unrelated PR state
+unless the user requested broader stewardship.
+
+A broader invocation authorizes relevant code fixes, proportionate validation,
+commits, normal pushes to the PR branch, human-facing comments and replies,
+thread resolution, and draft-to-ready transition needed to reach the requested
+condition. It does not authorize force-pushing, dismissing human reviews,
+merging, deploying, or releasing.
 
 ## Establish the Target
 
