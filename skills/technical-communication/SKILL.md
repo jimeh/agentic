@@ -1,11 +1,12 @@
 ---
 name: technical-communication
 description: >-
-  Draft, revise, or review substantive technical communication such as plans,
+  Draft, revise, or audit substantive technical communication such as plans,
   specifications, documentation, explanations, status reports, and handoffs.
-  Use when clarity, structure, accuracy, or reader action materially affects
-  the result. Do not use for tiny transactional replies or as a replacement for
-  a more specific skill's required artifact or workflow.
+  Use when clarity, structure, accuracy, or reader action materially affects the
+  result; review requests for these artifacts are audits. Do not use for tiny
+  transactional replies or as a replacement for a more specific skill's
+  required artifact or workflow.
 ---
 
 # Technical Communication
@@ -19,8 +20,9 @@ Choose the working mode before writing:
 - **Draft:** create a new artifact from the available evidence and requirements.
 - **Revise:** improve an existing artifact without changing protected meaning or
   structure unless the request calls for that change.
-- **Audit:** return prioritized, evidence-backed findings. Do not silently
-  rewrite the artifact unless the user also asks for a revision.
+- **Audit:** including when the user asks for a review, return prioritized,
+  evidence-backed findings only. Do not rewrite the artifact unless the user
+  also asks for a revision.
 
 ## Start From the Reader and Purpose
 
@@ -85,7 +87,7 @@ maintaining the distillation, answering a specialized Google-style question, or
 performing an explicitly requested Google Style Guide compliance check. Ordinary
 writing tasks need neither research reference.
 
-## Review the Result
+## Check the Result
 
 Before delivering substantive writing, check that:
 
@@ -93,7 +95,9 @@ Before delivering substantive writing, check that:
 - actors, actions, requirements, and uncertainty are unambiguous;
 - the structure reflects the content instead of a habitual template;
 - claims are supported and examples do not pretend to be evidence;
-- the reader can identify the next action or acceptance condition; and
+- the reader can identify the next action or acceptance condition;
+- each remaining section, example, and qualification carries meaning or
+  necessary context; and
 - the artifact is clear, accurate, consistent, and fit for its destination.
 
 Stop when further editing would merely shorten, homogenize, or restyle the

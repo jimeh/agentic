@@ -15,15 +15,17 @@ not as a transcript of the delivery process.
 ## Understand the Change
 
 Use the user request or linked issue, existing PR copy, repository instructions,
-and the full branch diff against its actual base. Inspect the branch's commits
-as supporting context, but describe the branch as one coherent change rather
-than a commit log.
+and the full merge-base or three-dot-equivalent diff between the actual base and
+head. Inspect the branch's commits as supporting context, but describe the
+branch as one coherent change rather than a commit log.
 
-Consume the base and refreshed refs supplied by the caller. In standalone use,
-resolve the base from available read-only repository state; do not fetch or
-otherwise mutate Git. If the correct current base cannot be established and
-would materially change the story, ask the caller or user to supply or refresh
-it instead of guessing.
+Work only from current immutable base and head identities supplied by the caller
+or, in standalone use, established from current read-only PR metadata. Verify
+that both resolve to the commits used for the comparison and match current
+read-only PR metadata when it is available. A local remote-tracking ref alone
+does not prove that either identity is current. If either identity remains
+materially uncertain, ask the caller or user to refresh or supply it instead of
+guessing. The caller owns ref refreshes and all Git or GitHub mutation.
 
 Treat existing PR copy as potentially stale. Reconcile its issue intent,
 qualifications and modality, scope, validation, rollout claims, tradeoffs, risk,
@@ -49,9 +51,10 @@ repository template requires.
 
 - Cover the full branch scope without listing every file or commit.
 - Include a Testing section only when actual validation gives reviewers useful
-  context or the template requires it. Prefer portable repository commands or a
-  concise observed result. Never invent commands or results, and omit local
-  helper paths.
+  context or the template requires it. Name a portable repository command only
+  when it is the command that actually ran. Otherwise report a concise observed
+  result without substituting a different command. Never invent commands or
+  results, and omit local helper paths.
 - Keep Testing distinct from Manual QA. Include manual steps only when they are
   concrete reviewer or user workflows, not generic CI instructions.
 - Omit machine-local paths, usernames, home directories, host details, template
@@ -84,7 +87,7 @@ an existing footer. The footer describes authorship of the prose, not the code.
 
 Before returning the copy, verify that it:
 
-- matches the full current diff and intended base and head;
+- matches the full comparison between the verified immutable base and head;
 - preserves the issue's intent, qualifications, and exact technical names;
 - makes only evidence-backed validation, rollout, CI, and review claims;
 - gives reviewers the material tradeoffs, limitations, and residual risk;

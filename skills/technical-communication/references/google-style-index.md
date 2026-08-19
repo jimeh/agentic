@@ -16,6 +16,15 @@ The categories and 70 distinct pages below were derived from the live guide's
 navigation. On the review date, each linked agent-readable endpoint returned
 `200` with a `text/markdown` content type.
 
+Each link uses Google's agent-readable `.md.txt` variant. Remove that suffix to
+open the corresponding rendered page. Fetch only the pages relevant to the
+question; do not load the full guide by default.
+
+When maintaining this index, derive the distinct `/style` paths from the live
+guide navigation, compare that set with the links below, verify that each
+`.md.txt` endpoint still returns Markdown successfully, and update the count and
+review date.
+
 ## Introduction
 
 - [About this guide](https://developers.google.com/style.md.txt)

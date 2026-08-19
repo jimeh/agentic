@@ -69,9 +69,10 @@ short, and do not bury a procedure inside an essay.
 - Start each material step with the action. Keep one reader decision per step
   and split long or branching steps.
 - Explain placeholders near the command or example that uses them.
-- Do not infer missing commands, flags, UI paths, expected results, or required
-  actions from a nearby example. Surface the missing input or ask rather than
-  filling the gap with a plausible step.
+- When a procedure detail is missing, verify it against the available
+  implementation, contracts, commands, or UI. If it cannot be verified, surface
+  the missing input or ask; do not infer a command, flag, UI path, expected
+  result, or required action from a nearby example.
 - State expected results, output, or verification when readers need them to know
   whether they can continue.
 - Mark optional actions unambiguously. Do not make a required step sound

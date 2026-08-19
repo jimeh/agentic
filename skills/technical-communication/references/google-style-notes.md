@@ -120,6 +120,15 @@ Sources: [code samples](https://developers.google.com/style/code-samples),
 [figures and other images](https://developers.google.com/style/images), and
 [third-party content](https://developers.google.com/style/other-sources).
 
+## Comparative Inspiration
+
+The operational distinction between drafting, revising, and auditing; the
+protected-content pass for revisions; and the stopping rule were also informed
+by the
+[`nbj-write-clearly` implementation](https://github.com/daniel-p-green/nbj-write-clearly/commit/56e3a27f920bcd772f7b03fa476b5cfb9268332c)
+at commit `56e3a27`. Those safeguards are comparative design adaptations, not
+rules attributed to Google.
+
 ## Deliberate Adaptations and Omissions
 
 - Do not impose Google's product naming, trademark, phone-number, punctuation,
@@ -135,10 +144,3 @@ Sources: [code samples](https://developers.google.com/style/code-samples),
   project voice make them clear and appropriate.
 - Prefer Markdown for ordinary linear communication in this repository. Use a
   more expressive format only when it materially improves comprehension.
-
-The operational distinction between drafting, revising, and auditing; the
-protected-content pass for revisions; and the stopping rule were also informed
-by
-[`nbj-write-clearly` at commit `56e3a27`](https://github.com/daniel-p-green/nbj-write-clearly/commit/56e3a27f920bcd772f7b03fa476b5cfb9268332c).
-Those safeguards are comparative design adaptations, not rules attributed to
-Google.
