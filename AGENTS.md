@@ -193,3 +193,6 @@ not `>file`). See `.editorconfig` for shfmt flags.
 - opencode reads `~/.config/opencode/AGENTS.md`, falling back to
   `~/.claude/CLAUDE.md` only when that file is absent. Populating the former
   stops opencode inheriting Claude-only rules.
+- `thirdparty:add-skills` reports and skips unrelated upstream skills with
+  malformed or non-slug metadata. Explicitly selecting an invalid skill still
+  fails instead of vendoring metadata the local harness would reject.

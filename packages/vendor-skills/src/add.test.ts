@@ -166,6 +166,68 @@ test("add dry-run does not write the manifest", async () => {
   );
 });
 
+test("add skips invalid unrelated upstream skill metadata", async () => {
+  const temp = project();
+  const errors: string[] = [];
+  write(
+    join(temp.upstream, "skills", "invalid-slug", "SKILL.md"),
+    ["---", "name: Invalid Slug", "description: Invalid name", "---", ""].join(
+      "\n",
+    ),
+  );
+  write(
+    join(temp.upstream, "skills", "invalid-yaml", "SKILL.md"),
+    ["---", "name: invalid-yaml", "description: invalid: yaml", "---", ""].join(
+      "\n",
+    ),
+  );
+  run("git", ["add", "."], temp.upstream);
+  run("git", ["commit", "--quiet", "-m", "add invalid skills"], temp.upstream);
+
+  const result = await addThirdpartySkills({
+    root: temp.root,
+    options: {
+      source: temp.upstream,
+      ref: null,
+      dryRun: false,
+      skills: ["second-skill"],
+    },
+    logger: { log() {}, error: (message) => errors.push(message) },
+  });
+
+  expect(result.added).toEqual(["second-skill"]);
+  expect(errors).toHaveLength(2);
+  expect(errors[0]).toContain("skipping invalid upstream skill");
+  expect(errors.join("\n")).toContain("invalid-slug/SKILL.md");
+  expect(errors.join("\n")).toContain("invalid-yaml/SKILL.md");
+});
+
+test("add rejects an explicitly selected invalid upstream skill", async () => {
+  const temp = project();
+  write(
+    join(temp.upstream, "skills", "invalid-slug", "SKILL.md"),
+    ["---", "name: Invalid Slug", "description: Invalid name", "---", ""].join(
+      "\n",
+    ),
+  );
+  run("git", ["add", "."], temp.upstream);
+  run("git", ["commit", "--quiet", "-m", "add invalid skill"], temp.upstream);
+
+  await expectRejects(
+    addThirdpartySkills({
+      root: temp.root,
+      options: {
+        source: temp.upstream,
+        ref: null,
+        dryRun: false,
+        skills: ["invalid-slug"],
+      },
+      logger: silentLogger,
+    }),
+    "cannot add invalid upstream skill 'invalid-slug'",
+  );
+});
+
 test("add restores the manifest when vendoring fails", async () => {
   const temp = project();
   const manifestPath = join(temp.root, "thirdparty", "skills.manifest.json");

@@ -10,6 +10,18 @@ export type DiscoveredSkill = {
   path: string;
 };
 
+/** Upstream skill whose metadata cannot be safely vendored. */
+export type InvalidSkill = {
+  path: string;
+  error: string;
+};
+
+/** Valid and invalid skills found in an upstream checkout. */
+export type SkillDiscovery = {
+  skills: DiscoveredSkill[];
+  invalid: InvalidSkill[];
+};
+
 function skillDirs(baseDir: string, currentDir = baseDir): string[] {
   return readdirSync(currentDir, { withFileTypes: true }).flatMap((entry) => {
     if (entry.name === ".git" || entry.name === "node_modules") {
@@ -33,26 +45,40 @@ function skillDirs(baseDir: string, currentDir = baseDir): string[] {
   });
 }
 
-/** Discover skill directories in a checked-out upstream repository. */
-export function discoverSkills(checkoutDir: string): DiscoveredSkill[] {
-  return skillDirs(checkoutDir)
-    .map((skillDir) => {
-      const skillFile = join(skillDir, "SKILL.md");
-      const { data } = matter(readFileSync(skillFile, "utf8"));
+/** Discover valid skills without letting one invalid sibling abort discovery. */
+export function discoverSkills(checkoutDir: string): SkillDiscovery {
+  const skills: DiscoveredSkill[] = [];
+  const invalid: InvalidSkill[] = [];
+
+  for (const skillDir of skillDirs(checkoutDir)) {
+    const path = relative(checkoutDir, skillDir).split(sep).join("/");
+
+    try {
+      const { data } = matter(readFileSync(join(skillDir, "SKILL.md"), "utf8"));
       if (
         typeof data.name !== "string" ||
         typeof data.description !== "string"
       ) {
-        throw new Error(`${skillFile}: missing name or description`);
+        throw new Error("missing name or description");
       }
 
-      assertSlug(data.name, `${skillFile} name`);
+      assertSlug(data.name, "name");
 
-      return {
+      skills.push({
         name: data.name,
         description: data.description,
-        path: relative(checkoutDir, skillDir).split(sep).join("/"),
-      };
-    })
-    .sort((a, b) => a.name.localeCompare(b.name));
+        path,
+      });
+    } catch (error) {
+      invalid.push({
+        path,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
+
+  return {
+    skills: skills.sort((a, b) => a.name.localeCompare(b.name)),
+    invalid: invalid.sort((a, b) => a.path.localeCompare(b.path)),
+  };
 }

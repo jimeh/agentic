@@ -1,7 +1,11 @@
 import { existsSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { discoverSkills, type DiscoveredSkill } from "./discover";
+import {
+  discoverSkills,
+  type DiscoveredSkill,
+  type InvalidSkill,
+} from "./discover";
 import { cloneSource, realExec } from "./git";
 import { validateManifest } from "./manifest";
 import { pathsForRoot } from "./paths";
@@ -125,6 +129,7 @@ function resolveSkill(
 
 function skillsFromFlags(
   discovered: DiscoveredSkill[],
+  invalid: InvalidSkill[],
   available: DiscoveredSkill[],
   requested: string[],
 ): DiscoveredSkill[] {
@@ -133,6 +138,15 @@ function skillsFromFlags(
   for (const name of requested) {
     const match = resolveSkill(name, discovered);
     if (!match) {
+      const invalidMatch = invalid.find((skill) => {
+        return skill.path.split("/").pop() === name;
+      });
+      if (invalidMatch) {
+        throw new Error(
+          `cannot add invalid upstream skill '${name}': ${invalidMatch.error}`,
+        );
+      }
+
       const names = discovered.map((skill) => skill.name).join(", ");
       throw new Error(
         `unknown skill: ${name} (upstream has: ${names || "none"})`,
@@ -185,7 +199,14 @@ export async function addThirdpartySkills(input: AddInput): Promise<AddResult> {
       effectiveRef,
       source.id,
     );
-    const discovered = discoverSkills(cloneDir);
+    const discovery = discoverSkills(cloneDir);
+    const discovered = discovery.skills;
+    for (const skill of discovery.invalid) {
+      logger.error(
+        `warning: skipping invalid upstream skill ${skill.path}/SKILL.md: ` +
+          skill.error,
+      );
+    }
     const available = availableSkills(
       manifest,
       source,
@@ -195,7 +216,12 @@ export async function addThirdpartySkills(input: AddInput): Promise<AddResult> {
 
     let selected: DiscoveredSkill[];
     if (input.options.skills.length > 0) {
-      selected = skillsFromFlags(discovered, available, input.options.skills);
+      selected = skillsFromFlags(
+        discovered,
+        discovery.invalid,
+        available,
+        input.options.skills,
+      );
     } else {
       if (available.length === 0) {
         logger.log("no new skills available");
