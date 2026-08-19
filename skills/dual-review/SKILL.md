@@ -1,42 +1,26 @@
 ---
 name: dual-review
 description: >-
-  Run independent Codex and Claude reviews and reconcile their findings. Use
-  when the user asks for a dual review, a Codex-and-Claude review, or the review
-  phase of ship-feature-pr.
+  Run independent Codex and Claude reviews of the same code change and reconcile
+  their findings against the evidence. Use for dual-review requests and the
+  review phase of ship-feature-pr.
 ---
 
 # Dual Review
 
-Own review orchestration and synthesis, not the reviewed change. Remain
-read-only: do not edit files, commit, push, post feedback, or mutate the pull
-request. Temporary artifacts, safe ref fetches, and isolated review checkouts
-are acceptable, but leave the caller's checkout and local work unchanged.
+Read and apply the `review-code` skill as the shared standard for target
+pinning, the review brief, inspection, finding acceptance, revision coverage,
+and reporting. This skill owns only reviewer independence, lifecycle
+coordination, and synthesis.
 
-When the user also authorizes fixes or PR stewardship, complete this review and
-hand its results to that workflow rather than absorbing its responsibilities.
-
-## Pin the Target and Brief
-
-Resolve the repository, applicable instructions, review scope, requirements, and
-exact base and head revisions. For a pull request, also capture its URL, state,
-changed files, and available check evidence. Review immutable revisions, not a
-moving branch name.
-
-Snapshot local staged, unstaged, and untracked work. Avoid switching the
-caller's checkout; fetch safely or use a temporary checkout when needed.
-
-Give both reviewers the same compact brief:
-
-- repository, base, head, and scope;
-- the user request and available specification, issue, or PR description;
-- material invariants, risks, and non-goals; and
-- existing validation evidence with its revision and environment limits.
-
-State assumptions when requirements are incomplete. Do not derive a broader
-contract from the implementation alone.
+Remain read-only under that skill's authorization boundary. When the user also
+authorizes fixes or pull-request stewardship, complete and reconcile this review
+before handing confirmed findings to the owning workflow.
 
 ## Run Independent Reviewers
+
+Use `review-code` to pin one exact target and build one compact brief. Give that
+same brief and review contract to both reviewers.
 
 Preflight both channels, then start exactly one fresh Codex reviewer and one
 fresh Claude reviewer concurrently when practical. Use a fresh native reviewer
@@ -54,19 +38,11 @@ not infer authorship, weight findings by engine, or substitute two sessions from
 one engine. Reliable provenance may describe an independence limitation, but it
 does not decide whether a finding is correct.
 
-Ask both reviewers to inspect requirements, correctness, edge cases, security,
-unintended behavior, and validation proportionality. Require findings with
-severity, location, concrete failure mode, and fix direction; the exact
-revisions reviewed; an explicit no-findings verdict when appropriate; and a
-separate validation and test-quality verdict.
-
-Use an inspection-first execution policy. Do not repeat broad checks already
-covered by valid evidence; allow focused reproducers only for concrete suspected
-defects. Start one initial attempt per reviewer and let each provider-specific
-skill own its process lifetime. A coordination deadline is a status and
-escalation checkpoint, not permission to interrupt a healthy reviewer, shorten
-its provider guidance, or restart it because the other reviewer or CI finished.
-Keep resumable sessions when follow-up is expected, otherwise clean up one-shot
+Start one initial attempt per reviewer and let each provider-specific skill own
+its process lifetime. A coordination deadline is a status and escalation
+checkpoint, not permission to interrupt a healthy reviewer, shorten its provider
+guidance, or restart it because the other reviewer or CI finished. Keep
+resumable sessions when follow-up is expected, otherwise clean up one-shot
 artifacts. Check liveness before retrying, retry only a diagnosed terminal or
 transient failure, and do not loop blindly.
 
@@ -77,23 +53,20 @@ revision. Return useful partial evidence, but mark the dual review incomplete if
 either channel failed, was empty, or covered an ambiguous or stale revision.
 
 Wait for both initial reports before acting on either. Treat reports as
-evidence, not votes: verify findings against the requirements, code, and
-observable behavior. Agreement increases confidence but is not proof, and one
-well-supported finding remains actionable. Deduplicate shared root causes,
-resolve disagreements from the evidence, explain dismissals, and treat material
-validation gaps as findings.
+evidence, not votes. Apply `review-code` finding acceptance to each candidate.
+Agreement increases confidence but is not proof, and one well-supported finding
+remains actionable. Deduplicate shared root causes, resolve disagreements from
+the evidence, and explain dismissals.
 
-Read back a pull request's live base and head after reconciliation. If either
-moved, report the captured review as stale rather than silently chasing the new
-revision.
+Apply the `review-code` currentness check after reconciliation. For a pull
+request, read back both live base and head; if either moved, report the captured
+review as stale.
 
 ## Continue When Requested
 
 When a caller supplies both prior reviewer sessions, findings, and prior and new
-immutable base-head pairs, resume both reviewers only when the sessions and
-revisions remain available, each prior revision is an ancestor of its new
-counterpart, and the scope is a genuine continuation. Have them inspect the
-effects of both base and head deltas and identify the new pair they covered.
+immutable base-head pairs, apply the `review-code` continuation criteria to both
+reviewers. Resume only when both sessions qualify and remain available.
 
 Use fresh reviewers when continuation is unavailable, revision identity is
 uncertain, incremental coverage is ambiguous, or scope materially broadened. The
@@ -102,8 +75,7 @@ and reconciles that review.
 
 ## Report
 
-Lead with confirmed findings ordered by severity, then report exact revision
-coverage, whether it matches the live target, separate reviewer and validation
-verdicts, meaningful disagreements or dismissals, residual risk, and any session
-handles needed by a caller. Say directly when there are no confirmed findings;
-never describe partial or stale coverage as a completed current dual review.
+Use the `review-code` reporting contract, adding separate reviewer and
+validation/test verdicts for each channel, meaningful disagreements or
+dismissals, and any session handles needed by a caller. Never describe
+one-channel, partial, or stale coverage as a completed current dual review.

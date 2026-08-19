@@ -1,6 +1,6 @@
 interface:
   display_name: "Codex Review"
-  short_description: "Review code changes with Codex"
+  short_description: "Independent Codex review of code changes"
   default_prompt:
     "Use $codex-review to have Codex review the current changes for correctness,
     proportionate validation evidence, test quality, and residual risk."
