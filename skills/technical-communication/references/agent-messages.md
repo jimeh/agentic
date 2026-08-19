@@ -1,9 +1,9 @@
-# Agent messages
+# Agent Messages
 
 Agent communication should expose useful state and evidence without forcing the
 reader to reconstruct the work from a command-by-command activity log.
 
-## Progress updates
+## Progress Updates
 
 - State the current focus and why it matters to the requested outcome.
 - Report material findings, decisions, changed assumptions, or blockers as they
@@ -14,7 +14,7 @@ reader to reconstruct the work from a command-by-command activity log.
   work. Stop for input when proceeding would require a material product decision
   or new authority.
 
-## Final responses
+## Final Responses
 
 - Lead with the completed outcome or the exact reason the outcome is blocked.
 - Summarize material changes or conclusions, then provide the strongest
@@ -25,7 +25,7 @@ reader to reconstruct the work from a command-by-command activity log.
 - Make the response self-contained; it should not depend on progress updates
   that may be collapsed or unavailable later.
 
-## Explanations and investigations
+## Explanations and Investigations
 
 - Answer the reader's immediate question first.
 - Present evidence before interpretation when the distinction matters.

@@ -4,7 +4,7 @@ Documentation helps a reader understand or use the current system. Preserve the
 project's established documentation architecture, terminology, formatting, and
 source-of-truth hierarchy.
 
-## Choose the document's job
+## Choose the Document's Job
 
 Identify the primary content type before organizing it:
 
@@ -18,7 +18,7 @@ Identify the primary content type before organizing it:
 Mix types only when that helps the reader. Keep a task's conceptual introduction
 short, and do not bury a procedure inside an essay.
 
-## Build from verified behavior
+## Build From Verified Behavior
 
 - Inspect the implementation, public contracts, commands, UI, and existing docs
   relevant to the claim. Do not document an assumption as current behavior.
@@ -30,11 +30,12 @@ short, and do not bury a procedure inside an essay.
 - Use exact dates, versions, measurements, and sources when their precision
   affects the reader's decision.
 
-## Structure for scanning
+## Structure for Scanning
 
 - Give the page a clear purpose and put critical information first.
-- Use descriptive sentence-case headings. Start task headings with a direct
-  verb; use noun phrases for conceptual or reference sections when natural.
+- Follow the project's established heading capitalization. When none exists, use
+  descriptive sentence-case headings. Start task headings with a direct verb;
+  use noun phrases for conceptual or reference sections when natural.
 - Keep paragraphs focused on one idea. Introduce lists, tables, examples, code,
   and diagrams with the context needed to interpret them.
 - Use numbered lists for sequences, bullets for unordered sets, and tables for
@@ -43,7 +44,7 @@ short, and do not bury a procedure inside an essay.
   destination with descriptive text rather than making readers follow a link for
   a short definition or prerequisite.
 
-## Write usable procedures
+## Write Usable Procedures
 
 - State prerequisites, permissions, environment, and other preparation before
   the reader starts.
@@ -59,7 +60,7 @@ short, and do not bury a procedure inside an essay.
 - Mark optional actions unambiguously. Do not make a required step sound
   optional merely because it begins with a purpose clause.
 
-## Use examples that work
+## Use Examples That Work
 
 - Make examples representative of the documented path and valid under the
   project's current syntax and style.

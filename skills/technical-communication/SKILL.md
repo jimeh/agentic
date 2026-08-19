@@ -14,7 +14,7 @@ Make the artifact easy for its intended reader to understand, evaluate, and act
 on. Treat user instructions, project terminology, existing templates, and
 repository-specific style as authoritative over this skill.
 
-## Start from the reader and purpose
+## Start From the Reader and Purpose
 
 - Identify the intended reader, what they already know, and the decision or
   action the artifact must support.
@@ -26,7 +26,7 @@ repository-specific style as authoritative over this skill.
 - Match depth to consequence. A short status update and a public technical
   specification need different levels of context and precision.
 
-## Compose for understanding
+## Compose for Understanding
 
 - Lead with the outcome, decision, or critical information. Put supporting
   detail after the reader knows why it matters.
@@ -51,7 +51,7 @@ repository-specific style as authoritative over this skill.
 - Prefer durable statements about current behavior. Clearly label proposals,
   future work, version-specific facts, and time-sensitive information.
 
-## Load only the relevant guidance
+## Load Only the Relevant Guidance
 
 - For an implementation or execution plan, read
   [references/plans.md](references/plans.md).
@@ -69,7 +69,7 @@ use this guidance only for gaps it leaves open. Read
 maintaining or adapting this skill; ordinary writing tasks do not need its
 research notes.
 
-## Review the result
+## Review the Result
 
 Before delivering substantive writing, check that:
 
@@ -78,5 +78,5 @@ Before delivering substantive writing, check that:
 - the structure reflects the content instead of a habitual template;
 - claims are supported and examples do not pretend to be evidence;
 - the reader can identify the next action or acceptance condition; and
-- removing any remaining words or structure would improve clarity rather than
-  merely shorten the artifact.
+- no remaining words or structure can be removed with a gain in clarity; what
+  remains carries meaning rather than merely length.

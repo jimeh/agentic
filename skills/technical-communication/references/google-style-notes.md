@@ -1,4 +1,4 @@
-# Google developer style notes
+# Google Developer Style Notes
 
 Last reviewed: 2026-08-19.
 
@@ -9,7 +9,7 @@ a vendored copy. The source guide is licensed under
 the rationale for this skill; ordinary writing tasks should use the skill's
 task-focused guidance instead.
 
-## Reference hierarchy
+## Reference Hierarchy
 
 Google treats its guide as guidance rather than universal rules. It recommends
 project-specific style first, its guide second, and other editorial references
@@ -24,9 +24,9 @@ This skill adapts that hierarchy as follows:
    decision open.
 3. Use external style references to resolve remaining language questions.
 
-## Principles adopted
+## Principles Adopted
 
-### Reader, voice, and precision
+### Reader, Voice, and Precision
 
 - Write for a known audience in a conversational, respectful, direct voice.
 - Prefer active voice, second person for reader actions, present tense for
@@ -42,7 +42,7 @@ Sources: [voice and tone](https://developers.google.com/style/tone),
 [jargon](https://developers.google.com/style/jargon), and
 [anthropomorphism](https://developers.google.com/style/anthropomorphism).
 
-### Information order and structure
+### Information Order and Structure
 
 - Put critical information first and keep paragraphs focused on one idea.
 - Put a relevant condition, context, or goal before the instruction it
@@ -59,7 +59,7 @@ Sources:
 [lists](https://developers.google.com/style/lists), and
 [procedures](https://developers.google.com/style/procedures).
 
-### Prescriptive and evidence-based writing
+### Prescriptive and Evidence-Based Writing
 
 - Recommend a useful path instead of presenting equivalent-looking options.
 - Distinguish required, recommended, optional, expected, and possible behavior.
@@ -75,7 +75,7 @@ Sources:
 [future features](https://developers.google.com/style/future), and
 [present tense](https://developers.google.com/style/tense).
 
-### Accessibility, inclusion, and global use
+### Accessibility, Inclusion, and Global Use
 
 - Make headings, links, lists, tables, images, and interactive instructions
   navigable without relying only on visual position or styling.
@@ -88,10 +88,11 @@ Sources:
 Sources:
 [accessible documentation](https://developers.google.com/style/accessibility),
 [inclusive documentation](https://developers.google.com/style/inclusive-documentation),
+[global audience](https://developers.google.com/style/translation),
 [cross-references](https://developers.google.com/style/cross-references), and
 [example domains and names](https://developers.google.com/style/examples).
 
-### Technical examples and sources
+### Technical Examples and Sources
 
 - Follow project-specific code and command conventions before a general writing
   guide.
@@ -104,7 +105,7 @@ Sources: [code samples](https://developers.google.com/style/code-samples),
 [placeholders](https://developers.google.com/style/placeholders), and
 [third-party content](https://developers.google.com/style/other-sources).
 
-## Deliberate adaptations and omissions
+## Deliberate Adaptations and Omissions
 
 - Do not impose Google's product naming, trademark, phone-number, punctuation,
   HTML, or file-naming house style on unrelated projects.

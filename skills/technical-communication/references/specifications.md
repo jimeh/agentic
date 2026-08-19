@@ -1,10 +1,10 @@
-# Technical specifications
+# Technical Specifications
 
 A specification defines what must be true about a system or behavior. A plan
 defines the work required to build and verify it. Keep them separate unless the
 requested artifact explicitly combines both.
 
-## Identify the kind of specification
+## Identify the Kind of Specification
 
 Determine which concerns the document must settle:
 
@@ -18,7 +18,7 @@ Determine which concerns the document must settle:
 A document can combine these modes, but make the boundary visible. Do not hide
 design decisions inside apparently neutral behavioral requirements.
 
-## Ground the contract
+## Ground the Contract
 
 - Establish the problem, intended outcome, audience, actors, scope, and material
   non-goals.
@@ -31,7 +31,7 @@ design decisions inside apparently neutral behavioral requirements.
 - Do not invent requirements to make the specification appear complete. Mark
   missing product decisions explicitly.
 
-## Specify behavior and boundaries
+## Specify Behavior and Boundaries
 
 - State requirements and invariants precisely enough to produce independent
   implementation and test decisions.
@@ -41,13 +41,16 @@ design decisions inside apparently neutral behavioral requirements.
   a universal checklist. Possible domains include API compatibility, data and
   migrations, concurrency, lifecycle, security and privacy, accessibility,
   internationalization, performance, observability, and operations.
+- When rollout or migration changes what actors can observe, define transitional
+  states, compatibility windows, feature-gate semantics, reversibility, and
+  rollback requirements. Leave execution sequencing to the plan.
 - Describe edge cases that change behavior. Avoid exhaustive permutations that
   do not affect the design or acceptance criteria.
 - Keep implementation freedom where multiple mechanisms satisfy the contract.
   Include implementation detail when omitting it would make interoperability,
   correctness, migration, or operational behavior ambiguous.
 
-## Use normative language deliberately
+## Use Normative Language Deliberately
 
 Follow an established project convention when one exists. Otherwise:
 
@@ -59,7 +62,7 @@ Follow an established project convention when one exists. Otherwise:
 Do not claim formal RFC 2119 conformance unless the document explicitly adopts
 it. Consistent plain language is usually sufficient.
 
-## Record decisions and acceptance
+## Record Decisions and Acceptance
 
 - State settled decisions directly and preserve the rationale needed to
   understand their constraints.
