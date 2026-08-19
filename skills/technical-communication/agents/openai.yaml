@@ -1,0 +1,6 @@
+interface:
+  display_name: "Technical Communication"
+  short_description: "Write clear technical plans, specs, and docs"
+  default_prompt:
+    "Use $technical-communication to make this technical plan, specification, or
+    document clear, precise, and actionable."
