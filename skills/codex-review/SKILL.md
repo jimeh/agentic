@@ -1,12 +1,17 @@
 ---
 name: codex-review
 description: >-
-  Get an independent code review from the Codex CLI for a cross-engine
-  perspective on a diff, commit, branch, or PR checkout. Not for reviews Claude
-  can do directly.
+  Run an independent Codex CLI review of code changes, commits, branches, or
+  pull requests to improve confidence in correctness, security, regressions,
+  and test coverage.
 ---
 
 # Codex Review
+
+Read and apply the `code-review` skill as the source of truth for the review
+brief, inspection policy, finding acceptance, revision coverage, and reporting.
+This skill owns only Codex-specific transport, process lifecycle, and session
+continuation.
 
 Start each initial review in a fresh Codex session. Fresh context does not
 require a disposable session: preserve it when an orchestration workflow may
@@ -29,21 +34,18 @@ unless the environment proves otherwise.
 
 ## Workflow
 
-1. Identify the review target: uncommitted changes, base branch, commit SHA, PR
-   checkout, or specific files.
+1. Use `code-review` to pin the target and build the compact review brief.
 2. Verify the current directory with `pwd`. Run Codex from the repo root or the
    intended worktree.
 3. Create a temporary artifact directory.
-4. Gather only the context Codex needs: user request, target, base branch or
-   commit, relevant requirements, risky areas, supplied validation evidence, and
-   any caller-provided execution policy.
-5. Write a concise prompt if custom instructions are needed.
-6. Run `codex review` with a scope flag, or with a custom prompt when extra
+4. Write a concise prompt when custom instructions are needed. Give Codex the
+   brief and `code-review` output requirements; do not assume the launched
+   process can load this skill.
+5. Run `codex review` with a scope flag, or with a custom prompt when extra
    context matters (the two cannot be combined). Use `codex exec -s read-only`
    only when neither form can express the target.
-7. Read the report.
-8. Verify important claims against the code.
-9. Return validated findings.
+6. Read the report.
+7. Apply `code-review` to accept findings and report the result.
 
 ## Command Shapes
 
@@ -95,98 +97,21 @@ the reviewed scope materially broadens.
 Do not retry automatically when Codex reports no issues. If the run times out or
 fails, report that and decide whether direct review is still useful.
 
-Honor the caller's execution policy. When valid implementer evidence and CI
-already cover execution, inspect first and do not rerun broad suites, builds,
-lint, or CI-equivalent checks. Run a focused reproducer only when needed to
-verify a concrete suspected defect, and report the command and result.
-
 Once the review lifecycle is complete, remove the artifact directory so prompts
 and reports do not accumulate.
 
-## Prompting Strategy
+## Prompt and Report
 
-Prompts apply to the prompt form only; keep them short. Do not paste large
-diffs, logs, or long project explanations unless Codex cannot inspect the target
-itself.
+Prompts apply only to the prompt form. Keep them short and express the
+`code-review` brief, inspection priorities, execution policy, and required
+output directly. Do not paste large diffs, logs, or project explanations that
+Codex can inspect itself.
 
-Start with this shape:
-
-```text
-Review this implementation.
-
-Target: <uncommitted changes | branch vs base | commit | files>
-Repository: <absolute repo path>
-Context: <one or two task-specific sentences, only if needed>
-Execution policy: <caller policy, supplied evidence, and allowed reproducers>
-
-Look for:
-- correctness
-- bugs
-- edge cases
-- validation evidence that is insufficient or disproportionate to the risk
-- weak tests: poor assertions, excessive mocking, nondeterminism
-- maintainability
-- unintended behavior
-
-Produce a concise report. Findings first.
-
-For each finding include:
-- severity
-- file and line reference
-- concrete failure mode
-- suggested fix direction
-
-Then give a separate validation and test verdict, even with no other findings:
-- whether the supplied evidence is proportionate to the change's risk, and why
-- which material successful, failure, boundary, or regression scenarios remain
-  unclosed
-- whether absent automated coverage creates meaningful residual risk
-- for tests that were added or changed, whether they assert observable behavior
-  or could pass over a broken implementation
-
-Do not edit files. If there are no substantive findings, say so.
-```
-
-Add only context that changes review quality: requirements, invariants, threat
-model, expected behavior, known risky files, or execution constraints. Omit the
-execution-policy line when the caller provided none. Avoid long paragraphs.
-
-## Reporting Strategy
-
-Before relaying a Codex finding, inspect the cited code or diff enough to decide
-whether the finding is real. Prefer a smaller number of verified findings over a
-long list of unchecked suggestions.
-
-In the user-facing response:
-
-- Lead with confirmed issues, ordered by severity.
-- Separate verified findings from unverified Codex suggestions.
-- Explain the concrete failure mode, not just Codex's wording.
-- If Codex found nothing, say that clearly and identify exactly what it
-  reviewed.
-- Do not imply Codex performed tests unless the report shows that it did.
-- Relay the validation and test verdict even when there are no other findings,
-  after checking the cited evidence yourself. Treat an absent or perfunctory
-  verdict as an incomplete review: request it before accepting the result, and
-  if it stays missing, say so rather than implying validation was assessed.
-
-Use this shape:
-
-```md
-Codex reviewed: <target>
-
-Confirmed findings:
-- <severity>: <file:line> <issue and failure mode>
-
-Unverified Codex suggestions:
-- <suggestion, if worth mentioning>
-
-No substantive findings from Codex.
-Validation and test verdict: <gaps, or proportionate evidence and why>
-Residual risk: <unclosed area, if any>
-```
-
-Omit empty sections.
+Treat Codex's report as candidate evidence. Apply `code-review` before relaying
+findings. If the report omits an explicit validation and test-quality verdict,
+request it from the same session when practical; otherwise mark the review
+incomplete. Do not imply Codex ran checks unless its report demonstrates that it
+did.
 
 ## Failure Handling
 

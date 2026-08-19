@@ -1,18 +1,17 @@
 ---
 name: claude-review
 description: >-
-  Ask Claude Code CLI for an independent code review of uncommitted changes, a
-  branch diff, a commit, a PR checkout, or a specific implementation. Use when
-  a user, agent, skill, or orchestration workflow asks a non-Claude agent to
-  have Claude review work, when
-  model-routing calls for a Claude review perspective, or when Claude should
-  audit a diff for bugs, regressions, missing tests, security issues, or
-  requirement mismatches. Do not use for small reviews the current agent can
-  handle directly or as a substitute for reading and validating the code
-  yourself.
+  Run an independent Claude Code CLI review of code changes, commits, branches,
+  or pull requests to improve confidence in correctness, security, regressions,
+  and test coverage.
 ---
 
 # Claude Review
+
+Read and apply the `code-review` skill as the source of truth for the review
+brief, inspection policy, finding acceptance, revision coverage, and reporting.
+This skill owns only Claude-specific transport, isolation, process lifecycle,
+and session continuation.
 
 Start each initial review in a fresh Claude Code session. Fresh context does not
 require a disposable session: preserve it when an orchestration workflow may
@@ -35,20 +34,16 @@ otherwise.
 
 ## Workflow
 
-1. Identify the review target: uncommitted changes, branch vs base branch,
-   commit SHA, PR checkout, or specific files.
+1. Use `code-review` to pin the target and build the compact review brief.
 2. Verify the current directory with `pwd`. Run Claude from the repo root or the
    intended worktree.
 3. Create a temporary artifact directory.
-4. Gather only the context Claude needs: user request, target, base branch or
-   commit, relevant requirements, risky areas, supplied validation evidence, and
-   any caller-provided execution policy.
-5. Write a concise review prompt that names the target.
-6. Run headless `claude -p` in plan mode with safe mode so the session stays
+4. Write a concise prompt that gives Claude the brief and `code-review` output
+   requirements; do not assume the launched process can load this skill.
+5. Run headless `claude -p` in plan mode with safe mode so the session stays
    read-only and the target repo's customizations cannot execute.
-7. Read the report.
-8. Verify important claims against the code.
-9. Return validated findings.
+6. Read the report.
+7. Apply `code-review` to accept findings and report the result.
 
 ## Command Shapes
 
@@ -105,10 +100,6 @@ Run notes:
   the explicit session when possible. Do not replace a quiet or interrupted run
   with a fresh attempt merely to reset the clock.
 - Parallel independent reviews are fine: separate prompt and report files.
-- Honor the caller's execution policy. When valid implementer evidence and CI
-  already cover execution, inspect first and do not rerun broad suites, builds,
-  lint, or CI-equivalent checks. Run a focused reproducer only when needed to
-  verify a concrete suspected defect, and report the command and result.
 - Resume the same reviewer for focused fix verification when possible. Give it
   revision boundaries and concise finding summaries, then have it inspect the
   delta from the repository rather than pasting prior reports or large diffs.
@@ -126,89 +117,17 @@ deadline expires, report that and decide whether direct review is still useful.
 Once the review lifecycle is complete, remove the artifact directory
 (`rm -rf "$ARTIFACT_DIR"`) so prompts and reports do not accumulate.
 
-## Prompting Strategy
+## Prompt and Report
 
-Keep prompts short. Do not paste large diffs, logs, or long project
-explanations; Claude can inspect the target itself.
+Keep the prompt short and express the `code-review` brief, inspection
+priorities, execution policy, and required output directly. Do not paste large
+diffs, logs, or project explanations that Claude can inspect itself.
 
-Start with this shape:
-
-```text
-Review this implementation.
-
-Target: <uncommitted changes | branch vs base | commit | files>
-Repository: <absolute repo path>
-Context: <one or two task-specific sentences, only if needed>
-Execution policy: <caller policy, supplied evidence, and allowed reproducers>
-
-Look for:
-- correctness
-- bugs
-- edge cases
-- validation evidence that is insufficient or disproportionate to the risk
-- weak tests: poor assertions, excessive mocking, nondeterminism
-- maintainability
-- unintended behavior
-
-Produce a concise report. Findings first.
-
-For each finding include:
-- severity
-- file and line reference
-- concrete failure mode
-- suggested fix direction
-
-Then give a separate validation and test verdict, even with no other findings:
-- whether the supplied evidence is proportionate to the change's risk, and why
-- which material successful, failure, boundary, or regression scenarios remain
-  unclosed
-- whether absent automated coverage creates meaningful residual risk
-- for tests that were added or changed, whether they assert observable behavior
-  or could pass over a broken implementation
-
-Do not edit files. If there are no substantive findings, say so.
-```
-
-Add only context that changes review quality: requirements, invariants, threat
-model, expected behavior, known risky files, or execution constraints. Omit the
-execution-policy line when the caller provided none. Avoid long paragraphs.
-
-## Reporting Strategy
-
-Before relaying a Claude finding, inspect the cited code or diff enough to
-decide whether the finding is real. Prefer a smaller number of verified findings
-over a long list of unchecked suggestions.
-
-In the user-facing response:
-
-- Lead with confirmed issues, ordered by severity.
-- Separate verified findings from unverified Claude suggestions.
-- Explain the concrete failure mode, not just Claude's wording.
-- If Claude found nothing, say that clearly and identify exactly what it
-  reviewed.
-- Do not imply Claude performed tests unless the report shows that it did.
-- Relay the validation and test verdict even when there are no other findings,
-  after checking the cited evidence yourself. Treat an absent or perfunctory
-  verdict as an incomplete review: request it before accepting the result, and
-  if it stays missing, say so rather than implying validation was assessed.
-
-Use this shape:
-
-```md
-Claude reviewed: <target>
-
-Confirmed findings:
-- <severity>: <file:line> <issue and failure mode>
-
-Unverified Claude suggestions:
-- <suggestion, if worth mentioning>
-
-No substantive findings from Claude.
-Validation and test verdict: <gaps, or proportionate evidence and why>
-Residual risk: <unclosed area, if any>
-```
-
-Omit empty sections.
+Treat Claude's report as candidate evidence. Apply `code-review` before relaying
+findings. If the report omits an explicit validation and test-quality verdict,
+request it from the same session when practical; otherwise mark the review
+incomplete. Do not imply Claude ran checks unless its report demonstrates that
+it did.
 
 ## Failure Handling
 
