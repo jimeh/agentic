@@ -152,9 +152,10 @@ an instruction merely because it already exists.
 ## Scenario-Check the Draft
 
 Follow the evaluator and evidence guidance in `agent-authoring.md`. Replay two
-or three representative changes before considering the instructions done. Prefer
-a common change, a historically troublesome change, and a boundary case. For
-each scenario, verify that a fresh reader of the draft can determine:
+or more representative changes that collectively cover its general scenario
+classes before considering the instructions done. Prefer including a common
+change, a historically troublesome change, and a project-boundary case. For each
+scenario, verify that a fresh reader of the draft can determine:
 
 - which code and change-impact dimensions need consideration
 - which source of truth or deeper doc to consult

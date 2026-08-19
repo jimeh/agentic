@@ -1,9 +1,9 @@
 # Agent Authoring
 
 Use this reference when authoring or revising guidance that an agent consumes:
-project instructions, repository rules, linked agent docs, or project-local
-skills. Do not load it merely because ordinary product or developer
-documentation is being edited.
+project instructions, repository rules, linked agent docs, and repository-owned
+or project-local skills. Do not load it merely because ordinary product or
+developer documentation is being edited.
 
 Use the environment's skill-authoring workflow for skill packaging, metadata,
 and platform-specific validation. This reference covers the behavioral design:
@@ -81,7 +81,9 @@ prompts or tasks:
 
 1. A common case that should follow the primary path.
 2. A branch or boundary case that needs different context or authority.
-3. A plausible non-trigger that should not load or follow the guidance.
+3. For conditional guidance, a plausible non-trigger that should not load or
+   follow it. For always-loaded guidance, an unrelated case whose handling it
+   should not distract from or change.
 4. A safety-sensitive case where a prohibition must remain explicit.
 
 For each scenario, check whether the agent:
@@ -93,9 +95,11 @@ For each scenario, check whether the agent:
 - relies on current environment facts instead of stale duplicated details
 
 Use a fresh evaluator or isolated agent run when the behavioral risk justifies
-it and the workflow authorizes one. Otherwise perform a manual scenario review
-and record that it is weaker evidence. Keep the check proportionate; a compact
-wording change does not require a new evaluation framework.
+it and the workflow authorizes one. Give it the guidance, linked sources, and
+scenario without the author's conclusions. Otherwise perform a manual scenario
+review using only evidence the guidance makes discoverable, and record that it
+is weaker evidence. Keep the check proportionate; a compact wording change does
+not require a new evaluation framework.
 
 ## Source
 
