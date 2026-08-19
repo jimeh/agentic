@@ -9,6 +9,11 @@ a vendored copy. The source guide is licensed under
 the rationale for this skill; ordinary writing tasks should use the skill's
 task-focused guidance instead.
 
+For a categorized inventory of the complete live guide, read
+[google-style-index.md](google-style-index.md). Load that index only when
+maintaining this distillation, answering a specialized Google-style question, or
+checking an artifact for explicit Google Style Guide compliance.
+
 ## Reference Hierarchy
 
 Google treats its guide as guidance rather than universal rules. It recommends
@@ -33,11 +38,13 @@ This skill adapts that hierarchy as follows:
   current behavior, and explicit actors where responsibility could be unclear.
 - Use simple words, short sentences, consistent terminology, and definitions for
   necessary jargon.
+- Make pronoun antecedents unambiguous.
 - Avoid anthropomorphism when it makes system behavior less precise.
 
 Sources: [voice and tone](https://developers.google.com/style/tone),
 [active voice](https://developers.google.com/style/voice),
 [second person](https://developers.google.com/style/person),
+[pronouns](https://developers.google.com/style/pronouns),
 [global audience](https://developers.google.com/style/translation),
 [jargon](https://developers.google.com/style/jargon), and
 [anthropomorphism](https://developers.google.com/style/anthropomorphism).
@@ -96,14 +103,31 @@ Sources:
 
 - Follow project-specific code and command conventions before a general writing
   guide.
+- Preserve exact code, command, filename, API, product, configuration, and UI
+  names while editing surrounding prose.
+- Describe UI tasks by goal and accessible label rather than by visual position.
+- Give informative images useful alternative text and mark decorative images so
+  assistive technology can ignore them.
 - Introduce code and commands with their purpose, explain placeholders, and show
   output only when it helps the reader verify or interpret the action.
 - Paraphrase third-party material and link to the source rather than copying it.
 
 Sources: [code samples](https://developers.google.com/style/code-samples),
 [command-line syntax](https://developers.google.com/style/code-syntax),
-[placeholders](https://developers.google.com/style/placeholders), and
+[code in text](https://developers.google.com/style/code-in-text),
+[placeholders](https://developers.google.com/style/placeholders),
+[UI elements and interaction](https://developers.google.com/style/ui-elements),
+[figures and other images](https://developers.google.com/style/images), and
 [third-party content](https://developers.google.com/style/other-sources).
+
+## Comparative Inspiration
+
+The operational distinction between drafting, revising, and auditing; the
+protected-content pass for revisions; and the stopping rule were also informed
+by the
+[`nbj-write-clearly` implementation](https://github.com/daniel-p-green/nbj-write-clearly/commit/56e3a27f920bcd772f7b03fa476b5cfb9268332c)
+at commit `56e3a27`. Those safeguards are comparative design adaptations, not
+rules attributed to Google.
 
 ## Deliberate Adaptations and Omissions
 

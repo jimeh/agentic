@@ -30,6 +30,20 @@ short, and do not bury a procedure inside an essay.
 - Use exact dates, versions, measurements, and sources when their precision
   affects the reader's decision.
 
+## Preserve Interface Fidelity
+
+- Keep code, commands, filenames, API and product names, configuration keys, and
+  visible UI labels exact. Do not normalize their spelling, capitalization, or
+  punctuation as a prose edit.
+- Organize UI procedures around the reader's goal. Name the exact accessible
+  label first, adding a control type or surrounding context only when the reader
+  needs it to identify the control.
+- Follow the project's formatting conventions for UI labels and technical
+  tokens. Do not impose a general guide's bolding or code-style rules on the
+  project.
+- Prefer an accessible label, role, or stable name over visual position, color,
+  shape, or icon appearance.
+
 ## Structure for Scanning
 
 - Give the page a clear purpose and put critical information first.
@@ -55,6 +69,10 @@ short, and do not bury a procedure inside an essay.
 - Start each material step with the action. Keep one reader decision per step
   and split long or branching steps.
 - Explain placeholders near the command or example that uses them.
+- When a procedure detail is missing, verify it against the available
+  implementation, contracts, commands, or UI. If it cannot be verified, surface
+  the missing input or ask; do not infer a command, flag, UI path, expected
+  result, or required action from a nearby example.
 - State expected results, output, or verification when readers need them to know
   whether they can continue.
 - Mark optional actions unambiguously. Do not make a required step sound
@@ -69,9 +87,11 @@ short, and do not bury a procedure inside an essay.
   other example data. Avoid real personally identifiable information.
 - Explain omissions and placeholders. Do not let a simplified example imply
   production guarantees it does not provide.
-- Prefer text and code over screenshots when the exact text matters. For useful
-  images, provide meaningful alternative text and do not rely on visual
-  position, color, or shape alone.
+- Prefer text and code over screenshots when the exact text matters. For an
+  informative image, alternative text must convey the information or purpose
+  relevant to the surrounding task. Mark a purely decorative image with the
+  project's empty-alt or equivalent mechanism instead of describing it
+  redundantly.
 
 Before finishing, verify that the intended reader can find the relevant path,
 complete it without hidden prerequisites, and distinguish current documented
