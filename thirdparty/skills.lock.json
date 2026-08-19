@@ -111,6 +111,16 @@
       "contentHash": "sha256:72ac4c039f7b9afb86717817ce6ee8ba4a2677f06516926a6213920dc0b4778b",
       "skillsCliVersion": null
     },
+    "unslop": {
+      "manifestSourceId": "plugins",
+      "sourceType": "git",
+      "sourceUrl": "https://github.com/cursor/plugins.git",
+      "ref": "main",
+      "resolvedCommit": "60c641e4fad674784b30abcf9f8915dea39df38d",
+      "upstreamPath": "pstack/skills/unslop",
+      "contentHash": "sha256:72d8bb56991bff0eff8e94b4cc113e50a44a80e0b382b694d136d09465e4bee8",
+      "skillsCliVersion": null
+    },
     "vercel-react-best-practices": {
       "manifestSourceId": "vercel-agent-skills",
       "sourceType": "git",

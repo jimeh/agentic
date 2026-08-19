@@ -120,6 +120,18 @@
           "path": "skills/airplan"
         }
       ]
+    },
+    {
+      "id": "plugins",
+      "type": "git",
+      "url": "https://github.com/cursor/plugins.git",
+      "ref": "main",
+      "skills": [
+        {
+          "name": "unslop",
+          "path": "pstack/skills/unslop"
+        }
+      ]
     }
   ]
 }
