@@ -1,5 +1,5 @@
 ---
-name: code-review
+name: review-code
 description: >-
   Review code changes against requirements and return verified findings with a
   separate validation and test-quality verdict. Use for direct reviews and as
@@ -41,6 +41,24 @@ when needed. Build a compact brief containing:
 
 State assumptions when requirements are incomplete. Do not derive a broader
 contract from the implementation alone.
+
+## Brief an External Reviewer
+
+When a provider launches a reviewer that cannot load this skill, put the review
+contract directly in its prompt. Include:
+
+- the repository, exact target, scope, requirements, material invariants, and
+  supplied validation evidence;
+- the inspection-first execution policy and permission to run only focused
+  reproducers for concrete suspected defects;
+- the required finding fields: severity, file and line, triggering conditions,
+  concrete impact, and fix direction; and
+- an explicit no-findings verdict when appropriate plus a separate validation
+  and test-quality verdict covering material success, failure, boundary, and
+  regression gaps and whether changed tests could pass over broken behavior.
+
+Keep the reviewer read-only. Do not assume it can resolve this skill by name or
+infer omitted requirements from the implementation.
 
 ## Inspect the Change
 

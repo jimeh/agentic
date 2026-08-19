@@ -8,7 +8,7 @@ description: >-
 
 # Codex Review
 
-Read and apply the `code-review` skill as the source of truth for the review
+Read and apply the `review-code` skill as the source of truth for the review
 brief, inspection policy, finding acceptance, revision coverage, and reporting.
 This skill owns only Codex-specific transport, process lifecycle, and session
 continuation.
@@ -34,18 +34,18 @@ unless the environment proves otherwise.
 
 ## Workflow
 
-1. Use `code-review` to pin the target and build the compact review brief.
+1. Use `review-code` to pin the target and build the compact review brief.
 2. Verify the current directory with `pwd`. Run Codex from the repo root or the
    intended worktree.
 3. Create a temporary artifact directory.
 4. Write a concise prompt when custom instructions are needed. Give Codex the
-   brief and `code-review` output requirements; do not assume the launched
+   brief and `review-code` output requirements; do not assume the launched
    process can load this skill.
 5. Run `codex review` with a scope flag, or with a custom prompt when extra
    context matters (the two cannot be combined). Use `codex exec -s read-only`
    only when neither form can express the target.
 6. Read the report.
-7. Apply `code-review` to accept findings and report the result.
+7. Apply `review-code` to accept findings and report the result.
 
 ## Command Shapes
 
@@ -103,11 +103,11 @@ and reports do not accumulate.
 ## Prompt and Report
 
 Prompts apply only to the prompt form. Keep them short and express the
-`code-review` brief, inspection priorities, execution policy, and required
+`review-code` brief, inspection priorities, execution policy, and required
 output directly. Do not paste large diffs, logs, or project explanations that
 Codex can inspect itself.
 
-Treat Codex's report as candidate evidence. Apply `code-review` before relaying
+Treat Codex's report as candidate evidence. Apply `review-code` before relaying
 findings. If the report omits an explicit validation and test-quality verdict,
 request it from the same session when practical; otherwise mark the review
 incomplete. Do not imply Codex ran checks unless its report demonstrates that it

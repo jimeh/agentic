@@ -8,7 +8,7 @@ description: >-
 
 # Dual Review
 
-Read and apply the `code-review` skill as the shared standard for target
+Read and apply the `review-code` skill as the shared standard for target
 pinning, the review brief, inspection, finding acceptance, revision coverage,
 and reporting. This skill owns only reviewer independence, lifecycle
 coordination, and synthesis.
@@ -19,7 +19,7 @@ before handing confirmed findings to the owning workflow.
 
 ## Run Independent Reviewers
 
-Use `code-review` to pin one exact target and build one compact brief. Give that
+Use `review-code` to pin one exact target and build one compact brief. Give that
 same brief and review contract to both reviewers.
 
 Preflight both channels, then start exactly one fresh Codex reviewer and one
@@ -53,19 +53,19 @@ revision. Return useful partial evidence, but mark the dual review incomplete if
 either channel failed, was empty, or covered an ambiguous or stale revision.
 
 Wait for both initial reports before acting on either. Treat reports as
-evidence, not votes. Apply `code-review` finding acceptance to each candidate.
+evidence, not votes. Apply `review-code` finding acceptance to each candidate.
 Agreement increases confidence but is not proof, and one well-supported finding
 remains actionable. Deduplicate shared root causes, resolve disagreements from
 the evidence, and explain dismissals.
 
-Apply the `code-review` currentness check after reconciliation. For a pull
+Apply the `review-code` currentness check after reconciliation. For a pull
 request, read back both live base and head; if either moved, report the captured
 review as stale.
 
 ## Continue When Requested
 
 When a caller supplies both prior reviewer sessions, findings, and prior and new
-immutable base-head pairs, apply the `code-review` continuation criteria to both
+immutable base-head pairs, apply the `review-code` continuation criteria to both
 reviewers. Resume only when both sessions qualify and remain available.
 
 Use fresh reviewers when continuation is unavailable, revision identity is
@@ -75,7 +75,7 @@ and reconciles that review.
 
 ## Report
 
-Use the `code-review` reporting contract, adding separate reviewer and
+Use the `review-code` reporting contract, adding separate reviewer and
 validation/test verdicts for each channel, meaningful disagreements or
 dismissals, and any session handles needed by a caller. Never describe
 one-channel, partial, or stale coverage as a completed current dual review.

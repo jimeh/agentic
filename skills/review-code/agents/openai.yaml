@@ -2,5 +2,5 @@ interface:
   display_name: "Code Review"
   short_description: "Review code against requirements and tests"
   default_prompt:
-    "Use $code-review to review this change for correctness and proportionate
+    "Use $review-code to review this change for correctness and proportionate
     validation."

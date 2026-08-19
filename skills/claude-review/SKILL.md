@@ -8,7 +8,7 @@ description: >-
 
 # Claude Review
 
-Read and apply the `code-review` skill as the source of truth for the review
+Read and apply the `review-code` skill as the source of truth for the review
 brief, inspection policy, finding acceptance, revision coverage, and reporting.
 This skill owns only Claude-specific transport, isolation, process lifecycle,
 and session continuation.
@@ -34,16 +34,16 @@ otherwise.
 
 ## Workflow
 
-1. Use `code-review` to pin the target and build the compact review brief.
+1. Use `review-code` to pin the target and build the compact review brief.
 2. Verify the current directory with `pwd`. Run Claude from the repo root or the
    intended worktree.
 3. Create a temporary artifact directory.
-4. Write a concise prompt that gives Claude the brief and `code-review` output
+4. Write a concise prompt that gives Claude the brief and `review-code` output
    requirements; do not assume the launched process can load this skill.
 5. Run headless `claude -p` in plan mode with safe mode so the session stays
    read-only and the target repo's customizations cannot execute.
 6. Read the report.
-7. Apply `code-review` to accept findings and report the result.
+7. Apply `review-code` to accept findings and report the result.
 
 ## Command Shapes
 
@@ -119,11 +119,11 @@ Once the review lifecycle is complete, remove the artifact directory
 
 ## Prompt and Report
 
-Keep the prompt short and express the `code-review` brief, inspection
+Keep the prompt short and express the `review-code` brief, inspection
 priorities, execution policy, and required output directly. Do not paste large
 diffs, logs, or project explanations that Claude can inspect itself.
 
-Treat Claude's report as candidate evidence. Apply `code-review` before relaying
+Treat Claude's report as candidate evidence. Apply `review-code` before relaying
 findings. If the report omits an explicit validation and test-quality verdict,
 request it from the same session when practical; otherwise mark the review
 incomplete. Do not imply Claude ran checks unless its report demonstrates that
