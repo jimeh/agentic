@@ -3,5 +3,5 @@ interface:
   short_description: "Shape repos for reliable agent work"
   default_prompt:
     "Use $harness-engineering to audit this project and improve its
-    repo-specific instructions, feedback loops, and enforcement for reliable
+    repo-specific agent guidance, feedback loops, and enforcement for reliable
     agent work."

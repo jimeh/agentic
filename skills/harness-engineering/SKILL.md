@@ -4,8 +4,9 @@ description: >-
   Shape a repository so coding agents work reliably in it: evidence-led project
   instructions, legible knowledge, runnable feedback loops, early local
   enforcement, enforceable architecture rules, and cleanup processes. Use for
-  agent-readiness audits, creating or refining repo-specific AGENTS.md files,
-  and turning repeated agent failures into durable repo-local tooling.
+  agent-readiness audits, creating or refining repo-specific agent guidance
+  such as AGENTS.md files, and turning repeated agent failures into durable
+  repo-local tooling.
 ---
 
 # Harness Engineering
@@ -46,6 +47,8 @@ Pick the smallest useful mode:
 - **Bootstrap**: create initial docs, scripts, checks, or harness conventions.
 - **Refine project instructions**: derive or improve repo-specific `AGENTS.md`
   guidance from project evidence and maintainer intent.
+- **Author agent guidance**: shape repo-owned instructions, rules, linked docs,
+  or project-local skills without replacing format-specific authoring tools.
 - **Refactor knowledge**: turn scattered instructions into progressive
   disclosure.
 - **Encode rules**: convert recurring review feedback into mechanical checks.
@@ -115,6 +118,11 @@ When creating, auditing, or refining project instructions, read
 Inspect before interviewing the user. Ask only targeted questions about tacit
 facts that materially change the result and cannot be established from project
 evidence.
+
+When authoring or revising agent-consumed guidance, read
+`references/agent-authoring.md`. For a skill, also use the environment's
+skill-authoring workflow; that workflow owns packaging and platform mechanics,
+while this reference owns behavioral design, routing, and scenario checks.
 
 ### 3. Find the Missing Harness Capability
 
@@ -220,6 +228,8 @@ Read only what the current task needs:
 - `references/project-instructions.md`: evidence-led discovery, targeted
   maintainer questions, content selection, and scenario checks for repo-specific
   `AGENTS.md` files.
+- `references/agent-authoring.md`: behavioral design, routing, context control,
+  source-of-truth discipline, and scenario checks for agent-consumed guidance.
 - `references/enforceable-invariants.md`: turning taste and architecture into
   checks.
 - `references/feedback-loops.md`: validation ownership, observability, and
