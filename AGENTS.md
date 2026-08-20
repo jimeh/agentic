@@ -34,6 +34,11 @@ To add a new skill, just create the directory — the installer picks it up
 automatically. Stale symlinks are cleaned up on each run, including links that
 an `only`/`exclude` change scoped out of a target root.
 
+When creating or revising a repository-owned skill, use the environment's
+skill-authoring workflow for packaging and platform mechanics. For instruction
+design, routing, and scenario checks in skills or global rules, use
+`skills/harness-engineering/references/agent-authoring.md`.
+
 Third-party skills are source-controlled under `thirdparty/skills/`.
 `thirdparty/skills.manifest.json` defines the reviewed upstream sources and
 selected skills, while `thirdparty/skills.lock.json` records the resolved
