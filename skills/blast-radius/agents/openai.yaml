@@ -1,0 +1,7 @@
+interface:
+  display_name: "Blast Radius"
+  short_description: "Trace and prove downstream change risk"
+  default_prompt: "Use $blast-radius to audit what this change could break."
+
+policy:
+  allow_implicit_invocation: true
