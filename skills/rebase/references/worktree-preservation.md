@@ -57,9 +57,10 @@ If stash application fails, partially applies, conflicts, or produces any
 snapshot mismatch:
 
 1. Keep the owned stash and external snapshot.
-2. Return the branch to the recorded `pre_rebase_head`. This rollback is part of
-   restoring the operation this workflow started; use that exact ref as the
-   target of the hard reset and do not target any broader ref or path set.
+2. Record the current rebased head object ID, then return the branch to the
+   recorded `pre_rebase_head`. This rollback is part of restoring the operation
+   this workflow started; use that exact ref as the target of the hard reset and
+   do not target any broader ref or path set.
 3. Remove only the explicitly captured worktree paths that must be replaced,
    reset tracked content to `pre_rebase_head`, restore the raw index copy, then
    restore present filesystem objects and recorded absences directly from the
@@ -70,4 +71,5 @@ If rollback verifies, the original branch and dirt are restored. Drop the exact
 owned stash and delete the external snapshot only after that proof. If any value
 still differs, stop with both recovery artifacts intact and report their paths,
 the owned stash object ID, and the mismatch. Never leave the stash as the only
-copy of the user's original bytes.
+copy of the user's original bytes. Report the discarded rebased head object ID
+even after successful rollback so the integrated result remains easy to recover.
