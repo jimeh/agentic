@@ -67,6 +67,23 @@ file_hash() {
   git hash-object --no-filters "$1"
 }
 
+file_mtime() {
+  python3 -c 'import os, sys; print(os.lstat(sys.argv[1]).st_mtime_ns)' "$1"
+}
+
+git_storage_snapshot() {
+  local git_dir file
+  git_dir="$(git rev-parse --git-dir)"
+  {
+    find "$git_dir" -maxdepth 1 -type f \
+      \( -name index -o -name 'sharedindex.*' \) -print
+    find "$git_dir/objects" -type f -print
+  } | LC_ALL=C sort | while IFS= read -r file; do
+    printf '%s %s %s\n' \
+      "${file#"$git_dir"/}" "$(file_hash "$file")" "$(file_mtime "$file")"
+  done
+}
+
 add_current_gitlink() {
   local repo="$1" child="$2"
   (
@@ -109,6 +126,22 @@ index_hash="$(file_hash "$index_path")"
 expect_clear "$repo"
 [ "$(file_hash "$index_path")" = "$index_hash" ] || \
   fail "collision inspection must not refresh the index"
+
+repo="$(new_repo split-index-nonmutation)"
+(
+  cd "$repo"
+  git switch -q candidate
+  printf 'candidate\n' > src/candidate.txt
+  git add src/candidate.txt
+  git commit -qm candidate
+  git switch -q current
+  git config core.splitIndex true
+)
+storage_before="$(cd "$repo" && git_storage_snapshot)"
+expect_clear "$repo"
+storage_after="$(cd "$repo" && git_storage_snapshot)"
+[ "$storage_after" = "$storage_before" ] || \
+  fail "collision inspection must not mutate index or object storage"
 
 (
   cd "${repo}/src"
@@ -342,6 +375,42 @@ repo="$(new_repo dirty-tracked)"
   printf 'modified\n' > src/base.txt
 )
 expect_inconclusive "$repo" "no longer clean"
+
+repo="$(new_repo hidden-filemode-change)"
+(
+  cd "$repo"
+  git switch -q candidate
+  printf 'candidate\n' > src/candidate.txt
+  git add src/candidate.txt
+  git commit -qm candidate
+  git switch -q current
+  git config core.filemode false
+  chmod +x src/base.txt
+  [ -z "$(git status --porcelain=v2 --untracked-files=all)" ] || \
+    fail "core.filemode=false must hide the executable-bit change in this probe"
+)
+expect_inconclusive "$repo" "tracked worktree no longer matches current head"
+
+repo="$(new_repo hidden-content-change)"
+(
+  cd "$repo"
+  git switch -q candidate
+  printf 'candidate\n' > src/candidate.txt
+  git add src/candidate.txt
+  git commit -qm candidate
+  git switch -q current
+  git config core.trustctime false
+  git config core.checkStat minimal
+  touch -t 200001010000 src/base.txt
+  git update-index --refresh
+  touch -r src/base.txt .git/base-time
+  sleep 1
+  printf 'evil\n' > src/base.txt
+  touch -r .git/base-time src/base.txt
+  [ -z "$(git status --porcelain=v2 --untracked-files=all)" ] || \
+    fail "core.trustctime=false must hide the same-size content change in this probe"
+)
+expect_inconclusive "$repo" "tracked worktree no longer matches current head"
 
 repo="$(new_repo assume-unchanged-entry)"
 (

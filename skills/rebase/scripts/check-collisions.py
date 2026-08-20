@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import os
 import stat
 import subprocess
@@ -15,6 +16,7 @@ from typing import NamedTuple
 class TreeEntry(NamedTuple):
     object_type: bytes
     object_id: bytes
+    object_mode: bytes
 
 
 class DirectoryEntries(NamedTuple):
@@ -66,6 +68,95 @@ def has_flagged_entries() -> bool:
         if tag == b"S" or tag.islower():
             return True
     return False
+
+
+def tracked_worktree_differs(current_head: str) -> bool:
+    current = tree_entries(current_head)
+    object_format = git("rev-parse", "--show-object-format").decode().strip()
+    regular_files: list[tuple[bytes, bytes, os.stat_result]] = []
+    checked_directories: dict[bytes, bool] = {}
+
+    def ancestors_are_directories(path: bytes) -> bool:
+        directory = b"."
+        for component in path.split(b"/")[:-1]:
+            directory = os.path.join(directory, component)
+            if directory not in checked_directories:
+                try:
+                    mode = os.lstat(directory).st_mode
+                except OSError:
+                    checked_directories[directory] = False
+                else:
+                    checked_directories[directory] = stat.S_ISDIR(mode) and not stat.S_ISLNK(
+                        mode
+                    )
+            if not checked_directories[directory]:
+                return False
+        return True
+
+    def blob_id(data: bytes) -> bytes:
+        digest = hashlib.new(object_format)
+        digest.update(f"blob {len(data)}\0".encode())
+        digest.update(data)
+        return digest.hexdigest().encode()
+
+    for path, entry in current.items():
+        if entry.object_type != b"blob":
+            continue
+        if not ancestors_are_directories(path):
+            return True
+        try:
+            path_stat = os.lstat(path)
+        except OSError:
+            return True
+
+        if entry.object_mode == b"120000":
+            if not stat.S_ISLNK(path_stat.st_mode):
+                return True
+            target = os.readlink(path)
+            if not isinstance(target, bytes) or blob_id(target) != entry.object_id:
+                return True
+        elif entry.object_mode in {b"100644", b"100755"}:
+            if not stat.S_ISREG(path_stat.st_mode):
+                return True
+            executable = bool(path_stat.st_mode & stat.S_IXUSR)
+            if executable != (entry.object_mode == b"100755"):
+                return True
+            regular_files.append((path, entry.object_id, path_stat))
+        else:
+            raise RuntimeError("unsupported tracked blob mode")
+
+    batch: list[tuple[bytes, bytes, os.stat_result]] = []
+    batch_size = 0
+
+    def compare_batch() -> bool:
+        if not batch:
+            return False
+        hashes = git("hash-object", "--", *(os.fsdecode(item[0]) for item in batch))
+        object_ids = hashes.splitlines()
+        if len(object_ids) != len(batch):
+            raise RuntimeError("malformed hash-object output")
+        for (path, expected, before), actual in zip(batch, object_ids, strict=True):
+            try:
+                after = os.lstat(path)
+            except OSError:
+                return True
+            stable_fields = ("st_dev", "st_ino", "st_mode", "st_size", "st_mtime_ns", "st_ctime_ns")
+            if actual != expected or any(
+                getattr(before, field) != getattr(after, field) for field in stable_fields
+            ):
+                return True
+        return False
+
+    for item in regular_files:
+        item_size = len(item[0]) + 1
+        if batch and batch_size + item_size > 65536:
+            if compare_batch():
+                return True
+            batch = []
+            batch_size = 0
+        batch.append(item)
+        batch_size += item_size
+    return compare_batch()
 
 
 def repository_ignores_case() -> bool:
@@ -168,7 +259,7 @@ def tree_entries(revision_name: str) -> dict[bytes, TreeEntry]:
             raise RuntimeError("malformed ls-tree metadata")
         if not path or path in entries:
             raise RuntimeError("invalid path in ls-tree output")
-        entries[path] = TreeEntry(fields[1], fields[2])
+        entries[path] = TreeEntry(fields[1], fields[2], fields[0])
     return entries
 
 
@@ -395,6 +486,8 @@ def main() -> int:
             raise RuntimeError(
                 "the original checkout has skip-worktree or assume-unchanged entries"
             )
+        if tracked_worktree_differs(current_head):
+            raise RuntimeError("tracked worktree no longer matches current head")
         found = collisions(current_head, candidate_head)
     except Exception as error:
         print(f"inconclusive: {error}", file=sys.stderr)
