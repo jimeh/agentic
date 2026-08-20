@@ -32,7 +32,13 @@ def revision(value: str) -> str:
 
 
 def current_branch() -> str:
-    value = git("symbolic-ref", "--quiet", "--short", "HEAD").decode().strip()
+    value = git(
+        "symbolic-ref",
+        "--quiet",
+        "--short",
+        "HEAD",
+        allowed_returncodes=(0, 1),
+    ).decode().strip()
     if not value:
         raise RuntimeError("the original checkout is detached")
     return value
@@ -98,11 +104,11 @@ def normalized_entries(
 
 def filesystem_objects(
     ignore_case: bool, traversable_directories: set[str]
-) -> list[tuple[bytes, bool]]:
+) -> list[tuple[bytes, bool, bool]]:
     if os.sep != "/":
         raise RuntimeError("collision inspection requires a POSIX filesystem")
 
-    objects: list[tuple[bytes, bool]] = []
+    objects: list[tuple[bytes, bool, bool]] = []
 
     def raise_walk_error(error: OSError) -> None:
         raise error
@@ -119,7 +125,11 @@ def filesystem_objects(
             path = os.path.join(current, name)
             relative = os.path.relpath(path, b".")
             is_link = os.path.islink(path)
-            objects.append((relative, not is_link))
+            is_empty = False
+            if not is_link:
+                with os.scandir(path) as entries:
+                    is_empty = next(entries, None) is None
+            objects.append((relative, not is_link, is_empty))
             if (
                 not is_link
                 and comparable(relative, ignore_case) in traversable_directories
@@ -128,7 +138,7 @@ def filesystem_objects(
         directories[:] = retained_directories
 
         objects.extend(
-            (os.path.relpath(os.path.join(current, name), b"."), False)
+            (os.path.relpath(os.path.join(current, name), b"."), False, False)
             for name in files
         )
     return objects
@@ -188,7 +198,7 @@ def collisions(current_head: str, candidate_head: str) -> set[bytes]:
     }
 
     found: set[bytes] = set()
-    for path, is_directory in filesystem_objects(
+    for path, is_directory, is_empty in filesystem_objects(
         ignore_case, traversable_directories
     ):
         key = comparable(path, ignore_case)
@@ -197,11 +207,16 @@ def collisions(current_head: str, candidate_head: str) -> set[bytes]:
 
         candidate_type = candidate.get(key)
         ancestor_is_file = any(
-            candidate.get(comparable(parent, ignore_case)) not in {None, b"tree"}
+            candidate.get(comparable(parent, ignore_case))
+            not in {None, b"tree", b"commit"}
             for parent in ancestors(path)
         )
         if is_directory:
-            if candidate_type not in {None, b"tree"} or ancestor_is_file:
+            if (
+                candidate_type not in {None, b"tree", b"commit"}
+                or ancestor_is_file
+                or (is_empty and key in candidate_ancestors)
+            ):
                 found.add(path)
         elif (
             candidate_type is not None
@@ -231,6 +246,8 @@ def main() -> int:
             raise RuntimeError("HEAD no longer matches the inspected current head")
         if current_branch() != expected_branch:
             raise RuntimeError("current branch no longer matches the recorded branch")
+        if git("status", "--porcelain=v2", "-z", "--untracked-files=all"):
+            raise RuntimeError("the original checkout is no longer clean")
         found = collisions(current_head, candidate_head)
     except (OSError, RuntimeError) as error:
         print(f"inconclusive: {error}", file=sys.stderr)

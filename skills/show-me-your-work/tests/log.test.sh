@@ -42,7 +42,7 @@ trail="${test_tmp}/private/trail.tsv"
 
 assert_equal "600" "$(file_mode "$trail")" \
   "new trails must be private"
-assert_equal "2" "$(wc -l < "$trail")" \
+assert_equal "2" "$(awk 'END { print NR }' "$trail")" \
   "the helper must write one header and one row"
 if ! awk -F '\t' 'NF != 6 || $1 == "" { exit 1 }' "$trail"; then
   fail "every trail record must have six populated timestamp fields"
@@ -61,7 +61,7 @@ assert_equal "open" "$outcome" "outcome must be retained"
 
 first_row="$(tail -n 1 "$trail")"
 "$helper" "$trail" second follow-up because commit:abc123 complete
-assert_equal "3" "$(wc -l < "$trail")" \
+assert_equal "3" "$(awk 'END { print NR }' "$trail")" \
   "a valid existing trail must accept another row"
 assert_equal "$first_row" "$(sed -n '2p' "$trail")" \
   "appending must preserve earlier rows"
