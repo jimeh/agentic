@@ -8,16 +8,38 @@ creating or applying a stash.
 
 ## Capture a recoverable snapshot
 
-Create a private temporary directory outside the repository. Resolve the real
-Git index path with `git rev-parse --git-path index`. Before its raw copy
-exists, run every Git inspection that can read the index or worktree with
-`GIT_OPTIONAL_LOCKS=0`; this includes the first status used to decide whether a
-snapshot is needed. Before stashing, capture:
+Resolve the repository root and change to it before collecting paths; porcelain
+paths are repository-root-relative and must later be consumed from that same
+root. Before this capture, establish exclusive mutation ownership of the
+checkout through the eventual rebase and restoration. Pause or coordinate any
+editor, watcher, hook, process, or agent that can write there. Stop if that
+cannot be established. The later drift checks are defense in depth, not an
+atomic lock.
+
+Create a private durable directory outside the repository and bind its path as
+`snapshot_dir` even when status is clean, because it also holds collision
+observations used by the final gate. Do not place the only byte-exact recovery
+copy on volatile tmpfs. For example:
+
+```bash
+snapshot_parent="${XDG_STATE_HOME:-$HOME/.local/state}/agent-rebase"
+mkdir -p -- "$snapshot_parent"
+chmod 0700 "$snapshot_parent"
+snapshot_dir="$(mktemp -d "$snapshot_parent/snapshot.XXXXXX")"
+chmod 0700 "$snapshot_dir"
+```
+
+Resolve the real Git index path with `git rev-parse --git-path index`. Before
+its raw copy exists, run every Git inspection that can read the index or
+worktree with `GIT_OPTIONAL_LOCKS=0`; this includes the first status used to
+decide whether a snapshot is needed. Before stashing, capture:
 
 - `git status --porcelain=v2 -z --untracked-files=all`, including both paths in
   rename records
 - a raw copy of the full index and any linked shared-index dependency, plus its
   mode and hash, for rollback only
+- skip-worktree and assume-unchanged flags for index entries, plus the exact
+  kind, mode, and raw bytes of present flagged worktree objects
 - for every status-visible path, whether its original index entry was staged
   relative to `pre_rebase_head`, plus its stage, mode, and blob entry when one
   existed
@@ -28,6 +50,11 @@ snapshot is needed. Before stashing, capture:
 - a filesystem-level archive of every present status-visible object, preserving
   regular-file bytes, executable modes, and symlink targets without invoking Git
   clean or smudge filters
+- a separate expected transport ledger for the stash's index, tracked-worktree,
+  and untracked trees: derive the expected full index-tree OID from the captured
+  raw index without filtering, while keeping the raw bytes reserved for
+  rollback; derive tracked-worktree and untracked blobs through the same
+  path-aware clean-filter representation Git will use
 - an explicit list of paths that were absent, including tracked deletions
 
 Use NUL-delimited path handling throughout. Keep the temporary directory private
@@ -35,42 +62,123 @@ to the current user. Verify the archive against the live filesystem before
 running `git stash`; hashes detect corruption but are not themselves a recovery
 copy.
 
-Record the pre-existing `refs/stash`, create one uniquely named owned stash with
-`--include-untracked`, and resolve its object ID. Verify that the stash is new
-and the worktree became clean. If stash creation changes or loses any captured
-value, restore immediately from the external snapshot and retain every recovery
-artifact until the original state verifies.
-
 ## Detect predictable collisions
 
-After fetching the base but before starting the rebase, enumerate changed or
-materialized paths and object kinds from the `pre_rebase_head` to `base`
-transition and from each replayed commit's parent-to-commit transition. Include
-every replay transition: a path added and later deleted can still overwrite a
-local object while commits replay. Do not scan every full tree for every commit.
-Use `lstat` to compare the candidate paths, their ancestors, and entries beneath
-candidate directories with every locally present object absent from the current
-tracked tree, including:
-
-- status-visible untracked paths;
-- present ignored objects, classified with `git check-ignore`; and
-- status-invisible empty directories or other structural objects.
+After fetching and pinning the base commit but before starting the rebase,
+enumerate changed or materialized paths and object kinds from the
+`pre_rebase_head` to immutable `base_head` transition and from each replayed
+commit's parent-to-commit transition. Include every replay transition: a path
+added and later deleted can still overwrite a local object while commits replay.
+Do not scan every full tree for every commit. Run this preflight before creating
+the owned stash. Use live `lstat` to compare candidate paths, their ancestors,
+and entries beneath candidate directories with every filesystem object absent
+from the current tracked tree, including untracked and ignored objects,
+symlinks, status-invisible empty directories, and other structural objects. Use
+`git check-ignore` to classify ignored paths, not as the only detector.
 
 Drive the check from the candidate tree paths so a large ignored directory such
 as a dependency cache is not archived or exhaustively scanned. Use NUL-delimited
 path handling. Treat a file, symlink, or directory kind change as a structural
-collision. Git can overwrite ignored objects without warning, so a clean status
+collision. Record whether a protected directory is empty; materializing any
+candidate descendant beneath it is a collision even when its kind remains a
+directory. Git can overwrite ignored objects without warning, so a clean status
 does not make this preflight optional.
 
-If any target or replayed tree tracks, overwrites, or structurally collides with
-one of those objects, do not start the rebase. Apply any owned stash back onto
-the unchanged branch and verify the complete original snapshot. When status was
-clean and no snapshot or stash exists, verify that `HEAD` still equals
-`pre_rebase_head` and compare every colliding object's kind, mode, bytes, or
-symlink target with the observation captured when the collision was detected.
-Drop only an owned stash entry whose object ID matches `owned_stash`, remove
-only owned recovery artifacts, and report the exact collision. Leave local
-objects untouched.
+Separately enumerate index entries marked skip-worktree or assume-unchanged.
+Compare each entry's worktree existence, filesystem kind, executable mode, and
+path-aware clean-filtered blob with the recorded index entry. Treat absence
+under assume-unchanged as hidden divergence. For skip-worktree, record absence
+as the expected sparse state. If an assume-unchanged object is absent, a present
+object differs, or the comparison is inconclusive, stop before stashing or
+rebasing and report the flagged path; do not clear the flag or try to transport
+hidden modifications. Record the flags and expected sparse absence. After the
+rebase and any owned-stash restoration, verify them before deleting recovery
+artifacts.
+
+If any target or replayed tree tracks, overwrites, or populates one of those
+objects, do not create the stash or start the rebase. Verify that `HEAD` still
+equals `pre_rebase_head` and compare every colliding object's kind, mode, bytes,
+symlink target, or emptiness with the observation captured when the collision
+was detected. On success, remove only the owned external snapshot and report the
+exact collision. On mismatch, retain the snapshot and report instead of deleting
+recovery evidence. Leave local objects untouched.
+
+## Create the transport stash
+
+At the pre-stash, post-stash, and final pre-rebase gates, require
+`git rev-parse HEAD` to equal `pre_rebase_head`. On mismatch, do not reset or
+restore from the now-stale snapshot: retain any owned stash and recovery
+artifacts, report both heads, and stop before further mutation.
+
+After collision preflight passes, when the captured status-visible path set is
+non-empty, write every path, including both rename paths and recorded deletions,
+to `captured_pathspec="$snapshot_dir/status-paths.z"` inside the private
+snapshot. Before recording `refs/stash` or creating the stash, recreate the
+complete NUL-delimited status plus all protected ignored, untracked, symlink,
+ancestor, and status-invisible object observations used by the snapshot and
+collision preflight. Require exact equality. If anything changed or appeared,
+remove only the owned snapshot and restart capture and collision preflight from
+the new state, consuming the workflow's single total drift restart; never
+combine a stale snapshot with a later worktree. Further drift at this or the
+final gate means exclusive ownership was not established, so retain any evidence
+still needed and stop. When the captured status-visible path set is empty and no
+stash is needed, run the same comparison immediately before starting the rebase
+and use that same global restart budget on drift.
+
+After the gate passes, record the pre-existing `refs/stash`, then create one
+owned stash entry with `--include-untracked`, `--pathspec-from-file`, and
+`--pathspec-file-nul`. Set `GIT_LITERAL_PATHSPECS=1` for the stash command so
+names containing glob characters or pathspec magic remain literal; NUL
+separation alone does not disable pathspec interpretation. Scoping the stash
+prevents it from removing unrelated status-invisible directories.
+
+If the stash command fails, do not resolve or apply a supposed owned stash.
+Compare the live state and `refs/stash` with the captured state. When nothing
+changed, remove the owned snapshot and stop with the original dirt still live.
+On any partial mutation or new stash entry, retain every recovery artifact and
+stop with the exact split state. Resolve `owned_stash` only after successful
+creation.
+
+Resolve the new stash object ID and verify that it differs from the pre-existing
+stash. Compare its index, tracked-worktree, and untracked trees with the
+expected transport ledger, not with raw filesystem bytes: clean filters can
+legitimately change tracked-worktree and untracked representation, while the
+index tree must match the captured index entries verbatim. Keep the raw
+filesystem archive as the recovery source; filtered stash blobs are never a
+substitute. Also verify that the complete unignored porcelain status is empty
+and ignored or unrelated status-invisible objects retain their preflight state.
+This check must catch a same-path edit that the stash consumed after the last
+live observation. A stateful or nondeterministic filter that cannot reproduce
+the recorded representation is a safe-stop mismatch, not permission to weaken
+the check.
+
+If the post-stash state differs, do not apply or roll back from the stale
+snapshot. Capture any new residual live state into a separate private recovery
+artifact under the same durable protected `snapshot_parent`, retain it with the
+owned stash and original snapshot, and stop for ownership resolution. Report
+which state each artifact contains. Never pop, drop, reorder, or otherwise
+disturb a pre-existing stash.
+
+After reviewing upstream and immediately before `git rebase`, repeat the
+candidate-driven protected-object and complete status comparison against the
+post-stash state. Use snapshot records for captured objects now in the stash and
+live `lstat` for objects that remain. On drift with an owned stash, use the same
+safe stop; do not restore from a snapshot that predates the new state. Without a
+stash, restart capture and collision preflight using the same single total drift
+restart, then stop on any further drift because exclusive ownership was not
+established. When an owned stash exists, resolve its recorded object ID again
+and recompare its trees with the transport ledger before starting the rebase. If
+the object is missing or corrupt, do not apply it. Restore the original index
+and worktree directly from the external snapshot, run failed-restore
+verification against `pre_rebase_head`, and remove the snapshot only after exact
+restoration. On mismatch, retain it and report the failure. Whether restoration
+succeeds or fails, report the broken owned stash object ID, current `refs/stash`
+state, and whether exact owned-ref cleanup was possible. Do not alter an
+ambiguous ref.
+
+For a successful clean-worktree rebase with no owned stash, keep `snapshot_dir`
+through integrated-branch verification, then remove it. Retain and report it
+only when a safe-stop still needs its collision evidence.
 
 ## Restore after success
 
@@ -93,6 +201,9 @@ When every dirty tracked path is unchanged by the rebase, apply only the owned
 stash with `git stash apply --index "$owned_stash"`, then recreate the
 dirty-path snapshot. The full raw index copy is rollback material, not a success
 oracle: unrelated clean entries legitimately change during a successful rebase.
+Recreate any captured ancestor directory that the scoped stash removed and
+restore its captured mode before comparing, but stop on an incompatible object
+rather than replacing it.
 
 For successful restoration, verify:
 
@@ -108,6 +219,20 @@ For successful restoration, verify:
   filesystem state; and
 - recorded deletions remain absent in the worktree and retain their captured
   staged or unstaged index state.
+
+After stash application and exact dirty-path restoration, verify flagged paths
+against the current restored index. For paths still tracked, require expected
+sparse paths to remain absent and compare each other worktree object's
+existence, kind, executable mode, and path-aware filtered blob with its current
+index entry. If the rebased tree deleted a flagged path, require its worktree
+object to be absent only when it was originally absent. An originally present
+flagged object may be absent or may retain its exact captured kind, mode, and
+raw bytes; report either outcome and that the flag retired with the index entry.
+Allow committed content to change with the rebased tree. On any content,
+sparse-state, or deletion-postcondition mismatch, retain the snapshot and owned
+stash, report incomplete restoration, and stop. Only when those checks pass may
+a differing surviving flag be reapplied; verify it afterward. If reapplication
+fails, use the same retained-evidence safe stop instead of claiming success.
 
 Compare the captured per-path evidence rather than the full raw index. Because
 the overlap gate established that every dirty tracked path has the same
@@ -131,7 +256,9 @@ snapshot mismatch:
 3. Remove only the explicitly captured worktree paths that must be replaced,
    reset tracked content to `pre_rebase_head`, restore the raw index copy, then
    restore present filesystem objects and recorded absences directly from the
-   external snapshot. Do not use a broad `git clean`.
+   external snapshot. Recreate missing captured ancestor directories
+   shallow-to-deep and restore their captured modes; stop rather than replace an
+   incompatible object. Do not use a broad `git clean`.
 4. Hash the restored raw index before running another Git inspection, then
    recreate the original full snapshot and compare the raw index, status
    records, and every captured filesystem value. Run every verification command
