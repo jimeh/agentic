@@ -39,15 +39,14 @@ If the evidence does not support the semantic choice:
 
 - leave the conflict intact and ask the user when continuing from a rebase that
   was already in progress
-- when this workflow started the rebase, run `git rebase --abort`, then restore
-  any owned stash through the exact restoration procedure in
-  `worktree-preservation.md` and verify the full original snapshot before asking
-  for the missing decision; after exact verification, drop only the owned stash
-  entry and remove its external recovery copy; leave it paused only when the
-  user explicitly requested that state
+- when this workflow started the rebase, run `git rebase --abort`, verify that
+  `HEAD` returned to `pre_rebase_head` and that the original clean worktree,
+  index, flags, and protected ignored objects remain unchanged, then ask for the
+  missing decision; leave it paused only when the user explicitly requested that
+  state
 
-If abort-time stash restoration conflicts or differs from the full original
-snapshot, retain the owned stash and stop. Never disturb pre-existing stashes.
+If abort does not recover the recorded state exactly, stop and report the
+mismatch. Do not reset over new state or disturb pre-existing stashes.
 
 ## Resolve and continue
 

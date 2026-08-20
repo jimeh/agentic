@@ -152,7 +152,7 @@ depends = ["format:check", "lint", "typecheck"]
 
 [tasks.test]
 description = "Run all tests"
-run = ["mise run test:unit", "mise run test:plugins"]
+run = ["mise run test:unit", "mise run test:plugins", "mise run test:skills"]
 
 [tasks."test:unit"]
 description = "Run Bun unit tests"
@@ -161,6 +161,10 @@ run = "bun test packages/*/src"
 [tasks."test:plugins"]
 description = "Run plugin shell tests"
 run = "bun packages/agent-config/bin/agent-config.ts test plugins"
+
+[tasks."test:skills"]
+description = "Run skill shell tests"
+run = "bash -lc 'set -euo pipefail; shopt -s nullglob; tests=(skills/*/tests/*.test.sh); for test in \"${tests[@]}\"; do bash \"$test\"; done'"
 
 [tasks.verify]
 description = "Run lint and tests"

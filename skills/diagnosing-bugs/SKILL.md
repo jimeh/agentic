@@ -1,11 +1,10 @@
 ---
 name: diagnosing-bugs
 description: >-
-  Diagnose an unclear bug, failure, flaky behavior, or performance regression by
-  building a focused feedback loop, ranking falsifiable hypotheses, and testing
-  them against evidence. Use for diagnosis-only requests and diagnosis followed
-  by an explicitly authorized fix. Do not use when the cause and requested
-  implementation are already settled.
+  Diagnose an unclear bug, failure, flaky behavior, or performance regression
+  from a focused falsifiable feedback loop. Use for diagnosis-only work or the
+  diagnosis phase of an authorized fix, not when the cause and implementation
+  are already settled.
 ---
 
 # Diagnosing Bugs
@@ -14,16 +13,13 @@ Turn an observed symptom into an evidence-backed cause and a reproducible way to
 distinguish broken from working behavior. Diagnosis does not imply permission to
 fix the bug.
 
-A diagnosis request authorizes read-only inspection plus safe, scoped local or
-explicitly scoped development reproducers, temporary artifacts, and reversible
-tagged instrumentation needed to distinguish hypotheses. Keep artifacts and
-instrumentation outside the repository when practical. Before temporarily
-editing repository source, capture the exact affected baseline and avoid paths
-with overlapping user changes; restore it exactly and verify the tag is absent
-before completion. Persistent tests or source changes, fixes, production or
-live-system access, production or durable instrumentation, commits, pushes, and
-external posts require separate authorization. Redact secrets and private data
-from commands, logs, traces, screenshots, and reports.
+A diagnosis request authorizes read-only inspection, safe scoped local or
+explicitly scoped development execution, and temporary reproducers outside the
+repository. Editing repository source or adding instrumentation there requires
+explicit mutation authority. Persistent tests or source changes, fixes,
+production or live-system access, production or durable instrumentation,
+commits, pushes, and external posts require separate authorization. Redact
+secrets and private data from commands, logs, traces, screenshots, and reports.
 
 ## Establish the Symptom
 
@@ -64,16 +60,16 @@ experience.
 
 ## Rank and Test Hypotheses
 
-For a hard or ambiguous bug, write three to five ranked hypotheses before
+For a hard or ambiguous bug, write a small ranked set of hypotheses before
 committing to one. Each must predict an observable result:
 
 > If X is the cause, changing or observing Y will make Z happen.
 
 Share the list as a non-blocking checkpoint when the user's domain knowledge
 could re-rank it. Test one variable at a time. Prefer debugger or REPL
-inspection over logs, and targeted boundary logs over broad logging. Tag every
-temporary instrumentation site with one unique marker so cleanup is mechanically
-checkable.
+inspection over logs, and targeted boundary logs over broad logging. When
+repository instrumentation was explicitly authorized, tag every temporary site
+with one unique marker so cleanup is mechanically checkable.
 
 For performance regressions, establish a repeatable baseline and use profiles,
 query plans, timing, allocation evidence, or bisection. Avoid adding logs that
@@ -98,8 +94,8 @@ exercise observable behavior at the real bug seam and should fail for the
 intended reason before the fix when proportionate. Re-run both the minimized and
 original scenarios afterward.
 
-Before completion, remove all temporary instrumentation, verify the unique
-marker is absent, and delete temporary reproducers unless the user authorized a
+Before completion, remove all temporary instrumentation and verify its unique
+marker is absent. Delete temporary reproducers unless the user authorized a
 durable artifact. Never claim a fix from a green minimized case while the
 original reported scenario still fails.
 

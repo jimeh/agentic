@@ -3,9 +3,7 @@ name: architect
 description: >-
   Investigate and design a non-trivial module, interface, ownership boundary, or
   codebase restructuring before implementation. Use for architecture requests,
-  design alternatives, seam placement, or a read-only architecture audit. An
-  architecture request does not by itself authorize implementation or durable
-  design-document changes.
+  design alternatives, seam placement, or a read-only architecture audit.
 ---
 
 # Architect
@@ -52,16 +50,10 @@ alternative. Independent agents can explore alternatives when the decision is
 large enough to justify them and the active workflow authorizes delegation; do
 not require a fixed model panel.
 
-Read [references/design-lenses.md](references/design-lenses.md) and compare each
-shape on:
-
-- caller simplicity and capability
-- ownership, invariants, and information hiding
-- locality of future change and failure diagnosis
-- test surface and dependency substitution
-- migration and compatibility cost
-- deletion behavior and accidental pass-through layers
-- operational, security, and performance consequences
+For material alternatives, read
+[references/design-lenses.md](references/design-lenses.md). It contributes
+concrete interface-depth, information-locality, test-surface, deletion, and
+alternative-quality heuristics for comparing whole shapes.
 
 Deep modules are a useful lens, not a universal architecture. Keep established
 repository terms such as component, service, API, or boundary when they are the
