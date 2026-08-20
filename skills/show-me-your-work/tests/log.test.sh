@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+export GIT_CONFIG_GLOBAL=/dev/null
+export GIT_CONFIG_SYSTEM=/dev/null
+
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 helper="${script_dir}/../scripts/log.sh"
 test_tmp="$(mktemp -d "${TMPDIR:-/tmp}/show-me-your-work-test.XXXXXX")"
