@@ -16,12 +16,14 @@ State the question visibly in the prototype and let it determine the branch:
 - **Logic or state**: read [references/logic.md](references/logic.md) and create
   one self-contained interactive HTML file.
 - **UI direction**: read [references/ui.md](references/ui.md) and create three
-  structurally distinct variants that can be switched at one stable URL.
+  structurally distinct variants by default, up to five, that can be switched at
+  one stable URL.
 
 An explicit prototype request authorizes temporary prototype artifacts and safe
-local execution. Keep them outside the repository by default. Modify an existing
-page or add a repository-local prototype only when the user explicitly asks for
-an in-app or repository prototype. Do not create a branch, commit, push, upload,
+local execution. Keep them outside the repository by default. A repository-local
+request authorizes writing the prototype only at its requested or agreed
+location. Modify an existing application page only when the user explicitly asks
+for an in-app prototype. Do not create a branch, commit, push, upload, durably
 preserve the prototype, or touch production and live systems unless separately
 authorized.
 
