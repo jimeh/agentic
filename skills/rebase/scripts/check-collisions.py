@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Detect local filesystem objects a rebase transition could overwrite."""
+"""Detect local objects an exact candidate tree would overwrite."""
 
 from __future__ import annotations
 
 import os
 import subprocess
 import sys
+import unicodedata
 from pathlib import Path, PurePosixPath
 
 
@@ -26,6 +27,17 @@ def git(*args: str, allowed_returncodes: tuple[int, ...] = (0,)) -> bytes:
     return result.stdout
 
 
+def revision(value: str) -> str:
+    return git("rev-parse", "--verify", f"{value}^{{commit}}").decode().strip()
+
+
+def current_branch() -> str:
+    value = git("symbolic-ref", "--quiet", "--short", "HEAD").decode().strip()
+    if not value:
+        raise RuntimeError("the original checkout is detached")
+    return value
+
+
 def repository_ignores_case() -> bool:
     value = git(
         "config",
@@ -39,219 +51,25 @@ def repository_ignores_case() -> bool:
     return value == b"true"
 
 
-def revision(value: str) -> str:
-    return git("rev-parse", "--verify", f"{value}^{{commit}}").decode().strip()
-
-
-def nul_paths(*args: str) -> set[bytes]:
-    return {path for path in git(*args).split(b"\0") if path}
-
-
-def changed_paths(old: str, new: str) -> set[bytes]:
-    return nul_paths("diff", "--name-only", "-z", "--no-renames", old, new)
-
-
-def parse_name_status(data: bytes) -> list[tuple[bytes, list[bytes]]]:
-    if data and not data.endswith(b"\0"):
-        raise RuntimeError("unterminated diff --name-status output")
-    fields = data[:-1].split(b"\0") if data else []
-    records: list[tuple[bytes, list[bytes]]] = []
-    index = 0
-    while index < len(fields):
-        status = fields[index]
-        index += 1
-        if status in {b"A", b"D", b"M", b"T"}:
-            path_count = 1
-        elif status.startswith((b"R", b"C")):
-            score = status[1:]
-            if not score.isdigit() or not 0 <= int(score) <= 100:
-                raise RuntimeError("malformed rename or copy score")
-            path_count = 2
-        else:
-            raise RuntimeError("unsupported diff --name-status record")
-        if index + path_count > len(fields):
-            raise RuntimeError("malformed diff --name-status output")
-        paths = fields[index : index + path_count]
-        index += path_count
-        if any(not path for path in paths):
-            raise RuntimeError("empty path in diff --name-status output")
-        records.append((status, paths))
-    return records
-
-
-def directory_rename_pairs(old: str, new: str) -> set[tuple[bytes, bytes]]:
-    data = git(
-        "diff",
-        "--name-status",
-        "-z",
-        "--find-renames=50%",
-        old,
-        new,
-    )
-    pairs: set[tuple[bytes, bytes]] = set()
-    prefix_evidence: dict[tuple[PurePosixPath, PurePosixPath], int] = {}
-    for status, paths in parse_name_status(data):
-        if not status.startswith(b"R"):
-            continue
-
-        old_parent = PurePosixPath(os.fsdecode(paths[0])).parent
-        new_parent = PurePosixPath(os.fsdecode(paths[1])).parent
-        if old_parent == PurePosixPath("."):
-            continue
-
-        old_parts = old_parent.parts
-        new_parts = new_parent.parts
-        candidate_pairs = {(old_parent, new_parent)}
-        for trim_count in range(1, min(len(old_parts), len(new_parts)) + 1):
-            if old_parts[-trim_count:] != new_parts[-trim_count:]:
-                continue
-            source_parts = old_parts[:-trim_count]
-            if not source_parts:
-                continue
-            target_parts = new_parts[:-trim_count]
-            prefix_pair = (
-                PurePosixPath(*source_parts),
-                PurePosixPath(*target_parts),
-            )
-            prefix_evidence[prefix_pair] = (
-                prefix_evidence.get(prefix_pair, 0) + 1
-            )
-        pairs.update(
-            (
-                os.fsencode(str(source)),
-                b"" if target == PurePosixPath(".") else os.fsencode(str(target)),
-            )
-            for source, target in candidate_pairs
-            if source != target
-        )
-    pairs.update(
-        (
-            os.fsencode(str(source)),
-            b"" if target == PurePosixPath(".") else os.fsencode(str(target)),
-        )
-        for (source, target), evidence_count in prefix_evidence.items()
-        if source != target and evidence_count >= 2
-    )
-    return pairs
-
-
-def relocated_path(
-    path: bytes, source: bytes, destination: bytes
-) -> bytes | None:
-    if path == source:
-        return destination or None
-    prefix = source + b"/"
-    if path.startswith(prefix):
-        separator = b"/" if destination else b""
-        return destination + separator + path[len(prefix) :]
-    return None
-
-
-def expanded_paths(
-    paths: set[bytes], mappings: set[tuple[bytes, bytes]]
-) -> set[bytes]:
-    expanded = set(paths)
-    frontier = set(paths)
-    for _ in mappings:
-        additions = {
-            relocated
-            for path in frontier
-            for source, destination in mappings
-            if (relocated := relocated_path(path, source, destination)) is not None
-        } - expanded
-        if not additions:
-            break
-        expanded.update(additions)
-        frontier = additions
-    return expanded
-
-
-def replay_transitions(pre_head: str, base_head: str) -> list[tuple[str, str]]:
-    transitions = [(pre_head, base_head)]
-    merge_base = git("merge-base", pre_head, base_head).decode().strip()
-    commits = git(
-        "rev-list", "--reverse", "--no-merges", f"{merge_base}..{pre_head}"
-    ).decode().splitlines()
-    for commit in commits:
-        parent = git("rev-parse", f"{commit}^").decode().strip()
-        transitions.append((parent, commit))
-    return transitions
-
-
-def tree_type(revision_name: str, path: bytes) -> bytes | None:
-    output = git("ls-tree", "-z", revision_name, "--", os.fsdecode(path))
-    if not output:
-        return None
-    metadata = output.split(b"\t", 1)[0]
-    fields = metadata.split(b" ")
-    if len(fields) < 2 or fields[1] not in {b"blob", b"commit", b"tree"}:
-        raise RuntimeError(
-            f"malformed ls-tree output for {revision_name}:{os.fsdecode(path)}"
-        )
-    return fields[1]
-
-
-def transition_state(
-    pre_head: str, base_head: str
-) -> tuple[set[bytes], set[bytes]]:
-    transitions = replay_transitions(pre_head, base_head)
-    target_paths = changed_paths(*transitions[0])
-    candidates = set(target_paths)
-    active_paths = set(target_paths)
-    structural_roots: set[bytes] = set()
-    merge_base = git("merge-base", pre_head, base_head).decode().strip()
-    upstream_mappings = directory_rename_pairs(merge_base, base_head)
-
-    for transition_index, (old, new) in enumerate(transitions):
-        transition_paths = changed_paths(old, new)
-        candidates.update(transition_paths)
-        if transition_index:
-            upstream_relocated = expanded_paths(
-                transition_paths, upstream_mappings
-            )
-            replay_relocated = expanded_paths(
-                active_paths, directory_rename_pairs(old, new)
-            )
-            candidates.update(upstream_relocated, replay_relocated)
-            active_paths.update(
-                transition_paths, upstream_relocated, replay_relocated
-            )
-        nodes = set().union(*(ancestors(path) for path in transition_paths))
-        for node in nodes:
-            if tree_type(old, node) == b"tree" and tree_type(new, node) != b"tree":
-                structural_roots.add(node)
-    return candidates, structural_roots
-
-
-def tracked_nodes(pre_head: str) -> set[bytes]:
-    files = nul_paths("ls-tree", "-r", "-z", "--name-only", pre_head)
-    files.update(nul_paths("ls-files", "-z"))
-    nodes = set(files)
-    for path in files:
-        parent = PurePosixPath(os.fsdecode(path)).parent
-        while parent != PurePosixPath("."):
-            nodes.add(os.fsencode(str(parent)))
-            parent = parent.parent
-    return nodes
-
-
-def status_objects() -> set[bytes]:
-    records = git(
-        "status",
-        "--porcelain=v2",
-        "-z",
-        "--untracked-files=all",
-        "--ignored=matching",
-    ).split(b"\0")
-    return {
-        record[2:].rstrip(b"/")
-        for record in records
-        if record.startswith((b"? ", b"! ")) and record[2:]
-    }
+def tree_entries(revision_name: str) -> dict[bytes, bytes]:
+    data = git("ls-tree", "-r", "-t", "-z", revision_name)
+    entries: dict[bytes, bytes] = {}
+    for record in (item for item in data.split(b"\0") if item):
+        try:
+            metadata, path = record.split(b"\t", 1)
+        except ValueError as error:
+            raise RuntimeError("malformed ls-tree output") from error
+        fields = metadata.split(b" ")
+        if len(fields) != 3 or fields[1] not in {b"blob", b"commit", b"tree"}:
+            raise RuntimeError("malformed ls-tree metadata")
+        if not path or path in entries:
+            raise RuntimeError("invalid path in ls-tree output")
+        entries[path] = fields[1]
+    return entries
 
 
 def ancestors(path: bytes) -> set[bytes]:
-    result = {path}
+    result: set[bytes] = set()
     parent = PurePosixPath(os.fsdecode(path)).parent
     while parent != PurePosixPath("."):
         result.add(os.fsencode(str(parent)))
@@ -261,65 +79,144 @@ def ancestors(path: bytes) -> set[bytes]:
 
 def comparable(path: bytes, ignore_case: bool) -> str:
     value = os.fsdecode(path)
-    return value.casefold() if ignore_case else value
+    if ignore_case:
+        return unicodedata.normalize("NFD", value).casefold()
+    return value
 
 
-def related(left: bytes, right: bytes, ignore_case: bool) -> bool:
-    left_value = comparable(left, ignore_case)
-    right_value = comparable(right, ignore_case)
-    return (
-        left_value == right_value
-        or left_value.startswith(right_value + "/")
-        or right_value.startswith(left_value + "/")
-    )
+def normalized_entries(
+    entries: dict[bytes, bytes], ignore_case: bool
+) -> dict[str, bytes]:
+    result: dict[str, bytes] = {}
+    for path, object_type in entries.items():
+        key = comparable(path, ignore_case)
+        if key in result:
+            raise RuntimeError("case-folded tree entries are ambiguous")
+        result[key] = object_type
+    return result
 
 
-def extra_descendants(root: bytes, tracked: set[bytes]) -> set[bytes]:
-    if not os.path.isdir(root) or os.path.islink(root):
-        return set()
+def filesystem_objects(
+    ignore_case: bool, traversable_directories: set[str]
+) -> list[tuple[bytes, bool]]:
+    if os.sep != "/":
+        raise RuntimeError("collision inspection requires a POSIX filesystem")
 
-    extra: set[bytes] = set()
+    objects: list[tuple[bytes, bool]] = []
+
     def raise_walk_error(error: OSError) -> None:
         raise error
 
     for current, directories, files in os.walk(
-        root, followlinks=False, onerror=raise_walk_error
+        b".", topdown=True, followlinks=False, onerror=raise_walk_error
     ):
-        for name in [*directories, *files]:
+        if current == b".":
+            directories[:] = [name for name in directories if name != b".git"]
+            files = [name for name in files if name != b".git"]
+
+        retained_directories: list[bytes] = []
+        for name in directories:
             path = os.path.join(current, name)
-            if path not in tracked:
-                extra.add(path)
-    return extra
+            relative = os.path.relpath(path, b".")
+            is_link = os.path.islink(path)
+            objects.append((relative, not is_link))
+            if (
+                not is_link
+                and comparable(relative, ignore_case) in traversable_directories
+            ):
+                retained_directories.append(name)
+        directories[:] = retained_directories
+
+        objects.extend(
+            (os.path.relpath(os.path.join(current, name), b"."), False)
+            for name in files
+        )
+    return objects
 
 
-def collisions(pre_head: str, base_head: str) -> set[tuple[bytes, bytes]]:
-    candidates, structural_roots = transition_state(pre_head, base_head)
-    tracked = tracked_nodes(pre_head)
-    local = status_objects()
+def is_current_tracked_object(
+    path: bytes,
+    current_raw: dict[bytes, bytes],
+    current: dict[str, bytes],
+    ignore_case: bool,
+) -> bool:
+    if path in current_raw:
+        return True
+    key = comparable(path, ignore_case)
+    if key not in current:
+        return False
+
+    try:
+        local_stat = os.lstat(path)
+    except OSError as error:
+        raise RuntimeError(f"cannot inspect {os.fsdecode(path)!r}: {error}") from error
+
+    for tracked_path in current_raw:
+        if comparable(tracked_path, ignore_case) != key:
+            continue
+        try:
+            tracked_stat = os.lstat(tracked_path)
+        except FileNotFoundError:
+            continue
+        except OSError as error:
+            raise RuntimeError(
+                f"cannot inspect tracked path {os.fsdecode(tracked_path)!r}: {error}"
+            ) from error
+        if (local_stat.st_dev, local_stat.st_ino) == (
+            tracked_stat.st_dev,
+            tracked_stat.st_ino,
+        ):
+            return True
+    return False
+
+
+def collisions(current_head: str, candidate_head: str) -> set[bytes]:
     ignore_case = repository_ignores_case()
-
-    for candidate in candidates:
-        for node in ancestors(candidate):
-            if node in tracked:
-                continue
-            if os.path.lexists(node):
-                local.add(node)
-
-    for root in structural_roots:
-        local.update(extra_descendants(root, tracked))
-
-    return {
-        (candidate, local_path)
-        for candidate in candidates
-        for local_path in local
-        if related(candidate, local_path, ignore_case)
+    current_raw = tree_entries(current_head)
+    candidate_raw = tree_entries(candidate_head)
+    current = normalized_entries(current_raw, ignore_case)
+    candidate = normalized_entries(candidate_raw, ignore_case)
+    candidate_ancestors = {
+        comparable(parent, ignore_case)
+        for path in candidate_raw
+        for parent in ancestors(path)
     }
+    traversable_directories = candidate_ancestors | {
+        key for key, object_type in candidate.items() if object_type == b"tree"
+    } | {
+        key for key, object_type in current.items() if object_type == b"tree"
+    }
+
+    found: set[bytes] = set()
+    for path, is_directory in filesystem_objects(
+        ignore_case, traversable_directories
+    ):
+        key = comparable(path, ignore_case)
+        if is_current_tracked_object(path, current_raw, current, ignore_case):
+            continue
+
+        candidate_type = candidate.get(key)
+        ancestor_is_file = any(
+            candidate.get(comparable(parent, ignore_case)) not in {None, b"tree"}
+            for parent in ancestors(path)
+        )
+        if is_directory:
+            if candidate_type not in {None, b"tree"} or ancestor_is_file:
+                found.add(path)
+        elif (
+            candidate_type is not None
+            or key in candidate_ancestors
+            or ancestor_is_file
+        ):
+            found.add(path)
+    return found
 
 
 def main() -> int:
-    if len(sys.argv) != 3:
+    if len(sys.argv) != 4:
         print(
-            "usage: check-collisions.py <pre-rebase-head> <base-head>",
+            "usage: check-collisions.py "
+            "<current-head> <candidate-head> <expected-branch>",
             file=sys.stderr,
         )
         return 1
@@ -327,22 +224,22 @@ def main() -> int:
     try:
         root = Path(os.fsdecode(git("rev-parse", "--show-toplevel").strip()))
         os.chdir(root)
-        pre_head = revision(sys.argv[1])
-        base_head = revision(sys.argv[2])
-        found = collisions(pre_head, base_head)
+        current_head = revision(sys.argv[1])
+        candidate_head = revision(sys.argv[2])
+        expected_branch = sys.argv[3]
+        if revision("HEAD") != current_head:
+            raise RuntimeError("HEAD no longer matches the inspected current head")
+        if current_branch() != expected_branch:
+            raise RuntimeError("current branch no longer matches the recorded branch")
+        found = collisions(current_head, candidate_head)
     except (OSError, RuntimeError) as error:
         print(f"inconclusive: {error}", file=sys.stderr)
         return 1
 
     if not found:
         return 0
-
-    for candidate, local_path in sorted(found):
-        print(
-            "collision: "
-            f"candidate={os.fsdecode(candidate)!r} "
-            f"local={os.fsdecode(local_path)!r}"
-        )
+    for path in sorted(found):
+        print(f"collision: local={os.fsdecode(path)!r}")
     return 2
 
 

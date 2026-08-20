@@ -34,18 +34,18 @@ checkout.
   the original head and onto commit from the active rebase metadata. Inspect the
   current replayed commit and stop reason. When conflicts exist, read
   [references/conflict-resolution.md](references/conflict-resolution.md) before
-  editing or staging. Before every continuation, run the collision helper with
-  the original head and onto commit so objects created since the prior stop are
-  protected. Continue only when the request covers the current stop, the helper
-  is clear, and the required action is complete; do not skip an intentional
-  `edit` or `exec`.
+  editing or staging. Continue an in-place rebase only after proving the
+  checkout contains no untracked, ignored, or status-invisible objects that Git
+  could overwrite. If absence cannot be established, stop and offer to abort and
+  restart through the isolated workflow below. Do not skip an intentional `edit`
+  or `exec`.
 - Otherwise continue with the new-rebase workflow below.
 
 ## 2. Require a safe checkout
 
 Resolve the repository root and run the remaining Git operations there. Record
-the current branch and immutable `pre_rebase_head` before fetching or mutating
-anything.
+the current named branch and immutable `pre_rebase_head` before fetching or
+mutating anything. Stop on a detached checkout.
 
 Establish exclusive mutation ownership of the checkout for the rebase.
 Coordinate known agents, editors, hooks, formatters, or watchers that can write
@@ -53,10 +53,10 @@ into it. If a writer cannot be paused or ownership is uncertain, stop. Recheck
 immediately before rebasing; any drift means ownership was not established.
 
 Require the worktree and index to be clean, including untracked paths. Do not
-create a stash, reset files, or synthesize a recovery procedure. If staged,
-unstaged, untracked, conflicted, or hidden flagged state is present, stop and
-ask the user to preserve or relocate it before retrying. A rebase request does
-not authorize moving or rewriting unrelated local work.
+create a stash or mutate the original checkout to manufacture that condition. If
+staged, unstaged, untracked, conflicted, or hidden flagged state is present,
+stop and ask the user to preserve or relocate it before retrying. A rebase
+request does not authorize moving or rewriting unrelated local work.
 
 Record any skip-worktree or assume-unchanged entries. Expected sparse absence is
 clean; an absent assume-unchanged path, an unexpectedly materialized sparse
@@ -77,61 +77,75 @@ branch, verify that `HEAD` still equals `pre_rebase_head`, and pin the fetched
 commit as immutable `base_head`. Record the merge base and old local range for
 later comparison.
 
-Run the bundled `scripts/check-collisions.py` with `pre_rebase_head` and
-`base_head`. It checks paths changed by the target and replay transitions,
-including conservative destinations inferred from directory renames on either
-side, against present ignored, untracked, symlink, and status-invisible objects
-without modifying them. Exit `0` is clear, exit `2` reports collisions, and any
-other result is inconclusive. Stop before rebasing on either nonzero result. Git
-can overwrite ignored content without warning, so do not skip or approximate
-this check.
-
 Review upstream commits and diffs that touch the branch's files or nearby
 behavior. Determine whether upstream already solved the same problem, introduced
 a new source of truth, removed a dependency, or made the two implementations
 compete. Use broader symbol, configuration, migration, route, or test searches
 when the behavior spans files.
 
-## 4. Rebase by intent
+## 4. Rebase in isolation
 
-Immediately before rebasing, verify all of the following still match the
-preflight:
+Create an owned, private temporary worktree outside the repository and detach it
+at `pre_rebase_head`. Perform the rebase there, not in the caller's checkout.
+This lets Git materialize inferred and conflict paths without touching local
+ignored or status-invisible objects.
+
+Rebase the isolated worktree onto `base_head`. If conflicts occur, read
+[references/conflict-resolution.md](references/conflict-resolution.md) before
+editing or staging. Preserve compatible upstream and local intent. If evidence
+does not support the semantic choice, abort and remove the owned isolated
+worktree before asking; retain it only when the user explicitly requested a
+paused rebase. The original checkout must remain unchanged.
+
+Capture the isolated `candidate_head`, compare the old and replayed ranges, and
+run proportionate validation there. Confirm that the replayed commits still fit
+the upstream design before changing the original branch. Adapt them during the
+rebase only when upstream makes the existing changes wrong, duplicate,
+inconsistent, or impossible to validate; leave optional cleanup for follow-up.
+
+## 5. Apply the exact candidate
+
+Immediately before applying the candidate, verify all of the following still
+match the preflight in the original checkout:
 
 - `HEAD` equals `pre_rebase_head`;
+- the current branch equals the recorded branch;
 - status remains clean;
 - recorded flags remain unchanged;
-- the collision helper still exits `0`; and
 - the live remote branch still points to `base_head`.
 
 On drift, stop and report it. Do not reset or restore over state that appeared
 after the preflight.
 
-Rebase onto the immutable `base_head`. If conflicts occur, read
-[references/conflict-resolution.md](references/conflict-resolution.md) before
-editing or staging. Preserve compatible upstream and local intent. If evidence
-does not support the semantic choice, leave a rebase that was already active
-paused and ask. When this workflow started the rebase, abort back to
-`pre_rebase_head` and verify the original clean state before asking, unless the
-user explicitly requested a paused rebase.
+Run `scripts/check-collisions.py` in the original checkout with
+`pre_rebase_head`, `candidate_head`, and the recorded branch name. It binds the
+checkout identity and compares the exact candidate tree to present ignored,
+untracked, symlink, and status-invisible objects. Exit `0` is clear, exit `2`
+reports collisions, and any other result is inconclusive. Stop without changing
+the original checkout on either nonzero result.
 
-## 5. Review the integrated branch
+With exclusive mutation ownership still established, advance the current branch
+and tracked worktree to `candidate_head` with
+`git reset --hard "$candidate_head"`. This reset applies the already-authorized
+rebase only after a clean-state and exact-tree proof; it is not authority to
+discard dirt. If it fails, retain the isolated worktree and report the state
+instead of improvising recovery.
 
-Compare the old and replayed commit ranges when both are available and
-comparable. Otherwise use ahead/behind counts, commit lists, and targeted diffs.
-Run `git diff --check` and proportionate validation for behavior affected by
-upstream overlap or conflict resolution.
+Verify the original checkout now matches the validated candidate, status and
+recorded flags remain expected, and unrelated local objects remain present. Then
+remove the owned temporary worktree.
 
-Confirm that the replayed commits still make sense on the new upstream design.
-Adapt them during the rebase only when upstream makes the existing changes
-wrong, duplicate, inconsistent, or impossible to validate. Leave optional
-cleanup for follow-up work.
+## 6. Review the integrated branch
+
+Use the isolated range comparison and validation as evidence. Rerun only checks
+whose result depends on the original checkout rather than the candidate commit.
 
 Before reporting success, verify that status remains clean apart from any
 intentional conflict-resolution changes now committed into the rebased history,
 the branch contains the expected commits, and recorded skip-worktree or
 assume-unchanged flags still have their expected state.
 
-## 6. Report and optionally publish
+## 7. Report and optionally publish
 
 Report:
 
