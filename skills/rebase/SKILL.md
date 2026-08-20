@@ -34,8 +34,11 @@ checkout.
   the original head and onto commit from the active rebase metadata. Inspect the
   current replayed commit and stop reason. When conflicts exist, read
   [references/conflict-resolution.md](references/conflict-resolution.md) before
-  editing or staging. Continue only when the request covers the current stop and
-  its required action is complete; do not skip an intentional `edit` or `exec`.
+  editing or staging. Before every continuation, run the collision helper with
+  the original head and onto commit so objects created since the prior stop are
+  protected. Continue only when the request covers the current stop, the helper
+  is clear, and the required action is complete; do not skip an intentional
+  `edit` or `exec`.
 - Otherwise continue with the new-rebase workflow below.
 
 ## 2. Require a safe checkout
@@ -75,8 +78,9 @@ commit as immutable `base_head`. Record the merge base and old local range for
 later comparison.
 
 Run the bundled `scripts/check-collisions.py` with `pre_rebase_head` and
-`base_head`. It checks paths changed by the target and replay transitions
-against present ignored, untracked, symlink, and status-invisible objects
+`base_head`. It checks paths changed by the target and replay transitions,
+including conservative destinations inferred from directory renames on either
+side, against present ignored, untracked, symlink, and status-invisible objects
 without modifying them. Exit `0` is clear, exit `2` reports collisions, and any
 other result is inconclusive. Stop before rebasing on either nonzero result. Git
 can overwrite ignored content without warning, so do not skip or approximate

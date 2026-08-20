@@ -164,7 +164,7 @@ run = "bun packages/agent-config/bin/agent-config.ts test plugins"
 
 [tasks."test:skills"]
 description = "Run skill shell tests"
-run = "bash -lc 'set -euo pipefail; shopt -s nullglob; tests=(skills/*/tests/*.test.sh); for test in \"${tests[@]}\"; do bash \"$test\"; done'"
+run = "bash -c 'set -euo pipefail; shopt -s nullglob; tests=(skills/*/tests/*.test.sh); [ -n \"${tests[0]-}\" ] || { echo \"no skill tests found\" >&2; exit 1; }; for test in \"${tests[@]}\"; do bash \"$test\"; done'"
 
 [tasks.verify]
 description = "Run lint and tests"

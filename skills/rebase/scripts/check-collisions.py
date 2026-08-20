@@ -9,9 +9,10 @@ import sys
 from pathlib import Path, PurePosixPath
 
 
-def git(*args: str, check: bool = True) -> bytes:
+def git(*args: str, allowed_returncodes: tuple[int, ...] = (0,)) -> bytes:
     environment = os.environ.copy()
     environment["GIT_LITERAL_PATHSPECS"] = "1"
+    environment["GIT_OPTIONAL_LOCKS"] = "0"
     result = subprocess.run(
         ["git", *args],
         check=False,
@@ -19,10 +20,23 @@ def git(*args: str, check: bool = True) -> bytes:
         stderr=subprocess.PIPE,
         env=environment,
     )
-    if check and (result.returncode != 0 or result.stderr):
+    if result.returncode not in allowed_returncodes or result.stderr:
         message = result.stderr.decode(errors="replace").strip()
         raise RuntimeError(message or f"git {' '.join(args)} failed")
     return result.stdout
+
+
+def repository_ignores_case() -> bool:
+    value = git(
+        "config",
+        "--bool",
+        "--get",
+        "core.ignorecase",
+        allowed_returncodes=(0, 1),
+    ).strip()
+    if value not in {b"", b"true", b"false"}:
+        raise RuntimeError("invalid core.ignorecase value")
+    return value == b"true"
 
 
 def revision(value: str) -> str:
@@ -35,6 +49,121 @@ def nul_paths(*args: str) -> set[bytes]:
 
 def changed_paths(old: str, new: str) -> set[bytes]:
     return nul_paths("diff", "--name-only", "-z", "--no-renames", old, new)
+
+
+def parse_name_status(data: bytes) -> list[tuple[bytes, list[bytes]]]:
+    if data and not data.endswith(b"\0"):
+        raise RuntimeError("unterminated diff --name-status output")
+    fields = data[:-1].split(b"\0") if data else []
+    records: list[tuple[bytes, list[bytes]]] = []
+    index = 0
+    while index < len(fields):
+        status = fields[index]
+        index += 1
+        if status in {b"A", b"D", b"M", b"T"}:
+            path_count = 1
+        elif status.startswith((b"R", b"C")):
+            score = status[1:]
+            if not score.isdigit() or not 0 <= int(score) <= 100:
+                raise RuntimeError("malformed rename or copy score")
+            path_count = 2
+        else:
+            raise RuntimeError("unsupported diff --name-status record")
+        if index + path_count > len(fields):
+            raise RuntimeError("malformed diff --name-status output")
+        paths = fields[index : index + path_count]
+        index += path_count
+        if any(not path for path in paths):
+            raise RuntimeError("empty path in diff --name-status output")
+        records.append((status, paths))
+    return records
+
+
+def directory_rename_pairs(old: str, new: str) -> set[tuple[bytes, bytes]]:
+    data = git(
+        "diff",
+        "--name-status",
+        "-z",
+        "--find-renames=50%",
+        old,
+        new,
+    )
+    pairs: set[tuple[bytes, bytes]] = set()
+    prefix_evidence: dict[tuple[PurePosixPath, PurePosixPath], int] = {}
+    for status, paths in parse_name_status(data):
+        if not status.startswith(b"R"):
+            continue
+
+        old_parent = PurePosixPath(os.fsdecode(paths[0])).parent
+        new_parent = PurePosixPath(os.fsdecode(paths[1])).parent
+        if old_parent == PurePosixPath("."):
+            continue
+
+        old_parts = old_parent.parts
+        new_parts = new_parent.parts
+        candidate_pairs = {(old_parent, new_parent)}
+        for trim_count in range(1, min(len(old_parts), len(new_parts)) + 1):
+            if old_parts[-trim_count:] != new_parts[-trim_count:]:
+                continue
+            source_parts = old_parts[:-trim_count]
+            if not source_parts:
+                continue
+            target_parts = new_parts[:-trim_count]
+            prefix_pair = (
+                PurePosixPath(*source_parts),
+                PurePosixPath(*target_parts),
+            )
+            prefix_evidence[prefix_pair] = (
+                prefix_evidence.get(prefix_pair, 0) + 1
+            )
+        pairs.update(
+            (
+                os.fsencode(str(source)),
+                b"" if target == PurePosixPath(".") else os.fsencode(str(target)),
+            )
+            for source, target in candidate_pairs
+            if source != target
+        )
+    pairs.update(
+        (
+            os.fsencode(str(source)),
+            b"" if target == PurePosixPath(".") else os.fsencode(str(target)),
+        )
+        for (source, target), evidence_count in prefix_evidence.items()
+        if source != target and evidence_count >= 2
+    )
+    return pairs
+
+
+def relocated_path(
+    path: bytes, source: bytes, destination: bytes
+) -> bytes | None:
+    if path == source:
+        return destination or None
+    prefix = source + b"/"
+    if path.startswith(prefix):
+        separator = b"/" if destination else b""
+        return destination + separator + path[len(prefix) :]
+    return None
+
+
+def expanded_paths(
+    paths: set[bytes], mappings: set[tuple[bytes, bytes]]
+) -> set[bytes]:
+    expanded = set(paths)
+    frontier = set(paths)
+    for _ in mappings:
+        additions = {
+            relocated
+            for path in frontier
+            for source, destination in mappings
+            if (relocated := relocated_path(path, source, destination)) is not None
+        } - expanded
+        if not additions:
+            break
+        expanded.update(additions)
+        frontier = additions
+    return expanded
 
 
 def replay_transitions(pre_head: str, base_head: str) -> list[tuple[str, str]]:
@@ -65,11 +194,28 @@ def tree_type(revision_name: str, path: bytes) -> bytes | None:
 def transition_state(
     pre_head: str, base_head: str
 ) -> tuple[set[bytes], set[bytes]]:
-    candidates: set[bytes] = set()
+    transitions = replay_transitions(pre_head, base_head)
+    target_paths = changed_paths(*transitions[0])
+    candidates = set(target_paths)
+    active_paths = set(target_paths)
     structural_roots: set[bytes] = set()
-    for old, new in replay_transitions(pre_head, base_head):
+    merge_base = git("merge-base", pre_head, base_head).decode().strip()
+    upstream_mappings = directory_rename_pairs(merge_base, base_head)
+
+    for transition_index, (old, new) in enumerate(transitions):
         transition_paths = changed_paths(old, new)
         candidates.update(transition_paths)
+        if transition_index:
+            upstream_relocated = expanded_paths(
+                transition_paths, upstream_mappings
+            )
+            replay_relocated = expanded_paths(
+                active_paths, directory_rename_pairs(old, new)
+            )
+            candidates.update(upstream_relocated, replay_relocated)
+            active_paths.update(
+                transition_paths, upstream_relocated, replay_relocated
+            )
         nodes = set().union(*(ancestors(path) for path in transition_paths))
         for node in nodes:
             if tree_type(old, node) == b"tree" and tree_type(new, node) != b"tree":
@@ -79,6 +225,7 @@ def transition_state(
 
 def tracked_nodes(pre_head: str) -> set[bytes]:
     files = nul_paths("ls-tree", "-r", "-z", "--name-only", pre_head)
+    files.update(nul_paths("ls-files", "-z"))
     nodes = set(files)
     for path in files:
         parent = PurePosixPath(os.fsdecode(path)).parent
@@ -112,11 +259,18 @@ def ancestors(path: bytes) -> set[bytes]:
     return result
 
 
-def related(left: bytes, right: bytes) -> bool:
+def comparable(path: bytes, ignore_case: bool) -> str:
+    value = os.fsdecode(path)
+    return value.casefold() if ignore_case else value
+
+
+def related(left: bytes, right: bytes, ignore_case: bool) -> bool:
+    left_value = comparable(left, ignore_case)
+    right_value = comparable(right, ignore_case)
     return (
-        left == right
-        or left.startswith(right + b"/")
-        or right.startswith(left + b"/")
+        left_value == right_value
+        or left_value.startswith(right_value + "/")
+        or right_value.startswith(left_value + "/")
     )
 
 
@@ -142,6 +296,7 @@ def collisions(pre_head: str, base_head: str) -> set[tuple[bytes, bytes]]:
     candidates, structural_roots = transition_state(pre_head, base_head)
     tracked = tracked_nodes(pre_head)
     local = status_objects()
+    ignore_case = repository_ignores_case()
 
     for candidate in candidates:
         for node in ancestors(candidate):
@@ -157,7 +312,7 @@ def collisions(pre_head: str, base_head: str) -> set[tuple[bytes, bytes]]:
         (candidate, local_path)
         for candidate in candidates
         for local_path in local
-        if related(candidate, local_path)
+        if related(candidate, local_path, ignore_case)
     }
 
 

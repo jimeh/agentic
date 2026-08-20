@@ -20,6 +20,16 @@ assert_equal() {
   fi
 }
 
+file_mode() {
+  python3 -c \
+    'import os, sys; print(oct(os.stat(sys.argv[1]).st_mode & 0o777)[2:])' \
+    "$1"
+}
+
+file_hash() {
+  git hash-object --no-filters "$1"
+}
+
 trail="${test_tmp}/private/trail.tsv"
 (
   umask 002
@@ -27,7 +37,7 @@ trail="${test_tmp}/private/trail.tsv"
     $'file:1\ncommand:ok' open
 )
 
-assert_equal "600" "$(stat -c '%a' "$trail")" \
+assert_equal "600" "$(file_mode "$trail")" \
   "new trails must be private"
 assert_equal "2" "$(wc -l < "$trail")" \
   "the helper must write one header and one row"
@@ -57,41 +67,41 @@ assert_equal "follow-up" "$(awk -F '\t' 'NR == 3 { print $3 }' "$trail")" \
 
 wrong_header="${test_tmp}/wrong-header.tsv"
 printf 'not\tthe\texpected\theader\n' > "$wrong_header"
-wrong_header_hash="$(sha256sum "$wrong_header" | cut -d ' ' -f 1)"
+wrong_header_hash="$(file_hash "$wrong_header")"
 if "$helper" "$wrong_header" p d r e o 2>/dev/null; then
   fail "unexpected headers must be rejected"
 fi
 assert_equal "$wrong_header_hash" \
-  "$(sha256sum "$wrong_header" | cut -d ' ' -f 1)" \
+  "$(file_hash "$wrong_header")" \
   "rejected wrong-header trails must remain unchanged"
 
 malformed="${test_tmp}/malformed.tsv"
 printf 'ts\tphase\tdecision\trationale\tevidence\toutcome\n' > "$malformed"
 printf 'too\tfew\n' >> "$malformed"
-malformed_hash="$(sha256sum "$malformed" | cut -d ' ' -f 1)"
+malformed_hash="$(file_hash "$malformed")"
 if "$helper" "$malformed" p d r e o 2>/dev/null; then
   fail "malformed existing rows must be rejected"
 fi
 assert_equal "$malformed_hash" \
-  "$(sha256sum "$malformed" | cut -d ' ' -f 1)" \
+  "$(file_hash "$malformed")" \
   "rejected malformed trails must remain unchanged"
 
 unterminated="${test_tmp}/unterminated.tsv"
 printf 'ts\tphase\tdecision\trationale\tevidence\toutcome\n' > "$unterminated"
 printf 'ts\tp\td\tr\te\to\0' >> "$unterminated"
-unterminated_hash="$(sha256sum "$unterminated" | cut -d ' ' -f 1)"
+unterminated_hash="$(file_hash "$unterminated")"
 if "$helper" "$unterminated" p d r e o 2>/dev/null; then
   fail "a non-newline final byte must be rejected"
 fi
 assert_equal "$unterminated_hash" \
-  "$(sha256sum "$unterminated" | cut -d ' ' -f 1)" \
+  "$(file_hash "$unterminated")" \
   "rejected unterminated trails must remain unchanged"
 
 (
   cd "$test_tmp"
   "$helper" '-option/trail.tsv' p d r e o
 )
-assert_equal "600" "$(stat -c '%a' "${test_tmp}/-option/trail.tsv")" \
+assert_equal "600" "$(file_mode "${test_tmp}/-option/trail.tsv")" \
   "leading-dash parent paths must remain literal"
 
 if "$helper" "${test_tmp}/arity.tsv" p d r e 2>/dev/null; then
