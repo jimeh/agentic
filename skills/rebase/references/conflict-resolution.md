@@ -57,7 +57,9 @@ not use broad staging commands that could absorb unrelated changes.
 
 Confirm the remaining unmerged paths with
 `git diff --name-only --diff-filter=U`. Run proportionate focused validation for
-the behavior being combined. Then continue with `git rebase --continue`; do not
+the behavior being combined. Re-run `scripts/check-collisions.py` with the
+original head and onto commit recorded for this rebase. Stop on a collision or
+inconclusive result; otherwise continue with `git rebase --continue`. Do not
 create an extra commit. Repeat the evidence and intent analysis for each new
 conflict rather than applying the first resolution mechanically.
 
