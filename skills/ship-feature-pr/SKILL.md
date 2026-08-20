@@ -52,6 +52,13 @@ names or count when relevant, and environment limits. Evidence carries forward
 only when its revision is an ancestor and the intervening delta cannot affect
 what it proves.
 
+Use `show-me-your-work` when the user requests a decision trail or when a long,
+multi-phase, or unattended delivery develops material forks, pivots, reversals,
+accepted risks, or blockers that the pull request and evidence ledger would not
+make easy to reconstruct. Keep its trail temporary by default and separate from
+the evidence ledger. Do not log routine commands or commit the trail without
+explicit authorization.
+
 Before implementation, verify repository and base access plus both channels
 required by `dual-review`. If either engine remains unavailable, stop before
 mutation when practical; if it fails later, retain the draft and report the
@@ -191,5 +198,6 @@ report the blocker.
 
 Report the PR URL and base, final head, shipped scope and deviations, review
 outcomes, proportionate verification, accepted risk, correction pushes, final
-checkout and branch, cleanup, and preserved local work. Leave merging to a
-separate explicit user instruction.
+checkout and branch, cleanup, and preserved local work. When a decision trail
+was used, include its material pivots, unresolved flags, path, and lifecycle.
+Leave merging to a separate explicit user instruction.
