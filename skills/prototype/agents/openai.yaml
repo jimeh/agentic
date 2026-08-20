@@ -1,0 +1,7 @@
+interface:
+  display_name: "Prototype"
+  short_description: "Answer one design question interactively"
+  default_prompt: "Use $prototype to build a throwaway interactive comparison."
+
+policy:
+  allow_implicit_invocation: true

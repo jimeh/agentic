@@ -1,0 +1,7 @@
+interface:
+  display_name: "Architect"
+  short_description: "Ground and compare architecture before coding"
+  default_prompt: "Use $architect to design this change before implementation."
+
+policy:
+  allow_implicit_invocation: true
