@@ -1,0 +1,8 @@
+interface:
+  display_name: "Show Me Your Work"
+  short_description: "Keep an evidence-linked decision trail"
+  default_prompt:
+    "Use $show-me-your-work to record the material decisions in this run."
+
+policy:
+  allow_implicit_invocation: true
