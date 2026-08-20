@@ -36,7 +36,7 @@ Inspect `git status` and resolve Git's operation markers with
   Resolve the backend's `orig-head` and `onto` files through
   `git rev-parse --git-path`; use `ORIG_HEAD` only as a verified fallback. Bind
   `pre_rebase_head` to the original head and `base` to the onto commit, then
-  derive `pre_rebase_base` and both old-range commit counts when the ranges are
+  derive `pre_rebase_base` and the old-range commit count when the ranges are
   comparable. Inspect the current replayed commit and conflict state. If
   conflicts exist, read
   [references/conflict-resolution.md](references/conflict-resolution.md) before
@@ -81,6 +81,9 @@ follow it before running any stash command. The external snapshot must contain a
 verified byte-for-byte recovery copy, not only hashes or Git objects: clean and
 smudge filters can make a stash lossy.
 
+Record `pre_rebase_head="$(git rev-parse HEAD)"` before creating the snapshot or
+stash so every early-exit recovery path has an immutable rollback target.
+
 If the snapshot is non-empty, record the existing `refs/stash`, then create one
 uniquely named owned stash that includes untracked files:
 
@@ -106,7 +109,7 @@ base used for review:
 
 ```bash
 git fetch "$base_remote" "$base_branch"
-pre_rebase_head="$(git rev-parse HEAD)"
+test "$(git rev-parse HEAD)" = "$pre_rebase_head"
 pre_rebase_base="$(git merge-base HEAD "$base")"
 pre_rebase_commit_count="$(
   git rev-list --count "$pre_rebase_base".."$pre_rebase_head"
