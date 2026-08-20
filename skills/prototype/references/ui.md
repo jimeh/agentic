@@ -4,10 +4,12 @@ Use `frontend-design` for visual direction. Default to three variants and cap at
 five. They must differ in layout, information hierarchy, and primary affordance,
 not only color, spacing, or copy.
 
-Prefer mounting variants in the real nearby page when repository edits were
-explicitly authorized: keep existing routing, data loading, auth, density, and
-surrounding chrome, then switch only the rendered prototype subtree. Otherwise
-build an isolated temporary page that faithfully recreates the relevant context.
+Prefer mounting variants in the real nearby page when the user explicitly asked
+for an in-app prototype: keep existing routing, data loading, auth, density, and
+surrounding chrome, then switch only the rendered prototype subtree. General
+repository-edit authority or a repository-local artifact request is not enough.
+Otherwise build an isolated page at the authorized location that faithfully
+recreates the relevant context.
 
 Expose variants through a stable `?variant=` URL parameter and a clearly
 prototype-only switcher. The switcher shows the current variant, supports
