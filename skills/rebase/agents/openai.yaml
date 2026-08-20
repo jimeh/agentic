@@ -1,5 +1,6 @@
 interface:
   display_name: "Git Rebase"
-  short_description: "Rebase the current branch onto upstream"
+  short_description: "Rebase safely and resolve conflicts by intent"
   default_prompt:
-    "Use $rebase to rebase the current branch onto the upstream default branch."
+    "Use $rebase to rebase safely onto the requested base and resolve conflicts
+    by intent."

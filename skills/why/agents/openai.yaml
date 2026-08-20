@@ -1,0 +1,8 @@
+interface:
+  display_name: "Why"
+  short_description: "Trace rationale behind repository decisions"
+  default_prompt:
+    "Use $why to trace the evidence behind this repository decision."
+
+policy:
+  allow_implicit_invocation: true
