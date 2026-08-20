@@ -1,0 +1,9 @@
+interface:
+  display_name: "Create Verification Skill"
+  short_description: "Build a real-user-path verification harness"
+  default_prompt:
+    "Use $create-verification-skill to build a project-local verification
+    workflow."
+
+policy:
+  allow_implicit_invocation: true
