@@ -412,6 +412,29 @@ repo="$(new_repo hidden-content-change)"
 )
 expect_inconclusive "$repo" "tracked worktree no longer matches current head"
 
+repo="$(new_repo committed-crlf)"
+(
+  cd "$repo"
+  git config core.autocrlf false
+  printf 'one\r\ntwo\r\n' > committed-crlf.txt
+  git add committed-crlf.txt
+  git commit -qm 'add committed CRLF blob'
+  git branch -f candidate HEAD
+  git switch -q candidate
+  printf 'candidate\n' > src/candidate.txt
+  git add src/candidate.txt
+  git commit -qm candidate
+  git switch -q current
+  git config core.autocrlf true
+  expected_oid="$(git rev-parse current:committed-crlf.txt)"
+  filtered_oid="$(git hash-object committed-crlf.txt)"
+  [ "$filtered_oid" != "$expected_oid" ] || \
+    fail "the CRLF probe must exercise Git's filtered-hash mismatch"
+  [ -z "$(git status --porcelain=v2 --untracked-files=all)" ] || \
+    fail "Git must consider the committed CRLF worktree clean in this probe"
+)
+expect_clear "$repo"
+
 repo="$(new_repo assume-unchanged-entry)"
 (
   cd "$repo"

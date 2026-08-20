@@ -113,7 +113,7 @@ def tracked_worktree_differs(current_head: str) -> bool:
             if not stat.S_ISLNK(path_stat.st_mode):
                 return True
             target = os.readlink(path)
-            if not isinstance(target, bytes) or blob_id(target) != entry.object_id:
+            if blob_id(target) != entry.object_id:
                 return True
         elif entry.object_mode in {b"100644", b"100755"}:
             if not stat.S_ISREG(path_stat.st_mode):
@@ -135,13 +135,28 @@ def tracked_worktree_differs(current_head: str) -> bool:
         object_ids = hashes.splitlines()
         if len(object_ids) != len(batch):
             raise RuntimeError("malformed hash-object output")
-        for (path, expected, before), actual in zip(batch, object_ids, strict=True):
+        raw_object_ids: list[bytes] | None = None
+        if any(actual != item[1] for item, actual in zip(batch, object_ids, strict=True)):
+            raw_hashes = git(
+                "hash-object",
+                "--no-filters",
+                "--",
+                *(os.fsdecode(item[0]) for item in batch),
+            )
+            raw_object_ids = raw_hashes.splitlines()
+            if len(raw_object_ids) != len(batch):
+                raise RuntimeError("malformed raw hash-object output")
+
+        for index, ((path, expected, before), actual) in enumerate(
+            zip(batch, object_ids, strict=True)
+        ):
             try:
                 after = os.lstat(path)
             except OSError:
                 return True
             stable_fields = ("st_dev", "st_ino", "st_mode", "st_size", "st_mtime_ns", "st_ctime_ns")
-            if actual != expected or any(
+            raw_matches = raw_object_ids is not None and raw_object_ids[index] == expected
+            if (actual != expected and not raw_matches) or any(
                 getattr(before, field) != getattr(after, field) for field in stable_fields
             ):
                 return True
