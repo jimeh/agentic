@@ -1,14 +1,10 @@
 ---
 name: html-communication
 description: >-
-  Create or update standalone dark-mode HTML pages when visual hierarchy,
-  spatial layout, comparison, diagrams, or interaction would communicate ideas,
-  concepts, plans, designs, or technical information more clearly than
-  Markdown. Use for visual explanations, interactive documents, presentation
-  mockups, design comparisons, architecture views, and other browser-based
-  communication artifacts. Default to Markdown when straightforward linear
-  prose is enough. Throwaway product behavior and UI experiments belong to the
-  prototype skill unless a separate presentation artifact is requested.
+  Create or update standalone dark-mode HTML when spatial layout, comparison,
+  diagrams, or interaction communicate technical material better than Markdown.
+  Use for browser-based explanation and presentation artifacts. Use Markdown for
+  linear prose and `prototype` for throwaway product behavior or UI experiments.
 ---
 
 # HTML Communication

@@ -1,12 +1,10 @@
 ---
 name: create-verification-skill
 description: >-
-  Create or substantially refresh a project-local skill that launches, drives,
-  observes, and cleans up the real application so agents can prove user-visible
-  behavior. Use when the user asks to create or substantially refresh that
-  workflow for a UI, CLI, API, service, or desktop surface. Verification-gap
-  audits belong to harness-engineering; do not use merely to add an ordinary
-  product test.
+  Create or materially refresh a project-local skill for proving behavior
+  through a real UI, CLI, API, service, or desktop surface. Use for an explicit
+  verification-workflow request, not an ordinary product test or a general
+  harness audit.
 ---
 
 # Create a Verification Skill
@@ -18,11 +16,11 @@ verification package, and the environment's skill-authoring workflow for
 packaging and metadata.
 
 An explicit creation or refresh request authorizes edits inside the verification
-skill, its owned helpers, the project-local skill discovery symlink, and any
-approved task-runner entry points needed to invoke those helpers. It does not
-authorize product fixes, production or live-system access, unrelated harness
-rewrites, commits, pushes, or external posts. If the base application cannot
-run, report the blocker instead of silently fixing product code.
+skill, its owned helpers, and approved task-runner entry points needed to invoke
+those helpers. It does not authorize product fixes, production or live-system
+access, unrelated harness rewrites, commits, pushes, or external posts. If the
+base application cannot run, report the blocker instead of silently fixing
+product code.
 
 ## Discover the Real Contract
 
@@ -46,10 +44,9 @@ it is reachable.
 
 ## Author the Project-local Skill
 
-Store it under `.agents/skills/verify-<surface>/`. Ensure `.claude/skills` is a
-symlink to `../.agents/skills` so both agent families discover the same package.
-Do not replace a conflicting real directory or unmanaged symlink without the
-user's direction.
+Use the environment's skill-authoring workflow to choose the project-local
+package location, discovery metadata, and cross-agent linking. Do not replace a
+conflicting directory or unmanaged link without the user's direction.
 
 The generated `SKILL.md` must contain concrete, repository-specific sections:
 

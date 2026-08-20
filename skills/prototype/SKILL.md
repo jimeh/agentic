@@ -1,11 +1,9 @@
 ---
 name: prototype
 description: >-
-  Build a throwaway interactive prototype to answer one explicit question about
-  a logic or state model, or to compare structurally different UI directions.
-  Use when the user asks to create, explore, or compare a prototype. Do not
-  invoke for a read-only design question that can be answered without an
-  artifact.
+  Build a throwaway interactive artifact to answer one question about logic,
+  state, or competing UI directions. Use for an explicit prototype request, not
+  a read-only design question that needs no artifact.
 ---
 
 # Prototype
