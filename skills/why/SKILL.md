@@ -4,9 +4,10 @@ description: >-
   Investigate why repository code or a technical decision exists by tracing
   source-control history and other relevant available evidence. Use for
   historical rationale, constraints, regressions, thresholds, or rejected
-  alternatives, including when rationale must be established before a requested
-  change. The investigation remains read-only; current mechanics, external
-  research reports, and domain-model changes use other workflows.
+  alternatives, including why a rebase conflict exists or when rationale must
+  be established before a requested change. The investigation remains
+  read-only; current mechanics, external research reports, and domain-model
+  changes use other workflows.
 ---
 
 # Why
