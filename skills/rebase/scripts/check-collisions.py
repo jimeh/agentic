@@ -8,6 +8,12 @@ import subprocess
 import sys
 import unicodedata
 from pathlib import Path, PurePosixPath
+from typing import NamedTuple
+
+
+class TreeEntry(NamedTuple):
+    object_type: bytes
+    object_id: bytes
 
 
 def git(*args: str, allowed_returncodes: tuple[int, ...] = (0,)) -> bytes:
@@ -57,9 +63,22 @@ def repository_ignores_case() -> bool:
     return value == b"true"
 
 
-def tree_entries(revision_name: str) -> dict[bytes, bytes]:
+def repository_normalizes_unicode() -> bool:
+    value = git(
+        "config",
+        "--bool",
+        "--get",
+        "core.precomposeunicode",
+        allowed_returncodes=(0, 1),
+    ).strip()
+    if value not in {b"", b"true", b"false"}:
+        raise RuntimeError("invalid core.precomposeunicode value")
+    return sys.platform == "darwin" or value == b"true"
+
+
+def tree_entries(revision_name: str) -> dict[bytes, TreeEntry]:
     data = git("ls-tree", "-r", "-t", "-z", revision_name)
-    entries: dict[bytes, bytes] = {}
+    entries: dict[bytes, TreeEntry] = {}
     for record in (item for item in data.split(b"\0") if item):
         try:
             metadata, path = record.split(b"\t", 1)
@@ -70,7 +89,7 @@ def tree_entries(revision_name: str) -> dict[bytes, bytes]:
             raise RuntimeError("malformed ls-tree metadata")
         if not path or path in entries:
             raise RuntimeError("invalid path in ls-tree output")
-        entries[path] = fields[1]
+        entries[path] = TreeEntry(fields[1], fields[2])
     return entries
 
 
@@ -83,27 +102,31 @@ def ancestors(path: bytes) -> set[bytes]:
     return result
 
 
-def comparable(path: bytes, ignore_case: bool) -> str:
+def comparable(path: bytes, ignore_case: bool, normalize_unicode: bool) -> str:
     value = os.fsdecode(path)
+    if normalize_unicode:
+        value = unicodedata.normalize("NFD", value)
     if ignore_case:
-        return unicodedata.normalize("NFD", value).casefold()
+        return value.casefold()
     return value
 
 
 def normalized_entries(
-    entries: dict[bytes, bytes], ignore_case: bool
-) -> dict[str, bytes]:
-    result: dict[str, bytes] = {}
-    for path, object_type in entries.items():
-        key = comparable(path, ignore_case)
+    entries: dict[bytes, TreeEntry], ignore_case: bool, normalize_unicode: bool
+) -> dict[str, TreeEntry]:
+    result: dict[str, TreeEntry] = {}
+    for path, entry in entries.items():
+        key = comparable(path, ignore_case, normalize_unicode)
         if key in result:
-            raise RuntimeError("case-folded tree entries are ambiguous")
-        result[key] = object_type
+            raise RuntimeError("normalized tree entries are ambiguous")
+        result[key] = entry
     return result
 
 
 def filesystem_objects(
-    ignore_case: bool, traversable_directories: set[str]
+    ignore_case: bool,
+    normalize_unicode: bool,
+    traversable_directories: set[str],
 ) -> list[tuple[bytes, bool, bool]]:
     if os.sep != "/":
         raise RuntimeError("collision inspection requires a POSIX filesystem")
@@ -132,7 +155,8 @@ def filesystem_objects(
             objects.append((relative, not is_link, is_empty))
             if (
                 not is_link
-                and comparable(relative, ignore_case) in traversable_directories
+                and comparable(relative, ignore_case, normalize_unicode)
+                in traversable_directories
             ):
                 retained_directories.append(name)
         directories[:] = retained_directories
@@ -146,13 +170,14 @@ def filesystem_objects(
 
 def is_current_tracked_object(
     path: bytes,
-    current_raw: dict[bytes, bytes],
-    current: dict[str, bytes],
+    current_raw: dict[bytes, TreeEntry],
+    current: dict[str, TreeEntry],
     ignore_case: bool,
+    normalize_unicode: bool,
 ) -> bool:
     if path in current_raw:
-        return True
-    key = comparable(path, ignore_case)
+        return current_raw[path].object_type != b"commit"
+    key = comparable(path, ignore_case, normalize_unicode)
     if key not in current:
         return False
 
@@ -162,7 +187,9 @@ def is_current_tracked_object(
         raise RuntimeError(f"cannot inspect {os.fsdecode(path)!r}: {error}") from error
 
     for tracked_path in current_raw:
-        if comparable(tracked_path, ignore_case) != key:
+        if comparable(tracked_path, ignore_case, normalize_unicode) != key:
+            continue
+        if current_raw[tracked_path].object_type == b"commit":
             continue
         try:
             tracked_stat = os.lstat(tracked_path)
@@ -182,35 +209,59 @@ def is_current_tracked_object(
 
 def collisions(current_head: str, candidate_head: str) -> set[bytes]:
     ignore_case = repository_ignores_case()
+    normalize_unicode = repository_normalizes_unicode()
     current_raw = tree_entries(current_head)
     candidate_raw = tree_entries(candidate_head)
-    current = normalized_entries(current_raw, ignore_case)
-    candidate = normalized_entries(candidate_raw, ignore_case)
+    current = normalized_entries(current_raw, ignore_case, normalize_unicode)
+    candidate = normalized_entries(candidate_raw, ignore_case, normalize_unicode)
     candidate_ancestors = {
-        comparable(parent, ignore_case)
+        comparable(parent, ignore_case, normalize_unicode)
         for path in candidate_raw
         for parent in ancestors(path)
     }
     traversable_directories = candidate_ancestors | {
-        key for key, object_type in candidate.items() if object_type == b"tree"
+        key for key, entry in candidate.items() if entry.object_type == b"tree"
     } | {
-        key for key, object_type in current.items() if object_type == b"tree"
+        key for key, entry in current.items() if entry.object_type == b"tree"
     }
 
     found: set[bytes] = set()
     for path, is_directory, is_empty in filesystem_objects(
-        ignore_case, traversable_directories
+        ignore_case, normalize_unicode, traversable_directories
     ):
-        key = comparable(path, ignore_case)
-        if is_current_tracked_object(path, current_raw, current, ignore_case):
+        key = comparable(path, ignore_case, normalize_unicode)
+        if is_current_tracked_object(
+            path, current_raw, current, ignore_case, normalize_unicode
+        ):
             continue
 
-        candidate_type = candidate.get(key)
+        current_entry = current.get(key)
+        candidate_entry = candidate.get(key)
+        candidate_type = (
+            candidate_entry.object_type if candidate_entry is not None else None
+        )
+        changed_materialized_gitlink = (
+            current_entry is not None
+            and current_entry.object_type == b"commit"
+            and (
+                candidate_entry is None
+                or candidate_entry.object_type != b"commit"
+                or candidate_entry.object_id != current_entry.object_id
+            )
+        )
         ancestor_is_file = any(
-            candidate.get(comparable(parent, ignore_case))
-            not in {None, b"tree", b"commit"}
+            (
+                entry := candidate.get(
+                    comparable(parent, ignore_case, normalize_unicode)
+                )
+            )
+            is not None
+            and entry.object_type not in {b"tree", b"commit"}
             for parent in ancestors(path)
         )
+        if changed_materialized_gitlink:
+            found.add(path)
+            continue
         if is_directory:
             if (
                 candidate_type not in {None, b"tree", b"commit"}
@@ -249,7 +300,7 @@ def main() -> int:
         if git("status", "--porcelain=v2", "-z", "--untracked-files=all"):
             raise RuntimeError("the original checkout is no longer clean")
         found = collisions(current_head, candidate_head)
-    except (OSError, RuntimeError) as error:
+    except Exception as error:
         print(f"inconclusive: {error}", file=sys.stderr)
         return 1
 
