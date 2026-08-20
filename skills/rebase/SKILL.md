@@ -27,8 +27,11 @@ remote branch. If the user explicitly authorizes that force-push, use
 
 ### 1. Detect the active Git operation
 
-Inspect `git status` and resolve Git's operation markers with
-`git rev-parse --git-path`.
+Inspect `GIT_OPTIONAL_LOCKS=0 git status` and resolve Git's operation markers
+with `git rev-parse --git-path`. Until the raw index recovery copy is captured,
+or clean status establishes that none is needed, run every Git inspection that
+can read the index or worktree with `GIT_OPTIONAL_LOCKS=0`; an ordinary status
+can refresh and rewrite index stat-cache bytes before they are protected.
 
 - If a merge or cherry-pick is in progress, stop. This skill does not own those
   conflicts.
@@ -73,16 +76,18 @@ base="$base_remote/$base_branch"
 
 Stop and ask if `default_branch` is empty and no other base is clearly correct.
 
-### 3. Preserve status-visible dirt
+### 3. Record the rollback head and preserve status-visible dirt
 
-If there is any staged, unstaged, or untracked state, read
-[references/worktree-preservation.md](references/worktree-preservation.md) and
-follow it before running any stash command. The external snapshot must contain a
-verified byte-for-byte recovery copy, not only hashes or Git objects: clean and
-smudge filters can make a stash lossy.
+Record `pre_rebase_head="$(git rev-parse HEAD)"` unconditionally before
+inspecting, snapshotting, or stashing dirt. Every clean-worktree path and early
+exit then has the same immutable rollback target.
 
-Record `pre_rebase_head="$(git rev-parse HEAD)"` before creating the snapshot or
-stash so every early-exit recovery path has an immutable rollback target.
+Read [references/worktree-preservation.md](references/worktree-preservation.md)
+before the collision preflight, even when status is clean because ignored
+objects are not status-visible. If there is staged, unstaged, or untracked
+state, follow its snapshot procedure before running any stash command. The
+external snapshot must contain a verified byte-for-byte recovery copy, not only
+hashes or Git objects: clean and smudge filters can make a stash lossy.
 
 If the snapshot is non-empty, record the existing `refs/stash`, then create one
 uniquely named owned stash that includes untracked files:
@@ -119,11 +124,18 @@ pre_rebase_commit_count="$(
 An empty old local range is valid and must not be forced through `range-diff`
 later.
 
-Before rebasing, compare every originally untracked path and its ancestors with
-the target base tree. If the base would track or structurally collide with one
-of those paths, restore the owned stash on the unchanged branch, verify the full
-snapshot, clean up the owned recovery artifacts, and stop before rewriting
-history.
+Before rebasing, inspect every changed or materialized path in the
+`pre_rebase_head` to `base` transition and in each replayed commit's
+parent-to-commit transition. Compare those paths and their structural ancestors
+with locally present filesystem objects absent from the current tracked tree.
+Use `lstat` so ignored objects, symlinks, and status-invisible empty directories
+are included; use `git check-ignore` to classify ignored paths, not as the only
+detector. If any transition can overwrite or structurally collide with a local
+object, restore any owned stash on the unchanged branch and verify its original
+snapshot. When no snapshot was needed, verify that `HEAD` and the captured kind,
+mode, bytes, or symlink target of each colliding object remain unchanged. Clean
+up only owned recovery artifacts, then stop before rewriting history. Do not
+archive an arbitrarily large ignored tree or assume Git will protect it.
 
 ### 5. Review incoming upstream changes
 
@@ -163,15 +175,29 @@ After a successful rebase, if this workflow created a stash, restore only that
 owned stash according to
 [references/worktree-preservation.md](references/worktree-preservation.md):
 
+First compare the full tree entry at every originally status-visible tracked
+path between the rebased `HEAD` and `pre_rebase_head`. At structural ancestors,
+compare only existence and object kind; an ancestor directory tree ID can change
+because of an unrelated sibling. If a dirty path changed or an ancestor became
+structurally incompatible, do not auto-compose the hidden dirt with the new
+committed tree. Record the rebased head, return to `pre_rebase_head`, restore
+and verify the original full index and worktree snapshot through the reference's
+failed-restore steps 2 through 4, including non-writing index inspection, then
+report the overlap and recoverable rebased head for a separate user decision.
+
+Only when those paths are unchanged, apply the owned stash:
+
 ```bash
 git stash apply --index "$owned_stash"
 ```
 
-Recreate and compare the full snapshot after applying. If application or
-verification fails, roll the branch back to `pre_rebase_head` and restore the
-original index and worktree bytes from the external recovery copy. Retain the
-owned stash and recovery copy until that rollback verifies exactly. Never leave
-the user's only recoverable bytes inside a stash.
+Recreate and compare the dirty-path semantic snapshot after applying. Do not
+compare the full raw index with its pre-rebase copy: clean entries must change
+when unrelated parts of the rebased tree change. If application or exact
+dirty-path verification fails, roll the branch back to `pre_rebase_head` and
+restore the original full index and worktree bytes from the external recovery
+copy. Retain the owned stash and recovery copy until that rollback verifies
+exactly. Never leave the user's only recoverable bytes inside a stash.
 
 ### 8. Review the integrated branch
 
@@ -205,7 +231,8 @@ Show the updated history and report:
 - overlapping upstream changes and any local adaptation
 - conflict choices and their tradeoffs
 - validation performed
-- restoration of the original staged, unstaged, and untracked path state
+- restoration of the original staged, unstaged, and untracked path semantics,
+  plus the ignored-path collision preflight
 - any follow-up work or unresolved uncertainty
 
 ## Guidelines
