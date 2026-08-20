@@ -15,11 +15,15 @@ distinguish broken from working behavior. Diagnosis does not imply permission to
 fix the bug.
 
 A diagnosis request authorizes read-only inspection plus safe, scoped local or
-explicitly scoped development reproducers and temporary artifacts. Keep them
-outside the repository when practical. Persistent repository tests, source
-edits, fixes, production or live-system access, durable instrumentation,
-commits, pushes, and external posts require separate authorization. Redact
-secrets and private data from commands, logs, traces, screenshots, and reports.
+explicitly scoped development reproducers, temporary artifacts, and reversible
+tagged instrumentation needed to distinguish hypotheses. Keep artifacts and
+instrumentation outside the repository when practical. Before temporarily
+editing repository source, capture the exact affected baseline and avoid paths
+with overlapping user changes; restore it exactly and verify the tag is absent
+before completion. Persistent tests or source changes, fixes, production or
+live-system access, production or durable instrumentation, commits, pushes, and
+external posts require separate authorization. Redact secrets and private data
+from commands, logs, traces, screenshots, and reports.
 
 ## Establish the Symptom
 

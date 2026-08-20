@@ -59,18 +59,22 @@ replace direct evidence.
 
 ## Evidence Strength
 
-For each load-bearing safety claim, report the strongest level reached:
+The levels are cumulative. Report the highest level for which the claim also
+satisfies every preceding criterion:
 
-1. **Located**: current source or an authoritative contract states it.
+1. **Located**: the controlling source, contract, consumer boundary, or concrete
+   absence search was identified and cited; this alone does not establish that
+   the safety claim is true.
 2. **Traced**: the concrete failure path was followed and shown not to reach.
-3. **Executed**: a focused script or test exercised the real boundary and would
-   fail if the claim were false.
-4. **Observed end to end**: the **Executed** criterion was satisfied and the
-   same falsifiable behavior was reproduced in the explicitly scoped running
-   application or environment.
+3. **Executed**: after the failure path was traced, a focused script or test
+   exercised the real boundary and would fail if the claim were false.
+4. **Observed end to end**: after satisfying **Executed**, the same falsifiable
+   behavior was reproduced in the explicitly scoped running application or
+   environment.
 
-Do not round evidence upward. Mark material claims below **Executed** as
-unproven unless execution would be disproportionate or unsafe, and state why.
+Do not round evidence upward. Keep every material claim below **Executed**
+explicitly unproven. When stronger execution would be disproportionate or
+unsafe, state that reason without promoting the claim.
 
 ## Report
 
