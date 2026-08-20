@@ -25,6 +25,10 @@ never `--force`.
 
 ## 1. Detect the current Git operation
 
+Use `GIT_OPTIONAL_LOCKS=0` for every pre-apply Git inspection of the original
+checkout that can refresh its index. Read-only preflight and safe stops must not
+change the caller's index merely by observing it.
+
 Inspect status and Git's operation markers without switching the caller's
 checkout.
 
@@ -51,10 +55,6 @@ Establish exclusive mutation ownership of the checkout for the rebase.
 Coordinate known agents, editors, hooks, formatters, or watchers that can write
 into it. If a writer cannot be paused or ownership is uncertain, stop. Recheck
 immediately before rebasing; any drift means ownership was not established.
-
-Use `GIT_OPTIONAL_LOCKS=0` for every pre-apply Git inspection of the original
-checkout that can refresh its index. Read-only preflight and safe stops must not
-change the caller's index merely by observing it.
 
 Require the worktree and index to be clean, including untracked paths. Do not
 create a stash or mutate the original checkout to manufacture that condition. If

@@ -67,6 +67,28 @@ file_hash() {
   git hash-object --no-filters "$1"
 }
 
+add_current_gitlink() {
+  local repo="$1" child="$2"
+  (
+    cd "$repo"
+    git -c protocol.file.allow=always submodule add -q "$child" module
+    git commit -qm 'add current gitlink'
+    git branch -f candidate HEAD
+  )
+}
+
+protect_current_gitlink() {
+  local repo="$1"
+  (
+    cd "$repo"
+    git switch -q current
+    git -c protocol.file.allow=always submodule update -q --init module
+    module_exclude="$(cd module && git rev-parse --git-path info/exclude)"
+    printf 'local.txt\n' >> "$module_exclude"
+    printf 'protected\n' > module/local.txt
+  )
+}
+
 repo="$(new_repo unrelated)"
 (
   cd "$repo"
@@ -118,6 +140,20 @@ repo="$(new_repo compatible-directory)"
   printf 'local\n' > ignored-dir/local.txt
 )
 expect_clear "$repo"
+
+repo="$(new_repo exact-nested-file)"
+(
+  cd "$repo"
+  git switch -q candidate
+  mkdir -p ignored-dir
+  printf 'candidate\n' > ignored-dir/local.txt
+  git add -f ignored-dir/local.txt
+  git commit -qm 'add ignored nested file'
+  git switch -q current
+  mkdir -p ignored-dir
+  printf 'protected\n' > ignored-dir/local.txt
+)
+expect_collision "$repo" ignored-dir/local.txt
 
 repo="$(new_repo populate-empty-directory)"
 (
@@ -183,6 +219,19 @@ repo="$(new_repo ignored-symlink)"
 )
 expect_collision "$repo" collision
 
+repo="$(new_repo symlink-blocks-directory)"
+(
+  cd "$repo"
+  git switch -q candidate
+  mkdir -p blocked
+  printf 'candidate\n' > blocked/child.txt
+  git add -f blocked/child.txt
+  git commit -qm 'add child below ignored symlink'
+  git switch -q current
+  ln -s protected blocked
+)
+expect_collision "$repo" blocked
+
 repo="$(new_repo case-insensitive)"
 (
   cd "$repo"
@@ -196,6 +245,25 @@ repo="$(new_repo case-insensitive)"
   printf 'protected\n' > foo.txt
 )
 expect_collision "$repo" foo.txt
+
+repo="$(new_repo unicode-normalization)"
+nfc_path=$'caf\xc3\xa9.cfg'
+nfd_path=$'cafe\xcc\x81.cfg'
+(
+  cd "$repo"
+  git switch -q candidate
+  printf 'candidate\n' > "$nfc_path"
+  git add -f "$nfc_path"
+  git commit -qm 'add normalized path'
+  git switch -q current
+  printf '%s\n' "$nfd_path" >> .git/info/exclude
+  printf 'protected\n' > "$nfd_path"
+)
+if python3 -c 'import sys; raise SystemExit(sys.platform != "darwin")'; then
+  expect_collision "$repo" "$nfd_path"
+else
+  expect_clear "$repo"
+fi
 
 repo="$(new_repo case-alias)"
 (
@@ -316,6 +384,84 @@ expect_clear "$repo"
   fail "a candidate gitlink must preserve compatible local directory contents"
 [ -z "$(cd "$repo" && git status --porcelain=v2 --untracked-files=all)" ] || \
   fail "a compatible local gitlink directory must keep status clean"
+
+repo="$(new_repo current-gitlink-to-file)"
+add_current_gitlink "$repo" "$child"
+(
+  cd "$repo"
+  git switch -q candidate
+  git rm -qf module .gitmodules
+  find module -depth -delete 2>/dev/null || true
+  printf 'candidate\n' > module
+  git add module
+  git commit -qm 'replace gitlink with file'
+)
+protect_current_gitlink "$repo"
+expect_collision "$repo" module
+
+repo="$(new_repo changed-gitlink)"
+add_current_gitlink "$repo" "$child"
+(
+  cd "$child"
+  printf 'updated\n' > child.txt
+  git add child.txt
+  git commit -qm 'update child'
+)
+updated_child_head="$(cd "$child" && git rev-parse HEAD)"
+(
+  cd "$repo"
+  git switch -q candidate
+  (
+    cd module
+    git fetch -q
+    git checkout -q "$updated_child_head"
+  )
+  git add module
+  git commit -qm 'advance gitlink'
+)
+protect_current_gitlink "$repo"
+expect_collision "$repo" module
+
+repo="$(new_repo same-gitlink)"
+add_current_gitlink "$repo" "$child"
+protect_current_gitlink "$repo"
+same_gitlink_hash="$(file_hash "${repo}/module/local.txt")"
+expect_clear "$repo"
+(
+  cd "$repo"
+  git reset -q --hard candidate
+)
+[ "$(file_hash "${repo}/module/local.txt")" = "$same_gitlink_hash" ] || \
+  fail "an unchanged gitlink must preserve ignored submodule contents"
+[ -z "$(cd "$repo" && git status --porcelain=v2 --untracked-files=all)" ] || \
+  fail "an unchanged materialized gitlink must keep status clean"
+
+repo="$(new_repo removed-gitlink)"
+add_current_gitlink "$repo" "$child"
+(
+  cd "$repo"
+  git switch -q candidate
+  git rm -qf module .gitmodules
+  find module -depth -delete 2>/dev/null || true
+  git commit -qm 'remove gitlink'
+)
+protect_current_gitlink "$repo"
+expect_collision "$repo" module
+
+repo="$(new_repo gitlink-to-tree)"
+add_current_gitlink "$repo" "$child"
+(
+  cd "$repo"
+  git switch -q candidate
+  git rm -qf module .gitmodules
+  find module -depth -delete 2>/dev/null || true
+  mkdir module
+  printf 'candidate\n' > module/child.txt
+  git add module/child.txt
+  git commit -qm 'replace gitlink with tree'
+)
+protect_current_gitlink "$repo"
+expect_collision "$repo" module
 
 repo="$(new_repo head-drift)"
 (
