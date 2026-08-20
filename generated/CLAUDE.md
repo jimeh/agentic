@@ -167,6 +167,10 @@ such as `-` or `/dev/stdin`, interactive input, or whenever uncertain.
 When a skill applies, treat it as the workflow source of truth. These rules fill
 the gaps it does not cover.
 
+The `unslop` skill always applies, even when the user does not name it. Load it
+for every task and use it to edit every response and any prose you write or
+revise. Preserve meaning and technical accuracy.
+
 ## Documenting Discoveries
 
 When you encounter surprising, unexpected, or non-obvious findings while working
