@@ -40,8 +40,10 @@ If the evidence does not support the semantic choice:
 - leave the conflict intact and ask the user when continuing from a rebase that
   was already in progress
 - when this workflow started the rebase, run `git rebase --abort`, then restore
-  any owned stash with `git stash apply --index` and verify the full original
-  snapshot before asking for the missing decision; leave it paused only when the
+  any owned stash through the exact restoration procedure in
+  `worktree-preservation.md` and verify the full original snapshot before asking
+  for the missing decision; after exact verification, drop only the owned stash
+  entry and remove its external recovery copy; leave it paused only when the
   user explicitly requested that state
 
 If abort-time stash restoration conflicts or differs from the full original
@@ -60,9 +62,12 @@ the behavior being combined. Then continue with `git rebase --continue`; do not
 create an extra commit. Repeat the evidence and intent analysis for each new
 conflict rather than applying the first resolution mechanically.
 
-After the rebase completes, run the integration review from `SKILL.md`. Report
-which intent each resolution preserved, any behavior deliberately dropped, the
-evidence for that choice, validation results, and residual risk.
+After the rebase completes, run the integration review from `SKILL.md`, using
+the original head and onto commit captured from the active rebase metadata. If
+the old range cannot be reconstructed confidently, skip `range-diff` and use the
+documented fallback evidence. Report which intent each resolution preserved, any
+behavior deliberately dropped, the evidence for that choice, validation results,
+and residual risk.
 
 ## Source
 

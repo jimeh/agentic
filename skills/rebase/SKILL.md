@@ -5,7 +5,7 @@ description: >-
   upstream default, review overlap, or resolve conflicts by intent during an
   in-progress rebase. Also use when publishing the resulting rewritten history
   may require a force-push. Use why for read-only explanations of why a conflict
-  occurred; do not use for merge or cherry-pick conflicts.
+  occurred. Do not use this skill for merge or cherry-pick conflicts.
 ---
 
 # Git Rebase
@@ -33,17 +33,27 @@ Inspect `git status` and resolve Git's operation markers with
 - If a merge or cherry-pick is in progress, stop. This skill does not own those
   conflicts.
 - If a rebase is already in progress, do not fetch or start another rebase.
-  Inspect the current replayed commit and conflict state. If conflicts exist,
-  read [references/conflict-resolution.md](references/conflict-resolution.md)
-  before editing or staging anything, then resume the existing rebase from its
-  current state.
+  Resolve the backend's `orig-head` and `onto` files through
+  `git rev-parse --git-path`; use `ORIG_HEAD` only as a verified fallback. Bind
+  `pre_rebase_head` to the original head and `base` to the onto commit, then
+  derive `pre_rebase_base` and both old-range commit counts when the ranges are
+  comparable. Inspect the current replayed commit and conflict state. If
+  conflicts exist, read
+  [references/conflict-resolution.md](references/conflict-resolution.md) before
+  editing or staging anything. If no conflicts exist, identify why the rebase
+  stopped and continue only when the request covers that state and its required
+  action is complete; do not skip an intentional `edit` or `exec` stop.
 - Otherwise, continue with the pre-rebase workflow below.
 
 ### 2. Resolve the live upstream base
 
 Identify the current branch. If the user named a base branch, resolve that exact
-branch against the live remote and use it. Do not silently replace it with the
-default branch; stop if the name is missing or ambiguous.
+branch against its configured live remote and use it. A qualified name such as
+`upstream/main` selects that remote; fetch it rather than assuming `origin`.
+Resolve an unqualified name only when its remote is unambiguous. Do not silently
+replace it with the default branch; stop if the name is missing or ambiguous.
+Bind the resolved components as `base_remote`, `base_branch`, and
+`base="$base_remote/$base_branch"` for the later fetch and review.
 
 When the user did not name a base, query the remote's live default branch rather
 than trusting a possibly stale local `origin/HEAD`. For GitHub, use:
@@ -56,24 +66,20 @@ if [ -z "$default_branch" ]; then
   default_branch="$(git ls-remote --symref origin HEAD 2>/dev/null |
     sed -n 's#^ref: refs/heads/\([^[:space:]]*\)[[:space:]][[:space:]]*HEAD$#\1#p')"
 fi
-base="origin/$default_branch"
+base_remote="origin"
+base_branch="$default_branch"
+base="$base_remote/$base_branch"
 ```
 
 Stop and ask if `default_branch` is empty and no other base is clearly correct.
 
 ### 3. Preserve status-visible dirt
 
-Create a temporary snapshot outside the repository. Capture enough information
-to prove exact restoration, not only the same path status:
-
-- NUL-delimited porcelain v2 status for all staged, unstaged, and untracked
-  paths
-- index mode, object ID, and stage for every staged path
-- file kind and existence for every status-visible path
-- worktree content hashes for every present modified or untracked file
-
-Record the snapshot location for cleanup. A path-only status comparison cannot
-prove that stash restoration preserved file contents.
+If there is any staged, unstaged, or untracked state, read
+[references/worktree-preservation.md](references/worktree-preservation.md) and
+follow it before running any stash command. The external snapshot must contain a
+verified byte-for-byte recovery copy, not only hashes or Git objects: clean and
+smudge filters can make a stash lossy.
 
 If the snapshot is non-empty, record the existing `refs/stash`, then create one
 uniquely named owned stash that includes untracked files:
@@ -95,10 +101,11 @@ ID and the exact recovery state.
 
 ### 4. Fetch and record the integration ranges
 
-Fetch, then record the exact branch head and merge base used for review:
+Fetch the selected remote and ref, then record the exact branch head and merge
+base used for review:
 
 ```bash
-git fetch origin
+git fetch "$base_remote" "$base_branch"
 pre_rebase_head="$(git rev-parse HEAD)"
 pre_rebase_base="$(git merge-base HEAD "$base")"
 pre_rebase_commit_count="$(
@@ -108,6 +115,12 @@ pre_rebase_commit_count="$(
 
 An empty old local range is valid and must not be forced through `range-diff`
 later.
+
+Before rebasing, compare every originally untracked path and its ancestors with
+the target base tree. If the base would track or structurally collide with one
+of those paths, restore the owned stash on the unchanged branch, verify the full
+snapshot, clean up the owned recovery artifacts, and stop before rewriting
+history.
 
 ### 5. Review incoming upstream changes
 
@@ -144,18 +157,18 @@ explicitly requested a paused state.
 ### 7. Restore the owned stash
 
 After a successful rebase, if this workflow created a stash, restore only that
-owned stash:
+owned stash according to
+[references/worktree-preservation.md](references/worktree-preservation.md):
 
 ```bash
 git stash apply --index "$owned_stash"
 ```
 
-Recreate the same status, index-entry, file-kind, existence, and worktree-hash
-snapshot after applying. If `git stash apply` fails, restoration conflicts, or
-any snapshot differs, retain the owned stash and stop. Report the mismatch
-without dropping anything. Only after every comparison succeeds, find the stash
-entry whose object ID equals `owned_stash` and drop that exact entry. Leave all
-pre-existing stashes untouched, then remove the temporary snapshot.
+Recreate and compare the full snapshot after applying. If application or
+verification fails, roll the branch back to `pre_rebase_head` and restore the
+original index and worktree bytes from the external recovery copy. Retain the
+owned stash and recovery copy until that rollback verifies exactly. Never leave
+the user's only recoverable bytes inside a stash.
 
 ### 8. Review the integrated branch
 
@@ -170,10 +183,11 @@ post_rebase_commit_count="$(git rev-list --count "$base"..HEAD)"
 ```
 
 Use `git range-diff "$pre_rebase_base".."$pre_rebase_head" "$base"..HEAD` only
-when `pre_rebase_commit_count` and `post_rebase_commit_count` are both non-zero
-and the ranges describe comparable replays. If either range is empty or not
-comparable, use ahead/behind counts, the commit list, and targeted diffs
-instead.
+when the old head, old base, new base, and both commit counts were resolved and
+the non-empty ranges describe comparable replays. This includes a rebase that
+was already active when the skill started. If either range is empty, metadata is
+unavailable, or the ranges are not comparable, use ahead/behind counts, the
+commit list, and targeted diffs instead.
 
 Confirm that the replayed commits still make sense on the new upstream design.
 Adapt them during the rebase only when upstream makes the current changes wrong,
@@ -195,6 +209,8 @@ Show the updated history and report:
 
 - Keep output focused on evidence and decisions.
 - Run independent read-only checks in parallel when useful.
-- Preserve the existing abort-on-low-confidence behavior. Resolve a semantic
-  conflict only when commit history, linked rationale, current constraints, or
-  the user's stated goal supports the choice.
+- Resolve a semantic conflict only when commit history, linked rationale,
+  current constraints, or the user's stated goal supports the choice. Leave a
+  rebase that was already active paused when evidence is insufficient. Abort
+  only a rebase this workflow started, unless the user explicitly requested it
+  remain paused.
