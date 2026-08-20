@@ -104,6 +104,10 @@ content, local plugin manifests remain valid, and each published plugin matches
 its marketplace entry. Rendered global rule drift is checked by
 `mise run rules:check`, which also runs as part of `mise run lint`.
 
+Executable skill tests live in `skills/*/tests/*.test.sh` and run with
+`mise run test:skills`, which is included in `mise run test`. Keep them
+self-contained Bash scripts that exit 0 on success.
+
 ## Plugin Versioning
 
 Plugins use semantic versioning. When changing a published plugin, bump its

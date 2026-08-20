@@ -1,13 +1,10 @@
 ---
 name: why
 description: >-
-  Investigate why repository code or a technical decision exists by tracing
-  source-control history and other relevant available evidence. Use for
-  historical rationale, constraints, regressions, thresholds, or rejected
-  alternatives, including why a rebase conflict exists or when rationale must
-  be established before a requested change. The investigation remains
-  read-only; current mechanics, external research reports, and domain-model
-  changes use other workflows.
+  Trace repository history and available evidence to explain why code or a
+  technical decision exists. Use for historical rationale, constraints,
+  thresholds, rejected alternatives, or explanation-only rebase conflicts.
+  Current behavior and active bug diagnosis use other workflows.
 ---
 
 # Why
@@ -57,11 +54,11 @@ can verify each material claim. Separate:
 Do not smooth gaps into a confident story. If the record does not establish a
 reason, say so.
 
-For a mixed investigate-then-fix request, finish and present the read-only
-investigation first. Any later mutation belongs to the implementation workflow
-the user explicitly authorizes. When the findings will inform such a change,
-optionally finish with concise `Preserve`, `Change`, `Avoid`, and `Risk`
-constraints.
+For a mixed investigate-then-fix request, complete the read-only investigation
+before mutation. Present it as a separate checkpoint when the user asked to
+discuss first; otherwise hand its evidence and constraints directly to the
+authorized implementation workflow. When useful, summarize `Preserve`, `Change`,
+`Avoid`, and `Risk` constraints.
 
 ## Source
 

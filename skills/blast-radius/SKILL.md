@@ -1,11 +1,10 @@
 ---
 name: blast-radius
 description: >-
-  Investigate what a proposed or existing code change could break beyond its
-  visible diff, then prove or clearly bound the safety assumptions it depends
-  on. Use when the user asks for blast radius, downstream impact, hidden
-  breakage, or extra scrutiny of a deceptively small change. This is a read-only
-  audit; ordinary code review and implementation use their own workflows.
+  Audit downstream and hidden risk beyond a code change's visible diff. Use when
+  the user asks for blast radius, affected consumers, hidden breakage, or proof
+  that a deceptively small change is safe. Ordinary code review and
+  implementation use their own workflows.
 ---
 
 # Blast Radius
