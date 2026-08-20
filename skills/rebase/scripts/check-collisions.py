@@ -50,6 +50,18 @@ def current_branch() -> str:
     return value
 
 
+def has_flagged_entries() -> bool:
+    for record in git("ls-files", "-v", "-z").split(b"\0"):
+        if not record:
+            continue
+        if len(record) < 3 or record[1:2] != b" ":
+            raise RuntimeError("malformed ls-files flag output")
+        tag = record[:1]
+        if tag == b"S" or tag.islower():
+            return True
+    return False
+
+
 def repository_ignores_case() -> bool:
     value = git(
         "config",
@@ -299,6 +311,10 @@ def main() -> int:
             raise RuntimeError("current branch no longer matches the recorded branch")
         if git("status", "--porcelain=v2", "-z", "--untracked-files=all"):
             raise RuntimeError("the original checkout is no longer clean")
+        if has_flagged_entries():
+            raise RuntimeError(
+                "the original checkout has skip-worktree or assume-unchanged entries"
+            )
         found = collisions(current_head, candidate_head)
     except Exception as error:
         print(f"inconclusive: {error}", file=sys.stderr)

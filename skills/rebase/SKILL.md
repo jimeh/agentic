@@ -38,11 +38,12 @@ checkout.
   the original head and onto commit from the active rebase metadata. Inspect the
   current replayed commit and stop reason. When conflicts exist, read
   [references/conflict-resolution.md](references/conflict-resolution.md) before
-  editing or staging. Continue an in-place rebase only after proving the
-  checkout contains no untracked, ignored, or status-invisible objects that Git
-  could overwrite. If absence cannot be established, stop and offer to abort and
-  restart through the isolated workflow below. Do not skip an intentional `edit`
-  or `exec`.
+  editing or staging. Refuse to continue while any skip-worktree or
+  assume-unchanged entry exists; do not clear it. Continue an in-place rebase
+  only after proving the checkout contains no untracked, ignored, or other
+  status-invisible objects that Git could overwrite. If absence cannot be
+  established, stop and offer to abort and restart through the isolated workflow
+  below. Do not skip an intentional `edit` or `exec`.
 - Otherwise continue with the new-rebase workflow below.
 
 ## 2. Require a safe checkout
@@ -58,15 +59,10 @@ immediately before rebasing; any drift means ownership was not established.
 
 Require the worktree and index to be clean, including untracked paths. Do not
 create a stash or mutate the original checkout to manufacture that condition. If
-staged, unstaged, untracked, conflicted, or hidden flagged state is present,
-stop and ask the user to preserve or relocate it before retrying. A rebase
-request does not authorize moving or rewriting unrelated local work.
-
-Record any skip-worktree or assume-unchanged entries and their exact filesystem
-state. Expected sparse absence is clean; an absent assume-unchanged path, an
-unexpectedly materialized sparse path, or other worktree divergence is not. Stop
-when the state is divergent or cannot be established confidently. Do not clear
-flags to make the checkout appear clean.
+staged, unstaged, untracked, conflicted, skip-worktree, or assume-unchanged
+state is present, stop and ask the user to preserve or relocate it before
+retrying. Do not clear flags to make the checkout appear clean. A rebase request
+does not authorize moving or rewriting unrelated local work.
 
 ## 3. Pin and inspect the upstream base
 
@@ -115,8 +111,7 @@ match the preflight in the original checkout:
 - `HEAD` equals `pre_rebase_head`;
 - the current branch equals the recorded branch;
 - status remains clean;
-- each recorded flagged path still has the same presence, filesystem kind,
-  executable mode, raw content, and flag bits;
+- no skip-worktree or assume-unchanged entries are present;
 - the live remote branch still points to `base_head`.
 
 On drift, stop and report it. Do not reset or restore over state that appeared
@@ -132,21 +127,16 @@ reports collisions, and any other result is inconclusive. Stop without changing
 the original checkout on either nonzero result. Apply the same isolated-worktree
 cleanup and reporting rule used for pre-apply drift.
 
-With exclusive mutation ownership still established, treat the final reset and
-flag restoration as one guarded apply. Advance the current branch and tracked
-worktree to `candidate_head` with `git reset --hard "$candidate_head"`, then
-immediately reapply recorded flags to surviving entries. After flag
-reapplication, remove a reset-materialized path only when the exact preflight
-proves it was absent. Keep candidate content for paths recorded as present;
-never restore old tracked content over a candidate change. The reset applies the
-already-authorized rebase only after a clean-state and exact-tree proof; it is
-not authority to discard dirt. If the reset or flagged-state restoration fails,
-retain the isolated worktree and report the state instead of improvising
-recovery.
+With exclusive mutation ownership still established, advance the current branch
+and tracked worktree to `candidate_head` with
+`git reset --hard "$candidate_head"`. This reset applies the already-authorized
+rebase only after a clean-state and exact-tree proof; it is not authority to
+discard dirt. If it fails, retain the isolated worktree and report the state
+instead of improvising recovery.
 
-Verify the original checkout now matches the validated candidate, status and
-recorded flags remain expected, and unrelated local objects remain present. Then
-remove the owned temporary worktree.
+Verify the original checkout now matches the validated candidate, status remains
+clean, and unrelated local objects remain present. Then remove the owned
+temporary worktree.
 
 ## 6. Review the integrated branch
 
@@ -155,8 +145,7 @@ whose result depends on the original checkout rather than the candidate commit.
 
 Before reporting success, verify that status remains clean apart from any
 intentional conflict-resolution changes now committed into the rebased history,
-the branch contains the expected commits, and recorded skip-worktree or
-assume-unchanged flags still have their expected state.
+and the branch contains the expected commits.
 
 ## 7. Report and optionally publish
 

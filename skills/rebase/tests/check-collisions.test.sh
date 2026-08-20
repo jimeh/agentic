@@ -300,39 +300,37 @@ repo="$(new_repo dirty-tracked)"
 )
 expect_inconclusive "$repo" "no longer clean"
 
-repo="$(new_repo preserve-flags)"
+repo="$(new_repo assume-unchanged-entry)"
 (
   cd "$repo"
   printf 'assumed\n' > assumed.txt
-  printf 'sparse\n' > sparse.txt
-  git add assumed.txt sparse.txt
-  git commit -qm 'add flagged paths'
+  git add assumed.txt
+  git commit -qm 'add assume-unchanged path'
   git branch -f candidate HEAD
   git switch -q candidate
   printf 'candidate\n' > src/candidate.txt
-  printf 'candidate sparse\n' > sparse.txt
-  git add src/candidate.txt sparse.txt
+  git add src/candidate.txt
   git commit -qm candidate
   git switch -q current
   git update-index --assume-unchanged assumed.txt
-  git update-index --skip-worktree sparse.txt
-  rm sparse.txt
-  "$helper" current candidate current
-  git reset -q --hard candidate
-  git update-index --assume-unchanged assumed.txt
-  git update-index --skip-worktree sparse.txt
-  rm sparse.txt
-  flags="$(git ls-files -v assumed.txt sparse.txt)"
-  [[ "$flags" == *$'h assumed.txt'* ]] || \
-    fail "guarded apply must restore assume-unchanged"
-  [[ "$flags" == *$'S sparse.txt'* ]] || \
-    fail "guarded apply must preserve skip-worktree"
-  [ ! -e sparse.txt ] || \
-    fail "guarded apply must restore expected sparse absence"
-  sparse_index="$(git ls-files -s sparse.txt | awk '{ print $2 }')"
-  [ "$sparse_index" = "$(git rev-parse candidate:sparse.txt)" ] || \
-    fail "sparse index entry must match the candidate"
 )
+expect_inconclusive "$repo" "assume-unchanged"
+
+repo="$(new_repo skip-worktree-entry)"
+(
+  cd "$repo"
+  printf 'sparse\n' > sparse.txt
+  git add sparse.txt
+  git commit -qm 'add skip-worktree path'
+  git branch -f candidate HEAD
+  git switch -q candidate
+  printf 'candidate\n' > src/candidate.txt
+  git add src/candidate.txt
+  git commit -qm candidate
+  git switch -q current
+  git update-index --skip-worktree sparse.txt
+)
+expect_inconclusive "$repo" "skip-worktree"
 
 repo="$(new_repo detached)"
 (

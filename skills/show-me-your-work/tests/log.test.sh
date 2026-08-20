@@ -45,7 +45,7 @@ assert_equal "600" "$(file_mode "$trail")" \
 assert_equal "2" "$(awk 'END { print NR }' "$trail")" \
   "the helper must write one header and one row"
 if ! awk -F '\t' 'NF != 6 || $1 == "" { exit 1 }' "$trail"; then
-  fail "every trail record must have six populated timestamp fields"
+  fail "every trail record must have six fields and a timestamp"
 fi
 
 IFS=$'\t' read -r timestamp phase decision rationale evidence outcome \
