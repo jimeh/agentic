@@ -52,6 +52,17 @@ expect_collision() {
     fail "expected collision output to name ${expected}"
 }
 
+expect_inconclusive() {
+  local repo="$1" expected="$2" output status
+  set +e
+  output="$(cd "$repo" && "$helper" current candidate current 2>&1)"
+  status=$?
+  set -e
+  [ "$status" -eq 1 ] || fail "expected inconclusive exit 1 in ${repo##*/}"
+  [[ "$output" == *"$expected"* ]] || \
+    fail "expected inconclusive output to mention ${expected}"
+}
+
 file_hash() {
   git hash-object --no-filters "$1"
 }
@@ -65,6 +76,7 @@ repo="$(new_repo unrelated)"
   git commit -qm candidate
   git switch -q current
   mkdir -p cache
+  printf 'cache/\n' >> .git/info/exclude
   printf 'local\n' > cache/data
 )
 expect_clear "$repo"
@@ -106,6 +118,19 @@ repo="$(new_repo compatible-directory)"
   printf 'local\n' > ignored-dir/local.txt
 )
 expect_clear "$repo"
+
+repo="$(new_repo populate-empty-directory)"
+(
+  cd "$repo"
+  git switch -q candidate
+  mkdir -p empty
+  printf 'candidate\n' > empty/child.txt
+  git add empty/child.txt
+  git commit -qm 'populate empty directory'
+  git switch -q current
+  mkdir empty
+)
+expect_collision "$repo" empty
 
 repo="$(new_repo file-blocks-directory)"
 (
@@ -194,6 +219,103 @@ if python3 -c \
 else
   expect_collision "$repo" foo
 fi
+
+repo="$(new_repo dirty-tracked)"
+(
+  cd "$repo"
+  git switch -q candidate
+  printf 'candidate\n' > src/candidate.txt
+  git add src/candidate.txt
+  git commit -qm candidate
+  git switch -q current
+  printf 'modified\n' > src/base.txt
+)
+expect_inconclusive "$repo" "no longer clean"
+
+repo="$(new_repo preserve-flags)"
+(
+  cd "$repo"
+  printf 'assumed\n' > assumed.txt
+  printf 'sparse\n' > sparse.txt
+  git add assumed.txt sparse.txt
+  git commit -qm 'add flagged paths'
+  git branch -f candidate HEAD
+  git switch -q candidate
+  printf 'candidate\n' > src/candidate.txt
+  printf 'candidate sparse\n' > sparse.txt
+  git add src/candidate.txt sparse.txt
+  git commit -qm candidate
+  git switch -q current
+  git update-index --assume-unchanged assumed.txt
+  git update-index --skip-worktree sparse.txt
+  rm sparse.txt
+  "$helper" current candidate current
+  git reset -q --hard candidate
+  git update-index --assume-unchanged assumed.txt
+  git update-index --skip-worktree sparse.txt
+  rm sparse.txt
+  flags="$(git ls-files -v assumed.txt sparse.txt)"
+  [[ "$flags" == *$'h assumed.txt'* ]] || \
+    fail "guarded apply must restore assume-unchanged"
+  [[ "$flags" == *$'S sparse.txt'* ]] || \
+    fail "guarded apply must preserve skip-worktree"
+  [ ! -e sparse.txt ] || \
+    fail "guarded apply must restore expected sparse absence"
+  sparse_index="$(git ls-files -s sparse.txt | awk '{ print $2 }')"
+  [ "$sparse_index" = "$(git rev-parse candidate:sparse.txt)" ] || \
+    fail "sparse index entry must match the candidate"
+)
+
+repo="$(new_repo detached)"
+(
+  cd "$repo"
+  git switch -q --detach current
+)
+set +e
+detached_output="$(cd "$repo" && "$helper" current candidate current 2>&1)"
+detached_status=$?
+set -e
+[ "$detached_status" -eq 1 ] || fail "detached checkout must be inconclusive"
+[[ "$detached_output" == *"original checkout is detached"* ]] || \
+  fail "detached checkout must produce a clear diagnostic"
+
+repo="$(new_repo gitlink-directory)"
+child="${test_tmp}/gitlink-child"
+git init -q -b main "$child"
+(
+  cd "$child"
+  git config user.name tester
+  git config user.email tester@example.com
+  printf 'child\n' > child.txt
+  git add child.txt
+  git commit -qm child
+)
+(
+  cd "$repo"
+  mkdir module
+  printf 'tracked\n' > module/tracked.txt
+  git add module/tracked.txt
+  git commit -qm 'add tracked directory'
+  git branch -f candidate HEAD
+  git switch -q candidate
+  git rm -qr module
+  git -c protocol.file.allow=always submodule add -q "$child" module
+  git commit -qm 'replace tracked directory with gitlink'
+  git submodule deinit -q -f module
+  git switch -q current
+  printf 'module/local.txt\n' >> .git/info/exclude
+  printf 'protected\n' > module/local.txt
+)
+gitlink_local_hash="$(file_hash "${repo}/module/local.txt")"
+expect_clear "$repo"
+(
+  cd "$repo"
+  git reset -q --hard candidate
+)
+[ "$(file_hash "${repo}/module/local.txt")" = "$gitlink_local_hash" ] || \
+  fail "a candidate gitlink must preserve compatible local directory contents"
+[ -z "$(cd "$repo" && git status --porcelain=v2 --untracked-files=all)" ] || \
+  fail "a compatible local gitlink directory must keep status clean"
 
 repo="$(new_repo head-drift)"
 (
