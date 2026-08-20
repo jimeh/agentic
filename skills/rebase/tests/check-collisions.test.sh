@@ -246,6 +246,26 @@ repo="$(new_repo case-insensitive)"
 )
 expect_collision "$repo" foo.txt
 
+repo="$(new_repo case-config-mismatch)"
+(
+  cd "$repo"
+  git switch -q candidate
+  printf 'candidate\n' > README
+  git add README
+  git commit -qm 'add case-folded path with stale config'
+  git switch -q current
+  git config core.ignorecase false
+  printf 'readme\n' >> .git/info/exclude
+  printf 'protected\n' > readme
+)
+if python3 -c \
+  'import os, sys; sys.exit(not os.path.samestat(os.lstat(sys.argv[1]), os.lstat(sys.argv[2])))' \
+  "${repo}/README" "${repo}/readme" 2>/dev/null; then
+  expect_collision "$repo" readme
+else
+  expect_clear "$repo"
+fi
+
 repo="$(new_repo unicode-normalization)"
 nfc_path=$'caf\xc3\xa9.cfg'
 nfd_path=$'cafe\xcc\x81.cfg'
@@ -259,8 +279,31 @@ nfd_path=$'cafe\xcc\x81.cfg'
   printf '%s\n' "$nfd_path" >> .git/info/exclude
   printf 'protected\n' > "$nfd_path"
 )
-if python3 -c 'import sys; raise SystemExit(sys.platform != "darwin")'; then
+if python3 -c \
+  'import os, sys; sys.exit(not os.path.samestat(os.lstat(sys.argv[1]), os.lstat(sys.argv[2])))' \
+  "${repo}/${nfc_path}" "${repo}/${nfd_path}" 2>/dev/null; then
   expect_collision "$repo" "$nfd_path"
+else
+  expect_clear "$repo"
+fi
+
+repo="$(new_repo combined-case-normalization)"
+combined_candidate=$'CAF\xc3\x89.cfg'
+combined_local=$'cafe\xcc\x81.cfg'
+(
+  cd "$repo"
+  git switch -q candidate
+  printf 'candidate\n' > "$combined_candidate"
+  git add -f "$combined_candidate"
+  git commit -qm 'add case and normalization alias'
+  git switch -q current
+  printf '%s\n' "$combined_local" >> .git/info/exclude
+  printf 'protected\n' > "$combined_local"
+)
+if python3 -c \
+  'import os, sys; sys.exit(not os.path.samestat(os.lstat(sys.argv[1]), os.lstat(sys.argv[2])))' \
+  "${repo}/${combined_candidate}" "${repo}/${combined_local}" 2>/dev/null; then
+  expect_collision "$repo" "$combined_local"
 else
   expect_clear "$repo"
 fi
@@ -396,6 +439,18 @@ add_current_gitlink "$repo" "$child"
 )
 protect_current_gitlink "$repo"
 expect_collision "$repo" module
+(
+  cd "$repo"
+  git submodule deinit -q -f module
+  mkdir -p module
+)
+expect_clear "$repo"
+(
+  cd "$repo"
+  git reset -q --hard candidate
+)
+[ -z "$(cd "$repo" && git status --porcelain=v2 --untracked-files=all)" ] || \
+  fail "an uninitialized gitlink replacement must keep status clean"
 
 repo="$(new_repo changed-gitlink)"
 add_current_gitlink "$repo" "$child"
@@ -419,6 +474,18 @@ updated_child_head="$(cd "$child" && git rev-parse HEAD)"
 )
 protect_current_gitlink "$repo"
 expect_collision "$repo" module
+(
+  cd "$repo"
+  git submodule deinit -q -f module
+  mkdir -p module
+)
+expect_clear "$repo"
+(
+  cd "$repo"
+  git reset -q --hard candidate
+)
+[ -z "$(cd "$repo" && git status --porcelain=v2 --untracked-files=all)" ] || \
+  fail "an uninitialized gitlink OID change must keep status clean"
 
 repo="$(new_repo same-gitlink)"
 add_current_gitlink "$repo" "$child"

@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import os
+import stat
 import subprocess
 import sys
 import unicodedata
@@ -14,6 +15,11 @@ from typing import NamedTuple
 class TreeEntry(NamedTuple):
     object_type: bytes
     object_id: bytes
+
+
+class DirectoryEntries(NamedTuple):
+    names: frozenset[bytes]
+    by_inode: dict[tuple[int, int], tuple[bytes, ...]]
 
 
 def git(*args: str, allowed_returncodes: tuple[int, ...] = (0,)) -> bytes:
@@ -85,7 +91,68 @@ def repository_normalizes_unicode() -> bool:
     ).strip()
     if value not in {b"", b"true", b"false"}:
         raise RuntimeError("invalid core.precomposeunicode value")
-    return sys.platform == "darwin" or value == b"true"
+    return value == b"true"
+
+
+def filesystem_alias_behavior(paths: dict[bytes, TreeEntry]) -> tuple[bool, bool]:
+    ignores_case = False
+    normalizes_unicode = False
+    directory_entries: dict[bytes, DirectoryEntries] = {}
+
+    def entries(directory: bytes) -> DirectoryEntries:
+        if directory not in directory_entries:
+            names = os.listdir(directory)
+            mutable_by_inode: dict[tuple[int, int], list[bytes]] = {}
+            for name in names:
+                entry_stat = os.lstat(os.path.join(directory, name))
+                key = (entry_stat.st_dev, entry_stat.st_ino)
+                mutable_by_inode.setdefault(key, []).append(name)
+            directory_entries[directory] = DirectoryEntries(
+                frozenset(names),
+                {key: tuple(value) for key, value in mutable_by_inode.items()},
+            )
+        return directory_entries[directory]
+
+    for path in sorted(paths, key=lambda value: (value.count(b"/"), value)):
+        directory = b"."
+        for component in path.split(b"/"):
+            directory_index = entries(directory)
+            actual = component if component in directory_index.names else None
+            if actual is None:
+                requested_path = os.path.join(directory, component)
+                try:
+                    requested_stat = os.lstat(requested_path)
+                except FileNotFoundError:
+                    break
+                matches = directory_index.by_inode.get(
+                    (requested_stat.st_dev, requested_stat.st_ino), ()
+                )
+                if not matches:
+                    raise RuntimeError("filesystem alias resolution changed during scan")
+                actual = matches[0]
+                requested_text = os.fsdecode(component)
+                actual_text = os.fsdecode(actual)
+                requested_nfd = unicodedata.normalize("NFD", requested_text)
+                actual_nfd = unicodedata.normalize("NFD", actual_text)
+                same_folded_nfd = (
+                    actual_nfd.casefold() == requested_nfd.casefold()
+                )
+                if not same_folded_nfd:
+                    raise RuntimeError("unsupported filesystem path aliasing")
+                ignores_case |= actual_nfd != requested_nfd
+                normalizes_unicode |= (
+                    actual_text.casefold() != requested_text.casefold()
+                )
+
+            actual_path = os.path.join(directory, actual)
+            actual_stat = os.lstat(actual_path)
+            if stat.S_ISLNK(actual_stat.st_mode) or not stat.S_ISDIR(
+                actual_stat.st_mode
+            ):
+                break
+            directory = actual_path
+
+    return ignores_case, normalizes_unicode
 
 
 def tree_entries(revision_name: str) -> dict[bytes, TreeEntry]:
@@ -220,10 +287,15 @@ def is_current_tracked_object(
 
 
 def collisions(current_head: str, candidate_head: str) -> set[bytes]:
-    ignore_case = repository_ignores_case()
-    normalize_unicode = repository_normalizes_unicode()
     current_raw = tree_entries(current_head)
     candidate_raw = tree_entries(candidate_head)
+    detected_case_alias, detected_unicode_alias = filesystem_alias_behavior(
+        current_raw | candidate_raw
+    )
+    ignore_case = repository_ignores_case() or detected_case_alias
+    normalize_unicode = (
+        repository_normalizes_unicode() or detected_unicode_alias
+    )
     current = normalized_entries(current_raw, ignore_case, normalize_unicode)
     candidate = normalized_entries(candidate_raw, ignore_case, normalize_unicode)
     candidate_ancestors = {
@@ -261,6 +333,12 @@ def collisions(current_head: str, candidate_head: str) -> set[bytes]:
                 or candidate_entry.object_id != current_entry.object_id
             )
         )
+        unmaterialized_gitlink = (
+            current_entry is not None
+            and current_entry.object_type == b"commit"
+            and is_directory
+            and is_empty
+        )
         ancestor_is_file = any(
             (
                 entry := candidate.get(
@@ -271,6 +349,8 @@ def collisions(current_head: str, candidate_head: str) -> set[bytes]:
             and entry.object_type not in {b"tree", b"commit"}
             for parent in ancestors(path)
         )
+        if unmaterialized_gitlink:
+            continue
         if changed_materialized_gitlink:
             found.add(path)
             continue
