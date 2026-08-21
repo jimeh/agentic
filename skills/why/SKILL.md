@@ -59,8 +59,3 @@ before mutation. Present it as a separate checkpoint when the user asked to
 discuss first; otherwise hand its evidence and constraints directly to the
 authorized implementation workflow. When useful, summarize `Preserve`, `Change`,
 `Avoid`, and `Risk` constraints.
-
-## Source
-
-Adapted from Cursor's pinned
-[`pstack` why skill](https://github.com/cursor/plugins/blob/60c641e4fad674784b30abcf9f8915dea39df38d/pstack/skills/why/SKILL.md).

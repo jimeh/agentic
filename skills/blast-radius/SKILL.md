@@ -89,8 +89,3 @@ claim and its proof, then provide:
 
 Do not paste large logs. Quote only the lines that carry the signal and redact
 secrets or private data.
-
-## Source
-
-Adapted from Cursor's pinned
-[`pstack` blast-radius skill](https://github.com/cursor/plugins/blob/60c641e4fad674784b30abcf9f8915dea39df38d/pstack/skills/blast-radius/SKILL.md).

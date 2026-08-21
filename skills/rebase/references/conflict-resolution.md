@@ -66,9 +66,3 @@ the old range cannot be reconstructed confidently, skip `range-diff` and use the
 documented fallback evidence. Report which intent each resolution preserved, any
 behavior deliberately dropped, the evidence for that choice, validation results,
 and residual risk.
-
-## Source
-
-Adapted from Matt Pocock's pinned
-[`resolving-merge-conflicts`](https://github.com/mattpocock/skills/blob/885e2ca4d842d139e9aef4e48d366c63cb1b8013/skills/engineering/resolving-merge-conflicts/SKILL.md)
-skill.

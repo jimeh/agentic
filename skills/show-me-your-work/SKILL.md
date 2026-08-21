@@ -103,8 +103,3 @@ format and audit; the caller owns implementation, evidence sufficiency, reviews,
 Git, PRs, and delivery. A validation ledger answers “what was proved at which
 revision”; this trail answers “which material choices led here and why.” Do not
 duplicate one into the other.
-
-## Source
-
-Adapted from Cursor's pinned
-[`pstack` show-me-your-work skill](https://github.com/cursor/plugins/blob/60c641e4fad674784b30abcf9f8915dea39df38d/pstack/skills/show-me-your-work/SKILL.md).

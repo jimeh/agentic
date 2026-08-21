@@ -98,9 +98,3 @@ Before completion, remove all temporary instrumentation and verify its unique
 marker is absent. Delete temporary reproducers unless the user authorized a
 durable artifact. Never claim a fix from a green minimized case while the
 original reported scenario still fails.
-
-## Source
-
-Adapted from Matt Pocock's pinned
-[`diagnosing-bugs`](https://github.com/mattpocock/skills/blob/885e2ca4d842d139e9aef4e48d366c63cb1b8013/skills/engineering/diagnosing-bugs/SKILL.md)
-skill.

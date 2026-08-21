@@ -44,6 +44,10 @@ Progressive disclosure is useful when it saves irrelevant context without making
 required context hard to discover. A short file split across vague pointers is
 usually worse than a single coherent source.
 
+When revising a skill, read `references/provenance.md` if it exists. Keep pinned
+upstream links, adaptation history, and maintenance attribution there rather
+than in runtime instructions. Ordinary skill use should not load provenance.
+
 ## Keep Sources Authoritative
 
 Treat the repository and execution environment as live sources of truth. Point
@@ -100,11 +104,3 @@ scenario without the author's conclusions. Otherwise perform a manual scenario
 review using only evidence the guidance makes discoverable, and record that it
 is weaker evidence. Keep the check proportionate; a compact wording change does
 not require a new evaluation framework.
-
-## Source
-
-This guidance adapts the context-routing, progressive-disclosure, co-location,
-and pruning principles from Matt Pocock's pinned
-[`writing-for-agents`](https://github.com/mattpocock/skills/blob/885e2ca4d842d139e9aef4e48d366c63cb1b8013/skills/productivity/writing-for-agents/SKILL.md)
-skill. Its safety, authority, evidence, and environment-source rules are adapted
-for this repository's agent workflows.
