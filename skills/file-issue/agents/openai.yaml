@@ -1,0 +1,5 @@
+interface:
+  display_name: "File GitHub Issue"
+  short_description: "Create a verified GitHub issue from current evidence"
+  default_prompt:
+    "Use $file-issue to create a GitHub issue for the problem we investigated."
