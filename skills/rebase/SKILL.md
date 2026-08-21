@@ -1,176 +1,163 @@
 ---
 name: rebase
 description: >-
-  Rebase the current branch onto the upstream default branch, then check
-  whether newly landed upstream changes undercut the branch's design.
+  Rebase the current branch onto a requested or live upstream base, including
+  intent-aware conflict resolution and optional publication of that rebase. Use
+  for rebase operations, not explanation-only, merge, cherry-pick, or standalone
+  force-push requests.
 ---
 
 # Git Rebase
 
-Rebase the current branch onto the upstream default branch, handling stashing
-and conflict resolution automatically. Treat the rebase as integration work, not
-just history movement: new upstream commits may already solve part of the same
-problem, change the surrounding design, or make local commits too broad.
+Integrate the current branch with the requested upstream branch, or the live
+upstream default when none was named. Review overlapping upstream changes so the
+replayed commits still fit the integrated design.
 
-## Workflow
+Use `why` when the request only asks why a conflict occurred. Use this skill
+when resolving or continuing a rebase is part of the request. Do not guess
+through a semantic conflict whose intended behavior is unsupported by repository
+evidence or the user's stated goal.
 
-### 1. Gather Context
+Recreating commits is intrinsic to a rebase. Never push unless the user asks to
+publish the result. Publishing does not by itself authorize rewriting a remote
+branch; require explicit force-push authority and use `--force-with-lease`,
+never `--force`.
 
-Run these commands in parallel to understand the current state:
+## 1. Detect the current Git operation
 
-- `git branch --show-current` — identify the current branch
-- `git status --short` — check for uncommitted changes
+Use `GIT_OPTIONAL_LOCKS=0` for every pre-apply Git inspection of the original
+checkout that can refresh its index. Read-only preflight and safe stops must not
+change the caller's index merely by observing it.
 
-Resolve the default branch from the live remote rather than trusting a possibly
-stale local `origin/HEAD`. For GitHub, query
-`gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name'`; otherwise,
-or when `gh` is unavailable, inspect `git ls-remote --symref origin HEAD`. Bind
-the same variables used by the PR workflows:
+Inspect status and Git's operation markers without switching the caller's
+checkout.
 
-```bash
-default_branch="$(gh repo view \
-  --json defaultBranchRef \
-  --jq '.defaultBranchRef.name' 2>/dev/null)" || true
-if [ -z "$default_branch" ]; then
-  default_branch="$(git ls-remote --symref origin HEAD 2>/dev/null |
-    sed -n 's#^ref: refs/heads/\([^[:space:]]*\)[[:space:]][[:space:]]*HEAD$#\1#p')"
-fi
-base="origin/$default_branch"
-```
+- Stop if a merge or cherry-pick is in progress. This skill does not own those
+  conflicts.
+- If a rebase is already in progress, do not fetch or start another one. Resolve
+  the original head and onto commit from the active rebase metadata. Inspect the
+  current replayed commit and stop reason. When conflicts exist, read
+  [references/conflict-resolution.md](references/conflict-resolution.md) before
+  editing or staging. Refuse to continue while any skip-worktree or
+  assume-unchanged entry exists; do not clear it. Continue an in-place rebase
+  only after proving the checkout contains no untracked, ignored, or other
+  status-invisible objects that Git could overwrite. If absence cannot be
+  established, stop and offer to abort and restart through the isolated workflow
+  below. Do not skip an intentional `edit` or `exec`.
+- Otherwise continue with the new-rebase workflow below.
 
-Stop and ask if `default_branch` is empty and no other base is clearly correct.
+## 2. Require a safe checkout
 
-### 2. Stash Uncommitted Changes
+Resolve the repository root and run the remaining Git operations there. Record
+the current named branch and immutable `pre_rebase_head` before fetching or
+mutating anything. Stop on a detached checkout.
 
-If `git status --short` shows any output, stash changes before rebasing:
+Establish exclusive mutation ownership of the checkout for the rebase.
+Coordinate known agents, editors, hooks, formatters, or watchers that can write
+into it. If a writer cannot be paused or ownership is uncertain, stop. Recheck
+immediately before rebasing; any drift means ownership was not established.
 
-```bash
-git stash push -m "auto-stash before rebase"
-```
+Require the worktree and index to be clean, including untracked paths. Do not
+create a stash or mutate the original checkout to manufacture that condition. If
+staged, unstaged, untracked, conflicted, skip-worktree, or assume-unchanged
+state is present, stop and ask the user to preserve or relocate it before
+retrying. Do not clear flags to make the checkout appear clean. A rebase request
+does not authorize moving or rewriting unrelated local work.
 
-Remember whether a stash was created for step 6.
+## 3. Pin and inspect the upstream base
 
-### 3. Fetch Latest
+Resolve the exact requested branch against its configured live remote. A
+qualified name such as `upstream/main` selects that remote. Stop when an
+unqualified name is missing or ambiguous rather than silently substituting the
+default branch.
 
-```bash
-git fetch origin
-```
+When the user did not name a base, query the remote's live default branch rather
+than trusting a potentially stale local symbolic ref. Fetch the selected remote
+branch, verify that `HEAD` still equals `pre_rebase_head`, and pin the fetched
+commit as immutable `base_head`. Record the merge base and old local range for
+later comparison.
 
-After fetching, record the exact commits used for the integration review:
+Review upstream commits and diffs that touch the branch's files or nearby
+behavior. Determine whether upstream already solved the same problem, introduced
+a new source of truth, removed a dependency, or made the two implementations
+compete. Use broader symbol, configuration, migration, route, or test searches
+when the behavior spans files.
 
-```bash
-pre_rebase_head="$(git rev-parse HEAD)"
-pre_rebase_base="$(git merge-base HEAD "$base")"
-```
+## 4. Rebase in isolation
 
-### 4. Review Incoming Upstream Changes
+Create an owned, private temporary worktree outside the repository and detach it
+at `pre_rebase_head`. Perform the rebase there, not in the caller's checkout.
+This lets Git materialize inferred and conflict paths without touching local
+ignored or status-invisible objects.
 
-Before rebasing, inspect what landed upstream since the branch's current base.
-This is the checkpoint that prevents two parallel implementations of the same
-idea from surviving unnoticed.
+Rebase the isolated worktree onto `base_head`. If conflicts occur, read
+[references/conflict-resolution.md](references/conflict-resolution.md) before
+editing or staging. Preserve compatible upstream and local intent. If evidence
+does not support the semantic choice, abort and remove the owned isolated
+worktree before asking; retain it only when the user explicitly requested a
+paused rebase. The original checkout must remain unchanged.
 
-First identify the branch surface:
+Capture the isolated `candidate_head`, compare the old and replayed ranges, and
+run proportionate validation there. Confirm that the replayed commits still fit
+the upstream design before changing the original branch. Adapt them during the
+rebase only when upstream makes the existing changes wrong, duplicate,
+inconsistent, or impossible to validate; leave optional cleanup for follow-up.
 
-```bash
-git diff --name-only "$pre_rebase_base"...HEAD
-```
+## 5. Apply the exact candidate
 
-Then inspect upstream commits that touched the same files or nearby systems:
+Immediately before applying the candidate, verify all of the following still
+match the preflight in the original checkout:
 
-```bash
-git log --oneline --stat "$pre_rebase_base".."$base" -- <paths>
-git diff --name-status "$pre_rebase_base".."$base" -- <paths>
-```
+- `HEAD` equals `pre_rebase_head`;
+- the current branch equals the recorded branch;
+- status remains clean;
+- no skip-worktree or assume-unchanged entries are present;
+- the live remote branch still points to `base_head`.
 
-Replace `<paths>` with the files or directories identified from the branch
-surface. Use multiple paths when the branch spans a workflow.
+On drift, stop and report it. Do not reset or restore over state that appeared
+after the preflight. Remove the owned isolated worktree before reporting unless
+it contains conflict-resolution state needed for a paused user decision; when
+retained, report its exact path.
 
-If the branch touches broad behavior, also search the upstream diff for the
-feature names, functions, config keys, migrations, routes, or tests involved.
+Run `scripts/check-collisions.py` in the original checkout with
+`pre_rebase_head`, `candidate_head`, and the recorded branch name. It binds the
+checkout identity and compares the exact candidate tree to present ignored,
+untracked, symlink, and status-invisible objects. Exit `0` is clear, exit `2`
+reports collisions, and any other result is inconclusive. Stop without changing
+the original checkout on either nonzero result. Apply the same isolated-worktree
+cleanup and reporting rule used for pre-apply drift.
 
-While reviewing, ask:
+With exclusive mutation ownership still established, advance the current branch
+and tracked worktree to `candidate_head` with
+`git reset --hard "$candidate_head"`. This reset applies the already-authorized
+rebase only after a clean-state and exact-tree proof; it is not authority to
+discard dirt. If it fails, retain the isolated worktree and report the state
+instead of improvising recovery.
 
-- Did upstream already implement the same fix, even in narrower form?
-- Did upstream introduce a new abstraction, convention, or source of truth that
-  local commits should now use?
-- Did upstream remove, rename, or restructure code that local commits still
-  depend on?
-- Would keeping both upstream and branch-local implementations create duplicate
-  behavior, competing configuration, or inconsistent validation?
+Verify the original checkout now matches the validated candidate, status remains
+clean, and unrelated local objects remain present. Then remove the owned
+temporary worktree.
 
-### 5. Rebase
+## 6. Review the integrated branch
 
-Rebase the current branch onto the full upstream ref recorded above:
+Use the isolated range comparison and validation as evidence. Rerun only checks
+whose result depends on the original checkout rather than the candidate commit.
 
-```bash
-git rebase "$base"
-```
+Before reporting success, verify that status remains clean apart from any
+intentional conflict-resolution changes now committed into the rebased history,
+and the branch contains the expected commits.
 
-### 6. Restore Stashed Changes
+## 7. Report and optionally publish
 
-If changes were stashed in step 2 and the rebase succeeded, restore them:
+Report:
 
-```bash
-git stash pop
-```
+- the upstream ref and immutable commit used;
+- overlapping upstream changes and local adaptations;
+- conflict choices and their evidence;
+- validation performed;
+- the final branch, history, and worktree state; and
+- any safe stop, unresolved uncertainty, or user action needed.
 
-### 7. Integration Review
-
-After the rebase, inspect whether the branch still makes sense on top of the new
-upstream state:
-
-```bash
-git range-diff "$pre_rebase_base".."$pre_rebase_head" "$base"..HEAD
-git diff --check "$base"...HEAD
-git diff --stat "$base"...HEAD
-```
-
-Use `range-diff` to confirm the branch commits survived as intended, not just
-that Git replayed them mechanically. If `range-diff` is unavailable or noisy,
-fall back to `git log --oneline "$base"..HEAD` and targeted
-`git diff "$base"...HEAD -- <paths>`.
-
-Adapt the branch during the rebase only when the upstream changes make the
-current changeset wrong, duplicate, inconsistent, or impossible to validate. If
-the rebased branch still works but could be simplified to use the new upstream
-approach, finish the rebase and report that as follow-up work instead of
-expanding the rebase scope.
-
-### 8. Show Result
-
-Display the updated history:
-
-```bash
-git log --oneline -10
-```
-
-Report the outcome briefly:
-
-- upstream ref used
-- whether overlapping upstream changes were found
-- whether local commits were adapted
-- recommended follow-up refactors, if any
-
-## Conflict Handling
-
-If the rebase encounters conflicts:
-
-1. Inspect both sides of the conflict and the upstream commits that introduced
-   the conflicting code.
-2. Prefer the upstream design when it now provides the broader source of truth,
-   unless the local branch intentionally extends it.
-3. Resolve conflicts so the final branch has one coherent implementation, not
-   both versions side by side.
-4. After resolving, stage the files and run `git rebase --continue`
-5. If confidence in the resolution is low, abort instead:
-   ```bash
-   git rebase --abort
-   ```
-   If changes were stashed, restore them with `git stash pop`, then ask the user
-   to resolve conflicts manually.
-
-## Guidelines
-
-- Minimize text output — focus on tool calls
-- Call multiple tools in parallel when there are no dependencies between them
-- Never force-push without explicit user confirmation
+If the request also authorized publishing the rebased branch, verify the
+expected remote branch and lease immediately before pushing with
+`--force-with-lease`. Otherwise leave the rewritten history local.

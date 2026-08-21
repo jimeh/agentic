@@ -1,9 +1,7 @@
-import { spawnSync } from "node:child_process";
 import { existsSync, readdirSync } from "node:fs";
-import { join, relative, resolve } from "node:path";
+import { join, resolve } from "node:path";
 import type { Writable } from "node:stream";
-
-type StdioMode = "inherit" | "pipe";
+import { runTestFiles, type StdioMode } from "./test-files";
 
 type RunOptions = {
   bash?: string;
@@ -49,10 +47,6 @@ function parseArgs(args: string[]): { root: string } {
   return { root };
 }
 
-function write(stream: Writable, message: string): void {
-  stream.write(message);
-}
-
 function pluginDirs(rootDir: string): string[] {
   const pluginsDir = join(rootDir, "plugins");
   if (!existsSync(pluginsDir)) {
@@ -62,15 +56,6 @@ function pluginDirs(rootDir: string): string[] {
   return readdirSync(pluginsDir, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
     .map((entry) => join(pluginsDir, entry.name));
-}
-
-function displayPath(rootDir: string, file: string): string {
-  const path = relative(rootDir, file);
-  if (path !== "" && !path.startsWith("..")) {
-    return path;
-  }
-
-  return file;
 }
 
 /**
@@ -105,39 +90,18 @@ export function runPluginTests(options: RunOptions = {}): number {
   const tests = discoverPluginTests(rootDir);
 
   if (tests.length === 0) {
-    write(stdout, "No plugin tests found.\n");
+    stdout.write("No plugin tests found.\n");
     return 0;
   }
 
-  let failed = 0;
-
-  for (const testFile of tests) {
-    const label = displayPath(rootDir, testFile);
-    write(stdout, `::group::${label}\n`);
-    const result = spawnSync(bash, [testFile], {
-      cwd: rootDir,
-      stdio,
-      encoding: "utf8",
-    });
-    if (stdio === "pipe") {
-      if (result.stdout) {
-        write(stdout, result.stdout);
-      }
-      if (result.stderr) {
-        write(stderr, result.stderr);
-      }
-    }
-    write(stdout, "::endgroup::\n");
-
-    if (result.status !== 0) {
-      const reason = result.error ? `: ${result.error.message}` : "";
-      write(stderr, `ERROR: ${label}: test failed${reason}\n`);
-      failed += 1;
-    }
-  }
-
-  write(stdout, `\nRan ${tests.length} test file(s), ${failed} failed.\n`);
-  return failed > 0 ? 1 : 0;
+  return runTestFiles({
+    commandFor: (testFile) => ({ args: [testFile], command: bash }),
+    rootDir,
+    stderr,
+    stdout,
+    stdio,
+    testFiles: tests,
+  });
 }
 
 export function pluginTestsCommand(args: string[]): number {

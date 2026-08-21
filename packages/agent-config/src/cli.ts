@@ -3,6 +3,7 @@ import { installAgentConfig } from "./install";
 import { pluginTestsCommand } from "./plugin-tests";
 import { rulesCommand } from "./rules";
 import { schemaCommand } from "./schema";
+import { skillTestsCommand } from "./skill-tests";
 
 function usage(exitCode = 2): never {
   console.error(
@@ -14,6 +15,7 @@ function usage(exitCode = 2): never {
       "  rules <command>  Build or check generated global rules",
       "  schema <command> Build or check the agent config schema",
       "  test plugins     Run plugin shell tests",
+      "  test skills      Run executable skill tests",
       "  check harness    Run agent harness checks",
       "",
       "Options:",
@@ -45,6 +47,10 @@ export async function main(args: string[]): Promise<number> {
 
     if (command === "test" && args[1] === "plugins") {
       return pluginTestsCommand(args.slice(2));
+    }
+
+    if (command === "test" && args[1] === "skills") {
+      return skillTestsCommand(args.slice(2));
     }
 
     if (command === "check" && args[1] === "harness") {
