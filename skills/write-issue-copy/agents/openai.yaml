@@ -1,0 +1,5 @@
+interface:
+  display_name: "Write Issue Copy"
+  short_description: "Draft accurate GitHub issue titles and descriptions"
+  default_prompt:
+    "Use $write-issue-copy to draft a GitHub issue from the current evidence."
