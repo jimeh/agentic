@@ -18,6 +18,13 @@ Apply `html-communication` for page construction, browser inspection, and
 artifact delivery. This skill owns what to teach and how to sequence it. Honor
 an explicitly requested output format instead of forcing HTML.
 
+## Ground the explanation
+
+Ground the explanation in the actual subject before simplifying it. When the
+topic depends on a codebase, decision, incident, or current facts, inspect the
+relevant code, records, or sources. Do not substitute a plausible generic
+account for available evidence.
+
 ## Find the teaching spine
 
 - Identify the question the explanation must answer and the one idea the reader
