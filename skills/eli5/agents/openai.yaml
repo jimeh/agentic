@@ -1,0 +1,5 @@
+interface:
+  display_name: "ELI5"
+  short_description: "Explain hard ideas with pictures and few words"
+  default_prompt:
+    "Use $eli5 to explain this topic from zero with a visual HTML page."
