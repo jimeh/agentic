@@ -25,6 +25,11 @@ topic depends on a codebase, decision, incident, or current facts, inspect the
 relevant code, records, or sources. Do not substitute a plausible generic
 account for available evidence.
 
+For technical explanations where exact terminology, qualifications, or reader
+action materially affect the result, apply `technical-communication` for those
+concerns. Keep this skill's beginner mental model, visual sequence, and sparse
+text authoritative.
+
 ## Find the teaching spine
 
 - Identify the question the explanation must answer and the one idea the reader
