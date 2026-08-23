@@ -11,6 +11,17 @@ Run `mise tasks` for the full list with descriptions. Note that
 
 ## Architecture
 
+The Bun workspace separates the repository tooling by ownership:
+
+- `packages/agent-config` owns config loading, installation, schema generation,
+  and the compatibility CLI used by Mise tasks.
+- `packages/agent-rules` owns global rule rendering and drift checks.
+- `packages/agent-harness` owns repository checks and executable skill and
+  plugin test discovery.
+- `packages/claude-headless` owns the streamed Claude CLI wrapper and its
+  integration tests.
+- `packages/vendor-skills` owns reviewed third-party skill intake and updates.
+
 `packages/agent-config` auto-discovers and symlinks skills:
 
 - **Ordinary first-party skills**: any `skills/*/` dir with a `SKILL.md` other
@@ -29,6 +40,13 @@ an entry links. `codex-*` wrapper skills link only into `~/.claude/skills/` —
 they are the handoff path from Claude to the Codex CLI. `claude-*` skills are
 linked into `~/.agents/skills/` only, so Claude never loads skills that delegate
 work back to itself.
+
+The directional Claude set is `claude-analysis`, `claude-first`,
+`claude-implementation`, and `claude-review`. There is deliberately no
+`claude-computer-use`; browser and GUI work stays with Codex. These skills use
+the installed `claude-headless` runner from `packages/claude-headless/bin/` for
+model and effort routing, streaming progress, session handling, and private run
+artifacts. The runner denies `codex-*` skill calls to prevent delegation loops.
 
 To add a new skill, just create the directory — the installer picks it up
 automatically. Stale symlinks are cleaned up on each run, including links that
@@ -78,12 +96,13 @@ plugin manifests may remain unpublished.
 
 ### Global Rules
 
-Global instructions are rendered from Markdown sources under `rules/`. A source
-becomes a render target by declaring `type: agentic-rules` and a `filename` in
-its frontmatter; the renderer discovers targets by scanning, so adding one means
-creating a file rather than editing TypeScript. Sources compose content with
-`<!-- include: path -->` directives, resolved relative to the including file.
-Includes may nest, must stay inside `rules/`, and cycles are rejected.
+`packages/agent-rules` renders global instructions from Markdown sources under
+`rules/`. A source becomes a render target by declaring `type: agentic-rules`
+and a `filename` in its frontmatter; the renderer discovers targets by scanning,
+so adding one means creating a file rather than editing TypeScript. Sources
+compose content with `<!-- include: path -->` directives, resolved relative to
+the including file. Includes may nest, must stay inside `rules/`, and cycles are
+rejected.
 
 `rules/base.md` is shared by all targets and `rules/agents.md` by the non-Claude
 ones; neither is a target itself. Run `mise run rules:build` after editing these
@@ -97,7 +116,7 @@ Plugin tests live in `plugins/*/tests/*.test.sh` and run with
 on success. TypeScript tests live beside package implementation files as
 `packages/*/src/**/*.test.ts`; `mise run test` runs both unit and plugin tests.
 
-Agent harness checks live in `packages/agent-config` and run as part of
+Agent harness checks live in `packages/agent-harness` and run as part of
 `mise run lint`. They verify that skill frontmatter names are slug-safe and
 match their directories, vendored third-party skill locks match the checked-in
 content, local plugin manifests remain valid, and each published plugin matches
@@ -109,6 +128,9 @@ Executable skill tests live under `skills/*/tests/`, use names matching
 `mise run test`. The runner discovers nested tests, executes each file through
 its shebang, continues after failures, and reports a combined result. Keep tests
 self-contained, executable, and exit 0 on success.
+
+The `claude-headless` integration test lives with its package and runs through
+`mise run test:claude-headless`, which is also included in `mise run test`.
 
 ## Plugin Versioning
 

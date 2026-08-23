@@ -1,0 +1,10 @@
+{
+  "name": "@jimeh/claude-headless",
+  "private": true,
+  "bin": {
+    "claude-headless": "./bin/claude-headless.ts"
+  },
+  "scripts": {
+    "test": "./tests/headless-runner.test.sh"
+  }
+}

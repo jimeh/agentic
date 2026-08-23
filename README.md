@@ -68,9 +68,15 @@ mise run hooks:install
 - **`thirdparty/`** — Vendored third-party skills plus manifest and lock
   metadata.
 - **`plugins/`** — Source retained for deprecated Claude Code plugins.
-- **`packages/agent-config/`** — CLI package for installing agent configs,
-  rendering generated rules, running plugin tests, and checking harness
-  invariants.
+- **`packages/agent-config/`** — Config installer, schema generator, and the
+  compatibility CLI used by Mise tasks.
+- **`packages/agent-rules/`** — Global rule renderer and drift checker.
+- **`packages/agent-harness/`** — Agent metadata checks and executable skill and
+  plugin test runner.
+- **`packages/claude-headless/`** — Streamed Claude CLI runner with private run
+  artifacts and package-owned integration tests.
+- **`packages/vendor-skills/`** — Reviewed third-party skill intake and update
+  tooling.
 - **`docs/references/`** — External articles and guides.
 
 Skills are auto-discovered — drop a directory in the right place, re-run the
@@ -122,6 +128,8 @@ Run local tests with:
 ```bash
 mise run test
 mise run test:plugins
+mise run test:skills
+mise run test:claude-headless
 ```
 
 Format Markdown and TypeScript with:
@@ -205,13 +213,15 @@ Based on the
 
 ### Agent Config Installation
 
-`packages/agent-config` exposes the `agent-config` CLI used by the mise tasks.
-Its `install` command reads `agent-config.toml` to create fixed symlinks,
-discover configured skill roots, clean stale managed symlinks, register Claude
-plugin marketplaces, and install configured Claude plugins. To add or remove
-auto-installed plugins, edit `agent-config.toml`. The loader checks config files
-in this order: `agent-config.toml`, `agent-config.yaml`, `agent-config.yml`,
-then `agent-config.json`.
+`packages/agent-config` exposes the `agent-config` CLI used by the Mise tasks.
+The CLI keeps the existing command contract while delegating rule and harness
+commands to their workspace packages. Its `install` command reads
+`agent-config.toml` to create fixed symlinks, discover configured skill roots,
+clean stale managed symlinks, register Claude plugin marketplaces, and install
+configured Claude plugins. To add or remove auto-installed plugins, edit
+`agent-config.toml`. The loader checks config files in this order:
+`agent-config.toml`, `agent-config.yaml`, `agent-config.yml`, then
+`agent-config.json`.
 
 Config source paths are repo-relative. Home-side target paths must be explicit
 and start with `~/`, including `symlinks[].target`,

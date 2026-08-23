@@ -209,6 +209,27 @@ test("installs managed CLI wrapper symlinks", () => {
   expect(readlinkSync(join(home, ".local", "bin", "opus"))).toBe(
     join(rootDir, "bin", "opus"),
   );
+  expect(readlinkSync(join(home, ".local", "bin", "claude-headless"))).toBe(
+    join(rootDir, "packages", "claude-headless", "bin", "claude-headless.ts"),
+  );
+});
+
+test("relinks claude-headless from its former package without force", () => {
+  const home = createHome();
+  const binDir = join(home, ".local", "bin");
+  const link = join(binDir, "claude-headless");
+  mkdirSync(binDir, { recursive: true });
+  symlinkSync(
+    join(rootDir, "packages", "agent-config", "bin", "claude-headless.ts"),
+    link,
+  );
+
+  const result = run(home);
+
+  expect(result.status).toBe(0);
+  expect(readlinkSync(link)).toBe(
+    join(rootDir, "packages", "claude-headless", "bin", "claude-headless.ts"),
+  );
 });
 
 test("relinks legacy RULES.md symlinks without force", () => {
@@ -746,12 +767,17 @@ test("repo config scopes executor wrappers to the other skill root", () => {
   expect(existsSync(join(home, ".agents", "skills", "codex-review"))).toBe(
     false,
   );
-  expect(readlinkSync(join(home, ".agents", "skills", "claude-review"))).toBe(
-    join(rootDir, "skills", "claude-review"),
-  );
-  expect(existsSync(join(home, ".claude", "skills", "claude-review"))).toBe(
-    false,
-  );
+  for (const skill of [
+    "claude-analysis",
+    "claude-first",
+    "claude-implementation",
+    "claude-review",
+  ]) {
+    expect(readlinkSync(join(home, ".agents", "skills", skill))).toBe(
+      join(rootDir, "skills", skill),
+    );
+    expect(existsSync(join(home, ".claude", "skills", skill))).toBe(false);
+  }
   expect(
     lstatSync(join(home, ".agents", "skills", "commit")).isSymbolicLink(),
   ).toBe(true);

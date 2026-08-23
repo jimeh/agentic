@@ -6,5 +6,9 @@
   },
   "scripts": {
     "test": "bun test"
+  },
+  "dependencies": {
+    "@jimeh/agent-harness": "workspace:*",
+    "@jimeh/agent-rules": "workspace:*"
   }
 }

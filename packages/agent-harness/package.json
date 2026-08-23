@@ -1,0 +1,11 @@
+{
+  "name": "@jimeh/agent-harness",
+  "private": true,
+  "exports": "./src/index.ts",
+  "scripts": {
+    "test": "bun test src"
+  },
+  "dependencies": {
+    "gray-matter": "^4.0.3"
+  }
+}
