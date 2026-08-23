@@ -16,6 +16,7 @@ symlinks = [
   { source = "bin/claudex", target = "~/.local/bin/claudex" },
   { source = "bin/fable", target = "~/.local/bin/fable" },
   { source = "bin/opus", target = "~/.local/bin/opus" },
+  { source = "packages/agent-config/bin/claude-headless.ts", target = "~/.local/bin/claude-headless" },
 ]
 
 staleSymlinkCleanup = [

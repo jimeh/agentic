@@ -30,6 +30,13 @@ they are the handoff path from Claude to the Codex CLI. `claude-*` skills are
 linked into `~/.agents/skills/` only, so Claude never loads skills that delegate
 work back to itself.
 
+The directional Claude set is `claude-analysis`, `claude-first`,
+`claude-implementation`, and `claude-review`. There is deliberately no
+`claude-computer-use`; browser and GUI work stays with Codex. These skills use
+the installed `claude-headless` runner from `packages/agent-config/bin/` for
+model and effort routing, streaming progress, session handling, and private run
+artifacts. The runner denies `codex-*` skill calls to prevent delegation loops.
+
 To add a new skill, just create the directory — the installer picks it up
 automatically. Stale symlinks are cleaned up on each run, including links that
 an `only`/`exclude` change scoped out of a target root.

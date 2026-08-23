@@ -45,15 +45,16 @@ isolation, and review once that decision is made.
 
 ## Model Routing
 
-- Opus is the usual choice for delegated Claude work: investigation,
-  implementation, verification, review, planning, decomposition, architecture,
-  API and UX decisions, and synthesis.
-- Fable suits exceptionally hard problems — ambiguous root-cause work Opus has
-  stalled on, high-stakes architecture, or synthesis across large conflicting
-  evidence. A `model: "fable"` subagent with a scoped brief is usually enough;
-  the current session stays orchestrator and keeps final judgement. Fable is the
-  smarter model, but Opus often writes better code; judge the work rather than
-  the ranking.
+- Fable 5 at high effort is the default for delegated Claude work:
+  investigation, implementation, verification, review, planning, decomposition,
+  architecture, API and UX decisions, and synthesis.
+- Use Opus only when the user or an owning workflow asks for it. "Opus" means
+  Opus 5 at medium effort unless the caller explicitly overrides the effort.
+- Do not infer a context-window preference. Let Claude Code and the active
+  provider choose their normal context behavior.
+- For Claude CLI delegation from another executor, use the `claude-*` skill for
+  the task. Its `claude-headless` transport owns exact model IDs and effort
+  defaults.
 - Hand GPT work to the `codex-*` skills, which wrap the Codex CLI. Prefer Claude
   models unless the user asks for GPT or Codex, a skill or workflow needs that
   engine, or the work calls for it — cross-model review independence, bulk

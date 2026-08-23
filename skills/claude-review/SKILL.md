@@ -10,130 +10,122 @@ description: >-
 
 Read and apply the `review-code` skill as the source of truth for the review
 brief, inspection policy, finding acceptance, revision coverage, and reporting.
-This skill owns only Claude-specific transport, isolation, process lifecycle,
-and session continuation.
+This skill owns Claude-specific transport, isolation, progress, process
+lifecycle, and session continuation.
 
-Start each initial review in a fresh Claude Code session. Fresh context does not
-require a disposable session: preserve it when an orchestration workflow may
-need the same reviewer for follow-up verification. The orchestrating agent
+Start each initial review in a fresh Claude session. Preserve it when an owning
+workflow may need focused follow-up verification. The orchestrating agent
 remains the final judge.
 
 Use this skill for broad or risky changes, user-requested Claude reviews,
-reviewing another model's implementation, or getting a strong second perspective
-on a plan or diff.
-
-Do not use it for small local reviews, formatting-only diffs, or to avoid
-reading the code yourself. Fresh context provides context independence, not
-cross-engine diversity. Do not infer implementation provenance or describe a
-Claude review of known Claude-authored work as cross-engine. Honor explicit
-reviewer selection and `dual-review` workflows. Treat Claude's report as
-evidence, not authority.
-
-Assume `claude` is installed and authenticated unless the environment proves
-otherwise.
+reviewing another model's implementation, or a strong second perspective. Do not
+use it for small local reviews, formatting-only diffs, or to avoid reading the
+code yourself. Fresh context gives context independence, not automatic
+cross-engine diversity.
 
 ## Workflow
 
 1. Use `review-code` to pin the target and build the compact review brief.
-2. Verify the current directory with `pwd`. Run Claude from the repo root or the
-   intended worktree.
-3. Create a temporary artifact directory.
-4. Write a concise prompt that gives Claude the brief and `review-code` output
-   requirements; do not assume the launched process can load this skill.
-5. Run headless `claude -p` in plan mode with safe mode so the session stays
-   read-only and the target repo's customizations cannot execute.
-6. Read the report.
-7. Apply `review-code` to accept findings and report the result.
+2. Verify the current directory with `pwd` and run from the intended checkout.
+3. Create a private artifact directory and write the prompt.
+4. Run `claude-headless` in plan mode with managed user skills available.
+5. Read `result.md` and apply `review-code` to every candidate finding.
+6. Return accepted findings and the validation and test-quality verdict.
 
-## Command Shapes
-
-Prepare artifacts:
+## Invocation
 
 ```bash
 ARTIFACT_DIR="$(mktemp -d "${TMPDIR:-/tmp}/claude-review.XXXXXX")"
 PROMPT="$ARTIFACT_DIR/prompt.md"
-REPORT="$ARTIFACT_DIR/report.md"
+
+claude-headless \
+  --artifact-dir "$ARTIFACT_DIR" \
+  --model fable \
+  --setting-sources user \
+  --permission-mode plan \
+  < "$PROMPT"
 ```
 
-There is no scope-flag review subcommand; always name the target inside the
-prompt. Plan mode blocks file edits while still allowing read-only inspection
-commands. Safe mode keeps the target repo's hooks, plugins, and other
-customizations from executing — headless runs skip the workspace trust prompt,
-so a malicious checkout could otherwise run code as the user. For a one-shot
-review, disable session persistence so it leaves no resumable state behind:
+Fable 5 at high effort is the default. Use `--model opus` when the user asks for
+Opus; the runner pins Opus 5 at medium effort. Explicit effort instructions win.
+Leave context size to Claude CLI.
+
+`--setting-sources user` keeps managed skills such as `review-code` available
+without loading project or local execution hooks. For a trusted checkout where
+project guidance materially improves the review, use `user,project`. Do not load
+`local` by default, and do not use `--safe-mode` or `--bare`.
+
+The runner writes raw events to `events.ndjson`, concise progress to
+`progress.log` and stderr, diagnostics to `stderr.log`, the terminal report to
+`result.md`, and run state to `run.json`. Read the raw stream only when
+diagnosing transport, model routing, or a failed result extraction.
+
+## Prompt contract
+
+Keep the prompt short. Include the `review-code` brief, target, requirements,
+inspection priorities, execution policy, and output shape. Add these boundaries:
+
+```text
+This review was delegated by Codex.
+- Stay read-only.
+- Do not invoke codex-* skills or the Codex CLI.
+- Inspect the target from the repository rather than relying on pasted diffs.
+- Report only findings supported by concrete code evidence.
+- Include a separate validation and test-quality verdict.
+```
+
+Treat Claude's report as candidate evidence. Verify plausible findings against
+the code and discard unsupported ones. Do not imply Claude ran checks unless the
+report demonstrates it.
+
+## Continuation
+
+When follow-up verification is likely, assign an explicit UUID on the initial
+run:
 
 ```bash
-claude -p \
+claude-headless \
+  --artifact-dir "$ARTIFACT_DIR" \
+  --model fable \
+  --setting-sources user \
   --permission-mode plan \
-  --safe-mode \
-  --no-session-persistence \
-  < "$PROMPT" > "$REPORT" 2> "$ARTIFACT_DIR/stderr.log"
+  --session-id "$SESSION_ID" \
+  < "$PROMPT"
 ```
 
-Drop `--safe-mode` only for a fully trusted checkout where project context
-(CLAUDE.md, project settings) would materially improve the review.
+For each continuation, create a new artifact directory and resume that session:
 
-When follow-up verification is likely, omit `--no-session-persistence`, assign
-and retain an explicit session ID with `--session-id`, and resume it with
-`--resume`. Preserve plan and safe mode on every continuation.
+```bash
+claude-headless \
+  --artifact-dir "$NEXT_ARTIFACT_DIR" \
+  --model fable \
+  --setting-sources user \
+  --permission-mode plan \
+  --resume "$SESSION_ID" \
+  < "$NEXT_PROMPT"
+```
 
-Model selection: the default configured model is fine. Pass `--model opus` (or
-another alias) only when the user or model-routing rules ask for a specific
-review tier.
+Preserve the original model and effort unless the user overrides them. Give the
+reviewer revision boundaries and concise finding summaries, then have it inspect
+the delta itself. Start fresh if the scope materially broadens or the old target
+is unavailable.
 
-Run notes:
+## Lifecycle and failure handling
 
-- Start one initial Claude process and let it run to terminal exit. Run long
-  reviews in the background and read `$REPORT` only after the process exits.
-- Quiet stdout and stderr, an empty report, and low CPU usage are normal while
-  `claude -p` is inspecting or waiting on the model. None is evidence of a
-  stall, and another reviewer or CI finishing first is not a reason to interrupt
-  Claude.
-- Do not impose a hard process timeout unless the caller supplies a real
-  deadline. When an orchestration workflow needs a finite coordination
-  checkpoint and the caller supplied none, allow at least 60 minutes for the
-  initial review and prefer 90 minutes for a large repository or change set.
-  Treat that checkpoint as a time to inspect liveness and errors, not as
-  automatic authority to terminate a healthy process.
-- Terminate only for user cancellation, an explicit hard deadline, or concrete
-  failure or wedge evidence. If termination is necessary, preserve and resume
-  the explicit session when possible. Do not replace a quiet or interrupted run
-  with a fresh attempt merely to reset the clock.
-- Parallel independent reviews are fine: separate prompt and report files.
-- Resume the same reviewer for focused fix verification when possible. Give it
-  revision boundaries and concise finding summaries, then have it inspect the
-  delta from the repository rather than pasting prior reports or large diffs.
-  Before resuming, confirm the intended prior and current review targets remain
-  available and match the requested review. Use a fresh reviewer when they do
-  not, continuation is unavailable, or the reviewed scope materially broadens.
+- Start one initial process and let it run to terminal exit. Quiet output, an
+  incomplete report, and low CPU are normal while it works.
+- Do not impose a hard timeout unless the caller supplies one. Use a 60-minute
+  checkpoint at minimum and prefer 90 minutes for a large change. A checkpoint
+  is for inspecting liveness and errors, not killing a healthy process.
+- Terminate only for user cancellation, an explicit deadline, or concrete
+  failure or wedge evidence. Resume an interrupted persisted session when
+  practical instead of starting over.
+- A nonzero exit, malformed stream, or empty result is a failed review. Inspect
+  `run.json` and `stderr.log`. Retry at most once after diagnosing a transient
+  cause.
+- Do not retry merely because Claude reports no findings.
+- Remove artifacts after the owning workflow consumes them unless the user asked
+  to inspect them.
 
-Do not retry automatically when Claude reports no issues. A run that exits
-nonzero or leaves an empty or missing report after exit has failed — read the
-stderr log and surface the failure; never treat it as a clean review. Retry only
-after diagnosing a terminal failure as transient, and make at most one retry
-unless the caller directs otherwise. If the run fails or an explicit hard
-deadline expires, report that and decide whether direct review is still useful.
-
-Once the review lifecycle is complete, remove the artifact directory
-(`rm -rf "$ARTIFACT_DIR"`) so prompts and reports do not accumulate.
-
-## Prompt and Report
-
-Keep the prompt short and express the `review-code` brief, inspection
-priorities, execution policy, and required output directly. Do not paste large
-diffs, logs, or project explanations that Claude can inspect itself.
-
-Treat Claude's report as candidate evidence. Apply `review-code` before relaying
-findings. If the report omits an explicit validation and test-quality verdict,
-request it from the same session when practical; otherwise mark the review
-incomplete. Do not imply Claude ran checks unless its report demonstrates that
-it did.
-
-## Failure Handling
-
-- If `claude` is unavailable, say so and review directly if practical.
-- If an explicit hard deadline expires, report it. Do not loop blindly or
-  convert an orchestration checkpoint into a timeout.
-- If Claude gives vague findings, verify only the plausible ones and discard the
-  rest.
-- If Claude's report conflicts with the code, trust the code.
+Do not use `show-me-your-work` as review liveness. Stream events own progress,
+and plan mode cannot reliably append a decision trail.

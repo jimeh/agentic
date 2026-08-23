@@ -2,7 +2,7 @@
 
 set -o pipefail
 
-model="${OPUS_MODEL:-opus[1m]}"
+model="${OPUS_MODEL:-claude-opus-5}"
 effort="${OPUS_EFFORT:-medium}"
 base_url="${OPUS_BASE_URL:-${CLAUDEX_BASE_URL:-http://127.0.0.1:8317}}"
 config="${OPUS_CONFIG:-${CLAUDEX_CONFIG:-${CLIPROXYAPI_CONFIG:-$HOME/.cli-proxy-api/config.yaml}}}"
