@@ -46,7 +46,7 @@ function runCodeGraphSetup(
   );
   chmodSync(codegraph, 0o755);
 
-  const result = spawnSync("/usr/bin/bash", ["-c", command], {
+  const result = spawnSync("bash", ["-c", command], {
     cwd: projectRoot,
     encoding: "utf8",
     env: {

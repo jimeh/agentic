@@ -72,6 +72,10 @@ run_headless() {
       2> "$capture_dir/$run_id.runner-stderr"
 }
 
+file_mode() {
+  stat -c '%a' "$1" 2>/dev/null || stat -f '%Lp' "$1"
+}
+
 run_headless default
 
 grep -Fx -- '--model' "$capture_dir/default.args" >/dev/null
@@ -113,8 +117,8 @@ grep -F 'diagnostic for default' "$test_root/artifacts-default/stderr.log" >/dev
 grep -F '"status": "succeeded"' "$test_root/artifacts-default/run.json" >/dev/null
 grep -F '"actualModels"' "$test_root/artifacts-default/run.json" >/dev/null
 grep -F 'claude-headless: artifacts:' "$capture_dir/default.runner-stderr" >/dev/null
-[[ "$(stat -c '%a' "$test_root/artifacts-default")" == "700" ]]
-[[ "$(stat -c '%a' "$test_root/artifacts-default/events.ndjson")" == "600" ]]
+[[ "$(file_mode "$test_root/artifacts-default")" == "700" ]]
+[[ "$(file_mode "$test_root/artifacts-default/events.ndjson")" == "600" ]]
 
 project_dir="$test_root/project"
 added_dir="$test_root/added"
