@@ -65,7 +65,7 @@ run_headless() {
     PATH="$fake_bin:$PATH" \
     FAKE_CAPTURE_DIR="$capture_dir" \
     FAKE_RUN_ID="$run_id" \
-    "$repo_root/packages/agent-config/bin/claude-headless.ts" \
+    "$repo_root/packages/claude-headless/bin/claude-headless.ts" \
       --artifact-dir "$artifact_dir" \
       "$@" \
       > "$capture_dir/$run_id.stdout" \
@@ -155,7 +155,7 @@ printf 'reserved prompt\n' |
   PATH="$fake_bin:$PATH" \
   FAKE_CAPTURE_DIR="$capture_dir" \
   FAKE_RUN_ID="reserved" \
-  "$repo_root/packages/agent-config/bin/claude-headless.ts" \
+  "$repo_root/packages/claude-headless/bin/claude-headless.ts" \
     --artifact-dir "$reserved_artifacts" \
     -- --safe-mode \
     > "$capture_dir/reserved.stdout" \
@@ -173,7 +173,7 @@ printf 'failing prompt\n' |
   FAKE_CAPTURE_DIR="$capture_dir" \
   FAKE_RUN_ID="failure" \
   FAKE_MODE="failure" \
-  "$repo_root/packages/agent-config/bin/claude-headless.ts" \
+  "$repo_root/packages/claude-headless/bin/claude-headless.ts" \
     --artifact-dir "$failure_artifacts" \
     > "$capture_dir/failure.stdout" \
     2> "$capture_dir/failure.runner-stderr"
@@ -190,7 +190,7 @@ printf 'malformed prompt\n' |
   FAKE_CAPTURE_DIR="$capture_dir" \
   FAKE_RUN_ID="malformed" \
   FAKE_MODE="malformed" \
-  "$repo_root/packages/agent-config/bin/claude-headless.ts" \
+  "$repo_root/packages/claude-headless/bin/claude-headless.ts" \
     --artifact-dir "$malformed_artifacts" \
     > "$capture_dir/malformed.stdout" \
     2> "$capture_dir/malformed.runner-stderr"
@@ -207,7 +207,7 @@ printf 'result error prompt\n' |
   FAKE_CAPTURE_DIR="$capture_dir" \
   FAKE_RUN_ID="result-error" \
   FAKE_MODE="result-error" \
-  "$repo_root/packages/agent-config/bin/claude-headless.ts" \
+  "$repo_root/packages/claude-headless/bin/claude-headless.ts" \
     --artifact-dir "$result_error_artifacts" \
     > "$capture_dir/result-error.stdout" \
     2> "$capture_dir/result-error.runner-stderr"

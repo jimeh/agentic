@@ -3,9 +3,6 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "dependencies": {
-        "gray-matter": "^4.0.3",
-      },
       "devDependencies": {
         "@types/bun": "^1.3.14",
         "@types/node": "^26.0.1",
@@ -17,6 +14,28 @@
       "name": "@jimeh/agent-config",
       "bin": {
         "agent-config": "./bin/agent-config.ts",
+      },
+      "dependencies": {
+        "@jimeh/agent-harness": "workspace:*",
+        "@jimeh/agent-rules": "workspace:*",
+      },
+    },
+    "packages/agent-harness": {
+      "name": "@jimeh/agent-harness",
+      "dependencies": {
+        "gray-matter": "^4.0.3",
+      },
+    },
+    "packages/agent-rules": {
+      "name": "@jimeh/agent-rules",
+      "dependencies": {
+        "gray-matter": "^4.0.3",
+      },
+    },
+    "packages/claude-headless": {
+      "name": "@jimeh/claude-headless",
+      "bin": {
+        "claude-headless": "./bin/claude-headless.ts",
       },
     },
     "packages/vendor-skills": {
@@ -36,6 +55,12 @@
     "@clack/prompts": ["@clack/prompts@1.5.1", "", { "dependencies": { "@clack/core": "1.4.1", "fast-string-width": "^3.0.2", "fast-wrap-ansi": "^0.2.0", "sisteransi": "^1.0.5" } }, "sha512-zccHj2z2oCCO4yrDiRSlFOxWerGqRiysP7a5jPK6uoI9URKAquwY42Dd/iUP8JWHxEzdRe4TlbvZCo8z1/mhrw=="],
 
     "@jimeh/agent-config": ["@jimeh/agent-config@workspace:packages/agent-config"],
+
+    "@jimeh/agent-harness": ["@jimeh/agent-harness@workspace:packages/agent-harness"],
+
+    "@jimeh/agent-rules": ["@jimeh/agent-rules@workspace:packages/agent-rules"],
+
+    "@jimeh/claude-headless": ["@jimeh/claude-headless@workspace:packages/claude-headless"],
 
     "@jimeh/vendor-skills": ["@jimeh/vendor-skills@workspace:packages/vendor-skills"],
 

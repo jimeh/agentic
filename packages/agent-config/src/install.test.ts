@@ -210,7 +210,25 @@ test("installs managed CLI wrapper symlinks", () => {
     join(rootDir, "bin", "opus"),
   );
   expect(readlinkSync(join(home, ".local", "bin", "claude-headless"))).toBe(
+    join(rootDir, "packages", "claude-headless", "bin", "claude-headless.ts"),
+  );
+});
+
+test("relinks claude-headless from its former package without force", () => {
+  const home = createHome();
+  const binDir = join(home, ".local", "bin");
+  const link = join(binDir, "claude-headless");
+  mkdirSync(binDir, { recursive: true });
+  symlinkSync(
     join(rootDir, "packages", "agent-config", "bin", "claude-headless.ts"),
+    link,
+  );
+
+  const result = run(home);
+
+  expect(result.status).toBe(0);
+  expect(readlinkSync(link)).toBe(
+    join(rootDir, "packages", "claude-headless", "bin", "claude-headless.ts"),
   );
 });
 

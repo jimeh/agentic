@@ -152,7 +152,12 @@ depends = ["format:check", "lint", "typecheck"]
 
 [tasks.test]
 description = "Run all tests"
-run = ["mise run test:unit", "mise run test:plugins", "mise run test:skills"]
+run = [
+  "mise run test:unit",
+  "mise run test:plugins",
+  "mise run test:skills",
+  "mise run test:claude-headless",
+]
 
 [tasks."test:unit"]
 description = "Run Bun unit tests"
@@ -165,6 +170,10 @@ run = "bun packages/agent-config/bin/agent-config.ts test plugins"
 [tasks."test:skills"]
 description = "Run executable skill tests"
 run = "bun packages/agent-config/bin/agent-config.ts test skills"
+
+[tasks."test:claude-headless"]
+description = "Run the Claude headless CLI integration tests"
+run = "bun run --cwd packages/claude-headless test"
 
 [tasks.verify]
 description = "Run lint and tests"

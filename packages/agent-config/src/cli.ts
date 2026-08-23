@@ -1,9 +1,11 @@
-import { checkAgentHarness } from "./harness";
+import {
+  checkAgentHarness,
+  pluginTestsCommand,
+  skillTestsCommand,
+} from "@jimeh/agent-harness";
+import { rulesCommand } from "@jimeh/agent-rules";
 import { installAgentConfig } from "./install";
-import { pluginTestsCommand } from "./plugin-tests";
-import { rulesCommand } from "./rules";
 import { schemaCommand } from "./schema";
-import { skillTestsCommand } from "./skill-tests";
 
 function usage(exitCode = 2): never {
   console.error(

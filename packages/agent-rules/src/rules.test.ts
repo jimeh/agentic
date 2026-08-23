@@ -10,7 +10,14 @@ import { dirname, join } from "node:path";
 import { afterEach, expect, test } from "bun:test";
 import { spawnSync } from "node:child_process";
 
-const cli = join(import.meta.dir, "..", "bin", "agent-config.ts");
+const cli = join(
+  import.meta.dir,
+  "..",
+  "..",
+  "agent-config",
+  "bin",
+  "agent-config.ts",
+);
 const bun = process.execPath;
 let tempDirs: string[] = [];
 
