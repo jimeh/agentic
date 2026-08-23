@@ -37,12 +37,14 @@ cross-engine diversity.
 ```bash
 ARTIFACT_DIR="$(mktemp -d "${TMPDIR:-/tmp}/claude-review.XXXXXX")"
 PROMPT="$ARTIFACT_DIR/prompt.md"
+SESSION_ID="$(uuidgen)"
 
 claude-headless \
   --artifact-dir "$ARTIFACT_DIR" \
   --model fable \
   --setting-sources user \
   --permission-mode plan \
+  --session-id "$SESSION_ID" \
   < "$PROMPT"
 ```
 
@@ -80,20 +82,8 @@ report demonstrates it.
 
 ## Continuation
 
-When follow-up verification is likely, assign an explicit UUID on the initial
-run:
-
-```bash
-claude-headless \
-  --artifact-dir "$ARTIFACT_DIR" \
-  --model fable \
-  --setting-sources user \
-  --permission-mode plan \
-  --session-id "$SESSION_ID" \
-  < "$PROMPT"
-```
-
-For each continuation, create a new artifact directory and resume that session:
+For each continuation, create a new artifact directory and resume the initial
+session:
 
 ```bash
 claude-headless \

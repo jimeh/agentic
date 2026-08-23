@@ -29,12 +29,14 @@ multi-file searches. Use `claude-review` for code review and
 ```bash
 ARTIFACT_DIR="$(mktemp -d "${TMPDIR:-/tmp}/claude-analysis.XXXXXX")"
 PROMPT="$ARTIFACT_DIR/prompt.md"
+SESSION_ID="$(uuidgen)"
 
 claude-headless \
   --artifact-dir "$ARTIFACT_DIR" \
   --model fable \
   --setting-sources user \
   --permission-mode plan \
+  --session-id "$SESSION_ID" \
   < "$PROMPT"
 ```
 
@@ -47,6 +49,10 @@ The runner writes raw events to `events.ndjson`, concise progress to
 `progress.log` and stderr, Claude diagnostics to `stderr.log`, the terminal
 answer to `result.md`, and run state to `run.json`. Read the small files first;
 inspect the raw stream only when diagnosing transport or model behavior.
+
+For a focused follow-up, create a new artifact directory and pass
+`--resume "$SESSION_ID"` instead of `--session-id`. Start fresh when the target
+or question materially changes.
 
 ## Prompt contract
 

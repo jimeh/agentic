@@ -74,77 +74,115 @@ run_headless() {
 
 run_headless default
 
-rg -Fx -- '--model' "$capture_dir/default.args" >/dev/null
-rg -Fx -- 'claude-fable-5' "$capture_dir/default.args" >/dev/null
-rg -Fx -- '--effort' "$capture_dir/default.args" >/dev/null
-rg -Fx -- 'high' "$capture_dir/default.args" >/dev/null
-rg -Fx -- '--setting-sources' "$capture_dir/default.args" >/dev/null
-rg -Fx -- 'user' "$capture_dir/default.args" >/dev/null
-rg -Fx -- '--permission-mode' "$capture_dir/default.args" >/dev/null
-rg -Fx -- 'plan' "$capture_dir/default.args" >/dev/null
-rg -Fx -- '--disallowed-tools' "$capture_dir/default.args" >/dev/null
-rg -Fx -- 'Skill(codex-analysis)' "$capture_dir/default.args" >/dev/null
-rg -Fx -- 'Skill(codex-computer-use)' "$capture_dir/default.args" >/dev/null
-rg -Fx -- 'Skill(codex-first)' "$capture_dir/default.args" >/dev/null
-rg -Fx -- 'Skill(codex-implementation)' "$capture_dir/default.args" >/dev/null
-rg -Fx -- 'Skill(codex-review)' "$capture_dir/default.args" >/dev/null
-rg -Fx -- '--settings' "$capture_dir/default.args" >/dev/null
-rg -F '"codex-analysis":"off"' "$capture_dir/default.args" >/dev/null
-rg -Fx -- '--output-format' "$capture_dir/default.args" >/dev/null
-rg -Fx -- 'stream-json' "$capture_dir/default.args" >/dev/null
-rg -Fx -- '--verbose' "$capture_dir/default.args" >/dev/null
-rg -Fx -- '--no-session-persistence' "$capture_dir/default.args" >/dev/null
-rg -Fx 'prompt for default' "$capture_dir/default.stdin" >/dev/null
-rg -F '"type":"system"' "$test_root/artifacts-default/events.ndjson" >/dev/null
-rg -F '"type":"result"' "$test_root/artifacts-default/events.ndjson" >/dev/null
-rg -Fx 'explanation for default' "$test_root/artifacts-default/result.md" >/dev/null
-rg -F 'session session-default started' "$test_root/artifacts-default/progress.log" >/dev/null
-rg -F 'tool Read' "$test_root/artifacts-default/progress.log" >/dev/null
-rg -F 'completed' "$test_root/artifacts-default/progress.log" >/dev/null
-if rg -F 'private' "$test_root/artifacts-default/progress.log" >/dev/null; then
+grep -Fx -- '--model' "$capture_dir/default.args" >/dev/null
+grep -Fx -- 'claude-fable-5' "$capture_dir/default.args" >/dev/null
+grep -Fx -- '--effort' "$capture_dir/default.args" >/dev/null
+grep -Fx -- 'high' "$capture_dir/default.args" >/dev/null
+grep -Fx -- '--setting-sources' "$capture_dir/default.args" >/dev/null
+grep -Fx -- 'user' "$capture_dir/default.args" >/dev/null
+grep -Fx -- '--permission-mode' "$capture_dir/default.args" >/dev/null
+grep -Fx -- 'plan' "$capture_dir/default.args" >/dev/null
+grep -Fx -- '--disallowed-tools' "$capture_dir/default.args" >/dev/null
+grep -Fx -- 'Skill(codex-analysis)' "$capture_dir/default.args" >/dev/null
+grep -Fx -- 'Skill(codex-computer-use)' "$capture_dir/default.args" >/dev/null
+grep -Fx -- 'Skill(codex-first)' "$capture_dir/default.args" >/dev/null
+grep -Fx -- 'Skill(codex-implementation)' "$capture_dir/default.args" >/dev/null
+grep -Fx -- 'Skill(codex-review)' "$capture_dir/default.args" >/dev/null
+grep -Fx -- '--settings' "$capture_dir/default.args" >/dev/null
+grep -F '"codex-analysis":"off"' "$capture_dir/default.args" >/dev/null
+grep -Fx -- '--output-format' "$capture_dir/default.args" >/dev/null
+grep -Fx -- 'stream-json' "$capture_dir/default.args" >/dev/null
+grep -Fx -- '--verbose' "$capture_dir/default.args" >/dev/null
+grep -Fx -- '--no-session-persistence' "$capture_dir/default.args" >/dev/null
+grep -Fx 'prompt for default' "$capture_dir/default.stdin" >/dev/null
+grep -F '"type":"system"' "$test_root/artifacts-default/events.ndjson" >/dev/null
+grep -F '"type":"result"' "$test_root/artifacts-default/events.ndjson" >/dev/null
+grep -Fx 'explanation for default' "$test_root/artifacts-default/result.md" >/dev/null
+grep -F 'session session-default started' "$test_root/artifacts-default/progress.log" >/dev/null
+grep -F 'tool Read' "$test_root/artifacts-default/progress.log" >/dev/null
+grep -F 'completed' "$test_root/artifacts-default/progress.log" >/dev/null
+if grep -F 'private' "$test_root/artifacts-default/progress.log" >/dev/null; then
   echo "progress log leaked thinking content" >&2
   exit 1
 fi
-if rg -F 'secret result' "$test_root/artifacts-default/progress.log" >/dev/null; then
+if grep -F 'secret result' "$test_root/artifacts-default/progress.log" >/dev/null; then
   echo "progress log leaked tool-result content" >&2
   exit 1
 fi
-rg -F 'diagnostic for default' "$test_root/artifacts-default/stderr.log" >/dev/null
-rg -F '"status": "succeeded"' "$test_root/artifacts-default/run.json" >/dev/null
-rg -F '"actualModels"' "$test_root/artifacts-default/run.json" >/dev/null
-rg -F 'claude-headless: artifacts:' "$capture_dir/default.runner-stderr" >/dev/null
+grep -F 'diagnostic for default' "$test_root/artifacts-default/stderr.log" >/dev/null
+grep -F '"status": "succeeded"' "$test_root/artifacts-default/run.json" >/dev/null
+grep -F '"actualModels"' "$test_root/artifacts-default/run.json" >/dev/null
+grep -F 'claude-headless: artifacts:' "$capture_dir/default.runner-stderr" >/dev/null
 [[ "$(stat -c '%a' "$test_root/artifacts-default")" == "700" ]]
 [[ "$(stat -c '%a' "$test_root/artifacts-default/events.ndjson")" == "600" ]]
+
+project_dir="$test_root/project"
+added_dir="$test_root/added"
+second_added_dir="$test_root/second-added"
+plugin_dir="$test_root/plugin"
+project_artifacts="$test_root/artifacts-project-skills"
+mkdir -p \
+  "$project_dir/.claude/skills/codex-project-probe" \
+  "$added_dir/.claude/skills/codex-added-probe" \
+  "$second_added_dir/.claude/skills/codex-second-added-probe" \
+  "$plugin_dir/.claude-plugin" \
+  "$plugin_dir/skills/incomplete" \
+  "$plugin_dir/skills/plugin-probe"
+printf '%s\n' '{"name":"test-plugin"}' \
+  > "$plugin_dir/.claude-plugin/plugin.json"
+printf '%s\n' '---' 'name: codex-plugin-probe' '---' \
+  > "$plugin_dir/skills/plugin-probe/SKILL.md"
+
+printf 'project skill prompt\n' |
+  (cd "$project_dir" && \
+    PATH="$fake_bin:$PATH" \
+    FAKE_CAPTURE_DIR="$capture_dir" \
+    FAKE_RUN_ID="project-skills" \
+    "$repo_root/packages/claude-headless/bin/claude-headless.ts" \
+      --artifact-dir "$project_artifacts" \
+      -- --add-dir "$added_dir" "$second_added_dir" \
+      --plugin-dir "$plugin_dir" \
+      > "$capture_dir/project-skills.stdout" \
+      2> "$capture_dir/project-skills.runner-stderr")
+
+grep -Fx -- 'Skill(codex-project-probe)' \
+  "$capture_dir/project-skills.args" >/dev/null
+grep -Fx -- 'Skill(codex-added-probe)' \
+  "$capture_dir/project-skills.args" >/dev/null
+grep -Fx -- 'Skill(codex-second-added-probe)' \
+  "$capture_dir/project-skills.args" >/dev/null
+grep -Fx -- 'Skill(test-plugin:codex-plugin-probe)' \
+  "$capture_dir/project-skills.args" >/dev/null
 
 run_headless opus --model opus --setting-sources user,project \
   --permission-mode auto --session-id 11111111-1111-4111-8111-111111111111
 
-rg -Fx -- 'claude-opus-5' "$capture_dir/opus.args" >/dev/null
-rg -Fx -- 'medium' "$capture_dir/opus.args" >/dev/null
-rg -Fx -- 'user,project' "$capture_dir/opus.args" >/dev/null
-rg -Fx -- 'auto' "$capture_dir/opus.args" >/dev/null
-rg -Fx -- '--session-id' "$capture_dir/opus.args" >/dev/null
-rg -Fx -- '11111111-1111-4111-8111-111111111111' "$capture_dir/opus.args" >/dev/null
-if rg -Fx -- '--no-session-persistence' "$capture_dir/opus.args" >/dev/null; then
+grep -Fx -- 'claude-opus-5' "$capture_dir/opus.args" >/dev/null
+grep -Fx -- 'medium' "$capture_dir/opus.args" >/dev/null
+grep -Fx -- 'user,project' "$capture_dir/opus.args" >/dev/null
+grep -Fx -- 'auto' "$capture_dir/opus.args" >/dev/null
+grep -Fx -- '--session-id' "$capture_dir/opus.args" >/dev/null
+grep -Fx -- '11111111-1111-4111-8111-111111111111' "$capture_dir/opus.args" >/dev/null
+if grep -Fx -- '--no-session-persistence' "$capture_dir/opus.args" >/dev/null; then
   echo "persisted run disabled session persistence" >&2
   exit 1
 fi
 
 run_headless resume --resume session-opus
-rg -Fx -- '--resume' "$capture_dir/resume.args" >/dev/null
-rg -Fx -- 'session-opus' "$capture_dir/resume.args" >/dev/null
-if rg -Fx -- '--no-session-persistence' "$capture_dir/resume.args" >/dev/null; then
+grep -Fx -- '--resume' "$capture_dir/resume.args" >/dev/null
+grep -Fx -- 'session-opus' "$capture_dir/resume.args" >/dev/null
+if grep -Fx -- '--no-session-persistence' "$capture_dir/resume.args" >/dev/null; then
   echo "resumed run disabled session persistence" >&2
   exit 1
 fi
 
 run_headless override --model opus --effort high
-rg -Fx -- 'claude-opus-5' "$capture_dir/override.args" >/dev/null
-rg -Fx -- 'high' "$capture_dir/override.args" >/dev/null
+grep -Fx -- 'claude-opus-5' "$capture_dir/override.args" >/dev/null
+grep -Fx -- 'high' "$capture_dir/override.args" >/dev/null
 
 run_headless custom --model claude-sonnet-5
-rg -Fx -- 'claude-sonnet-5' "$capture_dir/custom.args" >/dev/null
-if rg -Fx -- '--effort' "$capture_dir/custom.args" >/dev/null; then
+grep -Fx -- 'claude-sonnet-5' "$capture_dir/custom.args" >/dev/null
+if grep -Fx -- '--effort' "$capture_dir/custom.args" >/dev/null; then
   echo "custom model received an inferred effort" >&2
   exit 1
 fi
@@ -163,7 +201,7 @@ printf 'reserved prompt\n' |
 reserved_status=$?
 set -e
 [[ "$reserved_status" == "2" ]]
-rg -F 'runner-owned Claude option cannot follow --: --safe-mode' \
+grep -F 'runner-owned Claude option cannot follow --: --safe-mode' \
   "$capture_dir/reserved.runner-stderr" >/dev/null
 
 failure_artifacts="$test_root/artifacts-failure"
@@ -180,8 +218,8 @@ printf 'failing prompt\n' |
 failure_status=$?
 set -e
 [[ "$failure_status" == "23" ]]
-rg -F '"status": "failed"' "$failure_artifacts/run.json" >/dev/null
-rg -F 'fake claude failure' "$failure_artifacts/stderr.log" >/dev/null
+grep -F '"status": "failed"' "$failure_artifacts/run.json" >/dev/null
+grep -F 'fake claude failure' "$failure_artifacts/stderr.log" >/dev/null
 
 malformed_artifacts="$test_root/artifacts-malformed"
 set +e
@@ -197,8 +235,8 @@ printf 'malformed prompt\n' |
 malformed_status=$?
 set -e
 [[ "$malformed_status" == "65" ]]
-rg -F '{not json}' "$malformed_artifacts/events.ndjson" >/dev/null
-rg -F '"status": "failed"' "$malformed_artifacts/run.json" >/dev/null
+grep -F '{not json}' "$malformed_artifacts/events.ndjson" >/dev/null
+grep -F '"status": "failed"' "$malformed_artifacts/run.json" >/dev/null
 
 result_error_artifacts="$test_root/artifacts-result-error"
 set +e
@@ -214,8 +252,8 @@ printf 'result error prompt\n' |
 result_error_status=$?
 set -e
 [[ "$result_error_status" == "67" ]]
-rg -F '"status": "failed"' "$result_error_artifacts/run.json" >/dev/null
-rg -F 'Claude result reported error_during_execution' \
+grep -F '"status": "failed"' "$result_error_artifacts/run.json" >/dev/null
+grep -F 'Claude result reported error_during_execution' \
   "$result_error_artifacts/run.json" >/dev/null
 
 PATH="$fake_bin:$PATH" \
@@ -223,9 +261,9 @@ PATH="$fake_bin:$PATH" \
   FAKE_RUN_ID="fable-wrapper" \
   FABLE_API_KEY="test" \
   "$repo_root/bin/fable" < /dev/null >/dev/null 2>/dev/null
-rg -Fx -- 'claude-fable-5' "$capture_dir/fable-wrapper.args" >/dev/null
-rg -Fx -- 'high' "$capture_dir/fable-wrapper.args" >/dev/null
-if rg -F '[1m]' "$capture_dir/fable-wrapper.args" >/dev/null; then
+grep -Fx -- 'claude-fable-5' "$capture_dir/fable-wrapper.args" >/dev/null
+grep -Fx -- 'high' "$capture_dir/fable-wrapper.args" >/dev/null
+if grep -F '[1m]' "$capture_dir/fable-wrapper.args" >/dev/null; then
   echo "fable wrapper forced 1M context" >&2
   exit 1
 fi
@@ -235,9 +273,9 @@ PATH="$fake_bin:$PATH" \
   FAKE_RUN_ID="opus-wrapper" \
   OPUS_API_KEY="test" \
   "$repo_root/bin/opus" < /dev/null >/dev/null 2>/dev/null
-rg -Fx -- 'claude-opus-5' "$capture_dir/opus-wrapper.args" >/dev/null
-rg -Fx -- 'medium' "$capture_dir/opus-wrapper.args" >/dev/null
-if rg -F '[1m]' "$capture_dir/opus-wrapper.args" >/dev/null; then
+grep -Fx -- 'claude-opus-5' "$capture_dir/opus-wrapper.args" >/dev/null
+grep -Fx -- 'medium' "$capture_dir/opus-wrapper.args" >/dev/null
+if grep -F '[1m]' "$capture_dir/opus-wrapper.args" >/dev/null; then
   echo "opus wrapper forced 1M context" >&2
   exit 1
 fi

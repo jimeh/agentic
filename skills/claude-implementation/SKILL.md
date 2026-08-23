@@ -40,6 +40,7 @@ BRANCH="claude/$TASK_SLUG"
 START_TIP="$(git rev-parse HEAD)"
 ARTIFACT_DIR="$(mktemp -d "${TMPDIR:-/tmp}/claude-implementation.XXXXXX")"
 PROMPT="$ARTIFACT_DIR/prompt.md"
+SESSION_ID="$(uuidgen)"
 
 git worktree add -b "$BRANCH" "$WORKTREE_DIR" HEAD
 
@@ -48,6 +49,7 @@ git worktree add -b "$BRANCH" "$WORKTREE_DIR" HEAD
   --model fable \
   --setting-sources user,project \
   --permission-mode auto \
+  --session-id "$SESSION_ID" \
   < "$PROMPT")
 ```
 
@@ -110,6 +112,7 @@ chmod 0600 "$TRAIL"
   --model fable \
   --setting-sources user,project \
   --permission-mode auto \
+  --session-id "$SESSION_ID" \
   -- --add-dir "$ARTIFACT_DIR" \
   < "$PROMPT")
 ```

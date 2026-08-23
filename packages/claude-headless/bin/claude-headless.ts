@@ -7,13 +7,14 @@ import {
   mkdirSync,
   mkdtempSync,
   openSync,
+  readFileSync,
   readdirSync,
   renameSync,
   writeFileSync,
   writeSync,
 } from "node:fs";
 import { homedir, tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 
 type Options = {
   artifactDir?: string;
@@ -232,18 +233,118 @@ function selectModel(requestedModel: string, effort?: string): ModelSelection {
   return { effort, model: requestedModel, requestedModel };
 }
 
-function codexSkillNames(): string[] {
-  const names = new Set(managedCodexSkills);
-  const skillsDir = join(homedir(), ".claude", "skills");
+function optionValues(
+  args: string[],
+  option: string,
+  variadic = false,
+): string[] {
+  const values: string[] = [];
 
-  try {
-    for (const entry of readdirSync(skillsDir, { withFileTypes: true })) {
-      if (entry.name.startsWith("codex-")) {
-        names.add(entry.name);
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+    if (arg.startsWith(`${option}=`)) {
+      values.push(arg.slice(option.length + 1));
+      continue;
+    }
+    if (arg !== option) {
+      continue;
+    }
+
+    while (args[index + 1] && !args[index + 1].startsWith("-")) {
+      values.push(args[index + 1]);
+      index += 1;
+      if (!variadic) {
+        break;
       }
     }
+  }
+
+  return values;
+}
+
+function projectSkillDirs(directory: string): string[] {
+  const skillDirs: string[] = [];
+  let current = resolve(directory);
+
+  while (true) {
+    skillDirs.push(join(current, ".claude", "skills"));
+    const parent = dirname(current);
+    if (parent === current) {
+      return skillDirs;
+    }
+    current = parent;
+  }
+}
+
+function pluginCodexSkillNames(directory: string): string[] {
+  try {
+    const pluginDir = resolve(directory);
+    const manifest = JSON.parse(
+      readFileSync(join(pluginDir, ".claude-plugin", "plugin.json"), "utf8"),
+    ) as { name?: unknown };
+    if (typeof manifest.name !== "string") {
+      return [];
+    }
+
+    const names: string[] = [];
+    for (const entry of readdirSync(join(pluginDir, "skills"), {
+      withFileTypes: true,
+    })) {
+      if (!entry.isDirectory()) {
+        continue;
+      }
+
+      const skillFile = join(pluginDir, "skills", entry.name, "SKILL.md");
+      let skillSource: string;
+      try {
+        skillSource = readFileSync(skillFile, "utf8");
+      } catch {
+        continue;
+      }
+      const frontmatter = skillSource.match(
+        /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/,
+      )?.[1];
+      const declaredName = frontmatter
+        ?.match(/^name:\s*([^\s#]+)\s*$/m)?.[1]
+        ?.replace(/^['"]|['"]$/g, "");
+      const skillName = declaredName || entry.name;
+      if (skillName.startsWith("codex-")) {
+        names.push(`${manifest.name}:${skillName}`);
+      }
+    }
+
+    return names;
   } catch {
-    // The managed names still protect a fresh or partially installed setup.
+    return [];
+  }
+}
+
+function codexSkillNames(passthrough: string[]): string[] {
+  const names = new Set(managedCodexSkills);
+  const skillDirs = [
+    join(homedir(), ".claude", "skills"),
+    ...projectSkillDirs(process.cwd()),
+  ];
+
+  for (const directory of optionValues(passthrough, "--add-dir", true)) {
+    skillDirs.push(...projectSkillDirs(directory));
+  }
+  for (const directory of optionValues(passthrough, "--plugin-dir")) {
+    for (const name of pluginCodexSkillNames(directory)) {
+      names.add(name);
+    }
+  }
+
+  for (const skillsDir of new Set(skillDirs)) {
+    try {
+      for (const entry of readdirSync(skillsDir, { withFileTypes: true })) {
+        if (entry.name.startsWith("codex-")) {
+          names.add(entry.name);
+        }
+      }
+    } catch {
+      // Managed names still protect fresh or partially installed setups.
+    }
   }
 
   return [...names].sort();
@@ -433,7 +534,7 @@ async function main(): Promise<number> {
     `starting ${selection.model}${selection.effort ? ` at ${selection.effort} effort` : ""}`,
   );
 
-  const blockedSkills = codexSkillNames();
+  const blockedSkills = codexSkillNames(options.passthrough);
   const claudeArgs = [
     "claude",
     "-p",
