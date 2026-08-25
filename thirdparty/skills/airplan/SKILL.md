@@ -1,11 +1,12 @@
 ---
 name: airplan
 description: >-
-  Upload agent-produced documents or file collections with airplan and return
-  shareable links. Use when the user explicitly asks for a link to a document,
-  screenshot, recording, or other produced file, or when authorized pull
-  request or issue work explicitly calls for linkable visual evidence. Do not
-  upload merely because an artifact exists or might be convenient.
+  Upload agent-produced documents, document bundles, or file collections with
+  airplan and return shareable links. Use when the user explicitly asks for a
+  link to a document, screenshot, recording, or other produced file, or when
+  authorized pull request or issue work explicitly calls for linkable visual
+  evidence. Do not upload merely because an artifact exists or might be
+  convenient.
 ---
 
 # airplan
@@ -54,13 +55,44 @@ first; use these features when they materially improve clarity:
 Airplan adds light/dark themes, heading navigation, rendered/source views, and
 copy controls automatically.
 
+### Document bundles
+
+Use a document bundle when one entry document provides the primary narrative
+and supporting Markdown, source-code pages, images, recordings, or downloads
+belong with it:
+
+```sh
+airplan --json README.md \
+  docs/design.md \
+  examples/server.go \
+  images/flow.svg \
+  recordings/demo.webm
+```
+
+Run the command from the entry file's project. Every page and asset must remain
+beneath the entry directory, including after resolving symlinks. Airplan adds
+Markdown and UTF-8 source files to built-in navigation and uploads recognized
+opaque resources unchanged. It prefers a root `README.md`, then `index.md`, then
+the first Markdown file as the entry. Use `--entrypoint`, `--page`, or `--asset`
+to override inference. Read `.url`
+for the entry, `.pages[].url` for managed pages, and `.assets[].url` for assets.
+Do not use a bundle for peer evidence files with no primary narrative; use a
+collection instead.
+
+With MCP, use inline `upload_document` for generated text and small assets. Use
+`upload_paths` when the local tool can infer a mixed local file set, or
+`upload_document_files` when explicit document roles are preferable for screenshots,
+recordings, or other files that should not be base64-buffered. Hosted MCP does
+not expose local-file tools. Inline MCP assets have a 32 MiB decoded aggregate
+limit; use the local-file tool or REST for larger assets.
+
 ### Revise an existing document
 
 When the user asks to revise an existing Airplan plan, use the existing link
-as the update target instead of creating an unrelated upload:
+as the revision target instead of creating an unrelated upload:
 
 ```sh
-airplan update --json <airplan-url> plan.md
+airplan new-revision --json <airplan-url> plan.md
 ```
 
 Any surviving URL in the chain is valid; Airplan resolves the latest live
@@ -72,9 +104,13 @@ the resulting revision URL. Byte-identical content is a successful no-op and
 does not consume a revision number. Linked pages expose
 one compact revision selector above the rendered content and server-generated
 adjacent changes. Older pages are visibly labeled with their revision while
-the latest is labeled `(Latest)`. Anyone
+the latest is labeled `(Latest)`. A bundle revision is complete replacement:
+resupply every page and asset that should remain. Anyone
 who can read one linked URL learns the capability URLs for the surviving
-revision history. With MCP, use `update_document`.
+revision history. With MCP, use `new_document_revision` for inline input or
+`new_document_revision_files` when local files are available. The CLI
+`update` name and MCP `update_document` tool remain compatibility names, but
+new workflows should use the revision-named interfaces.
 
 ### Upgrade rendered documents
 
@@ -106,8 +142,10 @@ when uploading a temporary file.
 
 ## Screenshots, recordings, and other files
 
-Upload related evidence in one invocation so it becomes one collection and one
-cleanup unit:
+When a document is the primary narrative, include its supporting evidence in
+the same command and use `--asset` only for ambiguous UTF-8 resources. When the files are peers with no primary
+document, upload related evidence in one invocation so it becomes one
+collection and one cleanup unit:
 
 1. Identify the exact intended files.
 2. Review every screenshot for tokens, usernames, private messages, browser
@@ -127,9 +165,9 @@ airplan --json screenshot.png demo.webm
 # .url          → collection overview URL
 ```
 
-Multiple named files automatically form a collection. A single recognized
-media or binary file does too. Use `--files` to upload one text-like file
-unchanged instead of rendering it as a document.
+Multiple named files without Markdown or HTML automatically form a collection.
+A single recognized media or binary file does too. Use `--collection` to force
+any named set into a collection. `--files` remains a compatibility alias.
 
 For a substantial recording, supply a longer explicit timeout such as
 `--timeout 2m`; do not inspect configuration or credentials to discover the

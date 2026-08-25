@@ -64,6 +64,10 @@
           "path": "skills/engineering/domain-modeling"
         },
         {
+          "name": "grill-with-docs",
+          "path": "skills/engineering/grill-with-docs"
+        },
+        {
           "name": "grilling",
           "path": "skills/productivity/grilling"
         },
