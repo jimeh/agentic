@@ -156,6 +156,11 @@ Prefer `rg` (ripgrep) over `grep` for all content searches — it's faster and
 handles recursive search, glob filtering, and file type filtering in a single
 approvable command.
 
+In zsh, lowercase `path` is a special array tied to `$PATH`. Never assign to
+`path` as a shell variable or use it as a shell loop or read variable; use a
+task-specific name such as `file_path`, `marker_path`, or `target_path`.
+Declaring `local path` still changes `$PATH` inside that function.
+
 Use RTK for eligible leaf commands when it is available. Prefix a command with
 `rtk` only when it does not read from stdin or participate in shell data flow,
 and its output is intended for direct inspection. Run commands without RTK for
