@@ -19,6 +19,7 @@ symlinks = [
   { source = "packages/claude-headless/bin/claude-headless.ts", target = "~/.local/bin/claude-headless", relinkFrom = [
     "packages/agent-config/bin/claude-headless.ts",
   ] },
+  { source = "packages/codex-headless/bin/codex-headless.ts", target = "~/.local/bin/codex-headless" },
 ]
 
 staleSymlinkCleanup = [

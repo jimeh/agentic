@@ -1,8 +1,8 @@
 {
-  "name": "@jimeh/claude-headless",
+  "name": "@jimeh/codex-headless",
   "private": true,
   "bin": {
-    "claude-headless": "./bin/claude-headless.ts"
+    "codex-headless": "./bin/codex-headless.ts"
   },
   "scripts": {
     "test": "./tests/headless-runner.test.sh"

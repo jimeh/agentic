@@ -1,19 +1,17 @@
 #!/usr/bin/env bun
 
 import {
-  chmodSync,
-  closeSync,
-  existsSync,
-  mkdirSync,
-  mkdtempSync,
-  openSync,
-  readFileSync,
-  readdirSync,
-  renameSync,
-  writeFileSync,
-  writeSync,
-} from "node:fs";
-import { homedir, tmpdir } from "node:os";
+  optionValues,
+  parseHeartbeatSeconds,
+  rejectReserved,
+  runHeadless,
+  splitPassthrough,
+  takeValue,
+  usageExit,
+} from "@jimeh/agent-headless";
+import type { EventContext } from "@jimeh/agent-headless";
+import { readdirSync, readFileSync } from "node:fs";
+import { homedir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 
 type Options = {
@@ -34,35 +32,6 @@ type ModelSelection = {
   requestedModel: string;
 };
 
-type RunMetadata = {
-  actualModels: string[];
-  artifactDir: string;
-  cwd: string;
-  effectiveEffort?: string;
-  effectiveModel: string;
-  endedAt?: string;
-  error?: string;
-  exitCode?: number;
-  malformedEvents: number;
-  permissionMode: string;
-  pid?: number;
-  requestedEffort?: string;
-  requestedModel: string;
-  schemaVersion: 1;
-  sessionId?: string;
-  settingSources: string;
-  startedAt: string;
-  status: "failed" | "interrupted" | "running" | "succeeded";
-};
-
-const managedFiles = [
-  "events.ndjson",
-  "progress.log",
-  "result.md",
-  "run.json",
-  "stderr.log",
-];
-
 const managedCodexSkills = [
   "codex-analysis",
   "codex-computer-use",
@@ -71,9 +40,34 @@ const managedCodexSkills = [
   "codex-review",
 ];
 
+const reservedClaudeOptions = new Set([
+  "-c",
+  "-p",
+  "-r",
+  "--allow-dangerously-skip-permissions",
+  "--bare",
+  "--cloud",
+  "--continue",
+  "--dangerously-skip-permissions",
+  "--disable-slash-commands",
+  "--disallowed-tools",
+  "--print",
+  "--effort",
+  "--input-format",
+  "--model",
+  "--no-session-persistence",
+  "--output-format",
+  "--permission-mode",
+  "--resume",
+  "--safe-mode",
+  "--session-id",
+  "--settings",
+  "--setting-sources",
+  "--verbose",
+]);
+
 function usage(exitCode = 2): never {
-  const output = exitCode === 0 ? process.stdout : process.stderr;
-  output.write(
+  usageExit(
     [
       "Usage: claude-headless [options] [-- <extra claude arguments>]",
       "",
@@ -90,36 +84,23 @@ function usage(exitCode = 2): never {
       "",
       "The prompt is read from stdin. The artifact path and concise progress are",
       "written to stderr. The raw stream is written only to events.ndjson.",
-      "",
-    ].join("\n"),
+    ],
+    exitCode,
   );
-  process.exit(exitCode);
 }
 
-function takeValue(args: string[], index: number, option: string): string {
-  const value = args[index + 1];
-  if (!value || value.startsWith("--")) {
-    throw new Error(`${option} requires a value`);
-  }
-  return value;
-}
-
-function parseArgs(args: string[]): Options {
+function parseArgs(argv: string[]): Options {
+  const { own, passthrough } = splitPassthrough(argv);
   const options: Options = {
     heartbeatSeconds: 30,
     model: "fable",
-    passthrough: [],
+    passthrough,
     permissionMode: "plan",
     settingSources: "user",
   };
 
-  for (let index = 0; index < args.length; index += 1) {
-    const arg = args[index];
-
-    if (arg === "--") {
-      options.passthrough = args.slice(index + 1);
-      break;
-    }
+  for (let index = 0; index < own.length; index += 1) {
+    const arg = own[index];
 
     if (arg === "--help" || arg === "-h") {
       usage(0);
@@ -136,19 +117,16 @@ function parseArgs(args: string[]): Options {
     };
     const key = valueOptions[arg];
     if (key) {
-      const value = takeValue(args, index, arg);
+      const value = takeValue(own, index, arg);
       (options[key] as string | undefined) = value;
       index += 1;
       continue;
     }
 
     if (arg === "--heartbeat-seconds") {
-      const value = takeValue(args, index, arg);
-      const seconds = Number(value);
-      if (!Number.isFinite(seconds) || seconds <= 0) {
-        throw new Error("--heartbeat-seconds must be greater than zero");
-      }
-      options.heartbeatSeconds = seconds;
+      options.heartbeatSeconds = parseHeartbeatSeconds(
+        takeValue(own, index, arg),
+      );
       index += 1;
       continue;
     }
@@ -160,37 +138,7 @@ function parseArgs(args: string[]): Options {
     throw new Error("--resume and --session-id cannot be used together");
   }
 
-  const reserved = new Set([
-    "-c",
-    "-p",
-    "-r",
-    "--allow-dangerously-skip-permissions",
-    "--bare",
-    "--cloud",
-    "--continue",
-    "--dangerously-skip-permissions",
-    "--disable-slash-commands",
-    "--disallowed-tools",
-    "--print",
-    "--effort",
-    "--input-format",
-    "--model",
-    "--no-session-persistence",
-    "--output-format",
-    "--permission-mode",
-    "--resume",
-    "--safe-mode",
-    "--session-id",
-    "--settings",
-    "--setting-sources",
-    "--verbose",
-  ]);
-  for (const arg of options.passthrough) {
-    const name = arg.includes("=") ? arg.slice(0, arg.indexOf("=")) : arg;
-    if (reserved.has(name)) {
-      throw new Error(`runner-owned Claude option cannot follow --: ${name}`);
-    }
-  }
+  rejectReserved(passthrough, reservedClaudeOptions, "Claude");
 
   return options;
 }
@@ -221,35 +169,6 @@ function selectModel(requestedModel: string, effort?: string): ModelSelection {
     model: known.model,
     requestedModel,
   };
-}
-
-function optionValues(
-  args: string[],
-  option: string,
-  variadic = false,
-): string[] {
-  const values: string[] = [];
-
-  for (let index = 0; index < args.length; index += 1) {
-    const arg = args[index];
-    if (arg.startsWith(`${option}=`)) {
-      values.push(arg.slice(option.length + 1));
-      continue;
-    }
-    if (arg !== option) {
-      continue;
-    }
-
-    while (args[index + 1] && !args[index + 1].startsWith("-")) {
-      values.push(args[index + 1]);
-      index += 1;
-      if (!variadic) {
-        break;
-      }
-    }
-  }
-
-  return values;
 }
 
 function projectSkillDirs(directory: string): string[] {
@@ -340,39 +259,6 @@ function codexSkillNames(passthrough: string[]): string[] {
   return [...names].sort();
 }
 
-function createArtifactDir(requested?: string): string {
-  const artifactDir = requested
-    ? resolve(requested)
-    : mkdtempSync(join(tmpdir(), "claude-headless."));
-
-  mkdirSync(artifactDir, { mode: 0o700, recursive: true });
-  chmodSync(artifactDir, 0o700);
-
-  for (const filename of managedFiles) {
-    const path = join(artifactDir, filename);
-    if (existsSync(path)) {
-      throw new Error(`refusing to overwrite managed artifact: ${path}`);
-    }
-  }
-
-  return artifactDir;
-}
-
-function createPrivateFile(path: string): number {
-  const descriptor = openSync(path, "wx", 0o600);
-  chmodSync(path, 0o600);
-  return descriptor;
-}
-
-function writeMetadata(path: string, metadata: RunMetadata): void {
-  const temporary = `${path}.tmp`;
-  writeFileSync(temporary, `${JSON.stringify(metadata, null, 2)}\n`, {
-    mode: 0o600,
-  });
-  chmodSync(temporary, 0o600);
-  renameSync(temporary, path);
-}
-
 function contentBlocks(event: Record<string, unknown>): unknown[] {
   const message = event.message;
   if (!message || typeof message !== "object") {
@@ -441,24 +327,6 @@ function describeEvent(event: Record<string, unknown>): string[] {
   return [];
 }
 
-async function drainStream(
-  stream: ReadableStream<Uint8Array>,
-  descriptor: number,
-): Promise<void> {
-  const reader = stream.getReader();
-  try {
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) {
-        return;
-      }
-      writeSync(descriptor, value);
-    }
-  } finally {
-    reader.releaseLock();
-  }
-}
-
 async function main(): Promise<number> {
   let options: Options;
   try {
@@ -470,60 +338,6 @@ async function main(): Promise<number> {
   }
 
   const selection = selectModel(options.model, options.effort);
-  let artifactDir: string;
-  try {
-    artifactDir = createArtifactDir(options.artifactDir);
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    process.stderr.write(`claude-headless: ${message}\n`);
-    return 2;
-  }
-
-  const eventsPath = join(artifactDir, "events.ndjson");
-  const progressPath = join(artifactDir, "progress.log");
-  const resultPath = join(artifactDir, "result.md");
-  const runPath = join(artifactDir, "run.json");
-  const stderrPath = join(artifactDir, "stderr.log");
-  const eventsDescriptor = createPrivateFile(eventsPath);
-  const progressDescriptor = createPrivateFile(progressPath);
-  const stderrDescriptor = createPrivateFile(stderrPath);
-  closeSync(createPrivateFile(resultPath));
-
-  const metadata: RunMetadata = {
-    actualModels: [],
-    artifactDir,
-    cwd: process.cwd(),
-    effectiveEffort: selection.effort,
-    effectiveModel: selection.model,
-    malformedEvents: 0,
-    permissionMode: options.permissionMode,
-    requestedEffort: options.effort,
-    requestedModel: selection.requestedModel,
-    schemaVersion: 1,
-    settingSources: options.settingSources,
-    startedAt: new Date().toISOString(),
-    status: "running",
-  };
-
-  process.stderr.write(`claude-headless: artifacts: ${artifactDir}\n`);
-
-  let lastProgressAt = Date.now();
-  let lastProgress = "starting Claude";
-  const progress = (message: string, activity = true): void => {
-    const timestamp = new Date().toISOString();
-    const line = `${timestamp}\t${message}\n`;
-    writeSync(progressDescriptor, line);
-    process.stderr.write(`claude-headless: ${message}\n`);
-    if (activity) {
-      lastProgressAt = Date.now();
-      lastProgress = message;
-    }
-  };
-
-  progress(
-    `starting ${selection.model}${selection.effort ? ` at ${selection.effort} effort` : ""}`,
-  );
-
   const blockedSkills = codexSkillNames(options.passthrough);
   const claudeArgs = [
     "claude",
@@ -558,82 +372,33 @@ async function main(): Promise<number> {
   }
   claudeArgs.push(...options.passthrough);
 
-  let child: ReturnType<typeof Bun.spawn>;
-  try {
-    child = Bun.spawn(claudeArgs, {
-      stderr: "pipe",
-      stdin: "inherit",
-      stdout: "pipe",
-    });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    metadata.endedAt = new Date().toISOString();
-    metadata.error = message;
-    metadata.exitCode = 127;
-    metadata.status = "failed";
-    writeMetadata(runPath, metadata);
-    progress(`failed to start Claude: ${message}`);
-    closeSync(eventsDescriptor);
-    closeSync(progressDescriptor);
-    closeSync(stderrDescriptor);
-    return 127;
-  }
-
-  metadata.pid = child.pid;
-  writeMetadata(runPath, metadata);
-  const childStdout = child.stdout as ReadableStream<Uint8Array>;
-  const childStderr = child.stderr as ReadableStream<Uint8Array>;
-
-  let interruptedSignal: NodeJS.Signals | undefined;
-  const forwardSignal = (signal: NodeJS.Signals): void => {
-    interruptedSignal = signal;
-    progress(`forwarding ${signal} to Claude`);
-    child.kill(signal);
-  };
-  const sigint = (): void => forwardSignal("SIGINT");
-  const sigterm = (): void => forwardSignal("SIGTERM");
-  process.on("SIGINT", sigint);
-  process.on("SIGTERM", sigterm);
-
-  const heartbeat = setInterval(() => {
-    const quietFor = Date.now() - lastProgressAt;
-    if (quietFor >= options.heartbeatSeconds * 1000) {
-      progress(`still running; last update: ${lastProgress}`, false);
-    }
-  }, options.heartbeatSeconds * 1000);
-
-  let buffer = "";
-  let resultError: string | undefined;
-  let resultText: string | undefined;
   const actualModels = new Set<string>();
-  const decoder = new TextDecoder();
+  const metadata: Record<string, unknown> = {
+    actualModels: [],
+    effectiveEffort: selection.effort,
+    effectiveModel: selection.model,
+    permissionMode: options.permissionMode,
+    requestedEffort: options.effort,
+    requestedModel: selection.requestedModel,
+    settingSources: options.settingSources,
+  };
 
-  const handleLine = (line: string): void => {
-    if (line.trim().length === 0) {
-      return;
-    }
-
-    let event: Record<string, unknown>;
-    try {
-      event = JSON.parse(line) as Record<string, unknown>;
-    } catch {
-      metadata.malformedEvents += 1;
-      progress("received malformed JSON event");
-      return;
-    }
-
+  const onEvent = (
+    event: Record<string, unknown>,
+    context: EventContext,
+  ): string[] => {
     if (event.type === "system" && event.subtype === "init") {
       if (typeof event.session_id === "string") {
-        metadata.sessionId = event.session_id;
+        context.setSessionId(event.session_id);
       }
     }
 
     if (event.type === "result") {
       if (typeof event.result === "string") {
-        resultText = event.result;
+        context.setResult(event.result);
       }
       if (typeof event.session_id === "string") {
-        metadata.sessionId = event.session_id;
+        context.setSessionId(event.session_id);
       }
       if (event.modelUsage && typeof event.modelUsage === "object") {
         for (const model of Object.keys(event.modelUsage)) {
@@ -646,94 +411,27 @@ async function main(): Promise<number> {
       ) {
         const subtype =
           typeof event.subtype === "string" ? event.subtype : "error";
-        resultError = `Claude result reported ${subtype}`;
+        context.setResultError(`Claude result reported ${subtype}`);
       }
     }
 
-    for (const message of describeEvent(event)) {
-      progress(message);
-    }
+    return describeEvent(event);
   };
 
-  const stdoutPromise = (async (): Promise<void> => {
-    const reader = childStdout.getReader();
-    try {
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) {
-          break;
-        }
-        writeSync(eventsDescriptor, value);
-        buffer += decoder.decode(value, { stream: true });
-        while (true) {
-          const newline = buffer.indexOf("\n");
-          if (newline < 0) {
-            break;
-          }
-          const line = buffer.slice(0, newline).replace(/\r$/, "");
-          buffer = buffer.slice(newline + 1);
-          handleLine(line);
-        }
-      }
-      buffer += decoder.decode();
-      if (buffer.length > 0) {
-        handleLine(buffer.replace(/\r$/, ""));
-      }
-    } finally {
-      reader.releaseLock();
-    }
-  })();
-  const stderrPromise = drainStream(childStderr, stderrDescriptor);
-
-  const childExitCode = await child.exited;
-  await Promise.all([stdoutPromise, stderrPromise]);
-  clearInterval(heartbeat);
-  process.off("SIGINT", sigint);
-  process.off("SIGTERM", sigterm);
-
-  metadata.actualModels = [...actualModels].sort();
-  metadata.endedAt = new Date().toISOString();
-
-  let exitCode = childExitCode;
-  if (interruptedSignal) {
-    exitCode = interruptedSignal === "SIGINT" ? 130 : 143;
-    metadata.error = `interrupted by ${interruptedSignal}`;
-    metadata.status = "interrupted";
-  } else if (childExitCode !== 0) {
-    metadata.error = `Claude exited with status ${childExitCode}`;
-    metadata.status = "failed";
-  } else if (metadata.malformedEvents > 0) {
-    exitCode = 65;
-    metadata.error = `received ${metadata.malformedEvents} malformed JSON event(s)`;
-    metadata.status = "failed";
-  } else if (resultError) {
-    exitCode = 67;
-    metadata.error = resultError;
-    metadata.status = "failed";
-  } else if (!resultText || resultText.trim().length === 0) {
-    exitCode = 66;
-    metadata.error = "Claude stream ended without a nonempty result event";
-    metadata.status = "failed";
-  } else {
-    writeFileSync(resultPath, `${resultText.replace(/\n$/, "")}\n`, {
-      mode: 0o600,
-    });
-    chmodSync(resultPath, 0o600);
-    metadata.status = "succeeded";
-  }
-
-  metadata.exitCode = exitCode;
-  writeMetadata(runPath, metadata);
-  progress(
-    metadata.status === "succeeded"
-      ? `result saved to ${resultPath}`
-      : `${metadata.status}: ${metadata.error}`,
-  );
-
-  closeSync(eventsDescriptor);
-  closeSync(progressDescriptor);
-  closeSync(stderrDescriptor);
-  return exitCode;
+  return runHeadless({
+    agent: "claude-headless",
+    artifactDir: options.artifactDir,
+    command: () => claudeArgs,
+    displayName: "Claude",
+    emptyResultError: "Claude stream ended without a nonempty result event",
+    finalize: () => {
+      metadata.actualModels = [...actualModels].sort();
+    },
+    heartbeatSeconds: options.heartbeatSeconds,
+    metadata,
+    onEvent,
+    startMessage: `starting ${selection.model}${selection.effort ? ` at ${selection.effort} effort` : ""}`,
+  });
 }
 
 process.exit(await main());

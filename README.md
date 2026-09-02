@@ -73,8 +73,12 @@ mise run hooks:install
 - **`packages/agent-rules/`** — Global rule renderer and drift checker.
 - **`packages/agent-harness/`** — Agent metadata checks and executable skill and
   plugin test runner.
+- **`packages/agent-headless/`** — Shared core for the streamed headless CLI
+  runners: artifacts, stream handling, progress, and exit policy.
 - **`packages/claude-headless/`** — Streamed Claude CLI runner with private run
   artifacts and package-owned integration tests.
+- **`packages/codex-headless/`** — Streamed Codex CLI runner with the same
+  artifact layout, sandbox and session handling, and integration tests.
 - **`packages/vendor-skills/`** — Reviewed third-party skill intake and update
   tooling.
 - **`docs/references/`** — External articles and guides.
@@ -130,6 +134,7 @@ mise run test
 mise run test:plugins
 mise run test:skills
 mise run test:claude-headless
+mise run test:codex-headless
 ```
 
 Format Markdown and TypeScript with:

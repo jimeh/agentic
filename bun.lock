@@ -26,6 +26,9 @@
         "gray-matter": "^4.0.3",
       },
     },
+    "packages/agent-headless": {
+      "name": "@jimeh/agent-headless",
+    },
     "packages/agent-rules": {
       "name": "@jimeh/agent-rules",
       "dependencies": {
@@ -36,6 +39,18 @@
       "name": "@jimeh/claude-headless",
       "bin": {
         "claude-headless": "./bin/claude-headless.ts",
+      },
+      "dependencies": {
+        "@jimeh/agent-headless": "workspace:*",
+      },
+    },
+    "packages/codex-headless": {
+      "name": "@jimeh/codex-headless",
+      "bin": {
+        "codex-headless": "./bin/codex-headless.ts",
+      },
+      "dependencies": {
+        "@jimeh/agent-headless": "workspace:*",
       },
     },
     "packages/vendor-skills": {
@@ -58,9 +73,13 @@
 
     "@jimeh/agent-harness": ["@jimeh/agent-harness@workspace:packages/agent-harness"],
 
+    "@jimeh/agent-headless": ["@jimeh/agent-headless@workspace:packages/agent-headless"],
+
     "@jimeh/agent-rules": ["@jimeh/agent-rules@workspace:packages/agent-rules"],
 
     "@jimeh/claude-headless": ["@jimeh/claude-headless@workspace:packages/claude-headless"],
+
+    "@jimeh/codex-headless": ["@jimeh/codex-headless@workspace:packages/codex-headless"],
 
     "@jimeh/vendor-skills": ["@jimeh/vendor-skills@workspace:packages/vendor-skills"],
 

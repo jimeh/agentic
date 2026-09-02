@@ -21,7 +21,8 @@ multi-file searches. Use `claude-review` for code review and
 2. Verify the current directory with `pwd`.
 3. Create a private temporary artifact directory and write the prompt there.
 4. Run `claude-headless` in plan mode with user settings.
-5. Read `result.md`, then spot-check consequential claims against the source.
+5. Confirm the run succeeded, read `result.md`, then spot-check consequential
+   claims against the source.
 6. Report the answer, evidence, uncertainty, and useful next step.
 
 ## Invocation
@@ -50,9 +51,27 @@ The runner writes raw events to `events.ndjson`, concise progress to
 answer to `result.md`, and run state to `run.json`. Read the small files first;
 inspect the raw stream only when diagnosing transport or model behavior.
 
-For a focused follow-up, create a new artifact directory and pass
-`--resume "$SESSION_ID"` instead of `--session-id`. Start fresh when the target
-or question materially changes.
+Treat the run as failed unless the runner exited 0 and `run.json` reports
+`"status": "succeeded"`; only then read `result.md`. Exit 65 means the stream
+carried malformed events, 66 means Claude produced no result, and 67 means
+Claude reported an error result; `run.json` and `progress.log` hold the message
+in each case. Retry at most once after diagnosing a transient failure.
+
+For a focused follow-up, create a new artifact directory and prompt file and
+pass `--resume "$SESSION_ID"` instead of `--session-id`, keeping the original
+model and effort. Start fresh when the target or question materially changes.
+
+```bash
+NEXT_ARTIFACT_DIR="$(mktemp -d "${TMPDIR:-/tmp}/claude-analysis.XXXXXX")"
+NEXT_PROMPT="$NEXT_ARTIFACT_DIR/prompt.md"
+
+claude-headless \
+  --artifact-dir "$NEXT_ARTIFACT_DIR" \
+  --setting-sources user \
+  --permission-mode plan \
+  --resume "$SESSION_ID" \
+  < "$NEXT_PROMPT"
+```
 
 ## Prompt contract
 
@@ -83,8 +102,7 @@ decision trail.
   stall evidence.
 - Do not impose a hard timeout unless the caller supplies one. Use a 60-minute
   checkpoint at minimum, and prefer 90 minutes for a large target.
-- An empty result, malformed stream, or nonzero exit is a failed delegation.
-  Inspect `run.json` and `stderr.log`; retry at most once after diagnosing a
-  transient failure.
+- A failed run is one the status check above rejects. Inspect `run.json` and
+  `stderr.log` before any retry.
 - Remove the artifact directory after consuming it unless the user asked to
   inspect the files.

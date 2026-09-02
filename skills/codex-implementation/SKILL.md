@@ -54,9 +54,10 @@ Bad candidates:
    and verification.
 3. Use an isolated worktree for non-trivial edits, risky edits, or parallel
    work.
-4. Create a temporary artifact directory for the prompt and report.
+4. Create a temporary artifact directory for the prompt and run artifacts.
 5. Write a concise prompt.
-6. Run `codex exec` with workspace write access in the intended checkout.
+6. Run `codex-headless` with a workspace-write sandbox from the intended
+   checkout.
 7. Inspect `git status`, `git diff`, and the diff since the recorded starting
    tip. Codex may have committed on its own, which leaves the first two empty
    while the branch has moved.
@@ -95,7 +96,6 @@ Prepare artifacts:
 ```bash
 ARTIFACT_DIR="$(mktemp -d "${TMPDIR:-/tmp}/codex-implementation.XXXXXX")"
 PROMPT="$ARTIFACT_DIR/prompt.md"
-REPORT="$ARTIFACT_DIR/report.md"
 ```
 
 Create a throwaway worktree from the current `HEAD`:
@@ -116,21 +116,33 @@ left it — working tree, commits, or both.
 Run Codex in that worktree:
 
 ```bash
-codex exec \
-  -C "$WORKTREE_DIR" \
-  --add-dir "$ARTIFACT_DIR" \
-  -s workspace-write \
-  -o "$REPORT" \
-  - < "$PROMPT"
+(cd "$WORKTREE_DIR" && codex-headless \
+  --artifact-dir "$ARTIFACT_DIR" \
+  --sandbox workspace-write \
+  -- --add-dir "$ARTIFACT_DIR" \
+  < "$PROMPT")
 ```
 
-Run notes, for any `codex exec` invocation in this skill:
+The runner always runs Codex from the current directory, so `cd` into the target
+checkout. Codex options such as `--add-dir` go after `--`; the runner owns the
+sandbox, model, effort, session, and output flags.
 
-- Append `2>/dev/null` to suppress Codex's progress noise on stderr; drop it
-  only to debug a failing run. The `-o` report file holds the result.
-- For long tasks, run in the background and read the `-o` report when the run
-  exits. Do not kill quiet runs prematurely; long silences are normal.
-- Parallel independent tasks are fine: separate worktrees, separate `-o` files.
+The runner writes raw events to `events.ndjson`, concise progress to
+`progress.log` and stderr, Codex diagnostics to `stderr.log`, the final report
+to `result.md`, and run state including the session ID to `run.json`. For long
+tasks, run in the background and tail `progress.log` for liveness; read
+`result.md` and `run.json` when the run exits, and open `events.ndjson` only to
+diagnose transport or model behavior. Do not kill quiet runs prematurely; the
+heartbeat line confirms the process is alive.
+
+Treat the run as failed unless the runner exited 0 and `run.json` reports
+`"status": "succeeded"`; only then read `result.md`. Exit 65 means the stream
+carried malformed events, 66 means Codex produced no result, and 67 means Codex
+reported a failed turn; `run.json` and `progress.log` hold the message in each
+case. Retry at most once after diagnosing a transient failure.
+
+Parallel independent tasks are fine: separate worktrees, separate artifact
+directories.
 
 After Codex finishes, inspect the result from the worktree:
 
@@ -228,30 +240,36 @@ open.
 Use this only for small, low-risk edits:
 
 ```bash
-codex exec \
-  -C "$PWD" \
-  --add-dir "$ARTIFACT_DIR" \
-  -s workspace-write \
-  -o "$REPORT" \
-  - < "$PROMPT"
+codex-headless \
+  --artifact-dir "$ARTIFACT_DIR" \
+  --sandbox workspace-write \
+  -- --add-dir "$ARTIFACT_DIR" \
+  < "$PROMPT"
 ```
 
-Use `danger-full-access` only when the implementation truly needs machine-level
-access such as simulator control, app automation, package-manager global state,
-or files outside the workspace.
+Use `--sandbox danger-full-access` only when the implementation truly needs
+machine-level access such as simulator control, app automation, package-manager
+global state, or files outside the workspace.
 
 ## Iteration
 
 Follow-up fixes are cheaper through the same Codex session than a fresh
-zero-context run, and keep the context Codex already built. `codex exec resume`
-accepts `-o` and `-c` config overrides but not `-C` or `-s`, so run it from the
-target checkout and set the sandbox through config:
+zero-context run, and keep the context Codex already built. Read the session ID
+from the previous successful run's `run.json` (the `jq -e` form fails instead of
+yielding `null` when the field is missing), write the follow-up prompt to a
+fresh file, and resume with a fresh artifact directory:
 
 ```bash
-(cd "$WORKTREE_DIR" && codex exec resume --last \
-  -c sandbox_mode="workspace-write" \
-  -o "$REPORT" \
-  - < "$PROMPT")
+SESSION_ID="$(jq -er '.sessionId | select(type == "string" and length > 0)' \
+  "$ARTIFACT_DIR/run.json")"
+NEXT_ARTIFACT_DIR="$(mktemp -d "${TMPDIR:-/tmp}/codex-implementation.XXXXXX")"
+NEXT_PROMPT="$NEXT_ARTIFACT_DIR/prompt.md"
+
+(cd "$WORKTREE_DIR" && codex-headless \
+  --artifact-dir "$NEXT_ARTIFACT_DIR" \
+  --sandbox workspace-write \
+  --resume "$SESSION_ID" \
+  < "$NEXT_PROMPT")
 ```
 
 When a previous round was already integrated into the destination, start the
@@ -270,10 +288,9 @@ Do not reset before a round whose predecessor has not been integrated; the
 target would still be the pre-implementation tip, and the reset would discard
 the work being corrected.
 
-Write the follow-up prompt to a fresh file first; state only what is wrong and
-what proof is expected. With parallel Codex runs in flight, resume by session id
-instead of `--last`. If two resume rounds fail to fix the problem, stop
-delegating and make the fix directly.
+The follow-up prompt states only what is wrong, the revision boundary, and what
+proof is expected. If two resume rounds fail to fix the problem, stop delegating
+and make the fix directly.
 
 ## Prompting Strategy
 

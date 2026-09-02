@@ -23,8 +23,9 @@ work in Codex until they are resolved.
 4. Create a private artifact directory and write a concise prompt.
 5. Run `claude-headless` from the intended checkout with write-capable Claude
    permissions.
-6. Inspect status, the working-tree diff, and every commit since the recorded
-   starting tip. Claude may have committed despite the prompt.
+6. Confirm the run succeeded, then inspect status, the working-tree diff, and
+   every commit since the recorded starting tip. Claude may have committed
+   despite the prompt.
 7. Run focused verification yourself and review the complete result.
 8. Integrate or deliver only within the user's existing authorization.
 
@@ -60,6 +61,17 @@ Never use `--safe-mode`, `--bare`, or bypass-permissions mode.
 Fable 5.1 at high effort is the default. `--model opus` pins Opus 5 at medium
 effort. Explicit user model or effort instructions win. Do not force a context
 size.
+
+The runner writes raw events to `events.ndjson`, concise progress to
+`progress.log` and stderr, Claude diagnostics to `stderr.log`, the final report
+to `result.md`, and run state to `run.json`. For long tasks, run in the
+background and tail `progress.log` for liveness.
+
+Treat the run as failed unless the runner exited 0 and `run.json` reports
+`"status": "succeeded"`; only then read `result.md`. Exit 65 means the stream
+carried malformed events, 66 means Claude produced no result, and 67 means
+Claude reported an error result; `run.json` and `progress.log` hold the message
+in each case. Retry at most once after diagnosing a transient failure.
 
 For a small low-risk edit, run the same command from the current checkout after
 confirming that this will not overlap unrelated user changes.
@@ -140,20 +152,23 @@ Account for every path and inspect both committed and uncommitted changes. Run
 focused checks yourself. Do not send Claude-authored work back to
 `claude-review`; Codex is the cross-engine reviewer here.
 
-When correction is useful, start a fresh artifact directory and resume the
-recorded session ID:
+When correction is useful, write the follow-up prompt to a fresh file, start a
+fresh artifact directory, and resume the recorded session ID:
 
 ```bash
+NEXT_ARTIFACT_DIR="$(mktemp -d "${TMPDIR:-/tmp}/claude-implementation.XXXXXX")"
+NEXT_PROMPT="$NEXT_ARTIFACT_DIR/prompt.md"
+
 (cd "$WORKTREE_DIR" && claude-headless \
   --artifact-dir "$NEXT_ARTIFACT_DIR" \
-  --model fable \
   --setting-sources user,project \
   --permission-mode auto \
   --resume "$SESSION_ID" \
   < "$NEXT_PROMPT")
 ```
 
-Use the original model and effort unless the user overrides them. Give the
+The block above relies on the runner default model; add `--model` and `--effort`
+only to repeat what the initial run used when it overrode that default. Give the
 resumed session only the correction, revision boundary, and proof expected. If
 two correction rounds fail, stop delegating.
 
