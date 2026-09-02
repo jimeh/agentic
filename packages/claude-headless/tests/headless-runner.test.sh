@@ -81,7 +81,7 @@ run_headless default
 grep -Fx -- '--model' "$capture_dir/default.args" >/dev/null
 grep -Fx -- 'claude-fable-5-1' "$capture_dir/default.args" >/dev/null
 grep -Fx -- '--effort' "$capture_dir/default.args" >/dev/null
-grep -Fx -- 'medium' "$capture_dir/default.args" >/dev/null
+grep -Fx -- 'high' "$capture_dir/default.args" >/dev/null
 grep -Fx -- '--setting-sources' "$capture_dir/default.args" >/dev/null
 grep -Fx -- 'user' "$capture_dir/default.args" >/dev/null
 grep -Fx -- '--permission-mode' "$capture_dir/default.args" >/dev/null
@@ -266,7 +266,7 @@ PATH="$fake_bin:$PATH" \
   FABLE_API_KEY="test" \
   "$repo_root/bin/fable" < /dev/null >/dev/null 2>/dev/null
 grep -Fx -- 'claude-fable-5-1' "$capture_dir/fable-wrapper.args" >/dev/null
-grep -Fx -- 'medium' "$capture_dir/fable-wrapper.args" >/dev/null
+grep -Fx -- 'high' "$capture_dir/fable-wrapper.args" >/dev/null
 if grep -F '[1m]' "$capture_dir/fable-wrapper.args" >/dev/null; then
   echo "fable wrapper forced 1M context" >&2
   exit 1

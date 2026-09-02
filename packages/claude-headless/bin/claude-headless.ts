@@ -198,10 +198,10 @@ function parseArgs(args: string[]): Options {
 // Friendly names and full IDs the runner routes explicitly. Claude CLI's own
 // `fable` alias may lag behind the newest release, so the mapping stays here.
 const KNOWN_MODELS: Record<string, { effort: string; model: string }> = {
-  "claude-fable-5-1": { effort: "medium", model: "claude-fable-5-1" },
+  "claude-fable-5-1": { effort: "high", model: "claude-fable-5-1" },
   "claude-opus-5": { effort: "medium", model: "claude-opus-5" },
-  fable: { effort: "medium", model: "claude-fable-5-1" },
-  "fable-5-1": { effort: "medium", model: "claude-fable-5-1" },
+  fable: { effort: "high", model: "claude-fable-5-1" },
+  "fable-5-1": { effort: "high", model: "claude-fable-5-1" },
   opus: { effort: "medium", model: "claude-opus-5" },
   "opus-5": { effort: "medium", model: "claude-opus-5" },
 };

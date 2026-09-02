@@ -57,7 +57,7 @@ Use `user,project` only for a trusted checkout where project guidance helps. Use
 `--setting-sources user` otherwise. Do not load `local` settings by default.
 Never use `--safe-mode`, `--bare`, or bypass-permissions mode.
 
-Fable 5.1 at medium effort is the default. `--model opus` pins Opus 5 at medium
+Fable 5.1 at high effort is the default. `--model opus` pins Opus 5 at medium
 effort. Explicit user model or effort instructions win. Do not force a context
 size.
 
