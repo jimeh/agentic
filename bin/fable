@@ -2,7 +2,7 @@
 
 set -o pipefail
 
-model="${FABLE_MODEL:-claude-fable-5}"
+model="${FABLE_MODEL:-claude-fable-5-1}"
 effort="${FABLE_EFFORT:-high}"
 base_url="${FABLE_BASE_URL:-${CLAUDEX_BASE_URL:-http://127.0.0.1:8317}}"
 config="${FABLE_CONFIG:-${CLAUDEX_CONFIG:-${CLIPROXYAPI_CONFIG:-$HOME/.cli-proxy-api/config.yaml}}}"

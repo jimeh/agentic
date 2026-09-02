@@ -39,7 +39,7 @@ if [[ "${FAKE_MODE:-success}" == "result-error" ]]; then
   exit 0
 fi
 
-model="claude-fable-5"
+model="claude-fable-5-1"
 for ((i = 1; i <= $#; i++)); do
   if [[ "${!i}" == "--model" ]]; then
     next=$((i + 1))
@@ -79,7 +79,7 @@ file_mode() {
 run_headless default
 
 grep -Fx -- '--model' "$capture_dir/default.args" >/dev/null
-grep -Fx -- 'claude-fable-5' "$capture_dir/default.args" >/dev/null
+grep -Fx -- 'claude-fable-5-1' "$capture_dir/default.args" >/dev/null
 grep -Fx -- '--effort' "$capture_dir/default.args" >/dev/null
 grep -Fx -- 'high' "$capture_dir/default.args" >/dev/null
 grep -Fx -- '--setting-sources' "$capture_dir/default.args" >/dev/null
@@ -191,6 +191,13 @@ if grep -Fx -- '--effort' "$capture_dir/custom.args" >/dev/null; then
   exit 1
 fi
 
+run_headless inherited-key --model __proto__
+grep -Fx -- '__proto__' "$capture_dir/inherited-key.args" >/dev/null
+if grep -Fx -- 'undefined' "$capture_dir/inherited-key.args" >/dev/null; then
+  echo "inherited object key was treated as a known model" >&2
+  exit 1
+fi
+
 reserved_artifacts="$test_root/artifacts-reserved"
 set +e
 printf 'reserved prompt\n' |
@@ -265,7 +272,7 @@ PATH="$fake_bin:$PATH" \
   FAKE_RUN_ID="fable-wrapper" \
   FABLE_API_KEY="test" \
   "$repo_root/bin/fable" < /dev/null >/dev/null 2>/dev/null
-grep -Fx -- 'claude-fable-5' "$capture_dir/fable-wrapper.args" >/dev/null
+grep -Fx -- 'claude-fable-5-1' "$capture_dir/fable-wrapper.args" >/dev/null
 grep -Fx -- 'high' "$capture_dir/fable-wrapper.args" >/dev/null
 if grep -F '[1m]' "$capture_dir/fable-wrapper.args" >/dev/null; then
   echo "fable wrapper forced 1M context" >&2

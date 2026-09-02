@@ -79,7 +79,7 @@ function usage(exitCode = 2): never {
       "",
       "Options:",
       "  --artifact-dir <path>       Store run artifacts here",
-      "  --model <name>              fable by default; opus pins Opus 5",
+      "  --model <name>              fable (Fable 5.1) by default; opus pins Opus 5",
       "  --effort <level>            Override the model-family default",
       "  --setting-sources <sources> Claude setting sources (default: user)",
       "  --permission-mode <mode>    Claude permission mode (default: plan)",
@@ -195,42 +195,32 @@ function parseArgs(args: string[]): Options {
   return options;
 }
 
+// Friendly names and full IDs the runner routes explicitly. Claude CLI's own
+// `fable` alias may lag behind the newest release, so the mapping stays here.
+const KNOWN_MODELS: Record<string, { effort: string; model: string }> = {
+  "claude-fable-5-1": { effort: "high", model: "claude-fable-5-1" },
+  "claude-opus-5": { effort: "medium", model: "claude-opus-5" },
+  fable: { effort: "high", model: "claude-fable-5-1" },
+  "fable-5-1": { effort: "high", model: "claude-fable-5-1" },
+  opus: { effort: "medium", model: "claude-opus-5" },
+  "opus-5": { effort: "medium", model: "claude-opus-5" },
+};
+
 function selectModel(requestedModel: string, effort?: string): ModelSelection {
   const normalized = requestedModel.toLowerCase();
 
-  if (normalized === "fable" || normalized === "fable-5") {
-    return {
-      effort: effort ?? "high",
-      model: "claude-fable-5",
-      requestedModel,
-    };
+  const known = Object.hasOwn(KNOWN_MODELS, normalized)
+    ? KNOWN_MODELS[normalized]
+    : undefined;
+  if (!known) {
+    return { effort, model: requestedModel, requestedModel };
   }
 
-  if (normalized === "opus" || normalized === "opus-5") {
-    return {
-      effort: effort ?? "medium",
-      model: "claude-opus-5",
-      requestedModel,
-    };
-  }
-
-  if (normalized === "claude-fable-5") {
-    return {
-      effort: effort ?? "high",
-      model: requestedModel,
-      requestedModel,
-    };
-  }
-
-  if (normalized === "claude-opus-5") {
-    return {
-      effort: effort ?? "medium",
-      model: requestedModel,
-      requestedModel,
-    };
-  }
-
-  return { effort, model: requestedModel, requestedModel };
+  return {
+    effort: effort ?? known.effort,
+    model: known.model,
+    requestedModel,
+  };
 }
 
 function optionValues(

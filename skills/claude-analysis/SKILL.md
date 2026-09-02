@@ -40,10 +40,10 @@ claude-headless \
   < "$PROMPT"
 ```
 
-Fable 5 at high effort is the default. Use `--model opus` when the user asks for
-Opus; the runner pins Opus 5 at medium effort. Pass an explicit `--effort` only
-when the user overrides the model-family default. Context size is Claude CLI's
-decision.
+Fable 5.1 at high effort is the default. Use `--model opus` when the user asks
+for Opus; the runner pins Opus 5 at medium effort. Pass an explicit `--effort`
+only when the user overrides the model-family default. Context size is Claude
+CLI's decision.
 
 The runner writes raw events to `events.ndjson`, concise progress to
 `progress.log` and stderr, Claude diagnostics to `stderr.log`, the terminal

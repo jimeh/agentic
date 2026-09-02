@@ -226,6 +226,11 @@ not `>file`). See `.editorconfig` for shfmt flags.
 - opencode reads `~/.config/opencode/AGENTS.md`, falling back to
   `~/.claude/CLAUDE.md` only when that file is absent. Populating the former
   stops opencode inheriting Claude-only rules.
+- Claude CLI's built-in `fable` alias lags behind new Fable releases (2.1.252
+  still resolves it to `claude-fable-5`), so `claude-headless` maps friendly
+  names to explicit model IDs itself. The CLI accepts an ID it does not know,
+  logging `unrecognized_model` and reporting a 200K context window in its own
+  metadata; the API still uses the model's real window.
 - `thirdparty:add-skills` reports and skips unrelated upstream skills with
   malformed or non-slug metadata. Explicitly selecting an invalid skill still
   fails instead of vendoring metadata the local harness would reject.

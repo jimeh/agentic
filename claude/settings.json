@@ -156,7 +156,7 @@
     ],
     "defaultMode": "auto"
   },
-  "model": "claude-fable-5",
+  "model": "claude-fable-5-1",
   "statusLine": {
     "type": "command",
     "command": "~/.claude/statusline.sh",

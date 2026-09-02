@@ -13,7 +13,7 @@ default executor for suitable hands-on work for the rest of the session. "Do
 this one yourself" overrides it for one task; the user can end the mode at any
 time.
 
-Fable 5 at high effort is the default delegated model. "Opus" means Opus 5 at
+Fable 5.1 at high effort is the default delegated model. "Opus" means Opus 5 at
 medium effort. Honor explicit model and effort overrides.
 
 ## Route to Claude
