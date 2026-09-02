@@ -32,7 +32,9 @@ Keep in Claude:
 - Tasks where writing the spec IS the work (ambiguity means design)
 - Tiny edits (roughly under 20 lines, one obvious change) — delegation overhead
   loses
-- Anything needing session tools: MCP servers, browser sessions, secrets
+- Anything needing session tools: MCP servers, Claude's own authenticated
+  browser sessions, secrets. Fresh local browser, desktop, or simulator
+  automation is `codex-computer-use` work.
 - Destructive or irreversible ops, releases, pushes, GitHub mutations
 - Review and verification of Codex output — never delegated, never skipped
 
@@ -57,16 +59,20 @@ decides how. Route through:
 - `codex-computer-use` — GUI/runtime observation and verification
 
 House invocation conventions hold in this mode: sandboxed `codex-headless` runs
-(`--sandbox read-only` / `--sandbox workspace-write`), isolated worktrees for
-non-trivial edits, prompts via temp file, results and progress in the runner's
-artifact directory. Do not use `--dangerously-bypass-approvals-and-sandbox` or
-equivalents; the runner rejects them.
+(`--sandbox read-only` / `--sandbox workspace-write`, with
+`--sandbox danger-full-access` only where `codex-computer-use` calls for it),
+isolated worktrees for non-trivial edits, prompts via temp file, results and
+progress in the runner's artifact directory. Do not use
+`--dangerously-bypass-approvals-and-sandbox` or equivalents; the runner rejects
+them.
 
 ## Prompt Contract
 
-Codex starts with zero session context. Every prompt carries: goal, exact repo
-and paths, constraints and non-goals, proof expected (the exact test command),
-and output shape. Spec quality decides success.
+A fresh Codex session starts with zero context. Every fresh prompt carries:
+goal, exact repo and paths, constraints and non-goals, proof expected (the exact
+test command), and output shape. A resumed session keeps its context, so a
+follow-up prompt carries only the revision boundary, the correction, and the
+proof expected. Spec quality decides success.
 
 ## Verify (Claude, Always)
 

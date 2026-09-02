@@ -69,6 +69,12 @@ The runner writes raw events to `events.ndjson`, concise progress to
 artifact directory. UI sessions can run long; run in the background and tail
 `progress.log` rather than waiting blind.
 
+Treat the run as failed unless the runner exited 0 and `run.json` reports
+`"status": "succeeded"`; only then read `result.md`. Exit 65 means the stream
+carried malformed events, 66 means Codex produced no result, and 67 means Codex
+reported a failed turn; `run.json` and `progress.log` hold the message in each
+case. Retry at most once after diagnosing a transient failure.
+
 ## Prompting Strategy
 
 Keep prompts short. Describe the observation task, not the whole codebase.

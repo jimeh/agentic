@@ -135,6 +135,12 @@ tasks, run in the background and tail `progress.log` for liveness; read
 diagnose transport or model behavior. Do not kill quiet runs prematurely; the
 heartbeat line confirms the process is alive.
 
+Treat the run as failed unless the runner exited 0 and `run.json` reports
+`"status": "succeeded"`; only then read `result.md`. Exit 65 means the stream
+carried malformed events, 66 means Codex produced no result, and 67 means Codex
+reported a failed turn; `run.json` and `progress.log` hold the message in each
+case. Retry at most once after diagnosing a transient failure.
+
 Parallel independent tasks are fine: separate worktrees, separate artifact
 directories.
 
@@ -249,12 +255,15 @@ global state, or files outside the workspace.
 
 Follow-up fixes are cheaper through the same Codex session than a fresh
 zero-context run, and keep the context Codex already built. Read the session ID
-from the previous run's `run.json`, then resume it with a fresh artifact
-directory:
+from the previous successful run's `run.json` (the `jq -e` form fails instead of
+yielding `null` when the field is missing), write the follow-up prompt to a
+fresh file, and resume with a fresh artifact directory:
 
 ```bash
-SESSION_ID="$(jq -r .sessionId "$ARTIFACT_DIR/run.json")"
+SESSION_ID="$(jq -er '.sessionId | select(type == "string" and length > 0)' \
+  "$ARTIFACT_DIR/run.json")"
 NEXT_ARTIFACT_DIR="$(mktemp -d "${TMPDIR:-/tmp}/codex-implementation.XXXXXX")"
+NEXT_PROMPT="$NEXT_ARTIFACT_DIR/prompt.md"
 
 (cd "$WORKTREE_DIR" && codex-headless \
   --artifact-dir "$NEXT_ARTIFACT_DIR" \
@@ -279,9 +288,9 @@ Do not reset before a round whose predecessor has not been integrated; the
 target would still be the pre-implementation tip, and the reset would discard
 the work being corrected.
 
-Write the follow-up prompt to a fresh file first; state only what is wrong and
-what proof is expected. If two resume rounds fail to fix the problem, stop
-delegating and make the fix directly.
+The follow-up prompt states only what is wrong, the revision boundary, and what
+proof is expected. If two resume rounds fail to fix the problem, stop delegating
+and make the fix directly.
 
 ## Prompting Strategy
 

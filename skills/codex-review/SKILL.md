@@ -38,13 +38,13 @@ unless the environment proves otherwise.
 2. Verify the current directory with `pwd`. Run Codex from the repo root or the
    intended worktree.
 3. Create a temporary artifact directory.
-4. Write a concise prompt when custom instructions are needed. Give Codex the
-   brief and `review-code` output requirements; do not assume the launched
-   process can load this skill.
-5. Run `codex-headless --review` with a scope flag, or with a custom prompt when
-   extra context matters (the two cannot be combined). Use a plain
-   `codex-headless` run only when neither form can express the target.
-6. Read `result.md`.
+4. Write a concise prompt carrying the brief and the `review-code` output
+   requirements; do not assume the launched process can load this skill.
+5. Run `codex-headless --review` in prompt form. Use a bare scope flag only for
+   a lightweight review that does not claim `review-code` coverage (the two
+   cannot be combined). Use a plain `codex-headless` run only when neither form
+   can express the target.
+6. Confirm the run succeeded, then read `result.md`.
 7. Apply `review-code` to accept findings and report the result.
 
 ## Command Shapes
@@ -56,8 +56,17 @@ ARTIFACT_DIR="$(mktemp -d "${TMPDIR:-/tmp}/codex-review.XXXXXX")"
 PROMPT="$ARTIFACT_DIR/prompt.md"
 ```
 
-Use the narrowest scope flag available. Scope flags reject custom instructions
-and go after `--`; the runner then reads nothing from stdin:
+Apply `review-code` through the prompt form: write the brief and the reviewer
+contract to `$PROMPT`, name the exact target inside it, and run:
+
+```bash
+codex-headless --artifact-dir "$ARTIFACT_DIR" --review < "$PROMPT"
+```
+
+Scope flags reject custom instructions, so a bare scope run gives Codex neither
+the brief nor the output contract. Use one only for a lightweight second look
+that is reported as such. Scope flags go after `--`, and the runner then reads
+nothing from stdin:
 
 ```bash
 # Staged, unstaged, and untracked changes.
@@ -68,13 +77,6 @@ codex-headless --artifact-dir "$ARTIFACT_DIR" --review -- --base main
 
 # A single commit.
 codex-headless --artifact-dir "$ARTIFACT_DIR" --review -- --commit <sha>
-```
-
-When the review needs custom instructions (requirements, invariants, risky
-areas), use the prompt form instead and name the target inside the prompt:
-
-```bash
-codex-headless --artifact-dir "$ARTIFACT_DIR" --review < "$PROMPT"
 ```
 
 If neither form can express the target, use a plain run; the sandbox is
@@ -91,12 +93,28 @@ small files first; inspect the raw stream only when diagnosing transport or
 model behavior. For a large target, run in the background and tail
 `progress.log`.
 
-For a one-shot review, pass `--ephemeral`. When follow-up verification is
-likely, keep the session persisted, read `sessionId` from `run.json`, and resume
-it with a fresh artifact directory:
+Treat the run as failed unless the runner exited 0 and `run.json` reports
+`"status": "succeeded"`; only then read `result.md`. Exit 65 means the stream
+carried malformed events, 66 means Codex produced no result, and 67 means Codex
+reported a failed turn; `run.json` and `progress.log` hold the message in each
+case. Retry at most once after diagnosing a transient failure.
+
+For a one-shot review, add `--ephemeral` before the `--` separator:
 
 ```bash
-SESSION_ID="$(jq -r .sessionId "$ARTIFACT_DIR/run.json")"
+codex-headless --artifact-dir "$ARTIFACT_DIR" --ephemeral --review < "$PROMPT"
+```
+
+When follow-up verification is likely, keep the session persisted and resume it
+with a fresh artifact directory and prompt file; the `jq -e` form fails instead
+of yielding `null` when the field is missing:
+
+```bash
+SESSION_ID="$(jq -er '.sessionId | select(type == "string" and length > 0)' \
+  "$ARTIFACT_DIR/run.json")"
+NEXT_ARTIFACT_DIR="$(mktemp -d "${TMPDIR:-/tmp}/codex-review.XXXXXX")"
+NEXT_PROMPT="$NEXT_ARTIFACT_DIR/prompt.md"
+
 codex-headless --artifact-dir "$NEXT_ARTIFACT_DIR" --resume "$SESSION_ID" \
   < "$NEXT_PROMPT"
 ```
@@ -109,8 +127,7 @@ reviewer when they do not, continuation is unavailable, or the reviewed scope
 materially broadens.
 
 Do not retry automatically when Codex reports no issues. If the run fails,
-inspect `run.json` and `stderr.log`, report that, and decide whether direct
-review is still useful.
+report that and decide whether direct review is still useful.
 
 Once the review lifecycle is complete, remove the artifact directories so
 prompts and reports do not accumulate.

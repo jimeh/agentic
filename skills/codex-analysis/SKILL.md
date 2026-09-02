@@ -62,9 +62,25 @@ The runner writes raw events to `events.ndjson`, concise progress to
 the raw stream only when diagnosing transport or model behavior. For a long
 target, run in the background and tail `progress.log`.
 
-For a focused follow-up, create a new artifact directory and pass
-`--resume "$SESSION_ID"` with the session ID from `run.json`. Start fresh when
-the target or question materially changes.
+Treat the run as failed unless the runner exited 0 and `run.json` reports
+`"status": "succeeded"`; only then read `result.md`. Exit 65 means the stream
+carried malformed events, 66 means Codex produced no result, and 67 means Codex
+reported a failed turn; `run.json` and `progress.log` hold the message in each
+case. Retry at most once after diagnosing a transient failure.
+
+For a focused follow-up, resume the session with a new artifact directory and
+prompt file; the `jq -e` form fails instead of yielding `null` when the field is
+missing. Start fresh when the target or question materially changes.
+
+```bash
+SESSION_ID="$(jq -er '.sessionId | select(type == "string" and length > 0)' \
+  "$ARTIFACT_DIR/run.json")"
+NEXT_ARTIFACT_DIR="$(mktemp -d "${TMPDIR:-/tmp}/codex-analysis.XXXXXX")"
+NEXT_PROMPT="$NEXT_ARTIFACT_DIR/prompt.md"
+
+codex-headless --artifact-dir "$NEXT_ARTIFACT_DIR" --resume "$SESSION_ID" \
+  < "$NEXT_PROMPT"
+```
 
 ## Prompting Strategy
 
