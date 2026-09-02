@@ -209,7 +209,9 @@ const KNOWN_MODELS: Record<string, { effort: string; model: string }> = {
 function selectModel(requestedModel: string, effort?: string): ModelSelection {
   const normalized = requestedModel.toLowerCase();
 
-  const known = KNOWN_MODELS[normalized];
+  const known = Object.hasOwn(KNOWN_MODELS, normalized)
+    ? KNOWN_MODELS[normalized]
+    : undefined;
   if (!known) {
     return { effort, model: requestedModel, requestedModel };
   }

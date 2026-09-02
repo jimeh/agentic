@@ -191,6 +191,13 @@ if grep -Fx -- '--effort' "$capture_dir/custom.args" >/dev/null; then
   exit 1
 fi
 
+run_headless inherited-key --model __proto__
+grep -Fx -- '__proto__' "$capture_dir/inherited-key.args" >/dev/null
+if grep -Fx -- 'undefined' "$capture_dir/inherited-key.args" >/dev/null; then
+  echo "inherited object key was treated as a known model" >&2
+  exit 1
+fi
+
 reserved_artifacts="$test_root/artifacts-reserved"
 set +e
 printf 'reserved prompt\n' |
