@@ -41,8 +41,26 @@ export function splitPassthrough(args: string[]): SplitArgs {
   };
 }
 
+// Strips an attached value: `--opt=value` and the short form `-ovalue` both
+// name `--opt` / `-o`. Short options with attached values are what clap-style
+// CLIs accept, so a reserved check must see through them.
 export function optionName(arg: string): string {
-  return arg.includes("=") ? arg.slice(0, arg.indexOf("=")) : arg;
+  if (arg.startsWith("--")) {
+    return arg.includes("=") ? arg.slice(0, arg.indexOf("=")) : arg;
+  }
+  if (arg.startsWith("-") && arg.length > 2) {
+    return arg.slice(0, 2);
+  }
+  return arg;
+}
+
+// The attached value of a short option (`-ovalue` or `-o=value`), if any.
+export function attachedValue(arg: string): string | undefined {
+  if (!arg.startsWith("-") || arg.startsWith("--") || arg.length <= 2) {
+    return undefined;
+  }
+  const value = arg.slice(2);
+  return value.startsWith("=") ? value.slice(1) : value;
 }
 
 // Runner-owned options must not be overridden through the passthrough list.

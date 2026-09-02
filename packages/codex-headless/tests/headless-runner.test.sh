@@ -63,6 +63,15 @@ case "${FAKE_MODE:-success}" in
     : > "$output"
     exit 0
     ;;
+  recovered)
+    printf '%s\n' \
+      '{"type":"turn.started"}' \
+      '{"type":"error","message":"stream disconnected; retrying"}' \
+      "{\"type\":\"item.completed\",\"item\":{\"id\":\"item_0\",\"type\":\"agent_message\",\"text\":\"answer for $run_id\"}}" \
+      '{"type":"turn.completed","usage":{}}'
+    printf 'answer for %s\n' "$run_id" > "$output"
+    exit 0
+    ;;
 esac
 
 printf '%s\n' \
@@ -220,13 +229,41 @@ reject reserved-cd 'runner-owned Codex option cannot follow --: -C' \
   -- -C "$test_root"
 reject reserved-config 'runner-owned Codex config key cannot follow --: sandbox_mode' \
   -- -c 'sandbox_mode="danger-full-access"'
+reject reserved-yolo 'runner-owned Codex option cannot follow --: --yolo' \
+  -- --yolo
+reject attached-sandbox 'runner-owned Codex option cannot follow --: -s' \
+  -- -sdanger-full-access
+reject attached-config 'runner-owned Codex config key cannot follow --: sandbox_mode' \
+  -- '-csandbox_mode="danger-full-access"'
+reject attached-model 'runner-owned Codex option cannot follow --: -m' \
+  -- -mother-model
+reject resume-add-dir 'codex exec resume does not accept --add-dir' \
+  --resume thread-x -- --add-dir "$test_root"
+reject review-add-dir 'codex exec review does not accept --add-dir' \
+  --review -- --add-dir="$test_root"
 
-if run_headless_status failure failure; then
-  echo "failure: expected nonzero exit" >&2
+overwrite_dir="$test_root/artifacts-overwrite"
+mkdir -p "$overwrite_dir"
+: > "$overwrite_dir/run.json"
+if run_headless_status overwrite success; then
+  echo "overwrite: expected refusal" >&2
   exit 1
 fi
+grep -F 'refusing to overwrite managed artifact' \
+  "$capture_dir/overwrite.runner-stderr" >/dev/null
+if [[ -e "$capture_dir/overwrite.args" ]]; then
+  echo "overwrite: codex was launched despite an existing artifact" >&2
+  exit 1
+fi
+
+set +e
+run_headless_status failure failure
+failure_status=$?
+set -e
+[[ "$failure_status" == "1" ]]
 grep -F '"status": "failed"' "$test_root/artifacts-failure/run.json" >/dev/null
-grep -F 'Codex exited with status 1' "$test_root/artifacts-failure/run.json" >/dev/null
+grep -F 'Codex exited with status 1: Codex turn failed: model rejected' \
+  "$test_root/artifacts-failure/run.json" >/dev/null
 grep -F 'error: model rejected' "$test_root/artifacts-failure/progress.log" >/dev/null
 [[ ! -s "$test_root/artifacts-failure/result.md" ]]
 
@@ -249,6 +286,11 @@ run_headless_status empty empty
 empty_status=$?
 set -e
 [[ "$empty_status" == "66" ]]
-grep -F 'without a nonempty result' "$test_root/artifacts-empty/run.json" >/dev/null
+grep -F 'Codex exited without writing a result' "$test_root/artifacts-empty/run.json" >/dev/null
+
+run_headless_status recovered recovered
+grep -F '"status": "succeeded"' "$test_root/artifacts-recovered/run.json" >/dev/null
+grep -F 'error: stream disconnected' "$test_root/artifacts-recovered/progress.log" >/dev/null
+grep -Fx 'answer for recovered' "$test_root/artifacts-recovered/result.md" >/dev/null
 
 echo "codex headless runner tests passed"

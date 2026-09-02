@@ -51,6 +51,8 @@ export type RunSpec = {
   command(paths: ArtifactPaths): string[];
   // Human name of the wrapped CLI for progress and error text.
   displayName: string;
+  // Error recorded when the CLI exits cleanly without producing a result.
+  emptyResultError: string;
   // Called once the streams close, before the exit status is decided.
   finalize?(context: EventContext): void;
   heartbeatSeconds: number;
@@ -304,7 +306,8 @@ export async function runHeadless(spec: RunSpec): Promise<number> {
     metadata.error = `interrupted by ${interruptedSignal}`;
     metadata.status = "interrupted";
   } else if (childExitCode !== 0) {
-    metadata.error = `${spec.displayName} exited with status ${childExitCode}`;
+    const detail = resultError ? `: ${resultError}` : "";
+    metadata.error = `${spec.displayName} exited with status ${childExitCode}${detail}`;
     metadata.status = "failed";
   } else if (metadata.malformedEvents > 0) {
     exitCode = 65;
@@ -316,7 +319,7 @@ export async function runHeadless(spec: RunSpec): Promise<number> {
     metadata.status = "failed";
   } else if (!resultText || resultText.trim().length === 0) {
     exitCode = 66;
-    metadata.error = `${spec.displayName} stream ended without a nonempty result`;
+    metadata.error = spec.emptyResultError;
     metadata.status = "failed";
   } else {
     writeFileSync(paths.result, `${resultText.replace(/\n$/, "")}\n`, {

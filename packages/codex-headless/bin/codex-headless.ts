@@ -1,6 +1,7 @@
 #!/usr/bin/env bun
 
 import {
+  attachedValue,
   optionName,
   parseHeartbeatSeconds,
   rejectReserved,
@@ -52,7 +53,11 @@ const reservedCodexOptions = new Set([
   "--model",
   "--output-last-message",
   "--sandbox",
+  "--yolo",
 ]);
+
+// Plain `codex exec` accepts these; `resume` and `review` reject them.
+const execOnlyOptions = new Set(["--add-dir"]);
 
 // Review scope flags reject a prompt argument, so the runner only appends the
 // stdin marker when none of them is present.
@@ -76,10 +81,10 @@ function usage(exitCode = 2): never {
       "  --heartbeat-seconds <n>   Quiet-stream heartbeat interval (default: 30)",
       "  --help, -h                Show this help",
       "",
-      "The prompt is read from stdin. Codex runs from the current directory; use",
-      "--add-dir after -- for extra writable paths. The artifact path and concise",
-      "progress are written to stderr. The raw stream is written only to",
-      "events.ndjson.",
+      "The prompt is read from stdin. Codex runs from the current directory; on",
+      "a fresh run, pass --add-dir after -- for extra writable paths (resume and",
+      "review do not accept it). The artifact path and concise progress are",
+      "written to stderr. The raw stream is written only to events.ndjson.",
     ],
     exitCode,
   );
@@ -92,8 +97,10 @@ function rejectReservedConfig(passthrough: string[]): void {
     if (arg === "-c" || arg === "--config") {
       value = passthrough[index + 1];
       index += 1;
-    } else if (arg.startsWith("-c=") || arg.startsWith("--config=")) {
+    } else if (arg.startsWith("--config=")) {
       value = arg.slice(arg.indexOf("=") + 1);
+    } else if (optionName(arg) === "-c") {
+      value = attachedValue(arg);
     }
     if (value === undefined) {
       continue;
@@ -177,6 +184,16 @@ function parseArgs(argv: string[]): Options {
 
   rejectReserved(passthrough, reservedCodexOptions, "Codex");
   rejectReservedConfig(passthrough);
+  if (options.mode !== "exec") {
+    for (const arg of passthrough) {
+      const name = optionName(arg);
+      if (execOnlyOptions.has(name)) {
+        throw new Error(
+          `codex exec ${options.mode} does not accept ${name}; pass it only on a fresh run`,
+        );
+      }
+    }
+  }
 
   return options;
 }
@@ -260,6 +277,9 @@ async function main(): Promise<number> {
     usage: undefined,
   };
   let resultPath: string | undefined;
+  // A top-level `error` event is fatal only when no `turn.completed` follows;
+  // Codex also emits it for recoverable stream problems.
+  let pendingError: string | undefined;
 
   // Progress lines carry item types and statuses only. Command text, command
   // output, agent messages, and reasoning stay in events.ndjson; error messages
@@ -284,6 +304,7 @@ async function main(): Promise<number> {
     }
 
     if (type === "turn.completed") {
+      pendingError = undefined;
       if (event.usage && typeof event.usage === "object") {
         metadata.usage = event.usage;
       }
@@ -291,6 +312,7 @@ async function main(): Promise<number> {
     }
 
     if (type === "turn.failed") {
+      pendingError = undefined;
       const message = truncate(errorMessage(event.error));
       context.setResultError(`Codex turn failed: ${message}`);
       return [`error: ${message}`];
@@ -298,7 +320,7 @@ async function main(): Promise<number> {
 
     if (type === "error") {
       const message = truncate(errorMessage(event.message ?? event.error));
-      context.setResultError(`Codex reported an error: ${message}`);
+      pendingError = `Codex reported an error: ${message}`;
       return [`error: ${message}`];
     }
 
@@ -328,7 +350,11 @@ async function main(): Promise<number> {
       return buildCommand(options, paths);
     },
     displayName: "Codex",
+    emptyResultError: "Codex exited without writing a result",
     finalize: (context) => {
+      if (pendingError) {
+        context.setResultError(pendingError);
+      }
       if (!resultPath) {
         return;
       }

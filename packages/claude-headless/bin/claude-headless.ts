@@ -423,6 +423,7 @@ async function main(): Promise<number> {
     artifactDir: options.artifactDir,
     command: () => claudeArgs,
     displayName: "Claude",
+    emptyResultError: "Claude stream ended without a nonempty result event",
     finalize: () => {
       metadata.actualModels = [...actualModels].sort();
     },

@@ -1,4 +1,5 @@
 export {
+  attachedValue,
   optionName,
   optionValues,
   parseHeartbeatSeconds,
