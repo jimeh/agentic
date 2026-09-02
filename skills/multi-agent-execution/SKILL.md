@@ -45,7 +45,7 @@ isolation, and review once that decision is made.
 
 ## Model Routing
 
-- Fable 5 at high effort is the default for delegated Claude work:
+- Fable 5.1 at high effort is the default for delegated Claude work:
   investigation, implementation, verification, review, and synthesis.
 - Use Opus only when the user or an owning workflow asks for it. "Opus" means
   Opus 5 at medium effort unless the caller explicitly overrides the effort.

@@ -42,15 +42,19 @@ SESSION_ID="$(uuidgen)"
 claude-headless \
   --artifact-dir "$ARTIFACT_DIR" \
   --model fable \
+  --effort high \
   --setting-sources user \
   --permission-mode plan \
   --session-id "$SESSION_ID" \
   < "$PROMPT"
 ```
 
-Fable 5 at high effort is the default. Use `--model opus` when the user asks for
-Opus; the runner pins Opus 5 at medium effort. Explicit effort instructions win.
-Leave context size to Claude CLI.
+Fable 5.1 at high effort is the default for reviews. Always pass `--effort high`
+explicitly: the runner's own default for Fable 5.1 is medium, which in
+side-by-side runs dropped the deepest finding per review. When the user asks for
+Opus, use `--model opus` and omit `--effort` so the runner's Opus 5 default of
+medium applies. Explicit user effort instructions win. Leave context size to
+Claude CLI.
 
 `--setting-sources user` keeps managed skills such as `review-code` available
 without loading project or local execution hooks. For a trusted checkout where
@@ -89,6 +93,7 @@ session:
 claude-headless \
   --artifact-dir "$NEXT_ARTIFACT_DIR" \
   --model fable \
+  --effort high \
   --setting-sources user \
   --permission-mode plan \
   --resume "$SESSION_ID" \
