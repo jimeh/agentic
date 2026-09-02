@@ -35,9 +35,9 @@ in Claude or use a different skill.
 3. Identify the app, browser, simulator, device, website, or local command to
    start from.
 4. Define expected behavior and evidence to collect.
-5. Create a temporary artifact directory for screenshots and the report.
-6. Run Codex with an explicit computer-use prompt.
-7. Read the report and inspect any screenshots or logs.
+5. Create a temporary artifact directory for screenshots and run artifacts.
+6. Run `codex-headless` with an explicit computer-use prompt.
+7. Read `result.md` and inspect any screenshots or logs.
 8. Validate important observations against the user's goal.
 9. Summarise results and recommend next actions if needed.
 
@@ -48,22 +48,26 @@ Prepare artifacts:
 ```bash
 ARTIFACT_DIR="$(mktemp -d "${TMPDIR:-/tmp}/codex-computer-use.XXXXXX")"
 PROMPT="$ARTIFACT_DIR/prompt.md"
-REPORT="$ARTIFACT_DIR/report.md"
 ```
 
-Run Codex with enough access for local UI work:
+Run Codex from the repository with enough access for local UI work:
 
 ```bash
-codex exec \
-  -C "$PWD" \
-  --add-dir "$ARTIFACT_DIR" \
-  -s danger-full-access \
-  -o "$REPORT" \
-  - < "$PROMPT"
+codex-headless \
+  --artifact-dir "$ARTIFACT_DIR" \
+  --sandbox danger-full-access \
+  -- --add-dir "$ARTIFACT_DIR" \
+  < "$PROMPT"
 ```
 
-Use `workspace-write` instead when the task only needs local files and a dev
-server, with no desktop, browser, simulator, or cross-app interaction.
+Use `--sandbox workspace-write` instead when the task only needs local files and
+a dev server, with no desktop, browser, simulator, or cross-app interaction.
+
+The runner writes raw events to `events.ndjson`, concise progress to
+`progress.log` and stderr, Codex diagnostics to `stderr.log`, the report to
+`result.md`, and run state to `run.json`. Screenshots land beside them in the
+artifact directory. UI sessions can run long; run in the background and tail
+`progress.log` rather than waiting blind.
 
 ## Prompting Strategy
 

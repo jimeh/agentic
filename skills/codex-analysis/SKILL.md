@@ -32,9 +32,9 @@ observation.
 1. Identify the analysis target: files, logs, docs, PDFs, specs, commits,
    generated output, or search space.
 2. Define the question Codex should answer.
-3. Create a temporary artifact directory for the prompt and report.
-4. Run Codex in read-only mode.
-5. Read the report and spot-check important claims against the source.
+3. Create a temporary artifact directory for the prompt and run artifacts.
+4. Run `codex-headless` with the default read-only sandbox.
+5. Read `result.md` and spot-check important claims against the source.
 6. Return the useful evidence, confidence, and next recommended step.
 
 ## Command Shape
@@ -44,22 +44,27 @@ Prepare artifacts:
 ```bash
 ARTIFACT_DIR="$(mktemp -d "${TMPDIR:-/tmp}/codex-analysis.XXXXXX")"
 PROMPT="$ARTIFACT_DIR/prompt.md"
-REPORT="$ARTIFACT_DIR/report.md"
 ```
 
-Run Codex read-only:
+Run Codex read-only from the repository or target directory:
 
 ```bash
-codex exec \
-  -C "$PWD" \
-  -s read-only \
-  -o "$REPORT" \
-  - < "$PROMPT"
+codex-headless --artifact-dir "$ARTIFACT_DIR" < "$PROMPT"
 ```
 
 No extra access flags are needed: the read-only sandbox can read the whole disk,
-and `-o` writes the report from outside the sandbox. (`--add-dir` grants write
-access; it has no place in read-only analysis.)
+and the runner writes the artifacts from outside the sandbox. (`--add-dir`
+grants write access; it has no place in read-only analysis.)
+
+The runner writes raw events to `events.ndjson`, concise progress to
+`progress.log` and stderr, Codex diagnostics to `stderr.log`, the answer to
+`result.md`, and run state to `run.json`. Read the small files first; inspect
+the raw stream only when diagnosing transport or model behavior. For a long
+target, run in the background and tail `progress.log`.
+
+For a focused follow-up, create a new artifact directory and pass
+`--resume "$SESSION_ID"` with the session ID from `run.json`. Start fresh when
+the target or question materially changes.
 
 ## Prompting Strategy
 

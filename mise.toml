@@ -157,6 +157,7 @@ run = [
   "mise run test:plugins",
   "mise run test:skills",
   "mise run test:claude-headless",
+  "mise run test:codex-headless",
 ]
 
 [tasks."test:unit"]
@@ -174,6 +175,10 @@ run = "bun packages/agent-config/bin/agent-config.ts test skills"
 [tasks."test:claude-headless"]
 description = "Run the Claude headless CLI integration tests"
 run = "bun run --cwd packages/claude-headless test"
+
+[tasks."test:codex-headless"]
+description = "Run the Codex headless CLI integration tests"
+run = "bun run --cwd packages/codex-headless test"
 
 [tasks.verify]
 description = "Run lint and tests"

@@ -41,10 +41,10 @@ unless the environment proves otherwise.
 4. Write a concise prompt when custom instructions are needed. Give Codex the
    brief and `review-code` output requirements; do not assume the launched
    process can load this skill.
-5. Run `codex review` with a scope flag, or with a custom prompt when extra
-   context matters (the two cannot be combined). Use `codex exec -s read-only`
-   only when neither form can express the target.
-6. Read the report.
+5. Run `codex-headless --review` with a scope flag, or with a custom prompt when
+   extra context matters (the two cannot be combined). Use a plain
+   `codex-headless` run only when neither form can express the target.
+6. Read `result.md`.
 7. Apply `review-code` to accept findings and report the result.
 
 ## Command Shapes
@@ -54,51 +54,66 @@ Prepare artifacts:
 ```bash
 ARTIFACT_DIR="$(mktemp -d "${TMPDIR:-/tmp}/codex-review.XXXXXX")"
 PROMPT="$ARTIFACT_DIR/prompt.md"
-REPORT="$ARTIFACT_DIR/report.md"
 ```
 
-Use the narrowest scope flag available. Scope flags reject custom instructions;
-run them bare:
+Use the narrowest scope flag available. Scope flags reject custom instructions
+and go after `--`; the runner then reads nothing from stdin:
 
 ```bash
 # Staged, unstaged, and untracked changes.
-codex review --uncommitted > "$REPORT"
+codex-headless --artifact-dir "$ARTIFACT_DIR" --review -- --uncommitted
 
 # Current branch against a base branch.
-codex review --base main > "$REPORT"
+codex-headless --artifact-dir "$ARTIFACT_DIR" --review -- --base main
 
 # A single commit.
-codex review --commit <sha> > "$REPORT"
+codex-headless --artifact-dir "$ARTIFACT_DIR" --review -- --commit <sha>
 ```
 
 When the review needs custom instructions (requirements, invariants, risky
 areas), use the prompt form instead and name the target inside the prompt:
 
 ```bash
-codex review - < "$PROMPT" > "$REPORT"
+codex-headless --artifact-dir "$ARTIFACT_DIR" --review < "$PROMPT"
 ```
 
-If neither form can express the target, use read-only exec:
+If neither form can express the target, use a plain run; the sandbox is
+read-only by default:
 
 ```bash
-codex exec -s read-only -o "$REPORT" - < "$PROMPT"
+codex-headless --artifact-dir "$ARTIFACT_DIR" < "$PROMPT"
 ```
 
-For a one-shot review, no session handle needs to be retained. When follow-up
-verification is likely, use a persisted `codex exec review --json` session,
-retain its explicit session ID, and resume it with `codex exec resume`; do not
-use `--ephemeral`. Give the resumed reviewer revision boundaries and concise
-finding summaries, then have it inspect the delta from the repository rather
-than pasting prior reports or large diffs. Before resuming, confirm the intended
-prior and current review targets remain available and match the requested
-review. Use a fresh reviewer when they do not, continuation is unavailable, or
-the reviewed scope materially broadens.
+The runner writes raw events to `events.ndjson`, concise progress to
+`progress.log` and stderr, Codex diagnostics to `stderr.log`, the review report
+to `result.md`, and run state including the session ID to `run.json`. Read the
+small files first; inspect the raw stream only when diagnosing transport or
+model behavior. For a large target, run in the background and tail
+`progress.log`.
 
-Do not retry automatically when Codex reports no issues. If the run times out or
-fails, report that and decide whether direct review is still useful.
+For a one-shot review, pass `--ephemeral`. When follow-up verification is
+likely, keep the session persisted, read `sessionId` from `run.json`, and resume
+it with a fresh artifact directory:
 
-Once the review lifecycle is complete, remove the artifact directory so prompts
-and reports do not accumulate.
+```bash
+SESSION_ID="$(jq -r .sessionId "$ARTIFACT_DIR/run.json")"
+codex-headless --artifact-dir "$NEXT_ARTIFACT_DIR" --resume "$SESSION_ID" \
+  < "$NEXT_PROMPT"
+```
+
+Give the resumed reviewer revision boundaries and concise finding summaries,
+then have it inspect the delta from the repository rather than pasting prior
+reports or large diffs. Before resuming, confirm the intended prior and current
+review targets remain available and match the requested review. Use a fresh
+reviewer when they do not, continuation is unavailable, or the reviewed scope
+materially broadens.
+
+Do not retry automatically when Codex reports no issues. If the run fails,
+inspect `run.json` and `stderr.log`, report that, and decide whether direct
+review is still useful.
+
+Once the review lifecycle is complete, remove the artifact directories so
+prompts and reports do not accumulate.
 
 ## Prompt and Report
 
@@ -116,7 +131,8 @@ did.
 ## Failure Handling
 
 - If `codex` is unavailable, say so and review directly if practical.
-- If Codex cannot express the target with `codex review`, use read-only exec.
+- If the target cannot be expressed through `--review`, use a plain read-only
+  run.
 - If Codex times out, report the timeout. Do not loop blindly.
 - If Codex gives vague findings, verify only the plausible ones and discard the
   rest.

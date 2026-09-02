@@ -56,10 +56,11 @@ decides how. Route through:
 - `codex-review` — independent review of Claude-authored work
 - `codex-computer-use` — GUI/runtime observation and verification
 
-House invocation conventions hold in this mode: sandboxed `codex exec`
-(`-s read-only` / `-s workspace-write`), isolated worktrees for non-trivial
-edits, prompts via temp file, reports via `-o`. Do not use
-`--dangerously-bypass-approvals-and-sandbox` or equivalents.
+House invocation conventions hold in this mode: sandboxed `codex-headless` runs
+(`--sandbox read-only` / `--sandbox workspace-write`), isolated worktrees for
+non-trivial edits, prompts via temp file, results and progress in the runner's
+artifact directory. Do not use `--dangerously-bypass-approvals-and-sandbox` or
+equivalents; the runner rejects them.
 
 ## Prompt Contract
 
@@ -72,8 +73,8 @@ and output shape. Spec quality decides success.
 - Read the full diff (`git status`, `git diff`) and judge it like a contributor
   PR.
 - Run focused tests yourself or demand proof output; Codex claims are advisory.
-- Iterate with `codex exec resume` per `codex-implementation`; after two failed
-  rounds, take over.
+- Iterate with `codex-headless --resume` per `codex-implementation`; after two
+  failed rounds, take over.
 - The review gate still applies: Claude reviews Codex-authored diffs itself — do
   not send them back to `codex-review`, since same-model review is weak
   independence. Add another reviewer only when the user requests one or the

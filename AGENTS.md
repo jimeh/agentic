@@ -18,8 +18,15 @@ The Bun workspace separates the repository tooling by ownership:
 - `packages/agent-rules` owns global rule rendering and drift checks.
 - `packages/agent-harness` owns repository checks and executable skill and
   plugin test discovery.
-- `packages/claude-headless` owns the streamed Claude CLI wrapper and its
-  integration tests.
+- `packages/agent-headless` owns the engine-neutral headless runner core:
+  artifact directory, NDJSON stream handling, progress log, heartbeat, signal
+  forwarding, and exit policy.
+- `packages/claude-headless` owns the Claude-specific `claude-headless` bin
+  (model routing, permission and setting flags, Claude stream events, Codex
+  skill denial) and its integration test.
+- `packages/codex-headless` owns the Codex-specific `codex-headless` bin
+  (sandbox, model and effort config, resume and review modes, Codex stream
+  events) and its integration test.
 - `packages/vendor-skills` owns reviewed third-party skill intake and updates.
 
 `packages/agent-config` auto-discovers and symlinks skills:
@@ -47,6 +54,14 @@ The directional Claude set is `claude-analysis`, `claude-first`,
 the installed `claude-headless` runner from `packages/claude-headless/bin/` for
 model and effort routing, streaming progress, session handling, and private run
 artifacts. The runner denies `codex-*` skill calls to prevent delegation loops.
+
+The `codex-*` skills use the installed `codex-headless` runner from
+`packages/codex-headless/bin/` the same way: sandbox selection, streamed
+progress, session resume, review mode, and private run artifacts. Both runners
+share `packages/agent-headless` and write the same artifact layout
+(`events.ndjson`, `progress.log`, `result.md`, `run.json`, `stderr.log`), so
+skills on either side read runs identically. Codex needs no skill denial: the
+skill symlink scoping keeps `codex-*` skills out of `~/.agents/skills`.
 
 To add a new skill, just create the directory — the installer picks it up
 automatically. Stale symlinks are cleaned up on each run, including links that
@@ -129,8 +144,11 @@ Executable skill tests live under `skills/*/tests/`, use names matching
 its shebang, continues after failures, and reports a combined result. Keep tests
 self-contained, executable, and exit 0 on success.
 
-The `claude-headless` integration test lives with its package and runs through
-`mise run test:claude-headless`, which is also included in `mise run test`.
+The `claude-headless` and `codex-headless` integration tests live with their
+packages and run through `mise run test:claude-headless` and
+`mise run test:codex-headless`, both included in `mise run test`. Each drives
+its bin against a fake CLI on `PATH` that replays recorded event shapes, so the
+shared core is covered from both sides without a live model.
 
 ## Plugin Versioning
 
@@ -234,3 +252,15 @@ not `>file`). See `.editorconfig` for shfmt flags.
 - `thirdparty:add-skills` reports and skips unrelated upstream skills with
   malformed or non-slug metadata. Explicitly selecting an invalid skill still
   fails instead of vendoring metadata the local harness would reject.
+- Codex CLI (0.152.x): `codex exec resume` and `codex exec review` accept
+  neither `-s` nor `-C` nor `--add-dir`; `-c sandbox_mode="..."` works on every
+  subcommand, so `codex-headless` sets the sandbox that way and always runs from
+  the current directory. Review scope flags (`--uncommitted`, `--base`,
+  `--commit`) reject a prompt argument, and without a `-` positional stdin is
+  ignored. On failure Codex emits `error` then `turn.failed` and never writes
+  the `-o` file. `item.completed` events carry full command output, so keep them
+  out of any condensed log.
+- Bun drops a bare `--` when it is the first argument to a script
+  (`./run.ts -- -c x` yields `["-c", "x"]`). The headless runners rely on
+  `--artifact-dir` or another option preceding `--`; a leading `--` cannot be
+  detected from inside the script.

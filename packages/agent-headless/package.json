@@ -1,0 +1,5 @@
+{
+  "name": "@jimeh/agent-headless",
+  "private": true,
+  "exports": "./src/index.ts"
+}
