@@ -29,7 +29,8 @@ cross-engine diversity.
 2. Verify the current directory with `pwd` and run from the intended checkout.
 3. Create a private artifact directory and write the prompt.
 4. Run `claude-headless` in plan mode with managed user skills available.
-5. Read `result.md` and apply `review-code` to every candidate finding.
+5. Confirm the run succeeded, read `result.md`, and apply `review-code` to every
+   candidate finding.
 6. Return accepted findings and the validation and test-quality verdict.
 
 ## Invocation
@@ -63,6 +64,12 @@ The runner writes raw events to `events.ndjson`, concise progress to
 `result.md`, and run state to `run.json`. Read the raw stream only when
 diagnosing transport, model routing, or a failed result extraction.
 
+Treat the run as failed unless the runner exited 0 and `run.json` reports
+`"status": "succeeded"`; only then read `result.md`. Exit 65 means the stream
+carried malformed events, 66 means Claude produced no result, and 67 means
+Claude reported an error result; `run.json` and `progress.log` hold the message
+in each case. Retry at most once after diagnosing a transient failure.
+
 ## Prompt contract
 
 Keep the prompt short. Include the `review-code` brief, target, requirements,
@@ -83,20 +90,23 @@ report demonstrates it.
 
 ## Continuation
 
-For each continuation, create a new artifact directory and resume the initial
-session:
+For each continuation, create a new artifact directory and prompt file and
+resume the initial session:
 
 ```bash
+NEXT_ARTIFACT_DIR="$(mktemp -d "${TMPDIR:-/tmp}/claude-review.XXXXXX")"
+NEXT_PROMPT="$NEXT_ARTIFACT_DIR/prompt.md"
+
 claude-headless \
   --artifact-dir "$NEXT_ARTIFACT_DIR" \
-  --model fable \
   --setting-sources user \
   --permission-mode plan \
   --resume "$SESSION_ID" \
   < "$NEXT_PROMPT"
 ```
 
-Preserve the original model and effort unless the user overrides them. Give the
+The block above relies on the runner default model; add `--model` and `--effort`
+only to repeat what the initial run used when it overrode that default. Give the
 reviewer revision boundaries and concise finding summaries, then have it inspect
 the delta itself. Start fresh if the scope materially broadens or the old target
 is unavailable.
@@ -111,9 +121,8 @@ is unavailable.
 - Terminate only for user cancellation, an explicit deadline, or concrete
   failure or wedge evidence. Resume an interrupted persisted session when
   practical instead of starting over.
-- A nonzero exit, malformed stream, or empty result is a failed review. Inspect
-  `run.json` and `stderr.log`. Retry at most once after diagnosing a transient
-  cause.
+- A failed review is one the status check above rejects. Inspect `run.json` and
+  `stderr.log` before any retry.
 - Do not retry merely because Claude reports no findings.
 - Remove artifacts after the owning workflow consumes them unless the user asked
   to inspect them.

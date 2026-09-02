@@ -48,8 +48,10 @@ and finish directly.
 
 ## Boundaries
 
-Claude starts without this conversation's context. Every prompt must carry the
-objective, repository, constraints, authority boundary, success criteria, and
+A fresh Claude session starts without this conversation's context. Every fresh
+prompt must carry the objective, repository, constraints, authority boundary,
+success criteria, and proof expected. A resumed session keeps its context, so a
+follow-up prompt carries only the revision boundary, the correction, and the
 proof expected. Tell Claude not to invoke `codex-*` skills or the Codex CLI; the
 `claude-headless` runner also denies that recursion path.
 
