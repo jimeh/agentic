@@ -101,6 +101,16 @@
       "contentHash": "sha256:ee6fba84a56d0d9129b62dbd1925c2eeba55700154069d3e5bedf1d279f29f08",
       "skillsCliVersion": null
     },
+    "show-me": {
+      "manifestSourceId": "humanlayer-skills",
+      "sourceType": "git",
+      "sourceUrl": "https://github.com/humanlayer/skills.git",
+      "ref": "main",
+      "resolvedCommit": "3c2629142c5d437428269b1b722b08c0b87f574d",
+      "upstreamPath": "plugins/show-me/skills/show-me",
+      "contentHash": "sha256:65d2b8cea383bf3736092d53de62c4ade4a95a0031c8a1d88420ee3b3c887be6",
+      "skillsCliVersion": null
+    },
     "to-spec": {
       "manifestSourceId": "mattpocock-skills",
       "sourceType": "git",

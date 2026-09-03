@@ -136,6 +136,18 @@
           "path": "pstack/skills/unslop"
         }
       ]
+    },
+    {
+      "id": "humanlayer-skills",
+      "type": "git",
+      "url": "https://github.com/humanlayer/skills.git",
+      "ref": "main",
+      "skills": [
+        {
+          "name": "show-me",
+          "path": "plugins/show-me/skills/show-me"
+        }
+      ]
     }
   ]
 }
