@@ -79,6 +79,16 @@ run = "bun packages/agent-config/bin/agent-config.ts schema build"
 description = "Check the agent config JSON schema is up to date"
 run = "bun packages/agent-config/bin/agent-config.ts schema check"
 
+# PR monitoring
+
+[tasks.pr-monitor]
+description = "Snapshot a GitHub PR or wait quietly for meaningful changes"
+run = "bun packages/agent-pr-monitor/bin/agent-pr-monitor.ts"
+
+[tasks."test:pr-monitor"]
+description = "Test PR change detection, GitHub pagination, persistence, and the CLI"
+run = "bun test packages/agent-pr-monitor/src"
+
 # Generated global rules
 
 [tasks."rules:build"]

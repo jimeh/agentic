@@ -20,6 +20,7 @@ symlinks = [
     "packages/agent-config/bin/claude-headless.ts",
   ] },
   { source = "packages/codex-headless/bin/codex-headless.ts", target = "~/.local/bin/codex-headless" },
+  { source = "packages/agent-pr-monitor/bin/agent-pr-monitor.ts", target = "~/.local/bin/agent-pr-monitor" },
 ]
 
 staleSymlinkCleanup = [

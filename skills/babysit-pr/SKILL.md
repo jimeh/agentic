@@ -125,9 +125,17 @@ uncertain. Never clear review state cosmetically.
 ## Wait and Finish
 
 Start independent external review and CI concurrently on a settled candidate
-when both are required. Use the host's wait or monitoring facility and avoid
-tight polling, especially for human review. Check liveness before retrying a bot
-or job, and rebuild the complete PR picture after every wake.
+when both are required. For external waiting, read
+[PR monitoring](references/monitoring.md) and use `agent-pr-monitor` to filter
+unchanged state without model calls. Prefer running it directly in the parent;
+delegate only when substantive triage or follow-up work benefits from another
+model. A bounded comment-posting request does not need monitoring.
+
+Use changed identifiers and links to select feedback bodies and failure logs
+that need inspection. Reconcile them with the current head, complete unresolved
+thread set, and review state before acting. Check liveness before retrying a bot
+or job. A monitor event reports an observation, not readiness or permission to
+merge; refresh the exact remote head and required gates before finishing.
 
 Route actionable CI failures and new feedback through the same bounded loop. If
 the budget is exhausted, a required reviewer is unavailable, a user decision is

@@ -79,6 +79,8 @@ mise run hooks:install
   artifacts and package-owned integration tests.
 - **`packages/codex-headless/`** — Streamed Codex CLI runner with the same
   artifact layout, sandbox and session handling, and integration tests.
+- **`packages/agent-pr-monitor/`** — Read-only GitHub PR snapshots and quiet
+  waiting, with persisted change detection and compact results for agents.
 - **`packages/vendor-skills/`** — Reviewed third-party skill intake and update
   tooling.
 - **`docs/references/`** — External articles and guides.
@@ -135,6 +137,7 @@ mise run test:plugins
 mise run test:skills
 mise run test:claude-headless
 mise run test:codex-headless
+mise run test:pr-monitor
 ```
 
 Format Markdown and TypeScript with:
@@ -215,6 +218,27 @@ and CLAUDE.md conventions for the full FD lifecycle.
 
 Based on the
 [Feature Design system by manuelschipper](https://gist.github.com/manuelschipper/149ebf6b2d150ccaccc84ee9a9df560f).
+
+### PR monitoring
+
+`agent-pr-monitor` reads GitHub through Octokit and waits without model calls.
+The installer links it into `~/.local/bin/`; from this checkout, use the Mise
+task directly:
+
+```bash
+mise run pr-monitor -- snapshot https://github.com/OWNER/REPO/pull/123
+mise run pr-monitor -- wait https://github.com/OWNER/REPO/pull/123
+```
+
+The first snapshot establishes a durable baseline. Subsequent waits stay quiet
+until a head change, failed or completed checks, review feedback, thread state,
+or PR state changes. Each poll is a single GraphQL request, once a minute by
+default, and `--initial-delay` postpones the first poll when nothing can happen
+yet. Each invocation prints one JSON result and saves private artifacts. It
+never writes to GitHub or decides whether a PR is ready to merge. Run
+`agent-pr-monitor --help` for authentication, timeouts, and state paths. The
+[`babysit-pr` monitoring reference](skills/babysit-pr/references/monitoring.md)
+describes agent execution and result handling.
 
 ### Agent Config Installation
 

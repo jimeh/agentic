@@ -41,12 +41,21 @@ isolation, and review once that decision is made.
   selected workflow calls for a separate Claude context.
 - Use workflows for deterministic fan-out/fan-in within a task: parallel sweeps,
   staged find-then-verify pipelines, or migrations over a work list.
-- For long-running delegated work, ask for a report file and poll for it.
+- For long-running delegated work, request a report artifact and wait for the
+  host's completion event or blocking result. Read the artifact on completion;
+  avoid periodic file polling. Follow the active host's wait limits and retain
+  the same execution session across tool yields.
+- Run deterministic external monitors directly in the parent when their output
+  is already actionable. Add a worker for substantive triage or follow-up work,
+  rather than merely relaying a completion event.
 
 ## Model Routing
 
 - Fable 5.1 at high effort is the default for delegated Claude work:
   investigation, implementation, verification, review, and synthesis.
+- An owning workflow may explicitly select Sonnet 5 for bounded routine triage,
+  such as `babysit-pr` review or log analysis. This is an intentional override,
+  not permission to rely on an omitted model argument.
 - Use Opus only when the user or an owning workflow asks for it. "Opus" means
   Opus 5 at medium effort unless the caller explicitly overrides the effort.
 - Do not infer a context-window preference. Let Claude Code and the active

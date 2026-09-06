@@ -1,0 +1,10 @@
+{
+  "name": "@jimeh/agent-pr-monitor",
+  "private": true,
+  "bin": {
+    "agent-pr-monitor": "./bin/agent-pr-monitor.ts"
+  },
+  "dependencies": {
+    "@octokit/core": "^7.0.7"
+  }
+}

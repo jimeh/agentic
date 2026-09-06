@@ -27,6 +27,11 @@ The Bun workspace separates the repository tooling by ownership:
 - `packages/codex-headless` owns the Codex-specific `codex-headless` bin
   (sandbox, model and effort config, resume and review modes, Codex stream
   events) and its integration test.
+- `packages/agent-pr-monitor` owns read-only GitHub observation, deterministic
+  change detection, durable cursors, and the `agent-pr-monitor` CLI. It observes
+  a PR with one Octokit GraphQL query per poll; `gh` is only an authentication
+  fallback. Its tests run in `test:unit`, with `test:pr-monitor` available for
+  focused work. The headless runner core remains specific to model subprocesses.
 - `packages/vendor-skills` owns reviewed third-party skill intake and updates.
 
 `packages/agent-config` auto-discovers and symlinks skills:
@@ -210,6 +215,12 @@ settle before installation.
 not `>file`). See `.editorconfig` for shfmt flags.
 
 ## Discoveries
+
+- Octokit request v10 ignores the `request.timeout` option; only
+  `request.signal` cancels a call, and an aborted fetch surfaces with
+  `status: 500`, so check your own timer before classifying the error. The
+  PR-monitor CLI tests use a local HTTP server through a test-only preload; they
+  never contact a live GitHub repository.
 
 - The external `skill-creator` `quick_validate.py` helper may lack an executable
   bit and requires `PyYAML`. Invoke it through `python3`; if that dependency is
