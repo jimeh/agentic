@@ -11,6 +11,15 @@ Produce accurate issue-ready copy without mutating Git or GitHub. Treat the
 issue as a durable brief for maintainers and future implementers, not as a
 transcript of the investigation or filing process.
 
+## Apply technical communication
+
+Before drafting or revising, load and apply
+[technical-communication](../technical-communication/SKILL.md) in the matching
+mode. Use it during the first draft, not only when asked to polish the result.
+This skill owns evidence, templates, provenance, and the copy-only boundary;
+technical-communication supplies reader focus, structure, and clarity. Its core
+guidance is sufficient unless the artifact also needs a specialized reference.
+
 ## Understand the issue
 
 Use the user request, verified investigation findings, linked discussions or
@@ -86,6 +95,12 @@ Before returning the copy, verify that it:
 - includes observable acceptance criteria when they help define completion;
 - uses the supplied runtime identity when provenance is required; and
 - contains no stale, sensitive, machine-local, or process-only details.
+
+Apply technical-communication's final clarity check before returning copy. Read
+it as a maintainer or implementer unfamiliar with the conversation: make the
+problem, intended outcome, and material qualifications easy to find on a quick
+scan. Revise unclear prose within the requested scope without adding a separate
+audit report or another review workflow.
 
 ## Return copy only
 

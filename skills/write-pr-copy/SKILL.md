@@ -11,6 +11,15 @@ Produce accurate PR-ready copy without mutating Git or GitHub. Treat the title
 and description as durable context for current reviewers and future maintainers,
 not as a transcript of the delivery process.
 
+## Apply technical communication
+
+Before drafting or revising, load and apply
+[technical-communication](../technical-communication/SKILL.md) in the matching
+mode. Use it during the first draft, not only when asked to polish the result.
+This skill owns evidence, templates, provenance, and the copy-only boundary;
+technical-communication supplies reader focus, structure, and clarity. Its core
+guidance is sufficient unless the artifact also needs a specialized reference.
+
 ## Understand the Change
 
 Use the user request or linked issue, existing PR copy, repository instructions,
@@ -93,6 +102,12 @@ Before returning the copy, verify that it:
 - uses the supplied runtime identity in the provenance footer, or asks when that
   identity is unavailable; and
 - contains no stale, machine-local, or process-only details.
+
+Apply technical-communication's final clarity check before returning copy. Read
+it as a reviewer unfamiliar with the conversation: make the problem, intended
+outcome, and material qualifications easy to find on a quick scan. Revise
+unclear prose within the requested scope without adding a separate audit report
+or another review workflow.
 
 ## Return Copy Only
 

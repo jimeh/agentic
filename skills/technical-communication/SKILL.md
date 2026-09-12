@@ -1,7 +1,8 @@
 ---
 name: technical-communication
 description: >-
-  Draft, revise, or audit substantial technical documents when requested.
+  Draft, revise, or audit substantial technical documents when requested or
+  invoked by an artifact-writing skill.
   Use for plans, specifications, documentation, and handoffs, not routine replies
   or progress updates. Specific artifact skills own their workflows.
 ---
@@ -60,6 +61,10 @@ Apply the base writing rules. For technical documents, also:
 - For a progress update, final response, explanation, investigation report,
   review summary, or handoff, read
   [references/agent-messages.md](references/agent-messages.md).
+
+For PR and GitHub issue copy, apply this core guidance under write-pr-copy or
+write-issue-copy. Do not load a plan or specification reference merely because
+an issue proposes future work.
 
 When another skill owns the deliverable or workflow, follow that skill first and
 use this guidance only for gaps it leaves open. Read
