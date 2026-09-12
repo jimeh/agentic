@@ -1,18 +1,31 @@
 ---
 name: codex-analysis
 description: >-
-  Hand read-only analysis over large context — big logs, PDFs, broad searches,
-  datasets, traces, multi-file evidence — to the Codex CLI for throughput.
-  Read-only: no edits, no code review, no final judgement.
+  Delegate bounded read-only analysis to Codex CLI when a separate worker is
+  selected. No edits, code review, or final judgment.
 ---
 
 # Codex Analysis
 
-Use Codex for read-only work where throughput matters. Claude stays responsible
-for deciding what the evidence means and what to do next.
+Use Codex for read-only work where throughput matters. The parent stays
+responsible for deciding what the evidence means and what to do next.
 
 This skill fills the gap between code review, implementation, and computer use:
 it is for analysis and investigation, not patching or final judgement.
+
+## Worker boundary
+
+The parent chooses whether delegation is needed. Prefer a native worker with no
+inherited history when it satisfies the task; use this CLI for explicit
+selection or isolation and continuation needs. Start initial sessions fresh,
+with a brief containing objective, paths or revisions, constraints, allowed
+actions, expected output, and verification. Do not paste parent histories.
+
+Include this instruction in every worker prompt: "Perform this task directly. Do
+not invoke delegation skills or launch model workers through native tools or
+CLIs unless the parent explicitly authorizes that structure." Resume the same
+worker for relevant follow-ups; start fresh when its task context no longer
+fits.
 
 ## Routing Checklist
 
@@ -137,5 +150,5 @@ Report:
 - Uncertainty or gaps
 - Recommended next step
 
-If Codex cannot access the target, report what was missing and whether Claude
-can continue with available context.
+If Codex cannot access the target, report what was missing and whether the
+parent can continue with available context.

@@ -1,17 +1,31 @@
 ---
 name: codex-implementation
 description: >-
-  Delegate bounded, well-specified implementation work to the Codex CLI, then
-  inspect, verify, and deliver the result as Claude. Not for planning,
-  architecture, ambiguous requirements, or product and UX decisions.
+  Execute settled implementation tasks through Codex CLI when a separate
+  worker is selected. The parent owns scope, verification, and delivery.
 ---
 
 # Codex Implementation
 
-Use Codex as a bounded implementation agent. Claude keeps ownership of planning,
-architecture, decomposition, validation, integration, and user communication.
+Use Codex as a bounded implementation agent. The parent keeps ownership of
+planning, architecture, decomposition, validation, integration, and user
+communication.
 
 Do not hand Codex an entire project or vague feature. Split the work first.
+
+## Worker boundary
+
+The parent chooses whether delegation is needed. Prefer a native worker with no
+inherited history when it satisfies the task; use this CLI for explicit
+selection or isolation and continuation needs. Start initial sessions fresh,
+with a brief containing objective, paths or revisions, constraints, allowed
+actions, expected output, and verification. Do not paste parent histories.
+
+Include this instruction in every worker prompt: "Perform this task directly. Do
+not invoke delegation skills or launch model workers through native tools or
+CLIs unless the parent explicitly authorizes that structure." Resume the same
+worker for relevant follow-ups; start fresh when its task context no longer
+fits.
 
 ## Delegation Checklist
 
@@ -66,11 +80,9 @@ Bad candidates:
    independent reviewer before treating the work as complete — uncommitted
    changes and anything committed since the starting tip — and judge it like a
    contributor PR. A review that inspected only the working tree passes
-   vacuously when Codex committed its work. Do not route the diff to
-   `codex-review`: gpt-5.6-sol re-reviewing its own output is weak independence.
-   For substantial diffs, also get a fresh Claude subagent review; the
-   orchestrating session wrote the spec and is not fully neutral. This gate is
-   mandatory; adjust or reject the result based on what it finds.
+   vacuously when Codex committed its work. Use review-code when a review is
+   requested or required by the owning workflow; do not add reviewers merely
+   because implementation was delegated.
 10. Deliver the result (see Delivery below).
 11. Report what changed, what was verified, and what remains.
 
@@ -80,7 +92,7 @@ Use isolated work when practical:
 
 - Create a dedicated worktree and branch for substantial or parallel tasks.
 - Keep Codex away from unrelated user changes.
-- Ask Codex to leave Git alone and report what it did. Claude owns every Git
+- Ask Codex to leave Git alone and report what it did. The parent owns every Git
   operation, including committing Codex's work in the worktree it ran in.
   Depending on Codex to commit is what makes uncommitted work vanish silently
   during later integration.
@@ -344,7 +356,7 @@ Do not change behavior. Update tests if required. Return a summary of changes.
 ## Scope Control
 
 - If the task grows beyond the original scope, stop and recommend a split.
-- If architectural issues appear, return them to Claude. Do not redesign the
+- If architectural issues appear, return them to the parent. Do not redesign the
   system independently.
 - If requirements are missing, report the gap and recommended next step.
 - If repeated failures happen, explain the blocker. Do not retry the same
@@ -353,14 +365,14 @@ Do not change behavior. Update tests if required. Return a summary of changes.
 
 ## Reporting Back
 
-After Codex finishes, Claude must inspect the result before presenting it.
+After Codex finishes, the parent must inspect the result before presenting it.
 
 Report:
 
 - What Codex changed
 - Files changed
 - Verification run and result
-- Any Claude adjustments after review
+- Any parent adjustments after review
 - Assumptions, limitations, or follow-up work
 
 If Codex was blocked, report why, what information is missing, and the next

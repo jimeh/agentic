@@ -1,9 +1,8 @@
 ---
 name: claude-review
 description: >-
-  Run an independent Claude Code CLI review of code changes, commits, branches,
-  or pull requests to improve confidence in correctness, security, regressions,
-  and test coverage.
+  Execute a delegated review through Claude CLI. Use when explicitly
+  requested or selected by the review workflow; review-code owns generic routing.
 ---
 
 # Claude Review
@@ -17,11 +16,27 @@ Start each initial review in a fresh Claude session. Preserve it when an owning
 workflow may need focused follow-up verification. The orchestrating agent
 remains the final judge.
 
-Use this skill for broad or risky changes, user-requested Claude reviews,
-reviewing another model's implementation, or a strong second perspective. Do not
-use it for small local reviews, formatting-only diffs, or to avoid reading the
-code yourself. Fresh context gives context independence, not automatic
-cross-engine diversity.
+Use this transport only when explicitly requested or selected by review-code.
+The orchestrating agent owns final judgment. Fresh same-engine context provides
+independence from the authoring conversation, not cross-engine diversity.
+
+The headless runner denies native worker tools and delegation skills. If the
+parent explicitly requires nested workers, it must choose another supported
+execution arrangement; do not attempt to bypass the runner restrictions.
+
+## Worker boundary
+
+The parent chooses whether delegation is needed. Prefer a native worker with no
+inherited history when it satisfies the task; use this CLI for explicit
+selection or isolation and continuation needs. Start initial sessions fresh,
+with a brief containing objective, paths or revisions, constraints, allowed
+actions, expected output, and verification. Do not paste parent histories.
+
+Include this instruction in every worker prompt: "Perform this task directly. Do
+not invoke delegation skills or launch model workers through native tools or
+CLIs unless the parent explicitly authorizes that structure." Resume the same
+worker for relevant follow-ups; start fresh when its task context no longer
+fits.
 
 ## Workflow
 
@@ -76,9 +91,9 @@ Keep the prompt short. Include the `review-code` brief, target, requirements,
 inspection priorities, execution policy, and output shape. Add these boundaries:
 
 ```text
-This review was delegated by Codex.
+This review was delegated by the parent.
 - Stay read-only.
-- Do not invoke codex-* skills or the Codex CLI.
+- Do not invoke delegation skills or launch native or CLI model workers.
 - Inspect the target from the repository rather than relying on pasted diffs.
 - Report only findings supported by concrete code evidence.
 - Include a separate validation and test-quality verdict.

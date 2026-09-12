@@ -75,6 +75,20 @@ problems into simple and understandable concepts and solutions.
 - When several agents work in parallel within the same repository, state file
   ownership up front to avoid conflicts.
 
+Start new subagents without inherited conversation history. Explicitly set
+`fork_turns="none"` where supported; never rely on an omitted default. Give a
+self-contained brief with objective, paths or revisions, constraints, allowed
+actions, expected output, and verification. Let workers inspect source rather
+than pasting histories. If the host cannot provide fresh native context, use a
+fresh CLI session or do the work in the parent. Reuse task-specific sessions for
+relevant follow-ups. Review briefs include requirements and evidence, not the
+implementer's conclusions.
+
+Delegated workers perform the task directly. Include an explicit prohibition on
+further native or CLI model delegation in each worker prompt unless the parent
+has authorized that structure. These are instruction boundaries, not a claim
+that every host mechanically blocks nested workers.
+
 ## Testing
 
 Automated tests are not required merely because a file changed. Choose them in
@@ -172,31 +186,26 @@ such as `-` or `/dev/stdin`, interactive input, or whenever uncertain.
 When a skill applies, treat it as the workflow source of truth. These rules fill
 the gaps it does not cover.
 
-The `unslop` skill always applies, even when the user does not name it. Load it
-for every task and use it to edit every response and any prose you write or
-revise. Preserve meaning and technical accuracy.
+## Writing
+
+Use plain words, active voice, concrete claims, and consistent technical terms.
+Lead with the useful result. Split sentences that require rereading. Preserve
+meaning and technical accuracy when editing.
+
+Cut filler, promotional language, vague attribution, forced contrasts, generic
+conclusions, and rote acknowledgements. Prefer a direct statement over a clever
+rhetorical construction. Vary sentence length naturally; do not force points
+into groups of three. Use formatting only when it helps the reader. Avoid em
+dashes and decorative punctuation. Keep necessary technical notation intact.
 
 ## Documenting Discoveries
 
-When you encounter surprising, unexpected, or non-obvious findings while working
-on a project, document them in the project's agent instructions file:
-
-- If `AGENTS.md` exists, add findings there.
-- If only `CLAUDE.md` exists (project-level, not this global one), add there.
-- If neither exists, propose creating an `AGENTS.md` file.
-
-What to document:
-
-- Non-obvious project conventions or patterns.
-- Surprising behaviors, gotchas, or workarounds.
-- Implicit dependencies or ordering constraints between components.
-- Environment-specific quirks (platform differences, tool version
-  sensitivities).
-- Undocumented requirements or constraints found through trial and error.
-
-Keep entries concise and actionable. When a failure repeats, add the smallest
-useful rule to the relevant instructions file; remove rules that stop matching
-the workflow.
+Record recurring or costly non-obvious findings in their narrowest useful home:
+package or workflow guidance for conditional details, root agent instructions
+for broadly relevant hazards and navigation. Prefer a runnable check for an
+objective invariant. Do not add a root rule for every one-off discovery, and
+remove stale guidance. Read-only investigations report proposed documentation
+changes without editing files.
 
 ## Plan Mode
 

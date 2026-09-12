@@ -13,6 +13,10 @@ Use CodeRabbit as an intentionally selected external reviewer. Bind its evidence
 to an exact commit and inspect review threads rather than trusting a flat
 status.
 
+A request only to obtain CodeRabbit review authorizes triggering, waiting,
+inspection, and reporting. Corrections, human-facing replies, and thread
+resolution require requested stewardship or explicit authorization.
+
 ## Resolve the Review
 
 Resolve the PR, current remote head, draft state, checks, review decision, and

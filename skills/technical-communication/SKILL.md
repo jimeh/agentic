@@ -1,12 +1,9 @@
 ---
 name: technical-communication
 description: >-
-  Draft, revise, or audit substantive technical communication such as plans,
-  specifications, documentation, explanations, status reports, and handoffs.
-  Use when clarity, structure, accuracy, or reader action materially affects the
-  result; review requests for these artifacts are audits. Do not use for tiny
-  transactional replies or as a replacement for a more specific skill's
-  required artifact or workflow.
+  Draft, revise, or audit substantial technical documents when requested.
+  Use for plans, specifications, documentation, and handoffs, not routine replies
+  or progress updates. Specific artifact skills own their workflows.
 ---
 
 # Technical Communication
