@@ -1,9 +1,9 @@
 ---
 name: architect
 description: >-
-  Investigate and design a non-trivial module, interface, ownership boundary, or
-  codebase restructuring before implementation. Use for architecture requests,
-  design alternatives, seam placement, or a read-only architecture audit.
+  Design or audit module boundaries and interfaces before implementation.
+  Use for architecture requests and structural alternatives; discussion
+  remains read-only.
 ---
 
 # Architect

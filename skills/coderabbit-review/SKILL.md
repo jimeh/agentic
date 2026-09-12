@@ -1,10 +1,8 @@
 ---
 name: coderabbit-review
 description: >-
-  Handle CodeRabbit review on a GitHub pull request. Use when the user or another
-  workflow explicitly selects CodeRabbit, requests an `@coderabbitai review`,
-  wants its findings addressed, or needs its threads, approval, or blocking
-  review state closed. Do not use merely because a PR exists.
+  Request or handle CodeRabbit review when explicitly selected, including
+  its findings and blocking state. A PR alone does not trigger it.
 ---
 
 # CodeRabbit Review
@@ -12,6 +10,10 @@ description: >-
 Use CodeRabbit as an intentionally selected external reviewer. Bind its evidence
 to an exact commit and inspect review threads rather than trusting a flat
 status.
+
+A request only to obtain CodeRabbit review authorizes triggering, waiting,
+inspection, and reporting. Corrections, human-facing replies, and thread
+resolution require requested stewardship or explicit authorization.
 
 ## Resolve the Review
 

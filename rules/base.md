@@ -75,6 +75,20 @@ problems into simple and understandable concepts and solutions.
 - When several agents work in parallel within the same repository, state file
   ownership up front to avoid conflicts.
 
+Start new subagents without inherited conversation history. Explicitly set
+`fork_turns="none"` where supported; never rely on an omitted default. Give a
+self-contained brief with objective, paths or revisions, constraints, allowed
+actions, expected output, and verification. Let workers inspect source rather
+than pasting histories. If the host cannot provide fresh native context, use a
+fresh CLI session or do the work in the parent. Reuse task-specific sessions for
+relevant follow-ups. Review briefs include requirements and evidence, not the
+implementer's conclusions.
+
+Delegated workers perform the task directly. Include an explicit prohibition on
+further native or CLI model delegation in each worker prompt unless the parent
+has authorized that structure. These are instruction boundaries, not a claim
+that every host mechanically blocks nested workers.
+
 ## Testing
 
 Automated tests are not required merely because a file changed. Choose them in
@@ -172,31 +186,64 @@ such as `-` or `/dev/stdin`, interactive input, or whenever uncertain.
 When a skill applies, treat it as the workflow source of truth. These rules fill
 the gaps it does not cover.
 
-The `unslop` skill always applies, even when the user does not name it. Load it
-for every task and use it to edit every response and any prose you write or
-revise. Preserve meaning and technical accuracy.
+## Writing
+
+Write directly and concretely, preserving meaning, technical accuracy, and the
+user's tone. Lead with the useful result. Apply these principles to prose, not
+literal quotations, code, identifiers, or technical notation that must remain
+exact.
+
+- Prefer plain words: "use" over "utilize" or "leverage", "help" over
+  "facilitate", and "is" or "has" over "serves as" or "boasts". Avoid stock
+  grand language such as "pivotal", "tapestry", or an abstract "landscape". Keep
+  established technical terms when they are the precise words.
+- Describe actors, mechanisms, and observable effects. "The compiler rejects
+  incompatible types" says more than "types that inspire confidence". Replace
+  vague improvement claims with the measured delta when available; never invent
+  a measurement. Name sources instead of saying "experts believe".
+- Prefer active voice. Passive voice is fine when the actor is unknown or
+  irrelevant. Cut unnecessary adverbs and stacked hedges: "could potentially
+  possibly" becomes "may". Preserve uncertainty that the evidence requires.
+- Use consistent names rather than cycling through synonyms. Avoid abstract
+  metaphors, personified code, aphorisms, and rhetorical fragments when a
+  literal description works. "A dial worth turning" becomes "a parameter worth
+  varying".
+- Write complete sentences with their articles and verbs. Avoid compressed
+  fragments and symbol-heavy shorthand that make the reader decode the prose.
+  "Parser rejects bad date → exit 2, no write" becomes "The parser rejects a bad
+  date, exits with code 2, and writes nothing." Split dense sentences that need
+  rereading and vary sentence length naturally.
+- Cut filler such as "in order to" and "it is important to note". Remove vague
+  trailing claims such as "highlighting its importance" unless they add a
+  specific, supported fact. Each sentence should tell the reader something
+  useful to know or do; cut generic praise and promotional claims.
+- State the point directly instead of using "not just X, but Y", invented
+  contrasts, or false ranges such as "from X to Y" for unrelated topics. Do not
+  force points into groups of three or add a generic concluding summary.
+- Skip flattery, rote acknowledgements, and stock chatbot phrases such as "Great
+  question", "Certainly", and "I hope this helps". Respond to the actual request
+  without announcing enthusiasm or congratulating the reader.
+- Use sentence-case headings, restrained bolding, and structure that improves
+  comprehension. Avoid bold labels that merely repeat the following sentence,
+  such as "Performance: Performance improved". Use lists for genuinely parallel
+  or sequential information, not to fragment connected prose.
+- Avoid em dashes, decorative emojis, and curly quotation marks. Use periods or
+  commas to separate thoughts instead of substituting another dash or a
+  parenthetical aside. Use colons for lists and examples, not as habitual
+  mid-sentence connectors. Preserve punctuation needed for technical clarity.
+
+Before sending substantive prose, check for filler, strained phrasing, vague
+claims, repetitive structure, and over-compression. Rewrite what needs it
+without changing the meaning or turning a short answer into a writing exercise.
 
 ## Documenting Discoveries
 
-When you encounter surprising, unexpected, or non-obvious findings while working
-on a project, document them in the project's agent instructions file:
-
-- If `AGENTS.md` exists, add findings there.
-- If only `CLAUDE.md` exists (project-level, not this global one), add there.
-- If neither exists, propose creating an `AGENTS.md` file.
-
-What to document:
-
-- Non-obvious project conventions or patterns.
-- Surprising behaviors, gotchas, or workarounds.
-- Implicit dependencies or ordering constraints between components.
-- Environment-specific quirks (platform differences, tool version
-  sensitivities).
-- Undocumented requirements or constraints found through trial and error.
-
-Keep entries concise and actionable. When a failure repeats, add the smallest
-useful rule to the relevant instructions file; remove rules that stop matching
-the workflow.
+Record recurring or costly non-obvious findings in their narrowest useful home:
+package or workflow guidance for conditional details, root agent instructions
+for broadly relevant hazards and navigation. Prefer a runnable check for an
+objective invariant. Do not add a root rule for every one-off discovery, and
+remove stale guidance. Read-only investigations report proposed documentation
+changes without editing files.
 
 ## Plan Mode
 

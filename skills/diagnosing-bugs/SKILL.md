@@ -1,10 +1,8 @@
 ---
 name: diagnosing-bugs
 description: >-
-  Diagnose an unclear bug, failure, flaky behavior, or performance regression
-  from a focused falsifiable feedback loop. Use for diagnosis-only work or the
-  diagnosis phase of an authorized fix, not when the cause and implementation
-  are already settled.
+  Investigate an unclear failure, flake, or performance regression through
+  falsifiable probes. Diagnosis alone does not authorize a fix.
 ---
 
 # Diagnosing Bugs

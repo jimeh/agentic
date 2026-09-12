@@ -1,10 +1,9 @@
 ---
 name: create-verification-skill
 description: >-
-  Create or materially refresh a project-local skill for proving behavior
-  through a real UI, CLI, API, service, or desktop surface. Use for an explicit
-  verification-workflow request, not an ordinary product test or a general
-  harness audit.
+  Create or refresh a project-local verification skill when explicitly
+  requested. Covers real UI, CLI, API, or desktop workflows, not ordinary
+  product testing.
 ---
 
 # Create a Verification Skill

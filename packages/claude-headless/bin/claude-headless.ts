@@ -32,7 +32,14 @@ type ModelSelection = {
   requestedModel: string;
 };
 
-const managedCodexSkills = [
+const managedDelegationSkills = [
+  "claude-analysis",
+  "claude-first",
+  "claude-implementation",
+  "claude-review",
+  "dual-review",
+  "ship-feature-pr",
+  "multi-agent-execution",
   "codex-analysis",
   "codex-computer-use",
   "codex-first",
@@ -185,7 +192,7 @@ function projectSkillDirs(directory: string): string[] {
   }
 }
 
-function pluginCodexSkillNames(directory: string): string[] {
+function pluginDelegationSkillNames(directory: string): string[] {
   try {
     const pluginDir = resolve(directory);
     const manifest = JSON.parse(
@@ -217,7 +224,7 @@ function pluginCodexSkillNames(directory: string): string[] {
         ?.match(/^name:\s*([^\s#]+)\s*$/m)?.[1]
         ?.replace(/^['"]|['"]$/g, "");
       const skillName = declaredName || entry.name;
-      if (skillName.startsWith("codex-")) {
+      if (/^(codex|claude)-/.test(skillName)) {
         names.push(`${manifest.name}:${skillName}`);
       }
     }
@@ -228,8 +235,8 @@ function pluginCodexSkillNames(directory: string): string[] {
   }
 }
 
-function codexSkillNames(passthrough: string[]): string[] {
-  const names = new Set(managedCodexSkills);
+function delegationSkillNames(passthrough: string[]): string[] {
+  const names = new Set(managedDelegationSkills);
   const skillDirs = [
     join(homedir(), ".claude", "skills"),
     ...projectSkillDirs(process.cwd()),
@@ -239,7 +246,7 @@ function codexSkillNames(passthrough: string[]): string[] {
     skillDirs.push(...projectSkillDirs(directory));
   }
   for (const directory of optionValues(passthrough, "--plugin-dir")) {
-    for (const name of pluginCodexSkillNames(directory)) {
+    for (const name of pluginDelegationSkillNames(directory)) {
       names.add(name);
     }
   }
@@ -247,7 +254,7 @@ function codexSkillNames(passthrough: string[]): string[] {
   for (const skillsDir of new Set(skillDirs)) {
     try {
       for (const entry of readdirSync(skillsDir, { withFileTypes: true })) {
-        if (entry.name.startsWith("codex-")) {
+        if (/^(codex|claude)-/.test(entry.name)) {
           names.add(entry.name);
         }
       }
@@ -338,7 +345,7 @@ async function main(): Promise<number> {
   }
 
   const selection = selectModel(options.model, options.effort);
-  const blockedSkills = codexSkillNames(options.passthrough);
+  const blockedSkills = delegationSkillNames(options.passthrough);
   const claudeArgs = [
     "claude",
     "-p",
@@ -358,6 +365,8 @@ async function main(): Promise<number> {
       ),
     }),
     "--disallowed-tools",
+    "Agent",
+    "Task",
     ...blockedSkills.map((skill) => `Skill(${skill})`),
   ];
   if (selection.effort) {

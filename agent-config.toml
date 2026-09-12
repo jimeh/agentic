@@ -36,44 +36,34 @@ staleSymlinkCleanup = [
   { sourceDir = "thirdparty/skills", targetDir = "~/.agents/skills" },
 ]
 
-# Ordinary skills load in both executors. codex-* skills load only in Claude
-# Code, where they are the handoff path to the Codex CLI; claude-* skills remain
-# available only to non-Claude executors that delegate work to the Claude CLI.
-# Neither family loads in its own executor, so an executor never loads the
-# orchestrator's playbook for itself.
-# frontend-design-systems and vuln-scan-orchestrator are scoped out rather than
-# deleted: both are unused, and every skill description is resident context, so
-# an unused one degrades routing for the rest. Delete the name to restore it.
+# Bounded CLI workers are shared. Session modes and computer-use handoffs
+# remain directional; unused skills stay in source without resident descriptions.
 [[skillSymlinks]]
 sourceRoot = "skills"
 exclude = [
-  "codex-*",
-  "claude-*",
+  "codex-first",
+  "claude-first",
+  "codex-computer-use",
   "frontend-design-systems",
   "multi-agent-execution",
   "vuln-scan-orchestrator",
+  "react-high-performance",
 ]
 targetRoots = ["~/.claude/skills", "~/.agents/skills"]
 
 [[skillSymlinks]]
 sourceRoot = "skills"
-only = ["codex-*"]
-targetRoots = ["~/.claude/skills"]
-
-# multi-agent-execution holds Claude's own delegation and model-routing rules,
-# so it stays out of the executors that delegate work back to Claude.
-[[skillSymlinks]]
-sourceRoot = "skills"
-only = ["multi-agent-execution"]
+only = ["codex-first", "codex-computer-use", "multi-agent-execution"]
 targetRoots = ["~/.claude/skills"]
 
 [[skillSymlinks]]
 sourceRoot = "skills"
-only = ["claude-*"]
+only = ["claude-first"]
 targetRoots = ["~/.agents/skills"]
 
 [[skillSymlinks]]
 sourceRoot = "thirdparty/skills"
+exclude = ["unslop"]
 targetRoots = ["~/.claude/skills", "~/.agents/skills"]
 
 [claude]

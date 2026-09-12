@@ -1,19 +1,37 @@
 ---
 name: claude-analysis
 description: >-
-  Hand large read-only evidence sets to the Claude Code CLI for analysis,
-  extraction, comparison, or triage. No edits, code review, or final judgement.
+  Delegate bounded read-only analysis to Claude CLI when a separate worker
+  is selected. No edits, code review, or final judgment.
 ---
 
 # Claude Analysis
 
 Use Claude for bounded read-only analysis where a separate model context or its
-long-running investigation ability helps. Codex remains responsible for checking
-important claims and deciding what the evidence means.
+long-running investigation ability helps. The parent remains responsible for
+checking important claims and deciding what the evidence means.
 
 This skill is for logs, documents, traces, datasets, generated output, and broad
 multi-file searches. Use `claude-review` for code review and
 `claude-implementation` for edits. Keep browser and GUI work in Codex.
+
+The headless runner denies native worker tools and delegation skills. If the
+parent explicitly requires nested workers, it must choose another supported
+execution arrangement; do not attempt to bypass the runner restrictions.
+
+## Worker boundary
+
+The parent chooses whether delegation is needed. Prefer a native worker with no
+inherited history when it satisfies the task; use this CLI for explicit
+selection or isolation and continuation needs. Start initial sessions fresh,
+with a brief containing objective, paths or revisions, constraints, allowed
+actions, expected output, and verification. Do not paste parent histories.
+
+Include this instruction in every worker prompt: "Perform this task directly. Do
+not invoke delegation skills or launch model workers through native tools or
+CLIs unless the parent explicitly authorizes that structure." Resume the same
+worker for relevant follow-ups; start fresh when its task context no longer
+fits.
 
 ## Workflow
 
@@ -79,9 +97,9 @@ Give Claude the repository, target, question, evidence standard, and output
 shape. Include these boundaries:
 
 ```text
-This is read-only analysis delegated by Codex.
+This is read-only analysis delegated by the parent.
 - Do not edit files or perform external mutations.
-- Do not invoke codex-* skills or the Codex CLI.
+- Do not invoke delegation skills or launch native or CLI model workers.
 - Prefer evidence with paths, lines, timestamps, or short excerpts.
 - Say when evidence is missing or inconclusive.
 

@@ -1,51 +1,34 @@
 ---
 name: codex-implementation
 description: >-
-  Delegate bounded, well-specified implementation work to the Codex CLI, then
-  inspect, verify, and deliver the result as Claude. Not for planning,
-  architecture, ambiguous requirements, or product and UX decisions.
+  Execute settled implementation tasks through Codex CLI when a separate
+  worker is selected. The parent owns scope, verification, and delivery.
 ---
 
 # Codex Implementation
 
-Use Codex as a bounded implementation agent. Claude keeps ownership of planning,
-architecture, decomposition, validation, integration, and user communication.
+Use Codex as a bounded implementation agent. The parent keeps ownership of
+planning, architecture, decomposition, validation, integration, and user
+communication.
 
 Do not hand Codex an entire project or vague feature. Split the work first.
 
-## Delegation Checklist
+## Worker boundary
 
-Use Codex when nearly all answers are yes:
+The parent chooses whether delegation is needed. Prefer a native worker with no
+inherited history when it satisfies the task; use this CLI for explicit
+selection or isolation and continuation needs. Start initial sessions fresh,
+with a brief containing objective, paths or revisions, constraints, allowed
+actions, expected output, and verification. Do not paste parent histories.
 
-1. Is the scope clearly bounded?
-2. Is there a concrete success criterion?
-3. Can the work be completed without architecture, product, API, or UX
-   decisions?
-4. Can the result be independently reviewed?
-5. Would an isolated worktree reduce conflict or risk?
+Include this instruction in every worker prompt: "Perform this task directly. Do
+not invoke delegation skills or launch model workers through native tools or
+CLIs unless the parent explicitly authorizes that structure." Resume the same
+worker for relevant follow-ups; start fresh when its task context no longer
+fits.
 
-If not, retain the work, decompose it further, or use a planning/review skill
-first.
-
-Good candidates:
-
-- Implementing an approved plan
-- Straightforward refactors
-- Migrations
-- Adding tests
-- Implementing a documented API
-- Fixing a well-understood bug
-- Repetitive edits or pattern conversions
-- Updating generated or mechanical code
-
-Bad candidates:
-
-- Architecture or API design
-- UX or product decisions
-- Unclear failures
-- Exploratory work
-- Ambiguous requirements
-- Broad features with unknown scope
+Delegate only settled work with observable success criteria. Keep architecture,
+API, product, and UX decisions in the parent. Decompose ambiguous work first.
 
 ## Workflow
 
@@ -66,11 +49,9 @@ Bad candidates:
    independent reviewer before treating the work as complete — uncommitted
    changes and anything committed since the starting tip — and judge it like a
    contributor PR. A review that inspected only the working tree passes
-   vacuously when Codex committed its work. Do not route the diff to
-   `codex-review`: gpt-5.6-sol re-reviewing its own output is weak independence.
-   For substantial diffs, also get a fresh Claude subagent review; the
-   orchestrating session wrote the spec and is not fully neutral. This gate is
-   mandatory; adjust or reject the result based on what it finds.
+   vacuously when Codex committed its work. Use review-code when a review is
+   requested or required by the owning workflow; do not add reviewers merely
+   because implementation was delegated.
 10. Deliver the result (see Delivery below).
 11. Report what changed, what was verified, and what remains.
 
@@ -80,7 +61,7 @@ Use isolated work when practical:
 
 - Create a dedicated worktree and branch for substantial or parallel tasks.
 - Keep Codex away from unrelated user changes.
-- Ask Codex to leave Git alone and report what it did. Claude owns every Git
+- Ask Codex to leave Git alone and report what it did. The parent owns every Git
   operation, including committing Codex's work in the worktree it ran in.
   Depending on Codex to commit is what makes uncommitted work vanish silently
   during later integration.
@@ -144,96 +125,28 @@ case. Retry at most once after diagnosing a transient failure.
 Parallel independent tasks are fine: separate worktrees, separate artifact
 directories.
 
-After Codex finishes, inspect the result from the worktree:
+After the worker exits, inspect staged, unstaged, and untracked changes plus
+`git diff "$START_TIP" HEAD`. A worker may have committed despite its prompt; an
+empty working-tree diff is not sufficient evidence. Account for every path
+against the initial state. Preserve unrelated work and resolve uncertain
+ownership before staging, deleting, or ignoring files. Use `commit` within the
+caller's authorization to capture only the verified task result.
 
-```bash
-cd "$WORKTREE_DIR"
-git status --short
-git diff
-git diff "$START_TIP" HEAD   # anything Codex committed on its own
-```
+If the task depends on uncommitted input, use the current checkout or transfer
+only explicitly scoped input into isolation. Never copy unrelated user changes.
 
-The last command is not optional. If Codex committed, the first two are empty
-and a review that stops there inspects nothing at all.
+## Delivery and cleanup
 
-Account for every path the status reports. Codex's report explains most of them;
-the rest are suspect. Delete strays, or add genuine build artifacts to
-`.gitignore` where the repository should have been ignoring them anyway, and ask
-Codex about anything still ambiguous. Fix the worktree rather than the staging
-set, so the sweep below stays safe to run blind and later resets cannot leave a
-stray behind — `git reset --hard` discards tracked modifications but leaves
-untracked files in place.
+The parent owns delivery within user authorization. Delegating implementation
+does not authorize push, PR creation, or integration into another checkout. A
+human reviews the work before it ships. Capture and verify the complete result
+before integration or cleanup; retain branches backing open PRs.
 
-For branch-based delivery, capture the result yourself once it looks right:
-
-```bash
-git add -A && git commit -m "codex: <slug>"
-```
-
-The message is throwaway if the destination squashes it. Nothing to commit is a
-valid outcome when Codex committed on its own — the branch tip is what matters,
-not who wrote it — but only once the diff against `START_TIP` has actually been
-reviewed.
-
-If the implementation depends on uncommitted work in the original checkout,
-either keep the task in the current checkout or explicitly transfer only the
-needed patch/context into the worktree. Do not accidentally copy unrelated user
-changes.
-
-## Delivery
-
-The orchestrating session owns delivery. Decide how the verified result should
-land based on the work it belongs to: fold it into the checkout or branch where
-a larger task is being assembled, commit it on its own branch and offer a pull
-request, or hand back a patch. The delegation mechanics (worktree or not) do not
-dictate the destination.
-
-Two constraints always hold:
-
-- Do not push, open a PR, or integrate into the user's checkout or main branch
-  without the user's say-so.
-- A human reviews the work before it ships; for standalone changes that usually
-  means a pull request.
-
-To apply a worktree result onto another checkout of the same repository, use the
-shared object database rather than a patch. From the destination checkout:
-
-```bash
-git merge-base --is-ancestor HEAD "$BRANCH"
-git merge --squash "$BRANCH"
-```
-
-The ancestry check confirms the worktree branch still builds on the destination
-tip; stop and reconcile if it fails. `git merge --squash` then stages the
-complete result — new files, renames, and deletions included — and commits
-nothing, leaving the commit message and scope to the orchestrating session.
-
-A patch is only needed for a genuine separate clone, which does not share the
-object database:
-
-```bash
-(cd "$WORKTREE_DIR" && git add -A &&
-  git diff --binary --cached HEAD) > "$ARTIFACT_DIR/change.patch"
-git apply "$ARTIFACT_DIR/change.patch"
-```
-
-Staging inside the source checkout is required so newly created files are
-included in the patch; `git diff HEAD` alone would drop them.
-
-## Cleanup
-
-Once the result is delivered (or the work is abandoned), remove the throwaway
-checkout so worktrees and branches do not accumulate:
-
-```bash
-git worktree remove "$WORKTREE_DIR"
-rm -rf "$WORKTREE_PARENT" "$ARTIFACT_DIR"
-```
-
-Delete the local `codex/<slug>` branch once its result is integrated or
-rejected. A squash integration leaves it unmerged as far as Git is concerned, so
-that needs `git branch -D`. Keep the branch while a PR based on it is still
-open.
+For isolated results, read
+[delivery and continuation](references/delivery-and-continuation.md) before
+integration, cleanup, or a post-integration correction. It covers ancestry
+checks, squash integration, separate-clone patches including new files, and safe
+resets.
 
 ## Current Checkout Command Shape
 
@@ -253,44 +166,11 @@ global state, or files outside the workspace.
 
 ## Iteration
 
-Follow-up fixes are cheaper through the same Codex session than a fresh
-zero-context run, and keep the context Codex already built. Read the session ID
-from the previous successful run's `run.json` (the `jq -e` form fails instead of
-yielding `null` when the field is missing), write the follow-up prompt to a
-fresh file, and resume with a fresh artifact directory:
-
-```bash
-SESSION_ID="$(jq -er '.sessionId | select(type == "string" and length > 0)' \
-  "$ARTIFACT_DIR/run.json")"
-NEXT_ARTIFACT_DIR="$(mktemp -d "${TMPDIR:-/tmp}/codex-implementation.XXXXXX")"
-NEXT_PROMPT="$NEXT_ARTIFACT_DIR/prompt.md"
-
-(cd "$WORKTREE_DIR" && codex-headless \
-  --artifact-dir "$NEXT_ARTIFACT_DIR" \
-  --sandbox workspace-write \
-  --resume "$SESSION_ID" \
-  < "$NEXT_PROMPT")
-```
-
-When a previous round was already integrated into the destination, start the
-next round from the integrated state, including any adjustment made during
-review. Do this yourself, before re-prompting, and only after capturing the
-previous round:
-
-```bash
-(cd "$WORKTREE_DIR" && git reset --hard <destination-branch>)
-```
-
-The reset is safe because you committed Codex's work rather than relying on it
-to do so. It keeps every round a plain `git merge --squash` from the destination
-checkout, and removes any need to track which commits were already integrated.
-Do not reset before a round whose predecessor has not been integrated; the
-target would still be the pre-implementation tip, and the reset would discard
-the work being corrected.
-
-The follow-up prompt states only what is wrong, the revision boundary, and what
-proof is expected. If two resume rounds fail to fix the problem, stop delegating
-and make the fix directly.
+Resume the same worker for a focused correction. Read
+[delivery and continuation](references/delivery-and-continuation.md) for session
+commands and safe alignment after an earlier round was integrated. Preserve
+uncaptured work; do not reset a worker to the pre-implementation destination.
+Reassess repeated unsuccessful attempts rather than looping blindly.
 
 ## Prompting Strategy
 
@@ -329,22 +209,10 @@ Report:
 - Limitations or suggested follow-up
 ```
 
-Examples:
-
-```text
-Implement the approved plan for the authentication middleware.
-Keep public APIs unchanged. Add tests. Return when complete.
-```
-
-```text
-Refactor the cache implementation to remove duplicate logic.
-Do not change behavior. Update tests if required. Return a summary of changes.
-```
-
 ## Scope Control
 
 - If the task grows beyond the original scope, stop and recommend a split.
-- If architectural issues appear, return them to Claude. Do not redesign the
+- If architectural issues appear, return them to the parent. Do not redesign the
   system independently.
 - If requirements are missing, report the gap and recommended next step.
 - If repeated failures happen, explain the blocker. Do not retry the same
@@ -353,14 +221,14 @@ Do not change behavior. Update tests if required. Return a summary of changes.
 
 ## Reporting Back
 
-After Codex finishes, Claude must inspect the result before presenting it.
+After Codex finishes, the parent must inspect the result before presenting it.
 
 Report:
 
 - What Codex changed
 - Files changed
 - Verification run and result
-- Any Claude adjustments after review
+- Any parent adjustments after review
 - Assumptions, limitations, or follow-up work
 
 If Codex was blocked, report why, what information is missing, and the next

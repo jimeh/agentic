@@ -1,10 +1,8 @@
 ---
 name: blast-radius
 description: >-
-  Audit downstream and hidden risk beyond a code change's visible diff. Use when
-  the user asks for blast radius, affected consumers, hidden breakage, or proof
-  that a deceptively small change is safe. Ordinary code review and
-  implementation use their own workflows.
+  Audit a change's downstream consumers and hidden risks when requested.
+  Read-only; ordinary diff reviews use review-code.
 ---
 
 # Blast Radius

@@ -1,9 +1,8 @@
 ---
 name: review-code
 description: >-
-  Review code changes against requirements and return verified findings with a
-  separate validation and test-quality verdict. Use for direct reviews and as
-  the shared review standard for reviewer and orchestration skills.
+  Review a code change against requirements. Use for requests such as "review
+  this change"; selects direct inspection or an independent reviewer.
 ---
 
 # Code Review
@@ -21,6 +20,23 @@ reviewer independence and synthesis.
 When the user also authorizes fixes or pull-request stewardship, complete the
 review first and hand confirmed findings to that workflow rather than absorbing
 its responsibilities.
+
+## Select the Reviewer
+
+For a generic review request, inspect directly if this session did not author
+the change. If it did, use a fresh native reviewer without inherited history
+(`fork_turns="none"` where supported). Supply a compact brief, not the authoring
+conversation or conclusions.
+
+Use codex-review or claude-review when the user explicitly selects that CLI
+transport, or when native tooling cannot provide required isolation or persisted
+continuation. A request for a named engine selects that engine, not necessarily
+a CLI. Never infer dual-review from a generic review request.
+
+A delegated reviewer executes the review directly. Loading this shared standard
+from a transport or orchestration skill does not authorize another delegation.
+Do not launch further model workers unless the parent explicitly authorizes it.
+The parent verifies candidate findings and owns the final response.
 
 ## Pin the Target and Brief
 

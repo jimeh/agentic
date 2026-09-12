@@ -92,6 +92,10 @@ grep -Fx -- 'Skill(codex-computer-use)' "$capture_dir/default.args" >/dev/null
 grep -Fx -- 'Skill(codex-first)' "$capture_dir/default.args" >/dev/null
 grep -Fx -- 'Skill(codex-implementation)' "$capture_dir/default.args" >/dev/null
 grep -Fx -- 'Skill(codex-review)' "$capture_dir/default.args" >/dev/null
+grep -Fx -- 'Skill(claude-analysis)' "$capture_dir/default.args" >/dev/null
+grep -Fx -- 'Skill(claude-implementation)' "$capture_dir/default.args" >/dev/null
+grep -Fx -- 'Skill(claude-review)' "$capture_dir/default.args" >/dev/null
+grep -Fx -- 'Agent' "$capture_dir/default.args" >/dev/null
 grep -Fx -- '--settings' "$capture_dir/default.args" >/dev/null
 grep -F '"codex-analysis":"off"' "$capture_dir/default.args" >/dev/null
 grep -Fx -- '--output-format' "$capture_dir/default.args" >/dev/null

@@ -1,13 +1,9 @@
 ---
 name: frontend-design-systems
 description: >-
-  This skill should be used when the user asks to "build a design system",
-  "create consistent UI", "define color ratios", "set up typography system",
-  "normalize geometry tokens", "validate visual hierarchy", "apply design
-  constraints", or when generating frontend UI that requires systematic
-  visual consistency. Augments the frontend-design skill with system-level
-  visual decision rules for consistency, hierarchy, and scalable UI
-  decision-making.
+  Define or audit shared UI color, typography, geometry, and hierarchy
+  rules. Use for design-system consistency after frontend-design establishes
+  the layout.
 version: 0.1.0
 inspired_by: https://www.youtube.com/watch?v=eVnQFWGDEdY
 ---

@@ -1,9 +1,8 @@
 ---
 name: codex-review
 description: >-
-  Run an independent Codex CLI review of code changes, commits, branches, or
-  pull requests to improve confidence in correctness, security, regressions,
-  and test coverage.
+  Execute a delegated review through Codex CLI. Use when explicitly
+  requested or selected by the review workflow; review-code owns generic routing.
 ---
 
 # Codex Review
@@ -15,22 +14,29 @@ continuation.
 
 Start each initial review in a fresh Codex session. Fresh context does not
 require a disposable session: preserve it when an orchestration workflow may
-need the same reviewer for follow-up verification. Claude remains the
+need the same reviewer for follow-up verification. The parent remains the
 orchestrator and final judge.
 
-Use this skill for broad or risky changes, user-requested Codex reviews,
-reviewing Claude's own implementation, or getting a cheap second perspective on
-a plan or diff.
-
-Do not use it for small local reviews, formatting-only diffs, or to avoid
-reading the code yourself. Fresh context provides context independence, not
-cross-engine diversity. Do not infer implementation provenance or describe a
-Codex review of known Codex-authored work as cross-engine. Honor explicit
-reviewer selection and `dual-review` workflows. Treat Codex's report as
-evidence, not authority.
+Use this transport only when explicitly requested or selected by review-code.
+The orchestrating agent owns final judgment. Fresh same-engine context provides
+independence from the authoring conversation, not cross-engine diversity.
 
 Assume `codex` is installed and configured to use the desired GPT/Codex model
 unless the environment proves otherwise.
+
+## Worker boundary
+
+The parent chooses whether delegation is needed. Prefer a native worker with no
+inherited history when it satisfies the task; use this CLI for explicit
+selection or isolation and continuation needs. Start initial sessions fresh,
+with a brief containing objective, paths or revisions, constraints, allowed
+actions, expected output, and verification. Do not paste parent histories.
+
+Include this instruction in every worker prompt: "Perform this task directly. Do
+not invoke delegation skills or launch model workers through native tools or
+CLIs unless the parent explicitly authorizes that structure." Resume the same
+worker for relevant follow-ups; start fresh when its task context no longer
+fits.
 
 ## Workflow
 

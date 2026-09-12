@@ -1,10 +1,9 @@
 ---
 name: why
 description: >-
-  Trace repository history and available evidence to explain why code or a
-  technical decision exists. Use for historical rationale, constraints,
-  thresholds, rejected alternatives, or explanation-only rebase conflicts.
-  Current behavior and active bug diagnosis use other workflows.
+  Explain historical reasons for repository code or decisions using source-
+  control evidence. Read-only; current mechanics and active bugs use other
+  workflows.
 ---
 
 # Why

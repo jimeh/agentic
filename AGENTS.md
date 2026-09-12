@@ -22,7 +22,7 @@ The Bun workspace separates the repository tooling by ownership:
   artifact directory, NDJSON stream handling, progress log, heartbeat, signal
   forwarding, and exit policy.
 - `packages/claude-headless` owns the Claude-specific `claude-headless` bin
-  (model routing, permission and setting flags, Claude stream events, Codex
+  (model routing, permission and setting flags, Claude stream events, delegation
   skill denial) and its integration test.
 - `packages/codex-headless` owns the Codex-specific `codex-headless` bin
   (sandbox, model and effort config, resume and review modes, Codex stream
@@ -36,37 +36,33 @@ The Bun workspace separates the repository tooling by ownership:
 
 `packages/agent-config` auto-discovers and symlinks skills:
 
-- **Ordinary first-party skills**: any `skills/*/` dir with a `SKILL.md` other
-  than `codex-*` wrappers and directional `claude-*` skills →
-  `~/.claude/skills/` and `~/.agents/skills/`
-- **Vendored third-party skills**: any `thirdparty/skills/*/` dir with a
-  `SKILL.md` → the same global skill targets
+- **Selected first-party skills**: `skills/*/` directories with a `SKILL.md`,
+  subject to the selection rules below → `~/.claude/skills/` and
+  `~/.agents/skills/`
+- **Vendored third-party skills**: selected `thirdparty/skills/*/` directories
+  with a `SKILL.md` → the same global skill targets
 
 Managed Claude subagents can live under `claude/agents/` and are linked
 individually into `~/.claude/agents/`, allowing unrelated local agents to
 coexist. None are currently defined; the `staleSymlinkCleanup` entry for that
 directory remains so previously installed links are removed.
 
-Skill symlink entries accept `only`/`exclude` glob lists to scope which skills
-an entry links. `codex-*` wrapper skills link only into `~/.claude/skills/` —
-they are the handoff path from Claude to the Codex CLI. `claude-*` skills are
-linked into `~/.agents/skills/` only, so Claude never loads skills that delegate
-work back to itself.
+Skill symlink entries accept `only`/`exclude` glob lists. Bounded analysis,
+implementation, and review workers for both engines are installed into both
+`~/.claude/skills/` and `~/.agents/skills/`. The `codex-first` and
+`codex-computer-use` handoffs remain Claude-only; `claude-first` remains
+Codex-only. `multi-agent-execution` contains Claude-specific routing and stays
+Claude-only. `react-high-performance` and vendored `unslop` remain in source but
+are excluded from installation. Base rules own the shared writing fundamentals.
 
-The directional Claude set is `claude-analysis`, `claude-first`,
-`claude-implementation`, and `claude-review`. There is deliberately no
-`claude-computer-use`; browser and GUI work stays with Codex. These skills use
-the installed `claude-headless` runner from `packages/claude-headless/bin/` for
-model and effort routing, streaming progress, session handling, and private run
-artifacts. The runner denies `codex-*` skill calls to prevent delegation loops.
-
-The `codex-*` skills use the installed `codex-headless` runner from
-`packages/codex-headless/bin/` the same way: sandbox selection, streamed
-progress, session resume, review mode, and private run artifacts. Both runners
-share `packages/agent-headless` and write the same artifact layout
-(`events.ndjson`, `progress.log`, `result.md`, `run.json`, `stderr.log`), so
-skills on either side read runs identically. Codex needs no skill denial: the
-skill symlink scoping keeps `codex-*` skills out of `~/.agents/skills`.
+The CLI worker skills use the corresponding headless runner for model routing,
+streaming, sessions, and private artifacts. Both share `packages/agent-headless`
+and the same layout: `events.ndjson`, `progress.log`, `result.md`, `run.json`,
+and `stderr.log`. Worker prompts prohibit nested model delegation. Claude's
+runner additionally denies native worker tools and both families of delegation
+skills. This is not a shell-level prohibition on invoking model executables;
+Codex workers rely on the prompt boundary rather than skill installation
+filters.
 
 To add a new skill, just create the directory — the installer picks it up
 automatically. Stale symlinks are cleaned up on each run, including links that
@@ -214,64 +210,13 @@ settle before installation.
 2-space indent, `bash` variant, switch case indent, space redirects (`> file`
 not `>file`). See `.editorconfig` for shfmt flags.
 
-## Discoveries
+## Operational hazards and references
 
-- Octokit request v10 ignores the `request.timeout` option; only
-  `request.signal` cancels a call, and an aborted fetch surfaces with
-  `status: 500`, so check your own timer before classifying the error. The
-  PR-monitor CLI tests use a local HTTP server through a test-only preload; they
-  never contact a live GitHub repository.
+Do not run agent-config install from a delivery worktree. Test installer
+behavior with a synthetic `--root`: a temporary HOME alone can still link Claude
+settings to tracked files and let plugin setup write through that symlink.
 
-- The external `skill-creator` `quick_validate.py` helper may lack an executable
-  bit and requires `PyYAML`. Invoke it through `python3`; if that dependency is
-  missing locally, rely on manual frontmatter checks plus `mise run lint` for
-  repo-local skill edits.
-- `codex/config.toml` supports the
-  `#:schema https://developers.openai.com/codex/config-schema.json` header for
-  editor autocomplete/validation in tools like VS Code or Cursor with Even
-  Better TOML.
-- Leave Codex's `git-commit-instructions` and `git-pr-instructions` unset. They
-  customize app buttons that are not used here; the installed `commit` and
-  `file-pr` skills own those workflows without mirrored config copies.
-- When testing `agent-config install` with a temporary `HOME`, tools resolved
-  through mise shims can fail trust checks. Prefer POSIX tools for setup helpers
-  where possible, and validate symlink cleanup before plugin setup side effects.
-- A temporary `HOME` does not isolate `agent-config install`. It links
-  `~/.claude/settings.json` to the repo's `claude/settings.json`, then Claude
-  plugin setup writes through that symlink — so the run mutates tracked repo
-  files, including stamping `extraKnownMarketplaces` with the absolute path of
-  whichever checkout it ran from. Exercise install behavior through
-  `install.test.ts` with a synthetic `--root` instead; those tests never point
-  at the real repo config.
-- For gone-branch cleanup, `git branch -v` shows `[gone]` and `git branch -vv`
-  adds the upstream ref. Prefer `git for-each-ref` for scripts that need stable
-  gone-branch detection.
-- Codex reads `~/.codex/AGENTS.md` only and never falls back to
-  `~/.agents/AGENTS.md`; with no file at the former, it loads no global
-  instructions at all. Verify what a session actually sees with
-  `codex debug prompt-input`, which renders the model-visible prompt.
-- Codex does not expand `@path` references — they reach the model as literal
-  text. Content that must reach Codex has to be rendered inline.
-- opencode reads `~/.config/opencode/AGENTS.md`, falling back to
-  `~/.claude/CLAUDE.md` only when that file is absent. Populating the former
-  stops opencode inheriting Claude-only rules.
-- Claude CLI's built-in `fable` alias lags behind new Fable releases (2.1.252
-  still resolves it to `claude-fable-5`), so `claude-headless` maps friendly
-  names to explicit model IDs itself. The CLI accepts an ID it does not know,
-  logging `unrecognized_model` and reporting a 200K context window in its own
-  metadata; the API still uses the model's real window.
-- `thirdparty:add-skills` reports and skips unrelated upstream skills with
-  malformed or non-slug metadata. Explicitly selecting an invalid skill still
-  fails instead of vendoring metadata the local harness would reject.
-- Codex CLI (0.152.x): `codex exec resume` and `codex exec review` accept
-  neither `-s` nor `-C` nor `--add-dir`; `-c sandbox_mode="..."` works on every
-  subcommand, so `codex-headless` sets the sandbox that way and always runs from
-  the current directory. Review scope flags (`--uncommitted`, `--base`,
-  `--commit`) reject a prompt argument, and without a `-` positional stdin is
-  ignored. On failure Codex emits `error` then `turn.failed` and never writes
-  the `-o` file. `item.completed` events carry full command output, so keep them
-  out of any condensed log.
-- Bun drops a bare `--` when it is the first argument to a script
-  (`./run.ts -- -c x` yields `["-c", "x"]`). The headless runners rely on
-  `--artifact-dir` or another option preceding `--`; a leading `--` cannot be
-  detected from inside the script.
+Use [tooling notes](docs/agents/tooling-notes.md) for installer, headless CLI,
+provider-specific, and vendor-intake quirks. Use the
+[routing scenarios](docs/agents/routing-scenarios.md) when changing skill
+selection or delegation rules.

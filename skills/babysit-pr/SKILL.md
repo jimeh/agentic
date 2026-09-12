@@ -1,11 +1,9 @@
 ---
 name: babysit-pr
 description: >-
-  Handle post-filing work on an open GitHub pull request. Use when the user asks
-  to post a comment, publish findings from a review, or share other feedback;
-  watch, babysit, monitor, or get a PR ready; wait for CI or reviews; address
-  feedback; reply to or resolve review threads; or push follow-up fixes. Do not
-  merge unless explicitly asked.
+  Maintain an existing PR: monitor checks, address feedback, or publish
+  requested comments. Use for PR stewardship and bounded post-filing
+  actions; never infer merge authority.
 ---
 
 # Babysit PR
@@ -39,10 +37,15 @@ to get the PR ready, require the current head to have green required checks, no
 valid unresolved blocking feedback, satisfied required reviews, a mergeable
 branch, and non-draft state. Never infer permission to merge.
 
-Adopt any remaining correction budget supplied by a caller workflow. Otherwise
-set a context-appropriate budget, defaulting to two pushes when the user has not
-requested a longer follow-through. Batch related fixes so every push represents
-a deliberate candidate head.
+Honor explicit user correction budgets. Otherwise continue authorized fixes
+while making meaningful progress. Reassess repeated unsuccessful attempts and
+escalate stalled progress, material scope changes, or new authority needs. Batch
+related fixes; a push count alone is not a stopping condition.
+
+Inherit review requirements from the user, repository, or explicitly selected
+workflow. Do not initiate independent review merely because babysitting was
+requested. Use dual-review only when the user requested it or selected
+ship-feature-pr; preserve that requirement for justified continuation.
 
 ## Build a Current Review Picture
 
@@ -96,9 +99,8 @@ cannot invalidate it. Choose follow-up review by affected risk:
   invalidates all prior reasoning. Use `dual-review` continuation when the
   caller requires both Codex and Claude coverage.
 
-Count every post-invocation correction push against one shared budget, including
-bot-driven corrections. Do not wait for or debug CI on a head that another known
-fix will supersede.
+When the user supplied a correction budget, count bot-driven corrections too. Do
+not wait for or debug CI on a head that another known fix will supersede.
 
 ## Reply and Resolve
 
@@ -138,9 +140,10 @@ or job. A monitor event reports an observation, not readiness or permission to
 merge; refresh the exact remote head and required gates before finishing.
 
 Route actionable CI failures and new feedback through the same bounded loop. If
-the budget is exhausted, a required reviewer is unavailable, a user decision is
-needed, permissions fail, or external state cannot progress, leave the PR in its
-safe current state and report the blocker.
+an explicit user budget is exhausted or repeated attempts make no progress, a
+required reviewer is unavailable, a user decision is needed, permissions fail,
+or external state cannot progress, leave the PR in its safe current state and
+report the blocker.
 
 Mark a draft ready only when the requested completion condition holds on the
 exact remote head. Report the final SHA, checks, review decision, unresolved

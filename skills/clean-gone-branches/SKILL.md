@@ -1,107 +1,43 @@
 ---
 name: clean-gone-branches
 description: >-
-  Delete local Git branches whose upstream is marked [gone], removing their
-  worktrees first. Previews and asks for confirmation unless told to delete
-  without it.
+  Remove local branches with gone upstreams and their worktrees. Preview and
+  confirm unless the user explicitly waives confirmation.
 ---
 
-# Clean Gone Branches
+# Clean gone branches
 
-Remove local Git branches whose tracked upstream branch no longer exists on the
-remote. If a gone branch has an associated worktree, remove that worktree before
-deleting the branch.
+Use the bundled `scripts/clean-gone-branches.sh` from the requested repository;
+do not reimplement its selection or deletion logic. Resolve the script relative
+to this skill directory.
 
-## Workflow
+Inspect `git status --short`, `git branch --show-current`,
+`git rev-parse --show-toplevel`, and `git worktree list --porcelain` without
+changing local work. Stay in that repository; do not use `git -C`.
 
-### 1. Use the Bundled Script
+## Preview and authorize
 
-Run cleanup through the bundled script:
+Run the script with `--dry-run`. It fetches and prunes remote refs by default;
+stop if that fails, since unpruned refs can hide gone upstreams. If nothing is
+eligible, report that and stop.
 
-```bash
-<skill-dir>/scripts/clean-gone-branches.sh
-```
+Use its output as the removal set. List every branch to delete in Markdown
+bullets, with separate lists for worktrees to remove and branches to skip. Ask
+whether to delete the listed branches unless the user already explicitly waived
+confirmation. Always preview, even when confirmation was waived.
 
-Resolve `<skill-dir>` to this skill's directory, then run the script from the
-Git repository the user wants cleaned. Keep surrounding judgment focused on the
-repo state and script output rather than reimplementing the cleanup logic.
+After authorization, run the script with `--no-fetch` to use the same pruned
+remote-tracking state. Report removed worktrees, deleted branches, and skips
+with their reasons.
 
-### 2. Confirm Repository State
+## Deletion boundaries
 
-Run these commands from the current repository:
+Remove an associated worktree before deleting its branch. Skip the currently
+checked-out branch and explain that the user must switch away first. The script
+uses `git branch -D`, so previewed deletion can discard local commits that `-d`
+would protect. Do not expand authorization beyond the requested gone-branch
+cleanup.
 
-- `git status --short` - note uncommitted changes without modifying them
-- `git branch --show-current` - identify the currently checked out branch
-- `git rev-parse --show-toplevel` - identify the main worktree root
-- `git worktree list --porcelain` - inspect attached worktrees
-
-Do not use `git -C`; stay in the current working directory unless the user
-explicitly asks to operate elsewhere.
-
-### 3. Preview Cleanup and Ask
-
-Run the script in dry-run mode first:
-
-```bash
-<skill-dir>/scripts/clean-gone-branches.sh --dry-run
-```
-
-The script runs `git fetch --prune` by default. If fetching fails because of
-authentication, network access, or a missing remote, stop and report the
-failure. Deleted upstream branches may not show as `[gone]` until remote refs
-are pruned.
-
-Use the dry-run output as the source of truth for which branches and worktrees
-are pending removal. Show that summary to the user and ask whether to delete all
-listed gone branches.
-
-The preview response must name every branch that would be deleted in a Markdown
-bullet list. Do not summarize only with a count or inline the branch names in a
-paragraph. If the dry run includes worktrees to remove or branches to skip, add
-separate bullet lists for those paths and skipped branch names too.
-
-If the script reports no gone branches, report that no cleanup is needed and
-stop.
-
-### 4. Run Cleanup
-
-After the user confirms, run:
-
-```bash
-<skill-dir>/scripts/clean-gone-branches.sh --no-fetch
-```
-
-Use `--no-fetch` after a successful dry run so cleanup acts on the same pruned
-remote-tracking state shown in the preview.
-
-If the user's initial request explicitly says to delete/remove all gone branches
-without confirmation, skip the confirmation prompt and run the cleanup command
-immediately after the dry run. Still use the dry run first so the script, not
-the agent, identifies the removal set.
-
-### 5. Report Results
-
-Summarize only the useful facts from the script output:
-
-- Worktrees removed
-- Branches deleted
-- Branches skipped and why
-- Whether no cleanup was needed
-
-## Implementation Notes
-
-The script uses `git for-each-ref` instead of parsing the display layout from
-`git branch -vv`. This keeps gone-branch detection stable while still allowing
-the preview workflow to show human-readable branch status when useful.
-
-Plain `git branch -v` shows `[gone]`; `git branch -vv` adds the upstream ref,
-such as `[origin/my-branch: gone]`.
-
-Branches checked out in another worktree must have that worktree removed before
-the branch can be deleted. If the gone branch is checked out in the current
-worktree, skip it and tell the user to check out a different branch before
-cleanup can delete it.
-
-The script deletes branches with `git branch -D` because a gone upstream can
-leave local commits that Git would otherwise protect with `-d`; the user
-explicitly asked for stale gone-branch cleanup.
+The script uses `git for-each-ref` for stable detection rather than parsing
+`git branch -vv`. In human-readable output, `-v` shows `[gone]`; `-vv` also
+includes the upstream name.

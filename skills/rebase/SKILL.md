@@ -1,10 +1,9 @@
 ---
 name: rebase
 description: >-
-  Rebase the current branch onto a requested or live upstream base, including
-  intent-aware conflict resolution and optional publication of that rebase. Use
-  for rebase operations, not explanation-only, merge, cherry-pick, or standalone
-  force-push requests.
+  Rebase onto the requested or live upstream base, preserving intent and
+  local state. Publishing requires explicit authority; explanation-only
+  conflicts use why.
 ---
 
 # Git Rebase

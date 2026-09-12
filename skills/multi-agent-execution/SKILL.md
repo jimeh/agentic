@@ -1,9 +1,9 @@
 ---
 name: multi-agent-execution
 description: >-
-  How to delegate work across subagents and workflows: decomposition, model
-  routing, and independent review. Load when the user requests multi-agent
-  execution or an invoked skill's workflow calls for delegation.
+  Coordinate scoped delegation when the user or an invoked workflow calls
+  for multiple agents. Owns decomposition, isolation, and Claude model
+  routing.
 ---
 
 # Multi-Agent Execution
@@ -20,6 +20,9 @@ isolation, and review once that decision is made.
 - Give each delegated task clear scope, inputs, outputs, and acceptance
   criteria. Split work before delegating; one deliverable per agent.
 - Never delegate final judgement.
+- Start workers without inherited parent history. Use `fork_turns="none"` when
+  supported, otherwise a fresh native or CLI context. Send a focused brief and
+  prohibit further delegation unless the parent explicitly authorized it.
 - Give every concurrent implementation agent a dedicated worktree, and never let
   multiple implementation agents edit the same checkout. For one implementer,
   use the topology selected by the invoking workflow; it is authoritative for
@@ -79,8 +82,9 @@ isolation, and review once that decision is made.
 
 - When a selected skill or workflow defines its own review channels, follow it.
   The rest of this section is the default for reviews it does not specify.
-- Review any diff in a fresh context, whatever authored it. Never continue the
-  authoring context or hand the diff back to the authoring agent.
+- Use review-code to select direct or independent review. Delegation alone does
+  not require another reviewer. Never ask an authoring worker to provide its own
+  independent review.
 - A fresh context on the same model is the baseline, and a different model is
   more independent. Use `fable` when the stakes justify a harder reviewer, and
   route to a `codex-*` skill for cross-engine independence when the user asks

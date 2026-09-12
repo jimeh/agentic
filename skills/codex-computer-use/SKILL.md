@@ -1,9 +1,8 @@
 ---
 name: codex-computer-use
 description: >-
-  Hand local computer-use verification to the Codex CLI — GUI interaction,
-  simulators, app launching, screenshots, runtime inspection. Use when the
-  answer has to come from a running application rather than from reading code.
+  Delegate GUI or runtime observation to Codex CLI from Claude. Use for
+  running-app verification, not implementation or static review.
 ---
 
 # Codex Computer Use
@@ -13,20 +12,6 @@ stays responsible for planning, interpretation, validation, summarising, and
 deciding next actions.
 
 This skill is for observation and verification, not implementation or review.
-
-## Routing Checklist
-
-Use Codex computer use when several answers are yes:
-
-1. Do I need to interact with a GUI?
-2. Do I need observations from a running application?
-3. Would screenshots improve confidence?
-4. Does this require browser, simulator, device, or native app interaction?
-5. Would desktop automation be more reliable than reasoning from code?
-6. Am I verifying behavior rather than inferring it?
-
-If the task is code, architecture, planning, review, or static analysis, keep it
-in Claude or use a different skill.
 
 ## Workflow
 
@@ -124,18 +109,6 @@ Report:
 - suggested follow-up
 ```
 
-Examples:
-
-```text
-Verify that onboarding works. Capture screenshots of each step. Report any
-unexpected behavior.
-```
-
-```text
-Launch the app, open Settings, enable feature X, and verify the resulting UI.
-Capture screenshots if behavior differs from expectations.
-```
-
 ## Safety Boundaries
 
 - Launching apps, browsers, simulators, and local dev servers is allowed when
@@ -170,15 +143,5 @@ If computer use is blocked, report:
 - whether screenshots or logs were captured
 - likely cause
 - recommended next step
-
-Common blockers:
-
-- app cannot launch
-- dev server is unavailable
-- authentication blocks progress
-- permissions are missing
-- simulator/device is unavailable
-- unexpected dialogs appear
-- environment differs from the user's expected setup
 
 Do not retry repeatedly without changing strategy.

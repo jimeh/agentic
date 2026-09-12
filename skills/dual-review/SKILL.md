@@ -1,12 +1,13 @@
 ---
 name: dual-review
 description: >-
-  Run independent Codex and Claude reviews of the same code change and reconcile
-  their findings against the evidence. Use for dual-review requests and the
-  review phase of ship-feature-pr.
+  Run and reconcile Codex and Claude reviews. Use only when explicitly requested
+  or required by a user-selected ship-feature-pr workflow.
 ---
 
 # Dual Review
+
+Do not infer dual review from change size, risk, PR filing, or babysitting.
 
 Read and apply the `review-code` skill as the shared standard for target
 pinning, the review brief, inspection, finding acceptance, revision coverage,
@@ -23,15 +24,15 @@ Use `review-code` to pin one exact target and build one compact brief. Give that
 same brief and review contract to both reviewers.
 
 Preflight both channels, then start exactly one fresh Codex reviewer and one
-fresh Claude reviewer concurrently when practical. Use a fresh native reviewer
-for the orchestrator's engine and the corresponding `claude-review` or
-`codex-review` skill for the other. Use the same-engine CLI only when native
-tooling is unavailable.
+fresh Claude reviewer concurrently when practical. Use review-code transport
+selection for each channel: prefer a fresh native reviewer for the current
+engine when it provides the required isolation and continuation, otherwise use
+the corresponding CLI review skill.
 
-Do not count the orchestrator as a reviewer. Give native reviewers the least
-inherited context available, do not expose either initial report to the other
-reviewer, and do not seed them with existing review conclusions unless the user
-asked to verify those conclusions.
+Do not count the orchestrator as a reviewer. Start native reviewers without
+parent history, explicitly using `fork_turns="none"` where supported, do not
+expose either initial report to the other reviewer, and do not seed them with
+existing review conclusions unless the user asked to verify those conclusions.
 
 Run both channels regardless of known or unknown implementation provenance. Do
 not infer authorship, weight findings by engine, or substitute two sessions from

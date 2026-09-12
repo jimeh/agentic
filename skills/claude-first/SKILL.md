@@ -1,9 +1,9 @@
 ---
 name: claude-first
 description: >-
-  Opt-in session mode making the Claude Code CLI the default implementer and
-  bulk-analysis engine while Codex specifies, reviews, verifies, and delivers.
-  Ordinary implementation requests never trigger it.
+  Explicit session mode using Claude CLI for implementation and bulk
+  analysis while Codex owns decisions and delivery. Never infer from
+  ordinary work.
 ---
 
 # Claude First
@@ -43,8 +43,8 @@ stronger.
 - Inspection, verification, integration, and final user communication
 
 For mixed work, Codex settles the design and acceptance criteria before
-delegating implementation. After two failed correction rounds, stop delegating
-and finish directly.
+delegating implementation. When repeated attempts make no progress, reassess the
+approach or take the task back into the parent.
 
 ## Boundaries
 
@@ -52,8 +52,10 @@ A fresh Claude session starts without this conversation's context. Every fresh
 prompt must carry the objective, repository, constraints, authority boundary,
 success criteria, and proof expected. A resumed session keeps its context, so a
 follow-up prompt carries only the revision boundary, the correction, and the
-proof expected. Tell Claude not to invoke `codex-*` skills or the Codex CLI; the
-`claude-headless` runner also denies that recursion path.
+proof expected. Prohibit further native or CLI model delegation unless
+explicitly authorized; the headless runner denies native worker tools and
+delegation skills.
 
-Treat Claude's report as evidence. Inspect the repository state and run the
-relevant checks yourself before presenting the result.
+Treat Claude's report as evidence. Inspect the repository state and fill missing
+or invalidated verification before presenting the result. Use review-code for
+requested or required reviews.

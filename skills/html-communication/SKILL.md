@@ -1,10 +1,9 @@
 ---
 name: html-communication
 description: >-
-  Create or update standalone dark-mode HTML when spatial layout, comparison,
-  diagrams, or interaction communicate technical material better than Markdown.
-  Use for browser-based explanation and presentation artifacts. Use Markdown for
-  linear prose and `prototype` for throwaway product behavior or UI experiments.
+  Create standalone dark-mode HTML explanations or presentations when visual
+  layout helps. Product experiments use prototype; linear prose stays
+  Markdown.
 ---
 
 # HTML Communication
@@ -32,22 +31,6 @@ separately requests a presentation page for the prototype or its findings.
   interaction matters.
 - Treat the page as a communication artifact, not production application code,
   unless the request explicitly says otherwise.
-
-## Examples
-
-- Present three static UI concepts—A, B, and C—in one page so the user can
-  compare their design rationale without treating the page as an in-product
-  prototype.
-- Explain a system architecture through an annotated flow, component
-  relationships, and details that reveal themselves when useful.
-- Compare technical approaches with visual trade-offs, lifecycle diagrams, and
-  concrete examples rather than a long sequence of prose sections.
-- Turn a plan into a dependency map, milestones, risks, and sequencing that can
-  be understood at a glance.
-- Present an investigation or postmortem as a timeline connecting evidence,
-  causes, consequences, and proposed fixes.
-- Communicate research or metrics through tailored charts and explanatory
-  annotations rather than a wall of tables.
 
 ## Deliver the Artifact
 

@@ -91,6 +91,16 @@ agent config installer, done. Vendored third-party skills under
 task fetches from upstream. No plugins are currently published through the local
 Claude marketplace; the remaining plugin sources are retained but deprecated.
 
+Bounded `codex-*` and `claude-*` analysis, implementation, and review skills are
+available to both engines. Session-mode skills remain directional.
+`react-high-performance` and vendored `unslop` are excluded from installation;
+shared writing guidance lives in `rules/base.md`. See
+[agent instructions](AGENTS.md) for selection and worker boundaries.
+
+Use `mise run setup` to bootstrap a delivery worktree, but do not run
+`agent-config install` there. Deliver configuration changes through a PR;
+installer tests use synthetic roots and homes.
+
 Update vendored third-party skills with:
 
 ```bash

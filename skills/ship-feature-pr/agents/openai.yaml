@@ -4,3 +4,6 @@ interface:
   default_prompt:
     "Use $ship-feature-pr to implement this feature and deliver it as a
     reviewed, ready pull request."
+
+policy:
+  allow_implicit_invocation: false

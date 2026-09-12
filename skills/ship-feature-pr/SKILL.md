@@ -1,10 +1,8 @@
 ---
 name: ship-feature-pr
 description: >-
-  Take a non-trivial feature from settled scope through implementation,
-  independent review, and a ready pull request. Use when the user asks to ship a
-  feature end to end. Do not use for a tiny edit, commit-only request, PR filing,
-  or maintenance of an already-open PR.
+  Deliver a non-trivial feature through implementation, dual review, and a ready
+  PR. Use only when the user explicitly selects ship-feature-pr.
 ---
 
 # Ship Feature PR
@@ -13,6 +11,10 @@ Deliver a feature as a reviewed, ready pull request. Invocation authorizes the
 planning, branch, worktree, implementation, commit, push, draft PR, internal
 review, correction, and readiness mutations named here. It does not authorize
 merging, deploying, or releasing.
+
+Do not infer this workflow from requests to implement, file a PR, or babysit.
+Use the ordinary implementation, commit, file-pr, and babysit-pr workflows for
+those requests unless the user explicitly selects this skill.
 
 ## Preserve the Delivery Checkout
 
@@ -64,9 +66,10 @@ required by `dual-review`. If either engine remains unavailable, stop before
 mutation when practical; if it fails later, retain the draft and report the
 coverage gap.
 
-Set one post-draft correction budget, normally two pushes. All internal,
-external, CI-driven, and user-directed corrections after the draft count against
-it unless genuinely new scope is explicitly re-baselined.
+Honor explicit user correction budgets. Otherwise continue authorized fixes
+while making meaningful progress. Reassess repeated unsuccessful attempts; ask
+for a decision when progress stalls, scope materially expands, or the next step
+requires new authority. A push count alone is not a stopping condition.
 
 Include an external PR reviewer when the user or repository requires it. When a
 change is complex, large, architectural, security-sensitive, concerned with
@@ -158,12 +161,13 @@ retain resumable reviewer sessions for follow-up.
 Accept only complete Codex and Claude coverage of the intended revision. Recheck
 the reconciled findings against the feature contract, then batch all confirmed
 findings into one correction round. Keep the PR draft when either review channel
-failed or the live head moved beyond the reviewed revision.
+failed or the live head lacks adequate continuation coverage under the policy
+below. A new SHA alone does not invalidate unaffected evidence.
 
 ## Babysit to Readiness
 
 Hand `babysit-pr` the open draft, reconciled internal findings, reviewed
-revisions and resumable session handles, evidence ledger, and remaining
+revisions and resumable session handles, evidence ledger, and any explicit user
 correction budget. Local reviewer findings remain actionable even when they are
 not represented on GitHub. That skill owns checks, feedback rounds, fixes,
 replies, thread resolution, normal correction commits and pushes, exact-head
@@ -181,7 +185,7 @@ Choose follow-up internal review by what the correction invalidates:
 
 When an external reviewer was selected, use its provider-specific skill once on
 an internally accepted candidate rather than on every push. Feed its findings
-through the same correction budget and `babysit-pr` loop. Keep technical
+through the same progress checkpoints and `babysit-pr` loop. Keep technical
 verification separate from clearing a provider's blocking GitHub review state.
 
 ## Hand Back

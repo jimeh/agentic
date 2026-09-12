@@ -1,9 +1,8 @@
 ---
 name: commit
 description: >-
-  Create a Git commit from the current working tree or index. Use when the user
-  asks to commit changes, including staged-only or explicitly scoped commits.
-  Do not push or open a pull request.
+  Create a requested Git commit, honoring staged-only or named scope. Does
+  not authorize push or PR creation.
 ---
 
 # Commit

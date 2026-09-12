@@ -1,9 +1,8 @@
 ---
 name: pr-feedback-review
 description: >-
-  Analyze GitHub pull request feedback and turn it into a deduplicated action
-  plan. Use when the user wants to understand what reviewers still need without
-  changing code, replying, resolving threads, committing, or pushing.
+  Explain outstanding PR feedback as a deduplicated action plan. Read-only;
+  acting on feedback uses babysit-pr.
 ---
 
 # PR Feedback Review

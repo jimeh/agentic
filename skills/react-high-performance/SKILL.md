@@ -1,12 +1,8 @@
 ---
 name: react-high-performance
 description: >-
-  Build, review, and refactor React UIs for runtime performance and
-  responsiveness. Use when working on React apps or components that must stay
-  fast under real load, including issues involving rerender containment,
-  streaming state, external stores, virtualization, large lists, scroll
-  stability, input latency, main-thread contention, persistence churn, or
-  performance debugging.
+  Diagnose or improve React responsiveness under load, including streaming,
+  rendering, scrolling, and persistence. Use for concrete performance work.
 ---
 
 # React High Performance

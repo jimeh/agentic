@@ -1,10 +1,9 @@
 ---
 name: show-me-your-work
 description: >-
-  Keep an evidence-linked trail of material decisions during long or unattended
-  work. Use when the user requests a decision trail or an owning workflow needs
-  to preserve consequential pivots, risks, or blockers. Do not use as a
-  transcript, command log, or validation ledger.
+  Record an evidence-linked decision trail when requested or required by an
+  owning workflow. Captures material choices, not command logs or validation
+  ledgers.
 ---
 
 # Show Me Your Work

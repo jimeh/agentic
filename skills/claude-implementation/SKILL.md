@@ -1,19 +1,36 @@
 ---
 name: claude-implementation
 description: >-
-  Delegate bounded implementation from settled requirements to the Claude Code
-  CLI, then inspect, verify, and deliver the result as Codex. Not for planning,
-  architecture, ambiguous requirements, or browser work.
+  Execute settled implementation tasks through Claude CLI when a separate
+  worker is selected. The parent owns scope, verification, and delivery.
 ---
 
 # Claude Implementation
 
-Use Claude as a bounded implementation agent. Codex owns scope, architecture,
-validation, Git, integration, and user communication.
+Use Claude as a bounded implementation agent. The parent owns scope,
+architecture, validation, Git, integration, and user communication.
 
 Delegate only when the objective and observable success criteria are settled.
 Keep ambiguous failures, product decisions, architecture, API design, and GUI
-work in Codex until they are resolved.
+work in the parent until they are resolved.
+
+The headless runner denies native worker tools and delegation skills. If the
+parent explicitly requires nested workers, it must choose another supported
+execution arrangement; do not attempt to bypass the runner restrictions.
+
+## Worker boundary
+
+The parent chooses whether delegation is needed. Prefer a native worker with no
+inherited history when it satisfies the task; use this CLI for explicit
+selection or isolation and continuation needs. Start initial sessions fresh,
+with a brief containing objective, paths or revisions, constraints, allowed
+actions, expected output, and verification. Do not paste parent histories.
+
+Include this instruction in every worker prompt: "Perform this task directly. Do
+not invoke delegation skills or launch model workers through native tools or
+CLIs unless the parent explicitly authorizes that structure." Resume the same
+worker for relevant follow-ups; start fresh when its task context no longer
+fits.
 
 ## Workflow
 
@@ -26,7 +43,7 @@ work in Codex until they are resolved.
 6. Confirm the run succeeded, then inspect status, the working-tree diff, and
    every commit since the recorded starting tip. Claude may have committed
    despite the prompt.
-7. Run focused verification yourself and review the complete result.
+7. Inspect the complete result and fill missing or invalidated verification.
 8. Integrate or deliver only within the user's existing authorization.
 
 Do not let two implementation agents mutate the same checkout.
@@ -79,7 +96,7 @@ confirming that this will not overlap unrelated user changes.
 ## Prompt contract
 
 ```text
-Implement this bounded task delegated by Codex.
+Implement this bounded task delegated by the parent.
 
 Repository: <absolute checkout path>
 Objective: <one sentence>
@@ -88,7 +105,7 @@ Constraints:
 - <task-specific constraints and non-goals>
 - Preserve unrelated changes.
 - Do not commit, push, open a PR, deploy, or edit global configuration.
-- Do not invoke codex-* skills or the Codex CLI.
+- Do not invoke delegation skills or launch native or CLI model workers.
 - Stop and report if architecture, API, product, UX, or destructive decisions
   are required.
 
@@ -149,8 +166,9 @@ git diff "$START_TIP" HEAD
 ```
 
 Account for every path and inspect both committed and uncommitted changes. Run
-focused checks yourself. Do not send Claude-authored work back to
-`claude-review`; Codex is the cross-engine reviewer here.
+only missing or invalidated focused checks. Use review-code when a review is
+requested or required by the owning workflow. A fresh same-engine reviewer is
+valid; do not describe it as cross-engine review.
 
 When correction is useful, write the follow-up prompt to a fresh file, start a
 fresh artifact directory, and resume the recorded session ID:
@@ -170,7 +188,7 @@ NEXT_PROMPT="$NEXT_ARTIFACT_DIR/prompt.md"
 The block above relies on the runner default model; add `--model` and `--effort`
 only to repeat what the initial run used when it overrode that default. Give the
 resumed session only the correction, revision boundary, and proof expected. If
-two correction rounds fail, stop delegating.
+repeated attempts make no progress, reassess the approach before continuing.
 
 ## Lifecycle
 

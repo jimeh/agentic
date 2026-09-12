@@ -1,11 +1,8 @@
 ---
 name: eli5
 description: >-
-  Explain an unfamiliar concept to a true beginner through a visual,
-  self-contained HTML artifact with large illustrations and sparse text. Use
-  when the user asks for ELI5, "explain like I'm five," or a beginner-first
-  visual explanation. Do not use for ordinary summaries, expert simplification,
-  or product UI prototypes.
+  Explain a concept to a beginner with large visuals and sparse text. Use
+  for ELI5 or beginner-first visual explanations, not ordinary summaries.
 ---
 
 # ELI5

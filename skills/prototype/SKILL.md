@@ -1,9 +1,8 @@
 ---
 name: prototype
 description: >-
-  Build a throwaway interactive artifact to answer one question about logic,
-  state, or competing UI directions. Use for an explicit prototype request, not
-  a read-only design question that needs no artifact.
+  Build a requested throwaway interactive prototype to answer a logic,
+  state, or UI-design question. Does not authorize production changes.
 ---
 
 # Prototype
