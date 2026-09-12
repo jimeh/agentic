@@ -1,8 +1,8 @@
 ---
 name: claude-analysis
 description: >-
-  Hand large read-only evidence sets to the Claude Code CLI for analysis,
-  extraction, comparison, or triage. No edits, code review, or final judgement.
+  Delegate bounded read-only analysis to Claude CLI when a separate worker
+  is selected. No edits, code review, or final judgment.
 ---
 
 # Claude Analysis

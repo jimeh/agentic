@@ -1,9 +1,9 @@
 ---
 name: multi-agent-execution
 description: >-
-  How to delegate work across subagents and workflows: decomposition, model
-  routing, and independent review. Load when the user requests multi-agent
-  execution or an invoked skill's workflow calls for delegation.
+  Coordinate scoped delegation when the user or an invoked workflow calls
+  for multiple agents. Owns decomposition, isolation, and Claude model
+  routing.
 ---
 
 # Multi-Agent Execution

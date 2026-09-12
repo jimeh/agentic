@@ -1,9 +1,8 @@
 ---
 name: write-pr-copy
 description: >-
-  Draft or revise a pull request title or description. Use when the user asks
-  for PR copy, when another skill needs title and body text, or when existing PR
-  copy needs rewriting. Do not create, update, or publish the pull request.
+  Draft or revise PR copy when requested or needed by a delivery workflow.
+  Returns copy only; does not publish.
 ---
 
 # Write PR Copy

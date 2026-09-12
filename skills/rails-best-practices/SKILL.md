@@ -1,9 +1,8 @@
 ---
 name: rails-best-practices
 description: >-
-  Conventions for working in a Ruby on Rails application — ActiveRecord
-  migrations and the generators that produce them. Use whenever the project is
-  a Rails app.
+  Create or change Rails migrations using generators and applied-migration
+  safety rules. Use for migration work, not unrelated Rails edits.
 ---
 
 # Rails Best Practices

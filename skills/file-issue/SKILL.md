@@ -1,9 +1,8 @@
 ---
 name: file-issue
 description: >-
-  Create a GitHub issue in a repository. Use when the user asks to file, open,
-  create, or publish a GitHub issue or ticket. Do not maintain an existing issue
-  or file work in a non-GitHub tracker.
+  Create a requested GitHub issue. Use write-issue-copy for drafting alone;
+  existing issue maintenance is outside this workflow.
 ---
 
 # File issue

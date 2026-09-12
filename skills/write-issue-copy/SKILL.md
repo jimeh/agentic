@@ -1,9 +1,8 @@
 ---
 name: write-issue-copy
 description: >-
-  Draft or revise a GitHub issue title or description. Use when the user asks
-  for issue or ticket copy, or when another skill needs publication-ready issue
-  text. Do not create, update, or publish the issue.
+  Draft or revise GitHub issue copy when requested or needed by file-issue.
+  Returns copy only; does not publish.
 ---
 
 # Write issue copy

@@ -27,18 +27,9 @@ CLIs unless the parent explicitly authorizes that structure." Resume the same
 worker for relevant follow-ups; start fresh when its task context no longer
 fits.
 
-## Routing Checklist
-
-Use this skill when several answers are yes:
-
-1. Is the task read-only?
-2. Is the input large enough that Codex throughput helps?
-3. Is the desired output extraction, summary, comparison, triage, or evidence?
-4. Can the result be checked against source material?
-5. Would direct Claude reasoning spend too much context on mechanical reading?
-
-Use another skill when the job is implementation, code review, or GUI/runtime
-observation.
+Use this for source-checkable extraction, comparison, and triage of large logs,
+documents, datasets, or multi-file evidence. Keep architecture decisions,
+implementation, code review, and GUI work in their owning workflows.
 
 ## Workflow
 
@@ -120,22 +111,6 @@ Report:
 - uncertainty or gaps
 - suggested next step
 ```
-
-Good tasks:
-
-- Summarize a large log and identify likely failure causes.
-- Extract requirements from a long implementation spec.
-- Compare generated output against expected behavior.
-- Search a broad code area for a pattern and report examples.
-- Triage a large test failure report.
-
-Bad tasks:
-
-- Decide architecture
-- Write or modify code
-- Review a patch for correctness
-- Operate a browser or desktop app
-- Make product, UX, or copy decisions
 
 ## Reporting Back
 

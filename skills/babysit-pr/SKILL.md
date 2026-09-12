@@ -1,11 +1,9 @@
 ---
 name: babysit-pr
 description: >-
-  Handle post-filing work on an open GitHub pull request. Use when the user asks
-  to post a comment, publish findings from a review, or share other feedback;
-  watch, babysit, monitor, or get a PR ready; wait for CI or reviews; address
-  feedback; reply to or resolve review threads; or push follow-up fixes. Do not
-  merge unless explicitly asked.
+  Maintain an existing PR: monitor checks, address feedback, or publish
+  requested comments. Use for PR stewardship and bounded post-filing
+  actions; never infer merge authority.
 ---
 
 # Babysit PR

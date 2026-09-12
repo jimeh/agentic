@@ -1,10 +1,8 @@
 ---
 name: file-pr
 description: >-
-  Create a GitHub pull request for the current branch. Use when the user asks to
-  file, open, create, or publish a PR, including pushing its committed branch.
-  Pair with `commit` only when the request also authorizes committing. Do not
-  maintain an already-open pull request.
+  Push a committed branch and create its requested PR. Requires separate
+  commit authority for uncommitted work; existing PRs use babysit-pr.
 ---
 
 # File PR

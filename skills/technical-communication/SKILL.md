@@ -36,32 +36,18 @@ Choose the working mode before writing:
 - Match depth to consequence. A short status update and a public technical
   specification need different levels of context and precision.
 
-## Compose for Understanding
+## Compose for understanding
 
-- Lead with the outcome, decision, or critical information. Put supporting
-  detail after the reader knows why it matters.
-- Prefer direct, active language and name the actor when responsibility could be
-  ambiguous. Address the reader as `you` when that matches the artifact.
-- Make every pronoun's antecedent clear when more than one person, system, or
-  object could be meant.
-- Use simple, precise terms. Define necessary jargon on first use and keep
-  terminology consistent with the project.
-- Keep sentences and paragraphs focused on one idea. Put a condition, context,
-  or goal before the action it qualifies when that helps readers decide whether
-  the action applies.
-- Distinguish observed facts, evidence, inferences, recommendations, decisions,
-  assumptions, and unresolved uncertainty. Do not make guarantees or superlative
-  claims that the available evidence cannot support.
-- Recommend a path when the alternatives are not equally useful. State whether
-  an action is required, recommended, optional, expected, or merely possible.
-- Use headings, lists, tables, diagrams, notices, and links only when they
-  reduce cognitive load. Keep headings descriptive, list items parallel, ordered
-  steps genuinely sequential, and link text meaningful outside its sentence.
-- Write inclusively and for a global audience. Avoid idioms, cultural shorthand,
-  figurative or ableist language, unnecessary gendering, and instructions that
-  depend only on visual position.
-- Prefer durable statements about current behavior. Clearly label proposals,
-  future work, version-specific facts, and time-sensitive information.
+Apply the base writing rules. For technical documents, also:
+
+- Disambiguate actors, pronouns, requirements, and modality. State whether an
+  action is required, recommended, optional, or merely possible.
+- Put conditions before the actions they qualify when this helps readers decide
+  whether instructions apply. Define necessary jargon and use meaningful links.
+- Separate observations, inferences, recommendations, decisions, and unknowns.
+  Label proposals, future work, and version-specific or time-sensitive claims.
+- Write for a global audience without cultural assumptions, unnecessary
+  gendering, ableist language, or instructions relying only on visual position.
 
 ## Load Only the Relevant Guidance
 
@@ -86,16 +72,10 @@ writing tasks need neither research reference.
 
 ## Check the Result
 
-Before delivering substantive writing, check that:
-
-- the opening gives the reader the result, purpose, or decision;
-- actors, actions, requirements, and uncertainty are unambiguous;
-- the structure reflects the content instead of a habitual template;
-- claims are supported and examples do not pretend to be evidence;
-- the reader can identify the next action or acceptance condition;
-- each remaining section, example, and qualification carries meaning or
-  necessary context; and
-- the artifact is clear, accurate, consistent, and fit for its destination.
+Verify that the opening establishes the purpose or result, claims and examples
+match the evidence, protected meaning remains intact, and the reader can find
+the next action or acceptance condition. Check that structure fits the content
+and required destination rather than a habitual template.
 
 Stop when further editing would merely shorten, homogenize, or restyle the
-artifact rather than improve its meaning, clarity, or usefulness.
+artifact rather than improve meaning, clarity, or usefulness.
