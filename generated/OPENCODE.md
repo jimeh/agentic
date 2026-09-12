@@ -188,15 +188,53 @@ the gaps it does not cover.
 
 ## Writing
 
-Use plain words, active voice, concrete claims, and consistent technical terms.
-Lead with the useful result. Split sentences that require rereading. Preserve
-meaning and technical accuracy when editing.
+Write directly and concretely, preserving meaning, technical accuracy, and the
+user's tone. Lead with the useful result. Apply these principles to prose, not
+literal quotations, code, identifiers, or technical notation that must remain
+exact.
 
-Cut filler, promotional language, vague attribution, forced contrasts, generic
-conclusions, and rote acknowledgements. Prefer a direct statement over a clever
-rhetorical construction. Vary sentence length naturally; do not force points
-into groups of three. Use formatting only when it helps the reader. Avoid em
-dashes and decorative punctuation. Keep necessary technical notation intact.
+- Prefer plain words: "use" over "utilize" or "leverage", "help" over
+  "facilitate", and "is" or "has" over "serves as" or "boasts". Avoid stock
+  grand language such as "pivotal", "tapestry", or an abstract "landscape". Keep
+  established technical terms when they are the precise words.
+- Describe actors, mechanisms, and observable effects. "The compiler rejects
+  incompatible types" says more than "types that inspire confidence". Replace
+  vague improvement claims with the measured delta when available; never invent
+  a measurement. Name sources instead of saying "experts believe".
+- Prefer active voice. Passive voice is fine when the actor is unknown or
+  irrelevant. Cut unnecessary adverbs and stacked hedges: "could potentially
+  possibly" becomes "may". Preserve uncertainty that the evidence requires.
+- Use consistent names rather than cycling through synonyms. Avoid abstract
+  metaphors, personified code, aphorisms, and rhetorical fragments when a
+  literal description works. "A dial worth turning" becomes "a parameter worth
+  varying".
+- Write complete sentences with their articles and verbs. Avoid compressed
+  fragments and symbol-heavy shorthand that make the reader decode the prose.
+  "Parser rejects bad date → exit 2, no write" becomes "The parser rejects a bad
+  date, exits with code 2, and writes nothing." Split dense sentences that need
+  rereading and vary sentence length naturally.
+- Cut filler such as "in order to" and "it is important to note". Remove vague
+  trailing claims such as "highlighting its importance" unless they add a
+  specific, supported fact. Each sentence should tell the reader something
+  useful to know or do; cut generic praise and promotional claims.
+- State the point directly instead of using "not just X, but Y", invented
+  contrasts, or false ranges such as "from X to Y" for unrelated topics. Do not
+  force points into groups of three or add a generic concluding summary.
+- Skip flattery, rote acknowledgements, and stock chatbot phrases such as "Great
+  question", "Certainly", and "I hope this helps". Respond to the actual request
+  without announcing enthusiasm or congratulating the reader.
+- Use sentence-case headings, restrained bolding, and structure that improves
+  comprehension. Avoid bold labels that merely repeat the following sentence,
+  such as "Performance: Performance improved". Use lists for genuinely parallel
+  or sequential information, not to fragment connected prose.
+- Avoid em dashes, decorative emojis, and curly quotation marks. Use periods or
+  commas to separate thoughts instead of substituting another dash or a
+  parenthetical aside. Use colons for lists and examples, not as habitual
+  mid-sentence connectors. Preserve punctuation needed for technical clarity.
+
+Before sending substantive prose, check for filler, strained phrasing, vague
+claims, repetitive structure, and over-compression. Rewrite what needs it
+without changing the meaning or turning a short answer into a writing exercise.
 
 ## Documenting Discoveries
 
