@@ -105,6 +105,18 @@ When adding or changing automated tests:
   touched line needs a test.
 - Assert observable behavior, not implementation shape. Mock external boundaries
   only where needed, never the behavior under test.
+- Synchronize asynchronous tests on observable progress such as events,
+  callbacks, expectations, channels, continuations, process output or exit,
+  state changes, or explicit test hooks. Do not use a fixed sleep to assume work
+  has completed or a race has begun. If no direct signal exists, poll the
+  asserted condition under a bounded deadline and report the last observed state
+  on timeout.
+- For behavior that must remain absent, first establish that the operation under
+  test has started, then observe through a meaningful completion or ordering
+  boundary. Prefer controllable clocks for delays, debouncing, retries, and
+  timeouts. Use wall-clock sleeps only when elapsed time itself is part of an
+  external integration boundary and no controllable clock or event is available;
+  explain that exception in the test.
 - Prefer seeing a new test fail at its intended assertion before it passes. A
   test-first failure provides that evidence. When the implementation already
   exists, use a targeted perturbation only if the behavior is material and
