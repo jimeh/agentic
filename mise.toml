@@ -89,6 +89,18 @@ run = "bun packages/agent-pr-monitor/bin/agent-pr-monitor.ts"
 description = "Test PR change detection, GitHub pagination, persistence, and the CLI"
 run = "bun test packages/agent-pr-monitor/src"
 
+[tasks.judge]
+description = "Evaluate a bounded typed request with TypeSafe"
+run = "bun packages/agent-judge/bin/agent-judge.ts"
+
+[tasks."test:judge"]
+description = "Test TypeSafe request boundaries and the agent-judge CLI offline"
+run = "bun test packages/agent-judge/src"
+
+[tasks."judge:history-trial"]
+description = "Preview or run a bounded TypeSafe history reranking trial on selected excerpts"
+run = "bun packages/agent-judge/experiments/history-trial.ts"
+
 # Generated global rules
 
 [tasks."rules:build"]

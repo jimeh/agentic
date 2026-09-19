@@ -29,10 +29,19 @@ The Bun workspace separates the repository tooling by ownership:
   events) and its integration test.
 - `packages/agent-pr-monitor` owns read-only GitHub observation, deterministic
   change detection, durable cursors, and the `agent-pr-monitor` CLI. It observes
-  a PR with one Octokit GraphQL query per poll; `gh` is only an authentication
+  a PR with one Octokit GraphQL query per poll; goal-aware evaluation adds
+  active ruleset reads for required-check discovery. `evaluate` probes once and
+  `wait --until` loops over the same evaluator without advancing the change
+  cursor. Review completion and approval use submitted GitHub review metadata
+  scoped to the selected reviewer and head. `gh` is only an authentication
   fallback. Its tests run in `test:unit`, with `test:pr-monitor` available for
   focused work. The headless runner core remains specific to model subprocesses.
 - `packages/vendor-skills` owns reviewed third-party skill intake and updates.
+- `packages/agent-judge` owns the `agent-judge evaluate` CLI for explicit
+  TypeSafe requests and the bounded history reranking experiment. See its
+  package README for request and artifact contracts. `mise run test:judge` tests
+  it offline; those tests are also included in `test:unit`. Live calls require
+  an exported `TYPESAFE_API_KEY` and are never part of ordinary verification.
 
 `packages/agent-config` auto-discovers and symlinks skills:
 

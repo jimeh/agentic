@@ -1,0 +1,8 @@
+{
+  "name": "@jimeh/agent-judge",
+  "private": true,
+  "bin": {
+    "agent-judge": "./bin/agent-judge.ts"
+  },
+  "exports": "./src/evaluate.ts"
+}

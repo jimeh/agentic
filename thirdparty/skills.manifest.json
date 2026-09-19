@@ -148,6 +148,18 @@
           "path": "plugins/show-me/skills/show-me"
         }
       ]
+    },
+    {
+      "id": "typesafe-ai-skills",
+      "type": "git",
+      "url": "https://github.com/typesafe-ai/skills.git",
+      "ref": "main",
+      "skills": [
+        {
+          "name": "typesafe-ai",
+          "path": "skills/typesafe-ai"
+        }
+      ]
     }
   ]
 }

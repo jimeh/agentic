@@ -81,6 +81,9 @@ mise run hooks:install
   artifact layout, sandbox and session handling, and integration tests.
 - **`packages/agent-pr-monitor/`** — Read-only GitHub PR snapshots and quiet
   waiting, with persisted change detection and compact results for agents.
+- **[`packages/agent-judge/`](packages/agent-judge/README.md)** — Typed TypeSafe
+  evaluations through `mise run judge`, with private optional artifacts and a
+  bounded history reranking experiment.
 - **`packages/vendor-skills/`** — Reviewed third-party skill intake and update
   tooling.
 - **`docs/references/`** — External articles and guides.
@@ -249,6 +252,22 @@ never writes to GitHub or decides whether a PR is ready to merge. Run
 `agent-pr-monitor --help` for authentication, timeouts, and state paths. The
 [`babysit-pr` monitoring reference](skills/babysit-pr/references/monitoring.md)
 describes agent execution and result handling.
+
+Goal-aware probes evaluate selected conditions once or wait for all of them:
+
+```bash
+mise run pr-monitor -- evaluate "$PR_URL" --until checks-pass --checks required
+mise run pr-monitor -- wait "$PR_URL" --until checks-pass \
+  --until review-approved --reviewer coderabbitai
+mise run pr-monitor -- evaluate "$PR_URL" --until review-finished \
+  --reviewer coderabbitai
+```
+
+`evaluate` returns `satisfied: true`, `false`, or `null` (unknown), with
+evidence for each condition. Goal calls leave the change cursor untouched.
+Review conditions use submitted GitHub review states and current-head metadata.
+See the [goal evaluator reference](packages/agent-pr-monitor/README.md) for
+condition semantics, exit codes, freshness, and evidence limits.
 
 ### Agent Config Installation
 
