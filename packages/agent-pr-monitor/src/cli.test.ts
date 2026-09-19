@@ -123,6 +123,49 @@ describe("CLI", () => {
     expect(await new Response(child.stdout).text()).toContain("snapshot|wait");
   });
 
+  test("one-shot goals return true or false without changing the existing cursor", async () => {
+    const { launch, stateFile, complete } = await fixture();
+    expect(await launch("snapshot").exited).toBe(0);
+    const before = await readFile(stateFile, "utf8");
+    const pending = launch("evaluate", [
+      "--until",
+      "checks-pass",
+      "--checks",
+      "build",
+    ]);
+    expect(await pending.exited).toBe(3);
+    expect(JSON.parse(await new Response(pending.stdout).text())).toMatchObject(
+      { kind: "evaluation", satisfied: false, observations: 1 },
+    );
+    complete();
+    const passed = launch("evaluate", [
+      "--until",
+      "checks-pass",
+      "--checks",
+      "build",
+    ]);
+    expect(await passed.exited).toBe(0);
+    expect(JSON.parse(await new Response(passed.stdout).text()).satisfied).toBe(
+      true,
+    );
+    expect(await readFile(stateFile, "utf8")).toBe(before);
+  });
+
+  test("validates goal configuration before touching GitHub", async () => {
+    const { launch, requests } = await fixture();
+    for (const args of [
+      [],
+      ["--until", "review-approved"],
+      ["--until", "feedback-received"],
+      ["--until", "bogus"],
+      ["--until", "review-finished", "--reviewer", "bot", "--judge", "auto"],
+      ["--until", "checks-pass", "--checks", "all", "--checks", "build"],
+    ]) {
+      expect(await launch("evaluate", args).exited).toBe(1);
+    }
+    expect(requests()).toBe(0);
+  });
+
   test("rejects an interval below the floor before touching GitHub", async () => {
     const { launch, requests } = await fixture();
     const child = launch("wait", ["--interval", "5"]);

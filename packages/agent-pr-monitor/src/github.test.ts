@@ -80,6 +80,14 @@ function clientFixture(options: FixtureOptions = {}) {
 }
 
 describe("GitHub observation", () => {
+  test("goal metadata does not change legacy snapshot check or review shapes", async () => {
+    const { client } = clientFixture();
+    const legacy = await observe(client, target);
+    expect(legacy.checks.every((c) => !("appId" in c))).toBe(true);
+    expect(legacy.feedback.every((f) => !("submittedAt" in f))).toBe(true);
+    const goal = await observe(client, target, { captureGoal: () => {} });
+    expect(goal.checks.some((c) => "appId" in c)).toBe(true);
+  });
   test("observes the whole PR with one read-only query per page", async () => {
     const { client, requests } = clientFixture({
       pages: { checks: 2, reviews: 2, comments: 2, threads: 2 },

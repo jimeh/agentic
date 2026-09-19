@@ -6,6 +6,7 @@ export type Target = {
 };
 
 export type Check = {
+  appId?: number | null;
   id: string;
   name: string;
   state: "pending" | "passed" | "failed";

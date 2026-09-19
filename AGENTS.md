@@ -29,10 +29,19 @@ The Bun workspace separates the repository tooling by ownership:
   events) and its integration test.
 - `packages/agent-pr-monitor` owns read-only GitHub observation, deterministic
   change detection, durable cursors, and the `agent-pr-monitor` CLI. It observes
-  a PR with one Octokit GraphQL query per poll; `gh` is only an authentication
+  a PR with one Octokit GraphQL query per poll; goal-aware evaluation adds
+  active ruleset reads for required-check discovery. `evaluate` probes once and
+  `wait --until` loops over the same evaluator without advancing the change
+  cursor. Review completion and approval use submitted GitHub review metadata
+  scoped to the selected reviewer and head. `gh` is only an authentication
   fallback. Its tests run in `test:unit`, with `test:pr-monitor` available for
   focused work. The headless runner core remains specific to model subprocesses.
 - `packages/vendor-skills` owns reviewed third-party skill intake and updates.
+- `packages/agent-judge` owns the `agent-judge evaluate` CLI for explicit
+  TypeSafe requests and the bounded history reranking experiment. See its
+  package README for request and artifact contracts. `mise run test:judge` tests
+  it offline; those tests are also included in `test:unit`. Live calls require
+  an exported `TYPESAFE_API_KEY` and are never part of ordinary verification.
 
 `packages/agent-config` auto-discovers and symlinks skills:
 
@@ -72,6 +81,21 @@ When creating or revising a repository-owned skill, use the environment's
 skill-authoring workflow for packaging and platform mechanics. For instruction
 design, routing, and scenario checks in skills or global rules, use
 `skills/harness-engineering/references/agent-authoring.md`.
+
+Installed skills run from the user's project, not from an Agentic checkout.
+Skill instructions and their runtime references must use installed CLI commands
+such as `agent-pr-monitor`, `agent-judge`, `claude-headless`, and
+`codex-headless`. Do not prescribe Agentic-specific `mise run` tasks,
+`packages/...` entrypoints, hard-coded Agentic checkout paths, or changing into
+this repository as a fallback. The preference for Mise applies to repository
+development, not to invoking Agentic tools from installed skills. A skill may
+still use the target project's own task runner when appropriate.
+
+`agent-config.toml` installs these CLIs into `~/.local/bin`. Register new shared
+CLIs there. If an installed command is missing, diagnose its installation or
+`PATH`; do not substitute a development command. Keep Agentic development and
+test commands in repository contributor documentation, outside skill runtime
+instructions.
 
 Third-party skills are source-controlled under `thirdparty/skills/`.
 `thirdparty/skills.manifest.json` defines the reviewed upstream sources and

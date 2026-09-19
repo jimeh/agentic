@@ -21,6 +21,7 @@ symlinks = [
   ] },
   { source = "packages/codex-headless/bin/codex-headless.ts", target = "~/.local/bin/codex-headless" },
   { source = "packages/agent-pr-monitor/bin/agent-pr-monitor.ts", target = "~/.local/bin/agent-pr-monitor" },
+  { source = "packages/agent-judge/bin/agent-judge.ts", target = "~/.local/bin/agent-judge" },
 ]
 
 staleSymlinkCleanup = [

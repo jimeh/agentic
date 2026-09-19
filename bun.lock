@@ -29,6 +29,12 @@
     "packages/agent-headless": {
       "name": "@jimeh/agent-headless",
     },
+    "packages/agent-judge": {
+      "name": "@jimeh/agent-judge",
+      "bin": {
+        "agent-judge": "./bin/agent-judge.ts",
+      },
+    },
     "packages/agent-pr-monitor": {
       "name": "@jimeh/agent-pr-monitor",
       "bin": {
@@ -83,6 +89,8 @@
     "@jimeh/agent-harness": ["@jimeh/agent-harness@workspace:packages/agent-harness"],
 
     "@jimeh/agent-headless": ["@jimeh/agent-headless@workspace:packages/agent-headless"],
+
+    "@jimeh/agent-judge": ["@jimeh/agent-judge@workspace:packages/agent-judge"],
 
     "@jimeh/agent-pr-monitor": ["@jimeh/agent-pr-monitor@workspace:packages/agent-pr-monitor"],
 

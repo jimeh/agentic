@@ -7,9 +7,11 @@ never changes GitHub state or invokes a model.
 
 ## Start and resume
 
-Run `agent-pr-monitor --help` for options. If it is not on `PATH`, use
-`mise run pr-monitor -- ...` in the Agentic checkout, or invoke
-`packages/agent-pr-monitor/bin/agent-pr-monitor.ts` there through Bun.
+Run the installed `agent-pr-monitor` command from the project being monitored.
+Agentic's config installer links it into `~/.local/bin`; no Agentic checkout is
+needed for normal use. Run `agent-pr-monitor --help` for options. If the command
+is unavailable, check `PATH` and the installed link rather than changing the
+project's working directory to run an Agentic Mise task.
 
 ```bash
 agent-pr-monitor snapshot https://github.com/OWNER/REPO/pull/123
@@ -96,6 +98,29 @@ Inspect errors rather than deleting malformed or mismatched state automatically.
 
 If the remote head differs from the result's head, rebuild the current picture
 and discard check conclusions tied to the older head. Keep unresolved older
-feedback when it still applies. The monitor does not evaluate branch protection,
-rulesets, required reviewer identities, bot-specific review completion, or
-whether a concern is valid. Those decisions remain with the owning workflow.
+feedback when it still applies. Change-based waits do not evaluate branch
+protection, rulesets, required reviewer identities, bot-specific review
+completion, or whether a concern is valid. Those decisions remain with the
+owning workflow.
+
+## Optional goal probes
+
+Use `agent-pr-monitor evaluate --until ...` when the caller wants a one-shot
+condition check, or `agent-pr-monitor wait --until ...` to wait for the same
+conditions. Both leave the change cursor untouched. Conditions can be composed
+without asking a model to judge overall PR readiness. See the
+[goal evaluator reference](../../../packages/agent-pr-monitor/README.md) for
+supported conditions, freshness rules and distinct false/unknown results.
+
+Review conditions use submitted GitHub metadata from the selected reviewer on
+the pinned head. `COMMENTED` and `CHANGES_REQUESTED` count as completion but do
+not grant approval. Walkthrough comments do not replace submitted reviews, and
+the monitor does not interpret text to identify progress or new review attempts.
+Use `--since` to require a review submitted after a new request.
+
+Only `satisfied: true` means the selected goal succeeded. `satisfied: false`
+means the goal is unmet, and `satisfied: null` means the result is unknown.
+Interpret `attention_required`, `head_changed`, and unknown results before
+continuing; none means the requested goal succeeded. New or edited feedback
+returns attention while a goal remains unmet, so the caller can inspect it. Keep
+exact-head verification and merge authority with the caller.

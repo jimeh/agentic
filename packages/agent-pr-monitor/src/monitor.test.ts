@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, test } from "bun:test";
+import { afterEach, describe, expect, mock, spyOn, test } from "bun:test";
 import { rejects } from "node:assert/strict";
 import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -17,6 +17,7 @@ const target: Target = {
 };
 const directories: string[] = [];
 afterEach(async () => {
+  mock.restore();
   await Promise.all(
     directories
       .splice(0)
@@ -25,6 +26,11 @@ afterEach(async () => {
 });
 
 async function fixture() {
+  // The injected clock owns these deadlines. Real timer cancellation is covered
+  // by the CLI tests and must not race filesystem writes in this fixture.
+  spyOn(AbortSignal, "timeout").mockImplementation(
+    () => new AbortController().signal,
+  );
   const directory = await mkdtemp(join(tmpdir(), "pr-monitor-"));
   directories.push(directory);
   let time = 0;

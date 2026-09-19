@@ -131,6 +131,16 @@
       "contentHash": "sha256:b449606b8f4aaf4892bbd319458c262ec63d10a3019b482114c5cd878e5e058d",
       "skillsCliVersion": null
     },
+    "typesafe-ai": {
+      "manifestSourceId": "typesafe-ai-skills",
+      "sourceType": "git",
+      "sourceUrl": "https://github.com/typesafe-ai/skills.git",
+      "ref": "main",
+      "resolvedCommit": "65a39f393687675ce170e6094757de20370365b9",
+      "upstreamPath": "skills/typesafe-ai",
+      "contentHash": "sha256:c9b8de9adf86a94ef71868245b28ddec2ff2fad0204e4ce64ac688da54dfb2c0",
+      "skillsCliVersion": null
+    },
     "unslop": {
       "manifestSourceId": "plugins",
       "sourceType": "git",

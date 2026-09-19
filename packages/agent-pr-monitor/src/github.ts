@@ -20,7 +20,7 @@ const MAX_REQUESTS = 50;
  * their `with*` flags, so follow-up requests only carry connections with more pages.
  */
 const query = `query MonitorPullRequest(
-  $owner: String!, $repo: String!, $number: Int!,
+  $owner: String!, $repo: String!, $number: Int!, $withGoal: Boolean!,
   $withChecks: Boolean!, $checksAfter: String,
   $withReviews: Boolean!, $reviewsAfter: String,
   $withComments: Boolean!, $commentsAfter: String,
@@ -29,18 +29,21 @@ const query = `query MonitorPullRequest(
   repository(owner: $owner, name: $repo) {
     pullRequest(number: $number) {
       url headRefOid state isDraft reviewDecision mergeStateStatus
+      mergeable @include(if: $withGoal)
+      baseRefName @include(if: $withGoal)
+      baseRef @include(if: $withGoal) { branchProtectionRule { requiredStatusChecks { context app { databaseId } } } }
       commits(last: 1) @include(if: $withChecks) {
         nodes { commit { statusCheckRollup { contexts(first: ${PAGE_SIZE}, after: $checksAfter) {
           nodes {
             __typename
-            ... on CheckRun { databaseId name status conclusion permalink }
+            ... on CheckRun { databaseId name status conclusion permalink checkSuite @include(if: $withGoal) { app { databaseId } } }
             ... on StatusContext { context state targetUrl createdAt }
           }
           pageInfo { hasNextPage endCursor }
         } } } }
       }
       reviews(first: ${PAGE_SIZE}, after: $reviewsAfter) @include(if: $withReviews) {
-        nodes { databaseId state body updatedAt url author { login } commit { oid } }
+        nodes { databaseId state body updatedAt submittedAt @include(if: $withGoal) url author { login } commit { oid } }
         pageInfo { hasNextPage endCursor }
       }
       comments(first: ${PAGE_SIZE}, after: $commentsAfter) @include(if: $withComments) {
@@ -74,6 +77,7 @@ type CheckNode =
       status: string;
       conclusion: string | null;
       permalink: string;
+      checkSuite?: { app: { databaseId: number } | null };
     }
   | {
       __typename: "StatusContext";
@@ -90,7 +94,10 @@ type CommentNode = {
   author: Actor;
 };
 type ReviewCommentNode = CommentNode & { commit: { oid: string } | null };
-type ReviewNode = ReviewCommentNode & { state: string };
+type ReviewNode = ReviewCommentNode & {
+  state: string;
+  submittedAt?: string | null;
+};
 type ThreadNode = {
   id: string;
   isResolved: boolean;
@@ -106,6 +113,16 @@ type PullRequestNode = {
   isDraft: boolean;
   reviewDecision: string | null;
   mergeStateStatus: string;
+  mergeable?: string;
+  baseRefName?: string;
+  baseRef?: {
+    branchProtectionRule: {
+      requiredStatusChecks: {
+        context: string;
+        app: { databaseId: number } | null;
+      }[];
+    } | null;
+  } | null;
   commits?: {
     nodes: {
       commit: { statusCheckRollup: { contexts: Page<CheckNode> } | null };
@@ -219,7 +236,15 @@ export function createClient(
   });
 }
 
+export type GoalMetadata = {
+  reviewSubmittedAt: Record<string, string | null>;
+  mergeable: string;
+  baseRefName: string;
+  classicChecks: { name: string; appId: number | null }[] | null;
+};
+
 export type ObserveOptions = {
+  captureGoal?: (metadata: GoalMetadata) => void;
   signal?: AbortSignal;
   requestTimeoutMs?: number;
 };
@@ -279,6 +304,7 @@ export async function observe(
     const page = await request(
       client,
       {
+        withGoal: Boolean(options.captureGoal),
         owner: target.owner,
         repo: target.repo,
         number: target.number,
@@ -349,6 +375,9 @@ export async function observe(
         name: item.name,
         state: runState(item.status, item.conclusion),
         conclusion: item.conclusion?.toLowerCase() ?? null,
+        ...(options.captureGoal
+          ? { appId: item.checkSuite?.app?.databaseId ?? null }
+          : {}),
         url: item.permalink,
       });
       continue;
@@ -411,6 +440,27 @@ export async function observe(
       })),
     ),
   ];
+  if (options.captureGoal) {
+    options.captureGoal({
+      reviewSubmittedAt: Object.fromEntries(
+        reviewNodes.map((r) => [
+          `review:${r.databaseId ?? r.url}`,
+          r.submittedAt ?? null,
+        ]),
+      ),
+      mergeable: pr.mergeable ?? "UNKNOWN",
+      baseRefName: pr.baseRefName ?? "",
+      classicChecks:
+        pr.baseRef === undefined
+          ? null
+          : (pr.baseRef?.branchProtectionRule?.requiredStatusChecks ?? []).map(
+              (c) => ({
+                name: c.context,
+                appId: c.app?.databaseId ?? null,
+              }),
+            ),
+    });
+  }
   const threads: Thread[] = threadNodes.map((thread) => ({
     id: thread.id,
     resolved: thread.isResolved,
