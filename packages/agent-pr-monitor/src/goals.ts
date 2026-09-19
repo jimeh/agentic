@@ -142,7 +142,7 @@ export async function evaluateGoal(
         continue;
       }
       const unknownSources = expected.flatMap((e) =>
-        e.appId !== null
+        goal.checks === "required" && e.appId !== null
           ? s.checks.filter(
               (c) =>
                 c.name === e.name &&

@@ -167,6 +167,41 @@ describe("goal evaluation", () => {
       evidenceIds: ["test"],
     });
   });
+  test("all and named scopes evaluate same-name runs and statuses without required app policy", async () => {
+    const o = observation();
+    const { appId: _appId, ...status } = { ...check, id: "status:build" };
+    o.snapshot.checks = [check, status];
+    for (const checks of ["all", ["build"]] as const) {
+      const selection = checks === "all" ? checks : [...checks];
+      for (const condition of ["checks-pass", "checks-finished"] as const)
+        expect(
+          (
+            await evaluateGoal(
+              o,
+              goal([condition], { checks: selection }),
+              signal,
+            )
+          ).satisfied,
+        ).toBe(true);
+      o.snapshot.checks = [
+        check,
+        { ...status, state: "failed", conclusion: "failure" },
+      ];
+      expect(
+        (
+          await evaluateGoal(
+            o,
+            goal(["checks-pass"], { checks: selection }),
+            signal,
+          )
+        ).satisfied,
+      ).toBe(false);
+      o.snapshot.checks = [check, status];
+    }
+    expect(
+      (await evaluateGoal(o, goal(["checks-pass"]), signal)).satisfied,
+    ).toBeNull();
+  });
   test("finished differs from passed, including skipped and neutral outcomes", async () => {
     for (const conclusion of ["failure", "skipped", "neutral"]) {
       const o = observation();
