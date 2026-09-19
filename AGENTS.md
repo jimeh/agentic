@@ -82,6 +82,21 @@ skill-authoring workflow for packaging and platform mechanics. For instruction
 design, routing, and scenario checks in skills or global rules, use
 `skills/harness-engineering/references/agent-authoring.md`.
 
+Installed skills run from the user's project, not from an Agentic checkout.
+Skill instructions and their runtime references must use installed CLI commands
+such as `agent-pr-monitor`, `agent-judge`, `claude-headless`, and
+`codex-headless`. Do not prescribe Agentic-specific `mise run` tasks,
+`packages/...` entrypoints, hard-coded Agentic checkout paths, or changing into
+this repository as a fallback. The preference for Mise applies to repository
+development, not to invoking Agentic tools from installed skills. A skill may
+still use the target project's own task runner when appropriate.
+
+`agent-config.toml` installs these CLIs into `~/.local/bin`. Register new shared
+CLIs there. If an installed command is missing, diagnose its installation or
+`PATH`; do not substitute a development command. Keep Agentic development and
+test commands in repository contributor documentation, outside skill runtime
+instructions.
+
 Third-party skills are source-controlled under `thirdparty/skills/`.
 `thirdparty/skills.manifest.json` defines the reviewed upstream sources and
 selected skills, while `thirdparty/skills.lock.json` records the resolved
