@@ -141,6 +141,24 @@ export async function evaluateGoal(
         );
         continue;
       }
+      const unknownSources = expected.flatMap((e) =>
+        e.appId !== null
+          ? s.checks.filter(
+              (c) =>
+                c.name === e.name &&
+                c.id.startsWith("status:") &&
+                c.appId == null,
+            )
+          : [],
+      );
+      if (unknownSources.length) {
+        result(
+          "unknown",
+          "A required check is bound to a GitHub App, but the matching commit status has no app identity available",
+          [...new Set(unknownSources.map((c) => c.id))],
+        );
+        continue;
+      }
       if (matches.some((m) => !m.length)) {
         result(
           "not_met",

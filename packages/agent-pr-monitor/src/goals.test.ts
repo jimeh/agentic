@@ -90,6 +90,83 @@ describe("goal evaluation", () => {
         .satisfied,
     ).toBeNull();
   });
+  test("app-bound commit statuses with unavailable identity return unknown and wake the waiter", async () => {
+    const o = observation();
+    const { appId: _appId, ...status } = { ...check, id: "status:build" };
+    o.snapshot.checks = [status];
+    for (const condition of ["checks-pass", "checks-finished"] as const) {
+      const evaluation = await evaluateGoal(o, goal([condition]), signal);
+      expect(evaluation.satisfied).toBeNull();
+      expect(evaluation.conditions[0]).toMatchObject({
+        status: "unknown",
+        evidenceIds: ["status:build"],
+      });
+      expect(evaluation.conditions[0].reason).toContain("app identity");
+      expect(
+        await runner([o], { goal: goal([condition]) }).run(),
+      ).toMatchObject({
+        kind: "attention_required",
+        satisfied: null,
+        observations: 1,
+      });
+    }
+    o.requiredChecks = [{ name: "build", appId: null }];
+    expect(
+      (await evaluateGoal(o, goal(["checks-pass"]), signal)).satisfied,
+    ).toBe(true);
+  });
+  test("same-name status uncertainty survives a matching run but does not mask selected failures", async () => {
+    const o = observation();
+    const { appId: _appId, ...status } = {
+      ...check,
+      id: "status:build",
+      state: "failed" as const,
+      conclusion: "failure",
+    };
+    o.snapshot.checks = [check];
+    expect(
+      (await evaluateGoal(o, goal(["checks-pass"]), signal)).satisfied,
+    ).toBe(true);
+    for (const conclusion of ["failure", "success"]) {
+      o.snapshot.checks = [
+        {
+          ...status,
+          conclusion,
+          state: conclusion === "success" ? "passed" : "failed",
+        },
+        check,
+      ];
+      expect(
+        (await evaluateGoal(o, goal(["checks-pass"]), signal)).satisfied,
+      ).toBeNull();
+      expect(await runner([o]).run()).toMatchObject({
+        kind: "attention_required",
+        satisfied: null,
+      });
+    }
+    o.snapshot.checks = [{ ...check, appId: 8 }];
+    expect(
+      (await evaluateGoal(o, goal(["checks-pass"]), signal)).satisfied,
+    ).toBe(false);
+    o.snapshot.checks = [
+      status,
+      {
+        ...check,
+        id: "test",
+        name: "test",
+        state: "failed",
+        conclusion: "failure",
+      },
+    ];
+    o.requiredChecks!.push({ name: "test", appId: 7 });
+    expect(
+      (await evaluateGoal(o, goal(["checks-pass"]), signal)).conditions[0],
+    ).toMatchObject({
+      status: "not_met",
+      attention: true,
+      evidenceIds: ["test"],
+    });
+  });
   test("finished differs from passed, including skipped and neutral outcomes", async () => {
     for (const conclusion of ["failure", "skipped", "neutral"]) {
       const o = observation();

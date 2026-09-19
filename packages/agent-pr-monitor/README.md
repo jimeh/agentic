@@ -40,10 +40,15 @@ mise run pr-monitor -- evaluate "$PR_URL" --until feedback-received \
 `--checks required` is the default. It combines classic branch protection with
 all active branch ruleset pages and respects required GitHub App identities.
 Unavailable or unsupported metadata, including required-workflow rules that do
-not expose check names, produces unknown. An empty selected set never proves
-success. `--checks all` covers only registered checks; it cannot prove that an
-expected job has appeared. Repeat `--checks NAME` to specify exact expected
-names. Required/all scopes cannot be mixed with names.
+not expose check names, produces unknown. An app-bound requirement with a
+same-name commit status also returns unknown: the status observation does not
+expose its app identity, even when a matching check run passes. GitHub requires
+[both a check and a commit status with the same required name to pass](https://docs.github.com/en/pull-requests/how-tos/merge-and-close-pull-requests/troubleshooting-required-status-checks).
+The monitor keeps the app restriction and returns control for inspection. An
+empty selected set never proves success. `--checks all` covers only registered
+checks; it cannot prove that an expected job has appeared. Repeat
+`--checks NAME` to specify exact expected names. Required/all scopes cannot be
+mixed with names.
 
 Review conditions require `--reviewer LOGIN`. The `[bot]` suffix is optional.
 `--review-status complete|approved` is a shorthand for adding the corresponding
