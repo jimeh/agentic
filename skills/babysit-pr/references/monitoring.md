@@ -118,6 +118,8 @@ not grant approval. Walkthrough comments do not replace submitted reviews, and
 the monitor does not interpret text to identify progress or new review attempts.
 Use `--since` to require a review submitted after a new request.
 
+Only `satisfied: true` means the selected goal succeeded. `satisfied: false`
+means the goal is unmet, and `satisfied: null` means the result is unknown.
 Interpret `attention_required`, `head_changed`, and unknown results before
 continuing; none means the requested goal succeeded. New or edited feedback
 returns attention while a goal remains unmet, so the caller can inspect it. Keep
