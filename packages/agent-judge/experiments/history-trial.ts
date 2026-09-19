@@ -187,7 +187,9 @@ try {
     limitation:
       "Small curated corpus and known-evidence labels; other relevant passages may be unlabelled. No agent completion-time savings measured.",
   };
+  if (controller.signal.aborted) throw new Error("Trial stopped.");
   await writePrivateJson(join(output, "report.json"), report);
+  if (controller.signal.aborted) throw new Error("Trial stopped.");
   console.log(JSON.stringify(report));
 } catch (error) {
   console.error(error instanceof Error ? error.message : "Trial failed");

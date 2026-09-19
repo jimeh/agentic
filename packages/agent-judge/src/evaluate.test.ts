@@ -3,6 +3,7 @@ import { rejects } from "node:assert/strict";
 import {
   evaluate,
   parseRequest,
+  requestHash,
   validateResponse,
   type EvaluationRequest,
 } from "./evaluate";
@@ -51,6 +52,33 @@ const mockFetch = (
 ) => fn as typeof fetch;
 
 describe("evaluation boundary", () => {
+  test("hashes and validates the sent snapshot despite caller mutation", async () => {
+    const mutable = structuredClone(request);
+    let release!: (response: Response) => void;
+    let entered!: () => void;
+    const started = new Promise<void>((resolve) => {
+      entered = resolve;
+    });
+    const pending = evaluate(mutable, {
+      apiKey: "fixture-token",
+      fetch: mockFetch(async (_, init) => {
+        expect(JSON.parse(init!.body as string)).toEqual(request);
+        return new Promise<Response>((resolve) => {
+          release = resolve;
+          entered();
+        });
+      }),
+    });
+    await started;
+    mutable.state = "Changed after sending";
+    mutable.questions = {
+      other: { type: "noul", instructions: "Different question" },
+    };
+    release(Response.json(response()));
+    const result = await pending;
+    expect(result.request_sha256).toBe(requestHash(request));
+    expect(result.response).toEqual(response());
+  });
   test("sends the exact request once and preserves probabilities and usage", async () => {
     let calls = 0;
     const result = await evaluate(request, {

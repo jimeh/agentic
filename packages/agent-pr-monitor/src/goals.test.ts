@@ -443,6 +443,15 @@ function runner(
   };
 }
 describe("goal waiting", () => {
+  test("confirmation compares equivalent mixed-case heads consistently", async () => {
+    const upper = observation();
+    upper.snapshot.headSha = sha.toUpperCase();
+    expect(await runner([observation(), upper]).run()).toMatchObject({
+      kind: "goal_reached",
+      satisfied: true,
+      observations: 2,
+    });
+  });
   test("evaluate observes once without confirmation or sleeping", async () => {
     const r = runner([observation()], {
       mode: "evaluate",

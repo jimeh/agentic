@@ -200,7 +200,8 @@ export async function evaluate(
   },
 ) {
   // Revalidate callers of the library as well as callers of the CLI.
-  const body = JSON.stringify(parseRequest(JSON.stringify(request)));
+  const normalizedRequest = parseRequest(JSON.stringify(request));
+  const body = JSON.stringify(normalizedRequest);
   if (!options.apiKey.trim())
     throw new JudgeError("auth", "Set TYPESAFE_API_KEY before evaluating.");
   const timeoutMs = options.timeoutMs ?? 30_000;
@@ -251,9 +252,9 @@ export async function evaluate(
     }
     return {
       kind: "evaluation" as const,
-      request_sha256: requestHash(request),
+      request_sha256: requestHash(normalizedRequest),
       elapsed_ms: Math.round(performance.now() - started),
-      response: validateResponse(value, request),
+      response: validateResponse(value, normalizedRequest),
     };
   } catch (error) {
     if (options.signal?.aborted)

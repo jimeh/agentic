@@ -114,7 +114,7 @@ export async function monitorGoal(options: GoalMonitorOptions) {
         );
         if (signal.aborted) break;
         observations++;
-        if (head !== observation.snapshot.headSha)
+        if (head.toLowerCase() !== observation.snapshot.headSha.toLowerCase())
           return finish("head_changed");
         evaluation = await evaluateGoal(
           observation,
