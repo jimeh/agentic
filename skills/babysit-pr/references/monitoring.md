@@ -7,9 +7,11 @@ never changes GitHub state or invokes a model.
 
 ## Start and resume
 
-Run `agent-pr-monitor --help` for options. If it is not on `PATH`, use
-`mise run pr-monitor -- ...` in the Agentic checkout, or invoke
-`packages/agent-pr-monitor/bin/agent-pr-monitor.ts` there through Bun.
+Run the installed `agent-pr-monitor` command from the project being monitored.
+Agentic's config installer links it into `~/.local/bin`; no Agentic checkout is
+needed for normal use. Run `agent-pr-monitor --help` for options. If the command
+is unavailable, check `PATH` and the installed link rather than changing the
+project's working directory to run an Agentic Mise task.
 
 ```bash
 agent-pr-monitor snapshot https://github.com/OWNER/REPO/pull/123
@@ -103,10 +105,10 @@ owning workflow.
 
 ## Optional goal probes
 
-Use `evaluate --until ...` when the caller wants a one-shot condition check, or
-`wait --until ...` to wait for the same conditions. Both leave the change cursor
-untouched. Conditions can be composed without asking a model to judge overall PR
-readiness. See the
+Use `agent-pr-monitor evaluate --until ...` when the caller wants a one-shot
+condition check, or `agent-pr-monitor wait --until ...` to wait for the same
+conditions. Both leave the change cursor untouched. Conditions can be composed
+without asking a model to judge overall PR readiness. See the
 [goal evaluator reference](../../../packages/agent-pr-monitor/README.md) for
 supported conditions, freshness rules and distinct false/unknown results.
 

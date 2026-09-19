@@ -6,20 +6,24 @@ and returning when the goal is met or the caller needs to inspect a change.
 Neither command reads, locks, or advances the existing change-based wait cursor.
 Plain `snapshot` and `wait` retain their existing behavior and artifacts.
 
+The agent-config installer links `agent-pr-monitor` into `~/.local/bin`. Run
+these commands from any project checkout; they do not require an Agentic working
+directory.
+
 ```bash
 # One-shot probes. Repeat --until to require all conditions.
-mise run pr-monitor -- evaluate "$PR_URL" --until checks-pass --checks required
-mise run pr-monitor -- evaluate "$PR_URL" --until checks-finished --checks build
-mise run pr-monitor -- evaluate "$PR_URL" --until review-finished \
+agent-pr-monitor evaluate "$PR_URL" --until checks-pass --checks required
+agent-pr-monitor evaluate "$PR_URL" --until checks-finished --checks build
+agent-pr-monitor evaluate "$PR_URL" --until review-finished \
   --reviewer coderabbitai
 
 # Wait on a composed, exact-head goal.
-mise run pr-monitor -- wait "$PR_URL" --until checks-pass \
+agent-pr-monitor wait "$PR_URL" --until checks-pass \
   --until review-approved --reviewer coderabbitai \
   --until threads-resolved --until non-draft --until mergeable
 
 # New or edited feedback since a request, with an optional author filter.
-mise run pr-monitor -- evaluate "$PR_URL" --until feedback-received \
+agent-pr-monitor evaluate "$PR_URL" --until feedback-received \
   --since 2026-09-19T12:00:00Z --reviewer coderabbitai
 ```
 
@@ -107,7 +111,10 @@ requirements. `--state-file` has no effect on goal calls. They do not save
 artifacts or comment bodies; redirect the JSON result when durable probe
 evidence is needed.
 
-## Verification
+## Development and verification
+
+Inside the Agentic repository, `mise run pr-monitor -- ...` runs the local
+source during development. Installed agents use `agent-pr-monitor` directly.
 
 `mise run test:pr-monitor` exercises structured review precedence, synthetic
 GitHub pagination and required-check discovery, actual CLI exit behavior, legacy
