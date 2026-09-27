@@ -22,30 +22,19 @@ Prefer small, reviewable cleanups:
 2. Gather evidence with `rg`, tests, or a script.
 3. Fix the highest-leverage cluster.
 4. Add a check or doc pointer if recurrence is likely.
-5. Record remaining debt in the project quality or tech debt tracker.
+5. Record remaining debt in its maintained source of truth, if follow-up is
+   needed.
 
 Avoid broad rewrites unless the user explicitly asks for them.
 
-## Quality Tracker Shape
+## Choose the maintained record
 
-If a project lacks a tracker and cleanup will recur, add a small Markdown file:
-
-```markdown
-# Quality Tracker
-
-## Current Priorities
-
-| Area | Grade | Evidence | Next action |
-| --- | --- | --- | --- |
-| Docs freshness | B | ... | ... |
-
-## Accepted Debt
-
-- <debt>: accepted until <condition/date/release>, owner <team/person if known>
-```
-
-Use whatever name/location matches the project. Do not invent heavy process for
-small repositories.
+Use the [artifact lifetime decision](repo-knowledge-map.md#artifact-lifetime)
+before adding a quality document or plan. An existing issue tracker, generated
+report, or check's explicit exception list may already own the information.
+Create a Markdown tracker only when someone or a workflow will maintain it. For
+accepted debt, record the reason and reconsideration condition where the
+exception is owned. Avoid parallel lists that disagree after the next cleanup.
 
 ## Recurring Prompts
 
@@ -54,7 +43,7 @@ Good cleanup prompts are narrow:
 - "Find stale docs that mention removed package scripts."
 - "Find duplicated concurrency helpers and propose one consolidation."
 - "Find violations of the domain naming glossary."
-- "Update the quality tracker after inspecting recent TODOs."
+- "Reconcile resolved exceptions with the maintained debt record."
 
 Bad cleanup prompts are vague:
 

@@ -10,6 +10,7 @@ before action or validate their work after action.
 - [Choosing the Control](#choosing-the-control)
 - [Docs vs Skills](#docs-vs-skills)
 - [Sensor Quality](#sensor-quality)
+- [Automated review](#automated-review)
 - [Long-Running Workflows](#long-running-workflows)
 - [Harness Evolution](#harness-evolution)
 
@@ -58,7 +59,8 @@ Use docs for reference knowledge:
 - architecture overviews
 - domain glossaries
 - testing conventions
-- quality trackers
+- maintained quality records, following the
+  [artifact lifetime decision](repo-knowledge-map.md#artifact-lifetime)
 - command maps
 
 Use project-local skills for agent workflows:
@@ -88,6 +90,32 @@ Poor sensors are:
 - noisy or flaky without a policy
 - hard to reproduce locally
 - written only for humans, with no actionable fix hint
+
+## Automated review
+
+Use model-based checks only when the repository needs judgment that reliable
+mechanical checks do not supply. Define each reviewer's concern, trigger,
+permitted investigation, finding criteria, cost limit, and result contract.
+Avoid adding reviewers merely to complete an audit checklist.
+
+A narrow convention check may inspect selected changed lines and paths. A
+correctness or architecture review may need unchanged consumers, contracts, and
+tests to establish a regression. Scope findings to problems introduced or
+worsened by the change, while allowing the investigation needed to prove them.
+Optional preferences should not block unless the repository makes them policy.
+
+Run relevant deterministic prerequisites first when that saves wasted review.
+Define separate outcomes for pass, findings, and inconclusive execution. Missing
+context, a timeout, or an unavailable prerequisite is not a pass. Use stable
+machine-readable output or an exact pass response when automation consumes it.
+Preserve the repository's human approval rules for product decisions and policy
+exceptions; the reviewer does not acquire that authority.
+
+Before making a check blocking, evaluate known regressions and legitimate
+changes, including an irrelevant diff and an incomplete run. Inspect missed
+findings and false positives as well as successful detections. Periodically
+revisit trigger frequency, cost, usefulness, and prompt size. Remove stale rules
+and move reliably checkable ones into deterministic tooling.
 
 ## Long-Running Workflows
 

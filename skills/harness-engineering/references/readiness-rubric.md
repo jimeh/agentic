@@ -4,6 +4,10 @@ Use this rubric to audit a repository for agent-first development. Score each
 area from 0 to 3, then prioritize low-effort improvements that unlock future
 agent validation or reduce repeated failures.
 
+Score only applicable areas supported by evidence. Mark uninspected or
+unverifiable areas unknown and exclude n/a areas from the judgment. The number
+of installed tools or controls is not a maturity score.
+
 ## Contents
 
 - [Levels](#levels)
@@ -38,7 +42,8 @@ agent validation or reduce repeated failures.
   versioned repo-local docs.
 - Docs have owners or refresh triggers when practical.
 - Generated references are marked as generated and can be regenerated.
-- External knowledge needed by agents is copied or summarized into the repo.
+- Required external knowledge is discoverable through an accessible,
+  version-appropriate source; copy it only when that improves reliability.
 - Procedural agent guides that became complex or heavily reused are promoted to
   project-local skills.
 - Local project skills live under `.agents/skills`, with `.claude/skills`
@@ -50,6 +55,8 @@ agent validation or reduce repeated failures.
   accessible.
 - Recommendations identify the concrete failure or delay they prevent.
 - Observed recurring problems outrank speculative checklist completeness.
+- Evidence sampling guides deeper inspection, and recommendations identify their
+  verification and ongoing maintenance cost.
 
 ### Validation Surface
 
@@ -93,6 +100,10 @@ agent validation or reduce repeated failures.
   flows.
 - Performance, startup, or reliability targets have measurable commands.
 - Long-running services can be started and torn down predictably.
+- Applicable runtime ownership, fixture, and lifecycle decisions follow
+  [runtime ownership](runtime-ownership.md).
+- Blocking budgets have representative workloads and characterized variation
+  under [measurement criteria](feedback-loops.md#measurements-and-budgets).
 
 ### Enforced Architecture
 
@@ -103,6 +114,10 @@ agent validation or reduce repeated failures.
   failure becomes a lint, test, script, or doc update when practical.
 - Boundaries are strict where they protect coherence and loose where local
   implementation freedom is cheap.
+- Existing debt uses a verified
+  [incremental rollout](enforceable-invariants.md#rollout-pattern).
+- Model-based checks, when applicable, follow the scope and outcome rules in
+  [automated review](guides-and-sensors.md#automated-review).
 
 ### Supply-Chain and Automation
 
@@ -117,7 +132,8 @@ agent validation or reduce repeated failures.
 
 ### Entropy Control
 
-- The repo tracks known tech debt or quality gaps.
+- Plans and quality records have an authoritative home and useful lifetime,
+  following [artifact lifetime](repo-knowledge-map.md#artifact-lifetime).
 - Cleanup work is small, recurring, and reviewable.
 - Duplicated helpers, stale docs, and inconsistent patterns are detectable.
 - Refactors improve future agent legibility, not just human taste.

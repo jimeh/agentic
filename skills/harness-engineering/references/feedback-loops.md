@@ -10,6 +10,7 @@ inspection.
 - [Evidence Ownership](#evidence-ownership)
 - [UI Validation](#ui-validation)
 - [Observability](#observability)
+- [Measurements and budgets](#measurements-and-budgets)
 - [CI and PR Recovery](#ci-and-pr-recovery)
 - [Review Harvest](#review-harvest)
 - [Proof Artifacts](#proof-artifacts)
@@ -37,6 +38,10 @@ Useful affordances:
 - deterministic seed data or fixtures
 - teardown commands for services and temp state
 - per-worktree ports or isolated state when parallel work is common
+
+For resources with mutable state or concurrent owners, use
+[runtime ownership](runtime-ownership.md) to inspect instance identity,
+configuration precedence, readiness, recovery, fixture suitability, and cleanup.
 
 Recommended command tiers:
 
@@ -86,6 +91,32 @@ Make signals queryable when they matter:
 
 Simple projects may only need logs and targeted tests. Add metrics/traces when
 they answer questions agents cannot answer cheaply otherwise.
+
+## Measurements and budgets
+
+For an important product requirement, identify a representative workload and an
+observable metric, such as payload size, startup time, memory, query count, or
+latency. Specify the environment, acceptable variation, threshold or baseline
+comparison, execution cost, trigger, evidence owner, and response to failure. Do
+not infer a valid threshold from one run.
+
+Start with measurement when variance or the requirement is uncertain. Make a
+check blocking when its signal is reliable enough for the decision. A fixed
+ceiling guards an absolute limit; a comparable base-revision result reveals
+change. Keep those claims distinct and report a missing baseline as unavailable.
+Verify that a representative regression is detectable without making normal
+variation fail the check.
+
+Apply the same reasoning to development friction when it is costly: setup
+success, time to the first useful result, CI critical path, flaky failures, and
+reviewer false positives. Use existing logs before building new telemetry.
+Preserve coverage when optimizing feedback; uncertain path filtering should run
+the affected check rather than silently skip it.
+
+PR comments and dashboards are optional. If publishing untrusted check results
+requires write credentials, isolate execution from publication. Validate
+artifact schema, producer/run identity, and the current revision before a
+trusted publisher uses the result; never execute artifact content.
 
 ## CI and PR Recovery
 

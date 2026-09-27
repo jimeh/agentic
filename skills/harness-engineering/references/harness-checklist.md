@@ -1,8 +1,10 @@
 # Harness Checklist
 
 Use this checklist during audits, bootstraps, or broad harness changes. Mark
-each item as **pass**, **gap**, or **n/a**, and include the command or file that
-proves the answer. Prefer concrete evidence over inferred readiness.
+each inspected item as **pass**, **gap**, **n/a**, or **unknown**, and include
+the command or file that proves the answer. Use unknown for missing evidence;
+exclude inapplicable controls from readiness judgments. For narrow requests, use
+only the relevant sections.
 
 ## Contents
 
@@ -48,6 +50,8 @@ proves the answer. Prefer concrete evidence over inferred readiness.
 - Consequential tacit gaps are confirmed with targeted maintainer questions or
   carried as explicit material assumptions, never generic questionnaires.
 - Recommendations distinguish observed failures from checklist-only gaps.
+- A small evidence sample guides deeper inspection, and substantial proposals
+  name their mechanism, verification, ongoing cost, and reconsideration trigger.
 
 ## Task Surface
 
@@ -83,6 +87,9 @@ proves the answer. Prefer concrete evidence over inferred readiness.
 - YAML, JSON, TOML, or schema-heavy config has parser or schema validation.
 - Custom project invariants live in scripts or tests with actionable messages.
 - Lint checks are available locally, not only in CI.
+- New checks with existing debt use an explicit
+  [rollout mechanism](enforceable-invariants.md#rollout-pattern) whose guarantee
+  and exception handling have been verified.
 
 ## Types, Schemas, and Contracts
 
@@ -126,6 +133,9 @@ proves the answer. Prefer concrete evidence over inferred readiness.
   flows.
 - UI projects expose local dev, seed data, screenshots, or browser automation
   paths when needed.
+- Stateful verification and fixtures follow the applicable
+  [runtime ownership guidance](runtime-ownership.md), including completion
+  signals, instance identity, recovery, and data access authority.
 
 ## GitHub Actions
 
@@ -153,6 +163,10 @@ proves the answer. Prefer concrete evidence over inferred readiness.
 - Startup, background jobs, queues, and workers have documented run commands.
 - Performance or reliability claims have measurable commands when they matter.
 - Long-running services can be started and stopped predictably.
+- Concurrent or shared resources have a verified ownership and cleanup boundary
+  using [runtime ownership](runtime-ownership.md).
+- Proposed blocking budgets meet the
+  [measurement criteria](feedback-loops.md#measurements-and-budgets).
 
 ## Agent Affordances
 
@@ -160,12 +174,19 @@ proves the answer. Prefer concrete evidence over inferred readiness.
   concise docs.
 - Complex agent guidance uses progressive disclosure instead of large root
   instruction blobs.
-- External or tacit knowledge needed for routine work is captured in the repo.
+- Required external or tacit knowledge has a discoverable, maintained source
+  under the
+  [knowledge placement guidance](repo-knowledge-map.md#artifact-lifetime).
 - Tooling choices explain what agent failure they prevent.
+- Existing or proposed model-based checks have bounded scope, evaluated finding
+  quality, and distinct inconclusive outcomes under
+  [automated review](guides-and-sensors.md#automated-review).
 
 ## Entropy Control
 
-- Known quality gaps or tech debt have a visible tracker or cleanup doc.
+- Follow-up debt has a maintained source of truth; use
+  [artifact lifetime](repo-knowledge-map.md#artifact-lifetime) before creating
+  another tracker or plan.
 - Stale docs, generated references, dead scripts, or duplicated helpers are
   detectable through checks or recurring tasks.
 - Repeated review feedback is converted into a test, lint, script, or durable

@@ -29,6 +29,16 @@ Choose only the guidance the task needs:
 - For task or hook changes, consult
   [tooling patterns](references/tooling-patterns.md) and
   [hook placement](references/tooling-hooks-dependencies.md) only as needed.
+- For runtime isolation or stateful verification, use
+  [runtime ownership](references/runtime-ownership.md). For measurement and
+  validation design, use [feedback loops](references/feedback-loops.md).
+- For adopting checks in existing code, use
+  [enforceable invariants](references/enforceable-invariants.md). For automated
+  review design, use
+  [review controls](references/guides-and-sensors.md#automated-review).
+- For stale instructions, plans, or examples, use
+  [artifact lifetime](references/repo-knowledge-map.md#artifact-lifetime) and
+  [cleanup](references/entropy-cleanup.md).
 
 Keep useful constraints close to the decision they govern. Prefer focused tasks,
 checks, and conditional guidance over growing mandatory reading lists. Preserve
