@@ -156,7 +156,7 @@
     ],
     "defaultMode": "auto"
   },
-  "model": "claude-fable-5-1",
+  "model": "opus[1m]",
   "statusLine": {
     "type": "command",
     "command": "~/.claude/statusline.sh",
@@ -180,6 +180,9 @@
     },
     "claude-opus-5": {
       "effortLevel": "medium"
+    },
+    "claude-opus-5-5": {
+      "effortLevel": "xhigh"
     }
   },
   "autoUpdatesChannel": "latest",
@@ -191,5 +194,6 @@
   "preferredNotifChannel": "ghostty",
   "switchModelsOnFlag": false,
   "teammateMode": "auto",
+  "agentPushNotifEnabled": true,
   "skipAutoPermissionPrompt": true
 }
