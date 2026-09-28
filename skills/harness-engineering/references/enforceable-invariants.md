@@ -82,11 +82,11 @@ Choose incremental enforcement to match the guarantee needed:
   make any broadened exception visible in review, especially when it weakens a
   safety or architecture boundary.
 
-A baseline is useful when it identifies accepted debt and can shrink. Avoid
-blanket exclusions that prevent the detector from seeing new violations. Verify
-the selected mechanism against a new violation, an accepted existing case, and a
-cleanup. Include a same-count replacement if the claimed guarantee depends on
-violation identity.
+A baseline is useful when it bounds or identifies accepted debt, as its
+mechanism allows, and can shrink. Avoid blanket exclusions that prevent the
+detector from seeing new violations. Verify the selected mechanism against a new
+violation, an accepted existing case, and a cleanup. Include a same-count
+replacement if the claimed guarantee depends on violation identity.
 
 ## Review Feedback Loop
 

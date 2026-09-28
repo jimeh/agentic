@@ -5,8 +5,8 @@ area from 0 to 3, then prioritize low-effort improvements that unlock future
 agent validation or reduce repeated failures.
 
 Score only applicable areas supported by evidence. Mark uninspected or
-unverifiable areas unknown and exclude n/a areas from the judgment. The number
-of installed tools or controls is not a maturity score.
+unverifiable areas unknown and exclude inapplicable areas from the judgment. The
+number of installed tools or controls is not a maturity score.
 
 ## Contents
 
@@ -140,18 +140,26 @@ of installed tools or controls is not a maturity score.
 
 ## Output Shape
 
-Use this compact format for audits:
+Use this compact format for audits. The Level column accepts 0-3, `unknown`, or
+`n/a`. The overall level describes only scored areas; list unknown areas
+separately and do not treat them as zero. If no areas can be scored, report the
+overall level as unknown. An area's `n/a` means it is inapplicable,
+independently of a hook decision marked `n/a` because a hook is inapplicable or
+deferred.
 
 ```markdown
 ## Harness Readiness
 
 Overall: Level <n> - <one sentence>
+Unknown areas: <areas needing evidence, or none>
 
 | Area | Level | Evidence | Hook decision | Trigger | Scope | Cost | Evidence owner | Next improvement |
-| --- | ---: | --- | --- | --- | --- | --- | --- | --- |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | Project map | 2 | ... | n/a | editing | changed area | ... | author or agent | ... |
 | Local enforcement | 1 | ... | change | commit | ... | ... | pre-commit hook | ... |
 | Supply-chain and automation | 1 | ... | n/a | CI | repository | ... | CI | ... |
+| Runtime ownership | n/a | Library has no runtime resources | n/a | n/a | n/a | n/a | n/a | none |
+| CI feedback cost | unknown | Run timings unavailable | n/a | CI | repository | unknown | CI | inspect run timings |
 
 ## Priority Changes
 
