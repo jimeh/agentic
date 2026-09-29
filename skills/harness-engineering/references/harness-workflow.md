@@ -39,42 +39,47 @@ failure over late human review whenever the rule can be checked.
 
 ### 2. Read the Project as the Agent Will
 
-Inspect, in this order:
+Start with the project instructions and canonical commands, then use a small
+sample of available failure evidence to choose where to investigate further:
 
 1. Root instructions: `AGENTS.md`, `CLAUDE.md`, `.cursorrules`,
    `.github/copilot-instructions.md`.
 2. Setup and validation: `README.md`, `Makefile`, package scripts, task runners,
    CI workflows, test configs.
-3. Local enforcement: hook-manager config, `core.hooksPath`, setup/install
+3. Historical friction when available and in scope: accepted review findings,
+   recurring CI failures, corrective commits, setup failures, and unexpectedly
+   slow tasks. Inspect private session transcripts only when authorized.
+4. Local enforcement: hook-manager config, `core.hooksPath`, setup/install
    tasks, staged-file scope, write behavior, and measured warm runtime when
    practical.
-4. Architecture and product docs: `docs/`, `ARCHITECTURE.md`, design docs, ADRs,
+5. Architecture and product docs: `docs/`, `ARCHITECTURE.md`, design docs, ADRs,
    schemas, generated references.
-5. Agent affordances: browser automation, local dev boot scripts, local skills,
+6. Agent affordances: browser automation, local dev boot scripts, local skills,
    log access, fixtures, seed data, screenshots, traces, PR/CI tooling.
-6. Mechanical constraints: linters, dependency rules, type checks, structural
+7. Mechanical constraints: linters, dependency rules, type checks, structural
    tests, naming checks, file size checks, custom diagnostics.
-7. Supply-chain controls: lockfiles, package-manager age gates, GitHub Actions
+8. Supply-chain controls: lockfiles, package-manager age gates, GitHub Actions
    pins, action/workflow linting, dependency update policy.
-8. Historical friction when evidence is available and its inspection is in
-   scope: accepted review findings, recurring CI failures, corrective follow-up
-   changes, repeated handoff notes, agent-session corrections, command misuse,
-   abandoned approaches, and unexpectedly slow tasks.
+
+For narrow requests, inspect only the relevant areas. Missing history does not
+block an audit; identify preventive recommendations as such rather than
+presenting them as observed failures.
 
 Prefer `rg` and existing project commands. Do not assume missing docs are the
 main problem; missing executable feedback often matters more.
 
 Use `harness-checklist.md` for audits or broad harness work. Treat each baseline
-item as pass, gap, or not applicable, with file or command evidence. For common
-ecosystems, formatter, linter, type/schema checks, tests, and CI workflow checks
-are expected unless the project has a documented reason to omit them. If
-applicable fast canonical checks exist, treat absent commit-time feedback as a
-gap unless the audit gives a concrete reason it is not useful. In audit mode,
-recommend `add` only when such a check already exists in the current repository
-and a representative warm run fits the hook budget. Otherwise record `n/a` as
-the current decision with the condition for reconsidering it, even when the same
-audit recommends creating or measuring the check. Read `tooling-patterns.md` and
-`tooling-hooks-dependencies.md` when evaluating that decision.
+item as pass, gap, not applicable, or unknown, with file or command evidence.
+For common ecosystems, formatter, linter, type/schema checks, tests, and CI
+workflow checks are expected unless the project has a documented reason to omit
+them. If applicable fast canonical checks exist, treat absent commit-time
+feedback as a gap unless the audit gives a concrete reason it is not useful. In
+audit mode, recommend `add` only when such a check already exists in the current
+repository and a representative warm run fits the hook budget. Otherwise record
+`n/a` as the current decision with the condition for reconsidering it, even when
+the same audit recommends creating or measuring the check. Read
+`tooling-patterns.md` and `tooling-hooks-dependencies.md` when evaluating that
+decision.
 
 When creating, auditing, or refining project instructions, read
 `project-instructions.md`, `repo-knowledge-map.md`, and `agent-authoring.md`.
@@ -89,10 +94,30 @@ such as repository rules, linked agent docs, or project-local skills, read
 `agent-authoring.md`. For a skill, also use the environment's skill-authoring
 workflow; that workflow owns packaging and platform mechanics.
 
+Load conditional guidance when the evidence warrants it:
+
+- Services, applications, devices, or concurrent worktrees:
+  [runtime ownership](runtime-ownership.md).
+- Slow feedback or unmeasured product requirements:
+  [feedback loops](feedback-loops.md).
+- Existing violations that complicate a new check:
+  [enforceable invariants](enforceable-invariants.md).
+- Model-based review checks:
+  [automated review](guides-and-sensors.md#automated-review).
+- Stale or competing documents:
+  [artifact lifetime](repo-knowledge-map.md#artifact-lifetime).
+
 ### 3. Find the Missing Harness Capability
 
 Translate every friction point into a missing guide, sensor, enforcement point,
 task, or cleanup loop before choosing the artifact.
+
+For each substantial recommendation, connect the observed failure or preventive
+risk to the proposed mechanism, why it fits, and the evidence that would show
+success. Prefer a safe default or helper when it removes the dangerous choice;
+use a detector when the choice must remain available. Include ongoing cost and a
+condition for revisiting the control. Do not expand a narrow task to complete
+the checklist.
 
 For each recurring failure or desired autonomy level, ask:
 
@@ -112,8 +137,8 @@ For each recurring failure or desired autonomy level, ask:
   not, add a command or document why the check is CI-only or not applicable.
 - **Can the repo resist rushed dependency intake?** If not, recommend cooldowns,
   pinned automation dependencies, and lockfile checks.
-- **Can the agent recover from drift?** If not, create cleanup checks, quality
-  docs, or recurring maintenance prompts.
+- **Can the agent recover from drift?** If not, improve cleanup checks or the
+  maintained source of truth before creating another tracker.
 - **Is this rule stable enough to document?** If not, leave it as task-local
   guidance.
 
@@ -124,8 +149,9 @@ Prefer durable repo-local artifacts:
 - Concise root `AGENTS.md` as a map plus any compact project model,
   non-negotiables, vocabulary, impact dimensions, or hazards that materially
   affect most work.
-- Deeper docs under `docs/` for architecture, product, testing, operations,
-  quality, agent guidance, and execution plans.
+- Deeper docs for durable architecture, product, testing, operations, and agent
+  knowledge. Choose where plans and debt live using
+  [artifact lifetime](repo-knowledge-map.md#artifact-lifetime).
 - Project-local skills for procedural, conditional, or frequently reused agent
   workflows that should load only when triggered.
 - Scripts for repeatable setup, reproduction, validation, and cleanup.
@@ -166,6 +192,11 @@ For audits, output:
   evidence owner
 - validation strategy
 
+Exclude inapplicable controls from readiness judgments. A library without a
+runtime does not need process ownership tooling; a repository without automated
+review does not need reviewer budgets. Preserve unresolved evidence gaps as
+unknowns, not passes or demonstrated defects.
+
 When historical evidence is available, prioritize by observed frequency, failure
 cost, and feedback delay as well as implementation and maintenance effort.
 Separate broad sweeps into dependency-ordered, independently reviewable changes.
@@ -173,6 +204,11 @@ Separate broad sweeps into dependency-ordered, independently reviewable changes.
 For project-instruction work, trace retained guidance to repository evidence or
 explicit maintainer input. Scenario-check the result against representative
 changes before calling it complete.
+
+For a material control change, replay the motivating failure safely when
+practical and verify the intended success path still works. Use static or manual
+scenario evidence when execution is unavailable or disproportionate, and name
+that limitation. Do not reproduce destructive incidents on live state.
 
 For implementation, keep the first pass narrow. Add one or two compounding
 affordances, run relevant formatting/tests, and record recurring or costly

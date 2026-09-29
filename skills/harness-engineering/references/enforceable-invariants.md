@@ -66,6 +66,28 @@ Diagnostics should include:
 4. Make the check blocking once the signal is clean.
 5. Keep exceptions explicit and grep-able.
 
+Choose incremental enforcement to match the guarantee needed:
+
+- Enable a rule package by package after cleanup when scope can be separated
+  soundly. Keep the unenforced scope visible.
+- Track individual accepted violations when the tool provides stable identities
+  and new occurrences must fail. Check behavior under file moves and code edits;
+  an unstable fingerprint can produce noise or hide a new violation.
+- Use per-file occurrence ceilings when limiting aggregate growth is sufficient.
+  They cannot prevent replacing one old violation with a new one at the same
+  count. Reduce allowances as cleanup lands and detect unused headroom where
+  practical.
+- Keep exceptions centrally discoverable with reasons, and reject obsolete
+  suppressions when the tool supports it. Follow project policy for approval;
+  make any broadened exception visible in review, especially when it weakens a
+  safety or architecture boundary.
+
+A baseline is useful when it bounds or identifies accepted debt, as its
+mechanism allows, and can shrink. Avoid blanket exclusions that prevent the
+detector from seeing new violations. Verify the selected mechanism against a new
+violation, an accepted existing case, and a cleanup. Include a same-count
+replacement if the claimed guarantee depends on violation identity.
+
 ## Review Feedback Loop
 
 When a review comment repeats, arrives late, or exposes a surprising high-risk

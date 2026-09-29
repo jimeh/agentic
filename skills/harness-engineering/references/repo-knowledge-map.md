@@ -9,6 +9,7 @@ Use this when shaping project docs for agent legibility.
 - [Claude Code Compatibility](#claude-code-compatibility)
 - [Root AGENTS.md Contents](#root-agentsmd-contents)
 - [Deeper Docs](#deeper-docs)
+- [Artifact lifetime](#artifact-lifetime)
 - [Project-Local Skills](#project-local-skills)
 - [Sub-Folder AGENTS.md](#sub-folder-agentsmd)
 - [Freshness](#freshness)
@@ -40,9 +41,6 @@ docs/
     decisions/
   product/
     index.md
-  exec-plans/
-    active/
-    completed/
   generated/
 ```
 
@@ -87,8 +85,32 @@ Create deeper docs only when they answer questions agents repeatedly need:
 - **Product**: domain vocabulary, user roles, business rules, workflows.
 - **Testing**: test types, fixtures, targeted commands, flake policy.
 - **Operations**: local services, logs, metrics, release/deploy notes.
-- **Quality**: known gaps, cleanup priorities, standards not yet enforced.
-- **Execution plans**: long-running work with progress and decision logs.
+- **Quality and plans**: only when the repository is their maintained source of
+  truth, using the lifetime decision below.
+
+## Artifact lifetime
+
+Before creating a tracker, plan, or reference, identify its audience,
+authoritative source, maintenance trigger, and useful lifetime. Reuse the
+project's maintained issue or planning system rather than duplicating pending
+work in Markdown. Committed plans are appropriate when the project maintains
+them and distinguishes proposals, active requirements, and historical decisions.
+
+Keep durable reasons, cross-component decisions, and traps that source alone
+does not explain. Link to inspectable configuration or generated references
+instead of copying facts that change frequently. External knowledge should be
+discoverable, but need not be copied into the repository when an accessible,
+version-appropriate source already serves the task.
+
+Review search results and examples as agent input. Retire superseded commands,
+stale plans, and misleading examples within the authorized scope. Preserve
+valuable historical decisions with explicit status and links to their
+replacements; merely moving stale instructions to an archive may leave them in
+ordinary search. Keep temporary research and PR-only media in the project's
+chosen artifact location, with a retention or disposal boundary.
+
+Test the result with a representative query: can a fresh reader distinguish
+current behavior, planned work, and history without reconstructing the timeline?
 
 ## Project-Local Skills
 
