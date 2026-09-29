@@ -107,6 +107,9 @@ Constraints:
 - Do not invoke delegation skills or launch native or CLI model workers.
 - Stop and report if architecture, API, product, UX, or destructive decisions
   are required.
+- You are running unattended; the parent cannot answer questions mid-task.
+  Complete every step the objective covers, stopping early only for the
+  conditions above, and do not end on a description of work you have not run.
 
 Success criteria:
 - <observable behavior>
