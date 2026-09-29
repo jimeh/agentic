@@ -39,7 +39,7 @@ if [[ "${FAKE_MODE:-success}" == "result-error" ]]; then
   exit 0
 fi
 
-model="claude-fable-5-1"
+model="claude-opus-5-5"
 for ((i = 1; i <= $#; i++)); do
   if [[ "${!i}" == "--model" ]]; then
     next=$((i + 1))
@@ -79,7 +79,7 @@ file_mode() {
 run_headless default
 
 grep -Fx -- '--model' "$capture_dir/default.args" >/dev/null
-grep -Fx -- 'claude-fable-5-1' "$capture_dir/default.args" >/dev/null
+grep -Fx -- 'claude-opus-5-5' "$capture_dir/default.args" >/dev/null
 grep -Fx -- '--effort' "$capture_dir/default.args" >/dev/null
 grep -Fx -- 'high' "$capture_dir/default.args" >/dev/null
 grep -Fx -- '--setting-sources' "$capture_dir/default.args" >/dev/null
@@ -165,8 +165,8 @@ grep -Fx -- 'Skill(test-plugin:codex-plugin-probe)' \
 run_headless opus --model opus --setting-sources user,project \
   --permission-mode auto --session-id 11111111-1111-4111-8111-111111111111
 
-grep -Fx -- 'claude-opus-5' "$capture_dir/opus.args" >/dev/null
-grep -Fx -- 'medium' "$capture_dir/opus.args" >/dev/null
+grep -Fx -- 'claude-opus-5-5' "$capture_dir/opus.args" >/dev/null
+grep -Fx -- 'high' "$capture_dir/opus.args" >/dev/null
 grep -Fx -- 'user,project' "$capture_dir/opus.args" >/dev/null
 grep -Fx -- 'auto' "$capture_dir/opus.args" >/dev/null
 grep -Fx -- '--session-id' "$capture_dir/opus.args" >/dev/null
@@ -184,12 +184,16 @@ if grep -Fx -- '--no-session-persistence' "$capture_dir/resume.args" >/dev/null;
   exit 1
 fi
 
-run_headless override --model opus --effort high
-grep -Fx -- 'claude-opus-5' "$capture_dir/override.args" >/dev/null
-grep -Fx -- 'high' "$capture_dir/override.args" >/dev/null
+run_headless override --model fable --effort medium
+grep -Fx -- 'claude-fable-5-1' "$capture_dir/override.args" >/dev/null
+grep -Fx -- 'medium' "$capture_dir/override.args" >/dev/null
+if grep -Fx -- 'high' "$capture_dir/override.args" >/dev/null; then
+  echo "explicit effort did not replace the model default" >&2
+  exit 1
+fi
 
-run_headless custom --model claude-sonnet-5
-grep -Fx -- 'claude-sonnet-5' "$capture_dir/custom.args" >/dev/null
+run_headless custom --model claude-custom-test
+grep -Fx -- 'claude-custom-test' "$capture_dir/custom.args" >/dev/null
 if grep -Fx -- '--effort' "$capture_dir/custom.args" >/dev/null; then
   echo "custom model received an inferred effort" >&2
   exit 1
@@ -288,8 +292,8 @@ PATH="$fake_bin:$PATH" \
   FAKE_RUN_ID="opus-wrapper" \
   OPUS_API_KEY="test" \
   "$repo_root/bin/opus" < /dev/null >/dev/null 2>/dev/null
-grep -Fx -- 'claude-opus-5' "$capture_dir/opus-wrapper.args" >/dev/null
-grep -Fx -- 'medium' "$capture_dir/opus-wrapper.args" >/dev/null
+grep -Fx -- 'claude-opus-5-5' "$capture_dir/opus-wrapper.args" >/dev/null
+grep -Fx -- 'high' "$capture_dir/opus-wrapper.args" >/dev/null
 if grep -F '[1m]' "$capture_dir/opus-wrapper.args" >/dev/null; then
   echo "opus wrapper forced 1M context" >&2
   exit 1

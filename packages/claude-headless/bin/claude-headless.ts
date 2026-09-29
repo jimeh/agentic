@@ -80,7 +80,7 @@ function usage(exitCode = 2): never {
       "",
       "Options:",
       "  --artifact-dir <path>       Store run artifacts here",
-      "  --model <name>              fable (Fable 5.1) by default; opus pins Opus 5",
+      "  --model <name>              opus (Opus 5.5) by default; fable pins Fable 5.1",
       "  --effort <level>            Override the model-family default",
       "  --setting-sources <sources> Claude setting sources (default: user)",
       "  --permission-mode <mode>    Claude permission mode (default: plan)",
@@ -100,7 +100,7 @@ function parseArgs(argv: string[]): Options {
   const { own, passthrough } = splitPassthrough(argv);
   const options: Options = {
     heartbeatSeconds: 30,
-    model: "fable",
+    model: "opus",
     passthrough,
     permissionMode: "plan",
     settingSources: "user",
@@ -151,14 +151,15 @@ function parseArgs(argv: string[]): Options {
 }
 
 // Friendly names and full IDs the runner routes explicitly. Claude CLI's own
-// `fable` alias may lag behind the newest release, so the mapping stays here.
+// aliases may lag behind the newest release, so the mapping stays here. Effort
+// is always explicit because Opus 5.5 defaults to medium.
 const KNOWN_MODELS: Record<string, { effort: string; model: string }> = {
   "claude-fable-5-1": { effort: "high", model: "claude-fable-5-1" },
-  "claude-opus-5": { effort: "medium", model: "claude-opus-5" },
+  "claude-opus-5-5": { effort: "high", model: "claude-opus-5-5" },
   fable: { effort: "high", model: "claude-fable-5-1" },
   "fable-5-1": { effort: "high", model: "claude-fable-5-1" },
-  opus: { effort: "medium", model: "claude-opus-5" },
-  "opus-5": { effort: "medium", model: "claude-opus-5" },
+  opus: { effort: "high", model: "claude-opus-5-5" },
+  "opus-5-5": { effort: "high", model: "claude-opus-5-5" },
 };
 
 function selectModel(requestedModel: string, effort?: string): ModelSelection {

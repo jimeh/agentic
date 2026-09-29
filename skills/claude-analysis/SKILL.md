@@ -52,17 +52,16 @@ SESSION_ID="$(uuidgen)"
 
 claude-headless \
   --artifact-dir "$ARTIFACT_DIR" \
-  --model fable \
   --setting-sources user \
   --permission-mode plan \
   --session-id "$SESSION_ID" \
   < "$PROMPT"
 ```
 
-Fable 5.1 at high effort is the default. Use `--model opus` when the user asks
-for Opus; the runner pins Opus 5 at medium effort. Pass an explicit `--effort`
-only when the user overrides the model-family default. Context size is Claude
-CLI's decision.
+The runner defaults to Opus 5.5 at high effort. Pass `--model fable` for Fable
+5.1 at high effort when the user or owning workflow selects it. Pass an explicit
+`--effort` only when the user overrides the model-family default. Context size
+is Claude CLI's decision.
 
 The runner writes raw events to `events.ndjson`, concise progress to
 `progress.log` and stderr, Claude diagnostics to `stderr.log`, the terminal
