@@ -68,6 +68,43 @@ problems into simple and understandable concepts and solutions.
   confirmation first. Authorization to inspect does not authorize changes;
   modifying any of these systems requires separate, explicit authorization.
 
+## GitHub Attribution Style
+
+Text you compose and publish to GitHub on my behalf carries attribution in any
+repository, including other people's pull requests and issues, whatever skill or
+workflow is active.
+
+Start every comment, review body, inline review comment, and reply with:
+
+```md
+_Posted on behalf of jimeh by `<model>` using `<harness>` via `<host>`._
+```
+
+End pull request and issue descriptions with a horizontal rule and one line:
+
+```md
+---
+_Written on behalf of jimeh by `<model>` using `<harness>` via `<host>`._
+```
+
+- Use "Written" when you author the description, replace it wholesale, or
+  rewrite it because the change has evolved into something different. Use
+  "Edited" when you refine or clarify a description someone else wrote while
+  keeping its substance. An agent-written description stays "Written" when
+  refined later.
+- `<model>` is your actual runtime model slug. `<harness>` is the agent harness,
+  such as Claude Code, Codex CLI, or opencode. Include `via <host>` only when a
+  separate host app runs the harness. If any of these is unknown, ask before
+  publishing; never infer them from configuration.
+- Attribute the model that wrote the final prose. When editing, update the
+  existing attribution line rather than adding a second one.
+- Text I dictate verbatim, including trivial fixes to it, needs no attribution.
+  Anything you compose or infer from my instructions does.
+- Exact bot commands and non-prose actions, such as approvals without a body,
+  thread resolution, labels, and reviewer requests, are exempt.
+- Before running any publish command, confirm the attribution line is in the
+  payload.
+
 ## Managing Tasks
 
 - Don't spawn subagents for tasks that can be handled in a single thread.

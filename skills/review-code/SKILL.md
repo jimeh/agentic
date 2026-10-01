@@ -19,7 +19,9 @@ reviewer independence and synthesis.
 
 When the user also authorizes fixes or pull-request stewardship, complete the
 review first and hand confirmed findings to that workflow rather than absorbing
-its responsibilities.
+its responsibilities. When the user asks to post findings on a pull request,
+including one authored by someone else, publish them through `babysit-pr`'s
+bounded comment path, which applies the required attribution.
 
 ## Select the Reviewer
 

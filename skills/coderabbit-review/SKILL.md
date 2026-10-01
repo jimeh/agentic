@@ -30,7 +30,7 @@ review churn; report it rather than silently changing it.
 Record the candidate SHA. Post `@coderabbitai review` as an exact top-level bot
 command for an incremental review. Use `@coderabbitai full review` only when the
 user requests a fresh pass or prior context is unusable. Bot commands are exempt
-from the human-facing comment provenance rules owned by `babysit-pr`.
+from the GitHub attribution style in the global instructions.
 
 Treat one explicit invocation as the default budget. Wait for a review or
 terminal outcome covering the candidate SHA. Check liveness before retrying and
@@ -55,10 +55,10 @@ decision still needs closure.
 ## Close Review State
 
 After corrections, inspect every remaining CodeRabbit thread against the current
-head. Reply with concise evidence when useful and apply the comment provenance
-rules from `babysit-pr` to human-facing replies. Resolve a thread only when its
-concern is fixed, invalid, or already satisfied. Never resolve a valid
-unaddressed concern merely to clear review state.
+head. Reply with concise evidence when useful and apply the GitHub attribution
+style from the global instructions to human-facing replies. Resolve a thread
+only when its concern is fixed, invalid, or already satisfied. Never resolve a
+valid unaddressed concern merely to clear review state.
 
 Thread resolution is not approval. When request-changes workflow is enabled,
 wait for and verify the resulting review decision and the checks that gate it.
