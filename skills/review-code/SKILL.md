@@ -19,9 +19,12 @@ reviewer independence and synthesis.
 
 When the user also authorizes fixes or pull-request stewardship, complete the
 review first and hand confirmed findings to that workflow rather than absorbing
-its responsibilities. When the user asks to post findings on a pull request,
-including one authored by someone else, publish them through `babysit-pr`'s
-bounded comment path, which applies the required attribution.
+its responsibilities.
+
+Posting review feedback is a separate step after the review. When the user
+selects feedback to post on a pull request, including one authored by someone
+else, publish only what they selected and apply the GitHub attribution style
+from the global instructions to every review body and inline comment.
 
 ## Select the Reviewer
 

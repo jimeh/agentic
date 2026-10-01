@@ -4,20 +4,23 @@ Use these cases when revising workflow selection. Evaluate the relevant skill
 entry points with only the task facts, without supplying expected answers to an
 independent evaluator. Do not perform GitHub mutations during scenario checks.
 
-| Request and context                                           | Expected behavior                                                                                             |
-| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| Small fix, file PR, and babysit                               | Parent implementation, commit, file-pr, babysit-pr; no added reviewers.                                       |
-| Review this change; current session authored it               | review-code selects one fresh native reviewer with no parent history.                                         |
-| Review this change; current session did not author it         | review-code performs direct inspection.                                                                       |
-| Explicit Codex CLI review                                     | codex-review executes one fresh CLI reviewer using review-code's contract.                                    |
-| Explicit ship-feature-pr                                      | Full delivery with Codex and Claude review; continue corrections according to invalidated risk.               |
-| Only request CodeRabbit on an existing PR                     | Trigger, wait, inspect, and report; no independent local reviewers or unsolicited fixes and thread mutations. |
-| Third verified correction; no user budget                     | Continue authorized stewardship while making progress.                                                        |
-| User supplied a correction limit, now exhausted               | Stop at that explicit limit and report the concrete remaining work.                                           |
-| Delegated reviewer loads review-code                          | Review directly; do not spawn another reviewer.                                                               |
-| Host defaults to full history but supports fork_turns         | Explicitly set fork_turns="none" and supply a focused brief.                                                  |
-| Native host cannot isolate context                            | Fresh CLI session or parent execution.                                                                        |
-| Worker asked to launch another model without parent authority | Decline nested delegation and report the scope boundary.                                                      |
+| Request and context                                           | Expected behavior                                                                                                      |
+| ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Small fix, file PR, and babysit                               | Parent implementation, commit, file-pr, babysit-pr; no added reviewers.                                                |
+| Review this change; current session authored it               | review-code selects one fresh native reviewer with no parent history.                                                  |
+| Review this change; current session did not author it         | review-code performs direct inspection.                                                                                |
+| Explicit Codex CLI review                                     | codex-review executes one fresh CLI reviewer using review-code's contract.                                             |
+| Explicit ship-feature-pr                                      | Full delivery with Codex and Claude review; continue corrections according to invalidated risk.                        |
+| Only request CodeRabbit on an existing PR                     | Trigger, wait, inspect, and report; no independent local reviewers or unsolicited fixes and thread mutations.          |
+| Dual review a colleague's PR, then post selected feedback     | dual-review reports only; after the user selects feedback, post it as a review with GitHub attribution; no babysit-pr. |
+| Babysit a colleague's PR the user has taken over              | babysit-pr operates as it does on the user's own PR.                                                                   |
+| Reword the description of a colleague's PR                    | write-pr-copy with an "Edited" footer before bot-managed sections; other attribution unchanged.                        |
+| Third verified correction; no user budget                     | Continue authorized stewardship while making progress.                                                                 |
+| User supplied a correction limit, now exhausted               | Stop at that explicit limit and report the concrete remaining work.                                                    |
+| Delegated reviewer loads review-code                          | Review directly; do not spawn another reviewer.                                                                        |
+| Host defaults to full history but supports fork_turns         | Explicitly set fork_turns="none" and supply a focused brief.                                                           |
+| Native host cannot isolate context                            | Fresh CLI session or parent execution.                                                                                 |
+| Worker asked to launch another model without parent authority | Decline nested delegation and report the scope boundary.                                                               |
 
 ## Verification evidence
 

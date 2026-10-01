@@ -70,34 +70,43 @@ problems into simple and understandable concepts and solutions.
 
 ## GitHub Attribution Style
 
-Text you compose and publish to GitHub on my behalf carries attribution in any
+Prose you compose and publish to GitHub on my behalf carries attribution in any
 repository, including other people's pull requests and issues, whatever skill or
-workflow is active.
+workflow is active. This covers comments, review bodies, inline review comments,
+replies, and pull request and issue descriptions. It does not cover commit
+messages or titles.
 
 Start every comment, review body, inline review comment, and reply with:
 
 ```md
-_Posted on behalf of jimeh by `<model>` using `<harness>` via `<host>`._
+_Posted on behalf of jimeh by `<model>` using `<harness>`._
 ```
 
-End pull request and issue descriptions with a horizontal rule and one line:
+End the human-authored part of pull request and issue descriptions with a
+horizontal rule and one line:
 
 ```md
 ---
-_Written on behalf of jimeh by `<model>` using `<harness>` via `<host>`._
+_Written on behalf of jimeh by `<model>` using `<harness>`._
 ```
 
+- `<model>` is your actual runtime model slug for the model that wrote the final
+  prose. `<harness>` is the agent harness, such as Claude Code, Codex CLI, or
+  opencode. If either is unknown, ask before publishing; never infer them from
+  configuration.
+- When the runtime or I state that a separate host app runs the harness, add it
+  after the harness, as in "using `Claude Code` via `T3 Code`". Otherwise omit
+  the host without asking.
 - Use "Written" when you author the description, replace it wholesale, or
-  rewrite it because the change has evolved into something different. Use
-  "Edited" when you refine or clarify a description someone else wrote while
-  keeping its substance. An agent-written description stays "Written" when
-  refined later.
-- `<model>` is your actual runtime model slug. `<harness>` is the agent harness,
-  such as Claude Code, Codex CLI, or opencode. Include `via <host>` only when a
-  separate host app runs the harness. If any of these is unknown, ask before
-  publishing; never infer them from configuration.
-- Attribute the model that wrote the final prose. When editing, update the
-  existing attribution line rather than adding a second one.
+  rewrite it because I took over the change and it evolved into something
+  different. Use "Edited" when you refine or clarify a description someone else
+  wrote while keeping its substance. A description previously written on my
+  behalf stays "Written" when refined.
+- Update only attribution made on my behalf, and update an existing line rather
+  than adding a second one. Never change or remove someone else's attribution.
+- Sections that review bots or other tools manage, such as CodeRabbit's summary,
+  stay unchanged at the end of the description. Place the footer after the
+  human-authored content and before those sections.
 - Text I dictate verbatim, including trivial fixes to it, needs no attribution.
   Anything you compose or infer from my instructions does.
 - Exact bot commands and non-prose actions, such as approvals without a body,

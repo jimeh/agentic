@@ -77,12 +77,11 @@ description, return only the description.
 
 ## Add Provenance
 
-Apply the GitHub attribution style from the global instructions: append its
-description footer after the template content. Use "Written" when the agent
-authors the description or replaces it wholesale, and "Edited" when it refines a
-description someone else wrote. If the runtime identity is unavailable, ask
-before returning copy intended for publication. The footer describes authorship
-of the prose, not the code.
+Apply the GitHub attribution style from the global instructions, which defines
+the description footer, when to use "Written" or "Edited", and where the footer
+goes relative to bot-managed sections. If the runtime identity is unavailable,
+ask before returning copy intended for publication. The footer describes
+authorship of the prose, not the code.
 
 ## Check Fidelity and Currency
 
@@ -92,8 +91,8 @@ Before returning the copy, verify that it:
 - preserves the issue's intent, qualifications, and exact technical names;
 - makes only evidence-backed validation, rollout, CI, and review claims;
 - gives reviewers the material tradeoffs, limitations, and residual risk;
-- ends with the attribution footer using the actual runtime identity, or asks
-  when that identity is unavailable; and
+- carries the footer the GitHub attribution style requires, or asks when the
+  runtime identity is unavailable; and
 - contains no stale, machine-local, or process-only details.
 
 Apply technical-communication's final clarity check before returning copy. Read

@@ -1,21 +1,20 @@
 ---
 name: babysit-pr
 description: >-
-  Maintain an existing PR: monitor checks, address feedback, or publish
-  requested comments or review findings, including on PRs authored by others.
-  Use for PR stewardship and bounded post-filing actions; never infer merge
-  authority.
+  Maintain an existing PR the user owns or has taken over: monitor checks,
+  address feedback, or publish requested comments. Use for PR stewardship and
+  bounded post-filing actions; never infer merge authority.
 ---
 
 # Babysit PR
 
-Own post-filing interaction and maintenance for an existing pull request,
-whether or not the user authored it. For a bounded request such as posting a
-single comment or set of review findings, resolve the target, verify the content
-and revision when relevant, publish it with the attribution required below, read
-it back, report the result, and stop. Do not enter the maintenance loop, change
-code, or act on unrelated PR state unless the user requested broader
-stewardship.
+Own post-filing interaction and maintenance for an existing pull request that
+the user authored or has taken over from someone else; treat both the same. For
+a bounded request such as posting a single comment or set of review findings,
+resolve the target, verify the content and revision when relevant, publish it
+with the attribution required below, read it back, report the result, and stop.
+Do not enter the maintenance loop, change code, or act on unrelated PR state
+unless the user requested broader stewardship.
 
 A broader invocation authorizes relevant code fixes, proportionate validation,
 commits, normal pushes to the PR branch, human-facing comments and replies,
