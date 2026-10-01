@@ -81,7 +81,10 @@ Apply the GitHub attribution style from the global instructions, which defines
 the description footer, when to use "Written" or "Edited", and where the footer
 goes relative to bot-managed sections. If the runtime identity is unavailable,
 ask before returning copy intended for publication. The footer describes
-authorship of the prose, not the code.
+authorship of the prose, not the code. When revising a description that ends
+with bot-managed sections, return the full body with those sections unchanged
+byte for byte after the footer, including any HTML comment markers, so the
+caller can replace the body without losing them.
 
 ## Check Fidelity and Currency
 

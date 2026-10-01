@@ -33,6 +33,15 @@ points were clarified. The remaining budget, fallback, and nesting cases were
 checked manually. This tests interpretation, not live end-to-end agent execution
 or a mechanical host guarantee.
 
+The October 2, 2026 forward-test of the GitHub attribution rule used the same
+constraints. It covered the three colleague-PR rows plus dictated and composed
+issue comments, a commit and push, and refining an agent-written description.
+Every case reached the expected skill and attribution. It identified three
+ambiguities: where to place a footer below another person's attribution, how to
+handle a moved head or anchor before posting review feedback, and whether an
+extensive reword of someone else's description is Written or Edited. The global
+rule and review-code were clarified.
+
 The installer test uses the real selection and cleanup policy with synthetic
 roots and homes. It checks both worker families, directional exceptions,
 disabled-link cleanup, retained Vercel guidance, and preservation of unmanaged

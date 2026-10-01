@@ -97,13 +97,16 @@ _Written on behalf of jimeh by `<model>` using `<harness>`._
 - When the runtime or I state that a separate host app runs the harness, add it
   after the harness, as in "using `Claude Code` via `T3 Code`". Otherwise omit
   the host without asking.
-- Use "Written" when you author the description, replace it wholesale, or
-  rewrite it because I took over the change and it evolved into something
-  different. Use "Edited" when you refine or clarify a description someone else
-  wrote while keeping its substance. A description previously written on my
-  behalf stays "Written" when refined.
+- Use "Written" when you author the description, or when I took over the change
+  and you rewrite the description to cover what it has become. Use "Edited" when
+  you refine, clarify, or reword a description someone else wrote, however
+  extensively, while it still describes their change. A description previously
+  written on my behalf stays "Written" when refined.
 - Update only attribution made on my behalf, and update an existing line rather
   than adding a second one. Never change or remove someone else's attribution.
+  When the description already ends with someone else's attribution, keep it and
+  add your line in its own paragraph directly below it, without another
+  horizontal rule.
 - Sections that review bots or other tools manage, such as CodeRabbit's summary,
   stay unchanged at the end of the description. Place the footer after the
   human-authored content and before those sections.
@@ -111,8 +114,8 @@ _Written on behalf of jimeh by `<model>` using `<harness>`._
   Anything you compose or infer from my instructions does.
 - Exact bot commands and non-prose actions, such as approvals without a body,
   thread resolution, labels, and reviewer requests, are exempt.
-- Before running any publish command, confirm the attribution line is in the
-  payload.
+- Before running any publish command, confirm the payload carries the
+  attribution this rule requires.
 
 ## Managing Tasks
 

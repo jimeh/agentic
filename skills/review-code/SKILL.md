@@ -7,10 +7,10 @@ description: >-
 
 # Code Review
 
-Own review judgment, not the reviewed change. Remain read-only: do not edit
-files, commit, push, post feedback, or mutate a pull request. Temporary
-artifacts, safe ref fetches, and isolated review checkouts are acceptable, but
-leave the caller's checkout and local work unchanged.
+Own review judgment, not the reviewed change. During the review, remain
+read-only: do not edit files, commit, push, post feedback, or mutate a pull
+request. Temporary artifacts, safe ref fetches, and isolated review checkouts
+are acceptable, but leave the caller's checkout and local work unchanged.
 
 When another skill invokes this one, this skill owns the review brief,
 inspection standard, finding acceptance, revision coverage, and report. Provider
@@ -19,12 +19,8 @@ reviewer independence and synthesis.
 
 When the user also authorizes fixes or pull-request stewardship, complete the
 review first and hand confirmed findings to that workflow rather than absorbing
-its responsibilities.
-
-Posting review feedback is a separate step after the review. When the user
-selects feedback to post on a pull request, including one authored by someone
-else, publish only what they selected and apply the GitHub attribution style
-from the global instructions to every review body and inline comment.
+its responsibilities. Posting feedback is a separate step after the review; see
+Post Selected Feedback.
 
 ## Select the Reviewer
 
@@ -143,3 +139,20 @@ verdict, unresolved concerns, and residual risk. Explain dismissed material
 suggestions when another reviewer or caller supplied them. Do not imply that a
 check ran unless the evidence shows it did, and never describe partial or stale
 coverage as a completed current review.
+
+## Post Selected Feedback
+
+Post only feedback the user selected after the review, on any pull request,
+including one authored by someone else. Delegated reviewers never post.
+
+- Refresh the pull request head. If it moved since the review, recheck each
+  selected item and its inline anchor against the new head. When any item no
+  longer applies or cannot be anchored, report it and wait for the user's
+  decision before posting anything.
+- Submit one review with `commit_id` set to the verified head and the selected
+  inline comments anchored to it. Use the review event the user chose, and
+  default to a comment; never infer an approval or change request.
+- Apply the GitHub attribution style from the global instructions to the review
+  body and every inline comment.
+- Read the review back, confirm every selected item was posted, and report its
+  URL.
