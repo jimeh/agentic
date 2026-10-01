@@ -64,7 +64,6 @@ git worktree add -b "$BRANCH" "$WORKTREE_DIR" HEAD
 
 (cd "$WORKTREE_DIR" && claude-headless \
   --artifact-dir "$ARTIFACT_DIR" \
-  --model fable \
   --setting-sources user,project \
   --permission-mode auto \
   --session-id "$SESSION_ID" \
@@ -75,9 +74,9 @@ Use `user,project` only for a trusted checkout where project guidance helps. Use
 `--setting-sources user` otherwise. Do not load `local` settings by default.
 Never use `--safe-mode`, `--bare`, or bypass-permissions mode.
 
-Fable 5.1 at high effort is the default. `--model opus` pins Opus 5 at medium
-effort. Explicit user model or effort instructions win. Do not force a context
-size.
+The runner defaults to Opus 5.5 at high effort. Pass `--model fable` for Fable
+5.1 at high effort when the user or owning workflow selects it. Explicit user
+model or effort instructions win. Do not force a context size.
 
 The runner writes raw events to `events.ndjson`, concise progress to
 `progress.log` and stderr, Claude diagnostics to `stderr.log`, the final report
@@ -108,6 +107,9 @@ Constraints:
 - Do not invoke delegation skills or launch native or CLI model workers.
 - Stop and report if architecture, API, product, UX, or destructive decisions
   are required.
+- You are running unattended; the parent cannot answer questions mid-task.
+  Complete every step the objective covers, stopping early only for the
+  conditions above, and do not end on a description of work you have not run.
 
 Success criteria:
 - <observable behavior>
@@ -138,7 +140,6 @@ chmod 0600 "$TRAIL"
 
 (cd "$WORKTREE_DIR" && claude-headless \
   --artifact-dir "$ARTIFACT_DIR" \
-  --model fable \
   --setting-sources user,project \
   --permission-mode auto \
   --session-id "$SESSION_ID" \

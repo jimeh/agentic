@@ -58,7 +58,7 @@ not wake the caller until it completes again.
 
 Subagents are optional for substantial review or log triage that can save parent
 reasoning. They are not needed to relay a deterministic result. For explicitly
-delegated routine triage, prefer Luna at high effort in Codex and Sonnet 5 in
+delegated routine triage, prefer Luna at high effort in Codex and Opus 5.5 in
 Claude, subject to the user's model choice and actual availability. Escalate
 uncertainty and material decisions to the parent. When using a Claude subagent
 with agent teams enabled, omit `name` on the Agent invocation to avoid launching

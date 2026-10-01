@@ -2,7 +2,7 @@
 
 set -o pipefail
 
-model="${CLAUDEX_MODEL:-gpt-5.6-sol}"
+model="${CLAUDEX_MODEL:-gpt-6.1-sol}"
 effort="${CLAUDEX_EFFORT:-high}"
 base_url="${CLAUDEX_BASE_URL:-http://127.0.0.1:8317}"
 config="${CLAUDEX_CONFIG:-${CLIPROXYAPI_CONFIG:-$HOME/.cli-proxy-api/config.yaml}}"

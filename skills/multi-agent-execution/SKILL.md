@@ -54,13 +54,11 @@ isolation, and review once that decision is made.
 
 ## Model Routing
 
-- Fable 5.1 at high effort is the default for delegated Claude work:
+- Opus 5.5 at high effort is the default for delegated Claude work:
   investigation, implementation, verification, review, and synthesis.
-- An owning workflow may explicitly select Sonnet 5 for bounded routine triage,
-  such as `babysit-pr` review or log analysis. This is an intentional override,
-  not permission to rely on an omitted model argument.
-- Use Opus only when the user or an owning workflow asks for it. "Opus" means
-  Opus 5 at medium effort unless the caller explicitly overrides the effort.
+- Use Fable 5.1 at high effort when the user or an owning workflow selects it.
+- Delegate only to Opus 5.5 or Fable 5.1, and pass `model` explicitly. An
+  omitted model falls back to a default that may be neither.
 - Do not infer a context-window preference. Let Claude Code and the active
   provider choose their normal context behavior.
 - For Claude CLI delegation from another executor, use the `claude-*` skill for
@@ -70,10 +68,6 @@ isolation, and review once that decision is made.
   models unless the user asks for GPT or Codex, a skill or workflow needs that
   engine, or the work calls for it — cross-model review independence, bulk
   read-only throughput, or capacity running alongside the current session.
-- Match the current session's model when spawning Claude agents, unless the work
-  calls for a different one. Subagents fall back to a default when `model` is
-  omitted, so pass it explicitly.
-- Do not use Haiku.
 - If delegated output is below the bar, iterate with the selected agent or take
   the work back into the current session. Ask before adding another worker
   beyond the approved scope.
@@ -86,10 +80,8 @@ isolation, and review once that decision is made.
   not require another reviewer. Never ask an authoring worker to provide its own
   independent review.
 - A fresh context on the same model is the baseline, and a different model is
-  more independent. Use `fable` when the stakes justify a harder reviewer, and
+  more independent. Use Fable 5.1 when the stakes justify a harder reviewer, and
   route to a `codex-*` skill for cross-engine independence when the user asks
   for it or the workflow calls for it.
-- Spawned Claude reviewers and workers do not inherit the session model; pass
-  `model` explicitly on the Agent call, either to match the current session or
-  to span models deliberately. Never let a delegated Claude fall back to Sonnet
-  or Haiku by omission.
+- Pass `model` explicitly on reviewer Agent calls, including when deliberately
+  spanning models for independence.

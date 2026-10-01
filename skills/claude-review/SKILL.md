@@ -57,17 +57,16 @@ SESSION_ID="$(uuidgen)"
 
 claude-headless \
   --artifact-dir "$ARTIFACT_DIR" \
-  --model fable \
   --setting-sources user \
   --permission-mode plan \
   --session-id "$SESSION_ID" \
   < "$PROMPT"
 ```
 
-Fable 5.1 at high effort is the default. Do not drop reviews to medium: in
-side-by-side runs it lost the deepest finding each time. Use `--model opus` when
-the user asks for Opus; the runner pins Opus 5 at medium effort. Explicit user
-effort instructions win. Leave context size to Claude CLI.
+The runner defaults to Opus 5.5 at high effort. Pass `--model fable` for Fable
+5.1 at high effort when the user or owning workflow selects it. Do not drop
+reviews to medium: in side-by-side runs it lost the deepest finding each time.
+Explicit user effort instructions win. Leave context size to Claude CLI.
 
 `--setting-sources user` keeps managed skills such as `review-code` available
 without loading project or local execution hooks. For a trusted checkout where

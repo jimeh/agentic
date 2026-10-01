@@ -208,8 +208,8 @@ print_statusline() {
 
   sep
 
-  # Model (only if not default Opus 4.6)
-  if [ "$MODEL" != "Opus 4.6" ] && [ "$MODEL" != "Opus 4.6 (1M context)" ]; then
+  # Model (only if not default Opus 5.5)
+  if [ "$MODEL" != "Opus 5.5" ] && [ "$MODEL" != "Opus 5.5 (1M context)" ]; then
     colored $COLOR_DIR "$MODEL"
     sep
   fi
