@@ -71,11 +71,18 @@ description, return only the description.
 
 ## Add provenance
 
-Apply the GitHub attribution style from the global instructions, which defines
-the description footer, when to use "Written" or "Edited", and where the footer
-goes relative to bot-managed sections. If the runtime identity is unavailable,
-ask before returning copy intended for publication. The footer describes
-authorship of the prose.
+Add the description footer from the GitHub attribution style in the global
+instructions. If the runtime identity is unavailable, ask before returning copy
+intended for publication. The footer describes authorship of the prose.
+
+- Use "Written" when the agent authors the description, when it was previously
+  written on jimeh's behalf, or when jimeh took over the change and the rewrite
+  covers what it has become. Use "Edited" when refining or rewording a
+  description someone else wrote, however extensively, while it still describes
+  their change.
+- Update an existing attribution line made on jimeh's behalf instead of adding a
+  second one. Never change or remove someone else's attribution; put the line in
+  its own paragraph directly below it, without another horizontal rule.
 
 ## Check fidelity
 
@@ -85,8 +92,7 @@ Before returning the copy, verify that it:
 - distinguishes verified evidence from proposed work and open questions;
 - satisfies the applicable template without inventing required answers;
 - includes observable acceptance criteria when they help define completion;
-- carries the footer the GitHub attribution style requires, or asks when the
-  runtime identity is unavailable; and
+- carries the attribution footer described above; and
 - contains no stale, sensitive, machine-local, or process-only details.
 
 Apply technical-communication's final clarity check before returning copy. Read

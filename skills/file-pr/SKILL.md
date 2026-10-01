@@ -51,13 +51,9 @@ draft when known work or material validation remains.
 
 Push the current branch to the selected remote with upstream tracking, then
 create the pull request using the prepared title, body, base, and draft state.
-Pass the body through a temporary file or literal stdin mechanism that preserves
-it exactly; never interpolate PR prose into a shell command. Follow the shell
-rules for any command that consumes stdin.
-
-Immediately read the created pull request back once and verify its URL, title,
-body, base, head, and draft state. Correct a mismatch, but do not add retry
-loops for historical transport bugs.
+Pass the body through a temporary file with `--body-file` and review that file
+before creating the PR; never interpolate PR prose into a shell command. Take
+the PR URL from the create command's output.
 
 Return the PR URL and state. Do not wait for CI or reviews, request reviewers,
 respond to feedback, or mark a draft ready unless the user also invoked a

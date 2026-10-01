@@ -77,14 +77,22 @@ description, return only the description.
 
 ## Add Provenance
 
-Apply the GitHub attribution style from the global instructions, which defines
-the description footer, when to use "Written" or "Edited", and where the footer
-goes relative to bot-managed sections. If the runtime identity is unavailable,
-ask before returning copy intended for publication. The footer describes
-authorship of the prose, not the code. When revising a description that ends
-with bot-managed sections, return the full body with those sections unchanged
-byte for byte after the footer, including any HTML comment markers, so the
-caller can replace the body without losing them.
+Add the description footer from the GitHub attribution style in the global
+instructions. If the runtime identity is unavailable, ask before returning copy
+intended for publication. The footer describes authorship of the prose, not the
+code.
+
+- Use "Written" when the agent authors the description, when it was previously
+  written on jimeh's behalf, or when jimeh took over the change and the rewrite
+  covers what it has become. Use "Edited" when refining or rewording a
+  description someone else wrote, however extensively, while it still describes
+  their change.
+- Update an existing attribution line made on jimeh's behalf instead of adding a
+  second one. Never change or remove someone else's attribution; put the line in
+  its own paragraph directly below it, without another horizontal rule.
+- Keep sections that bots or tools manage, such as CodeRabbit's summary,
+  unchanged after the footer, including any HTML comment markers. Return the
+  full body so the caller can replace it without losing them.
 
 ## Check Fidelity and Currency
 
@@ -94,8 +102,7 @@ Before returning the copy, verify that it:
 - preserves the issue's intent, qualifications, and exact technical names;
 - makes only evidence-backed validation, rollout, CI, and review claims;
 - gives reviewers the material tradeoffs, limitations, and residual risk;
-- carries the footer the GitHub attribution style requires, or asks when the
-  runtime identity is unavailable; and
+- carries the attribution footer described above; and
 - contains no stale, machine-local, or process-only details.
 
 Apply technical-communication's final clarity check before returning copy. Read

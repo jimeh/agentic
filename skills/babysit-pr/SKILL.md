@@ -12,9 +12,9 @@ Own post-filing interaction and maintenance for an existing pull request that
 the user authored or has taken over from someone else; treat both the same. For
 a bounded request such as posting a single comment or set of review findings,
 resolve the target, verify the content and revision when relevant, publish it
-with the attribution required below, read it back, report the result, and stop.
-Do not enter the maintenance loop, change code, or act on unrelated PR state
-unless the user requested broader stewardship.
+with the attribution required below, report the result, and stop. Do not enter
+the maintenance loop, change code, or act on unrelated PR state unless the user
+requested broader stewardship.
 
 A broader invocation authorizes relevant code fixes, proportionate validation,
 commits, normal pushes to the PR branch, human-facing comments and replies,
@@ -109,7 +109,7 @@ Reply when it helps reviewers understand what changed or why no change is
 warranted; avoid rote acknowledgements on every thread. Start every
 agent-authored human-facing top-level comment, review body, inline comment, or
 reply with the comment line from the GitHub attribution style in the global
-instructions. If the runtime identity is unavailable, ask before publishing.
+instructions.
 
 Resolve a thread only after verifying its concern is fixed, invalid, or already
 satisfied on the current head. Leave unresolved anything still valid or
