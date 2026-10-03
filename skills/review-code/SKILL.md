@@ -145,11 +145,12 @@ coverage as a completed current review.
 Post only feedback the user selected, on any pull request. Delegated reviewers
 never post.
 
-- If the head moved since the review, recheck each selected item and its inline
-  anchor. Report any that no longer fit and wait for the user's decision.
-- Submit one review with `commit_id` set to the verified head, using the event
-  the user chose or a comment by default. Never infer an approval or change
-  request.
+- Refresh the pull request head. If it moved since the review, recheck each
+  selected item and its inline anchor. When any no longer fits, report it and
+  wait for the user's decision before posting anything.
+- Submit one review containing every selected item, with `commit_id` set to the
+  verified head and an explicit event: the one the user chose, or `COMMENT` by
+  default. Never infer an approval or change request.
 - Apply the GitHub attribution style from the global instructions to the review
   body and every inline comment.
-- Report the review URL from the submit response.
+- Confirm the submitted state from the response and report the review URL.

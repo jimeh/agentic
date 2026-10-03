@@ -14,7 +14,7 @@ independent evaluator. Do not perform GitHub mutations during scenario checks.
 | Only request CodeRabbit on an existing PR                     | Trigger, wait, inspect, and report; no independent local reviewers or unsolicited fixes and thread mutations.          |
 | Dual review a colleague's PR, then post selected feedback     | dual-review reports only; after the user selects feedback, post it as a review with GitHub attribution; no babysit-pr. |
 | Babysit a colleague's PR the user has taken over              | babysit-pr operates as it does on the user's own PR.                                                                   |
-| Reword the description of a colleague's PR                    | write-pr-copy with an "Edited" footer before bot-managed sections; other attribution unchanged.                        |
+| Reword the description of a colleague's PR                    | write-pr-copy with jimeh's footer before bot-managed sections; other attribution unchanged.                            |
 | Third verified correction; no user budget                     | Continue authorized stewardship while making progress.                                                                 |
 | User supplied a correction limit, now exhausted               | Stop at that explicit limit and report the concrete remaining work.                                                    |
 | Delegated reviewer loads review-code                          | Review directly; do not spawn another reviewer.                                                                        |
@@ -33,14 +33,17 @@ points were clarified. The remaining budget, fallback, and nesting cases were
 checked manually. This tests interpretation, not live end-to-end agent execution
 or a mechanical host guarantee.
 
-The October 2, 2026 forward-test of the GitHub attribution rule used the same
-constraints. It covered the three colleague-PR rows plus dictated and composed
-issue comments, a commit and push, and refining an agent-written description.
-Every case reached the expected skill and attribution. It identified three
-ambiguities: where to place a footer below another person's attribution, how to
-handle a moved head or anchor before posting review feedback, and whether an
-extensive reword of someone else's description is Written or Edited. The global
-rule and review-code were clarified.
+Forward-tests of the GitHub attribution rule on October 2 and 3, 2026 used the
+same constraints. They covered the three colleague-PR rows, dictated and
+composed comments, a commit and push, revising descriptions with existing
+attribution and bot-managed sections, and filing a PR and an issue. The last run
+checked the global rules alone, without skills, and then with skills available.
+Every case reached the expected skill and attribution. The runs exposed
+ambiguities in footer placement below another person's attribution, blank lines
+around the footer, and moved heads before posting review feedback, which the
+global rule and review-code now address. An "Edited" footer variant caused
+repeated ambiguity and was dropped. The two placement fixes from the last run
+have not been re-run through an evaluator.
 
 The installer test uses the real selection and cleanup policy with synthetic
 roots and homes. It checks both worker families, directional exceptions,

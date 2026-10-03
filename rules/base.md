@@ -90,11 +90,13 @@ _Written on behalf of jimeh by `<model>` using `<harness>`._
 - `<model>` is the runtime slug of the model that wrote the final prose;
   `<harness>` is the agent harness, such as Claude Code, Codex CLI, or opencode.
   If either is unknown, ask before publishing; never infer them from
-  configuration. Add `via <host>` only when the runtime or I state that a
-  separate host app runs the harness.
-- When editing a description someone else wrote, use "Edited" instead of
-  "Written", and never change or remove their attribution or sections that bots
-  manage. The write-pr-copy and write-issue-copy skills cover the details.
+  configuration. Add the host only when the runtime or I state that a separate
+  app runs the harness, as in "using `Claude Code` via `T3 Code`".
+- Separate attribution from other content with a blank line.
+- Update my existing attribution line rather than adding another. Never change
+  or remove someone else's attribution; add my line as its own paragraph below
+  it, without another horizontal rule.
+- Keep sections that bots manage unchanged at the end, after the footer.
 - Exempt: text I dictate verbatim, including trivial fixes to it, exact bot
   commands, and non-prose actions such as approvals without a body, thread
   resolution, labels, and reviewer requests.

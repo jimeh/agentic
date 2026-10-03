@@ -63,12 +63,13 @@ error, do not retry until read-only inspection establishes whether the issue
 already exists and which metadata landed. Never create a second issue while the
 first attempt remains uncertain.
 
-Take the issue URL from the create command's output. When the request includes
-metadata applied after creation, such as issue type or relationships, read the
-issue back once and verify that metadata. Correct a mismatch once when the
-requested mutation is safe and authorized. If the issue exists but a requested
-field could not be applied, preserve the issue and report the partial result
-rather than hiding it or creating another.
+Take the issue URL from the create command's output and confirm it names the
+intended repository. When the request includes metadata applied after creation,
+such as issue type or relationships, read the issue back once and verify that
+metadata. Correct a mismatch once when the requested mutation is safe and
+authorized. If the issue exists but a requested field could not be applied,
+preserve the issue and report the partial result rather than hiding it or
+creating another.
 
 Return the issue URL, state, and a concise summary of applied or missing
 metadata. Do not wait for responses, add comments, change project state, or

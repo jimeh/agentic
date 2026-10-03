@@ -75,15 +75,6 @@ Add the description footer from the GitHub attribution style in the global
 instructions. If the runtime identity is unavailable, ask before returning copy
 intended for publication. The footer describes authorship of the prose.
 
-- Use "Written" when the agent authors the description, when it was previously
-  written on jimeh's behalf, or when jimeh took over the change and the rewrite
-  covers what it has become. Use "Edited" when refining or rewording a
-  description someone else wrote, however extensively, while it still describes
-  their change.
-- Update an existing attribution line made on jimeh's behalf instead of adding a
-  second one. Never change or remove someone else's attribution; put the line in
-  its own paragraph directly below it, without another horizontal rule.
-
 ## Check fidelity
 
 Before returning the copy, verify that it:
