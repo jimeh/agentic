@@ -16,7 +16,8 @@ coordination, and synthesis.
 
 Remain read-only under that skill's authorization boundary. When the user also
 authorizes fixes or pull-request stewardship, complete and reconcile this review
-before handing confirmed findings to the owning workflow.
+before handing confirmed findings to the owning workflow. Posting selected
+feedback afterward follows `review-code`.
 
 ## Run Independent Reviewers
 

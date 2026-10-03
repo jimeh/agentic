@@ -71,19 +71,9 @@ description, return only the description.
 
 ## Add provenance
 
-When the agent authors or materially rewrites the description, append this
-footer after the template content:
-
-```md
----
-_Written on behalf of jimeh by `<model-slug>` using `<harness>`._
-```
-
-Use the actual model slug and harness supplied by the current runtime. Do not
-infer them from repository configuration. If either is unavailable, ask before
-returning copy intended for publication. Attribute the model that authored the
-final prose, not every model involved in the underlying investigation. Do not
-duplicate an existing footer. The footer describes authorship of the prose.
+Add the description footer from the GitHub attribution style in the global
+instructions. If the runtime identity is unavailable, ask before returning copy
+intended for publication. The footer describes authorship of the prose.
 
 ## Check fidelity
 
@@ -93,7 +83,7 @@ Before returning the copy, verify that it:
 - distinguishes verified evidence from proposed work and open questions;
 - satisfies the applicable template without inventing required answers;
 - includes observable acceptance criteria when they help define completion;
-- uses the supplied runtime identity when provenance is required; and
+- carries the attribution footer described above; and
 - contains no stale, sensitive, machine-local, or process-only details.
 
 Apply technical-communication's final clarity check before returning copy. Read

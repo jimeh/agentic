@@ -77,19 +77,15 @@ description, return only the description.
 
 ## Add Provenance
 
-When the agent authors or materially rewrites the description, append this
-footer after the template content:
+Add the description footer from the GitHub attribution style in the global
+instructions. If the runtime identity is unavailable, ask before returning copy
+intended for publication. The footer describes authorship of the prose, not the
+code.
 
-```md
----
-_Written on behalf of jimeh by `<model-slug>` using `<harness>`._
-```
-
-Use the actual model slug and harness supplied by the current runtime. Do not
-infer them from repository configuration; if either is unavailable, ask before
-returning copy intended for publication. Attribute the model that authored the
-final prose, not every model involved in the underlying work. Do not duplicate
-an existing footer. The footer describes authorship of the prose, not the code.
+When revising a description with sections that bots or tools manage, such as
+CodeRabbit's summary, return the full body with those sections unchanged after
+the footer, including any HTML comment markers, so the caller can replace the
+body without losing them.
 
 ## Check Fidelity and Currency
 
@@ -99,8 +95,7 @@ Before returning the copy, verify that it:
 - preserves the issue's intent, qualifications, and exact technical names;
 - makes only evidence-backed validation, rollout, CI, and review claims;
 - gives reviewers the material tradeoffs, limitations, and residual risk;
-- uses the supplied runtime identity in the provenance footer, or asks when that
-  identity is unavailable; and
+- carries the attribution footer described above; and
 - contains no stale, machine-local, or process-only details.
 
 Apply technical-communication's final clarity check before returning copy. Read

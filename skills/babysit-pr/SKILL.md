@@ -1,19 +1,20 @@
 ---
 name: babysit-pr
 description: >-
-  Maintain an existing PR: monitor checks, address feedback, or publish
-  requested comments. Use for PR stewardship and bounded post-filing
-  actions; never infer merge authority.
+  Maintain an existing PR the user owns or has taken over: monitor checks,
+  address feedback, or publish requested comments. Use for PR stewardship and
+  bounded post-filing actions; never infer merge authority.
 ---
 
 # Babysit PR
 
-Own post-filing interaction and maintenance for an existing pull request. For a
-bounded request such as posting a single comment or set of review findings,
+Own post-filing interaction and maintenance for an existing pull request that
+the user authored or has taken over from someone else; treat both the same. For
+a bounded request such as posting a single comment or set of review findings,
 resolve the target, verify the content and revision when relevant, publish it
-with the attribution required below, read it back, report the result, and stop.
-Do not enter the maintenance loop, change code, or act on unrelated PR state
-unless the user requested broader stewardship.
+with the attribution required below, report the result, and stop. Do not enter
+the maintenance loop, change code, or act on unrelated PR state unless the user
+requested broader stewardship.
 
 A broader invocation authorizes relevant code fixes, proportionate validation,
 commits, normal pushes to the PR branch, human-facing comments and replies,
@@ -107,18 +108,8 @@ not wait for or debug CI on a head that another known fix will supersede.
 Reply when it helps reviewers understand what changed or why no change is
 warranted; avoid rote acknowledgements on every thread. Start every
 agent-authored human-facing top-level comment, review body, inline comment, or
-reply with:
-
-```md
-_Posted on behalf of jimeh by `<model-slug>` using `<harness>`._
-```
-
-Use the actual model slug and harness supplied by the current runtime. Do not
-infer them from repository configuration; if either is unavailable, ask before
-publishing. Attribute the model that authored the final prose, not every model
-involved in the underlying work, and do not duplicate an existing notice when
-editing prose. Exact bot commands and non-prose state changes such as resolving
-a thread or requesting a reviewer are exempt.
+reply with the comment line from the GitHub attribution style in the global
+instructions.
 
 Resolve a thread only after verifying its concern is fixed, invalid, or already
 satisfied on the current head. Leave unresolved anything still valid or

@@ -68,6 +68,43 @@ problems into simple and understandable concepts and solutions.
   confirmation first. Authorization to inspect does not authorize changes;
   modifying any of these systems requires separate, explicit authorization.
 
+## GitHub Attribution Style
+
+Prose you compose and publish to GitHub on my behalf carries attribution in any
+repository, including other people's pull requests and issues, whatever skill is
+active. Commit messages and titles are not covered.
+
+Start every comment, review body, inline review comment, and reply with:
+
+```md
+_Posted on behalf of jimeh by `<model>` using `<harness>`._
+```
+
+End the human-authored part of pull request and issue descriptions with:
+
+```md
+---
+_Written on behalf of jimeh by `<model>` using `<harness>`._
+```
+
+- `<model>` is the runtime slug of the model that wrote the final prose;
+  `<harness>` is the agent harness, such as Claude Code, Codex CLI, or opencode.
+  If either is unknown, ask before publishing; never infer them from
+  configuration. Add the host only when the runtime or I state that a separate
+  app runs the harness, as in "using `Claude Code` via `T3 Code`".
+- Separate attribution from other content with a blank line.
+- Update my existing attribution line rather than adding another. Never change
+  or remove someone else's attribution; add my line as its own paragraph below
+  it, without another horizontal rule.
+- Keep sections that bots manage unchanged at the end, after the footer.
+- Exempt: text I dictate verbatim, including trivial fixes to it, exact bot
+  commands, and non-prose actions such as approvals without a body, thread
+  resolution, labels, and reviewer requests.
+- Pass bodies through a temporary file with `--body-file` or `--input`, and
+  review that file, including its attribution, before publishing. Confirm
+  success and the URL from the publish command's output instead of reading the
+  body back.
+
 ## Managing Tasks
 
 - Don't spawn subagents for tasks that can be handled in a single thread.

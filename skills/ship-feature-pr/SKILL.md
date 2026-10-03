@@ -147,7 +147,7 @@ moving uncommitted implementation concurrently.
 
 Use `file-pr` to push the delivery branch and create a draft pull request. Its
 `write-pr-copy` dependency owns the title, description, template, and provenance
-footer. Readback belongs to `file-pr`; do not duplicate its mechanics here.
+footer.
 
 Record the pushed head SHA. Start CI and `dual-review` concurrently when
 practical, but treat CI as a delivery gate only on the intended final head.
