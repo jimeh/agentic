@@ -56,7 +56,10 @@ isolation, and review once that decision is made.
 
 - Opus 5.5 at high effort is the default for delegated Claude work:
   investigation, implementation, verification, review, and synthesis.
-- Use Fable 5.1 at high effort when the user or an owning workflow selects it.
+- Use Fable 5.1 at high effort only when the user names Fable for the work at
+  hand. Never select it on your own judgment of difficulty or stakes, and no
+  skill or workflow selects it for you. The request covers the work the user
+  named it for, not other delegations in the session.
 - Delegate only to Opus 5.5 or Fable 5.1, and pass `model` explicitly. An
   omitted model falls back to a default that may be neither.
 - Do not infer a context-window preference. Let Claude Code and the active
@@ -79,9 +82,8 @@ isolation, and review once that decision is made.
 - Use review-code to select direct or independent review. Delegation alone does
   not require another reviewer. Never ask an authoring worker to provide its own
   independent review.
-- A fresh context on the same model is the baseline, and a different model is
-  more independent. Use Fable 5.1 when the stakes justify a harder reviewer, and
-  route to a `codex-*` skill for cross-engine independence when the user asks
-  for it or the workflow calls for it.
+- A fresh context on the same model is the baseline, and a different engine is
+  more independent. Route to a `codex-*` skill for cross-engine independence
+  when the user asks for it or the workflow calls for it.
 - Pass `model` explicitly on reviewer Agent calls, including when deliberately
   spanning models for independence.

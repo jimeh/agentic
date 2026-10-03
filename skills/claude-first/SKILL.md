@@ -14,7 +14,7 @@ this one yourself" overrides it for one task; the user can end the mode at any
 time.
 
 Opus 5.5 at high effort is the default delegated model, and Fable 5.1 at high
-effort is the alternative when the user or owning workflow selects it. Honor
+effort is the alternative only when the user names Fable for the task. Honor
 explicit model and effort overrides.
 
 ## Route to Claude
