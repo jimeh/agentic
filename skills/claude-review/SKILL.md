@@ -64,7 +64,7 @@ claude-headless \
 ```
 
 The runner defaults to Opus 5.5 at high effort. Pass `--model fable` for Fable
-5.1 at high effort when the user or owning workflow selects it. Do not drop
+5.1 at high effort only when the user names Fable for this review. Do not drop
 reviews to medium: in side-by-side runs it lost the deepest finding each time.
 Explicit user effort instructions win. Leave context size to Claude CLI.
 

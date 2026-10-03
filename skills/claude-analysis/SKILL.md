@@ -59,9 +59,9 @@ claude-headless \
 ```
 
 The runner defaults to Opus 5.5 at high effort. Pass `--model fable` for Fable
-5.1 at high effort when the user or owning workflow selects it. Pass an explicit
-`--effort` only when the user overrides the model-family default. Context size
-is Claude CLI's decision.
+5.1 at high effort only when the user names Fable for this task. Pass an
+explicit `--effort` only when the user overrides the model-family default.
+Context size is Claude CLI's decision.
 
 The runner writes raw events to `events.ndjson`, concise progress to
 `progress.log` and stderr, Claude diagnostics to `stderr.log`, the terminal

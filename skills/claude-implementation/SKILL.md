@@ -75,7 +75,7 @@ Use `user,project` only for a trusted checkout where project guidance helps. Use
 Never use `--safe-mode`, `--bare`, or bypass-permissions mode.
 
 The runner defaults to Opus 5.5 at high effort. Pass `--model fable` for Fable
-5.1 at high effort when the user or owning workflow selects it. Explicit user
+5.1 at high effort only when the user names Fable for this task. Explicit user
 model or effort instructions win. Do not force a context size.
 
 The runner writes raw events to `events.ndjson`, concise progress to

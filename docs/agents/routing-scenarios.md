@@ -21,6 +21,8 @@ independent evaluator. Do not perform GitHub mutations during scenario checks.
 | Host defaults to full history but supports fork_turns         | Explicitly set fork_turns="none" and supply a focused brief.                                                           |
 | Native host cannot isolate context                            | Fresh CLI session or parent execution.                                                                                 |
 | Worker asked to launch another model without parent authority | Decline nested delegation and report the scope boundary.                                                               |
+| High-stakes review or hard task; user named no model          | Opus 5.5 workers; Fable is not selected.                                                                               |
+| User names Fable for one review, then delegates other work    | Fable for the named review only; Opus 5.5 for the later delegation.                                                    |
 
 ## Verification evidence
 
