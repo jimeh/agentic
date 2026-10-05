@@ -66,37 +66,54 @@ the calling skill's prohibition on nested delegation in every prompt.
 ## Access and workspace
 
 A child task starts in the current thread's checkout, on the same branch, and
-`delegate_task` cannot bind it elsewhere. It keeps the parent's file access: no
-mode gives a read-only sandbox.
+`delegate_task` cannot bind it elsewhere. No mode gives a read-only sandbox.
 
 Set `interactionMode` to `default` for every worker. An omitted value inherits
 the parent's mode, and plan mode adds no sandbox.
 
+Nothing enforces a worker's boundary, so verify it with a checkout snapshot:
+`HEAD`, the branch, and a hash of the staged, unstaged, and untracked content.
+`git status` alone misses a commit and a second edit to an already-modified
+file.
+
 - Read-only work, such as review and analysis: state the read-only boundary in
-  the prompt. Snapshot `git status` before starting and confirm the checkout is
+  the prompt. Take a checkout snapshot before starting and confirm it is
   unchanged afterwards.
-- Implementation in the thread's checkout: record the starting tip and status
-  first, run one implementer there at a time, and give it exclusive mutation
-  ownership of the checkout until it finishes.
+- Implementation in the thread's checkout: take a checkout snapshot first, run
+  one implementer there at a time, and give it exclusive mutation ownership of
+  the checkout until it finishes.
 - Implementation in a separate worktree, when the calling skill requires
   isolation or several implementers run concurrently: create each worktree
   yourself under the temporary directory, as the calling skill's commands do,
   and put its absolute path in the prompt. The child starts in the thread's
   checkout, so tell it to work only in that worktree and to touch no other
-  checkout. Snapshot the thread's checkout first and confirm it is unchanged
-  afterwards. T3 still shows the child against the thread's checkout, so judge
-  the result from the worktree itself.
+  checkout. Take a snapshot of the thread's checkout first and confirm it is
+  unchanged afterwards. T3 still shows the child against the thread's checkout,
+  so judge the result from the worktree itself.
 
 `t3_thread_launch` can bind a thread to a worktree, but it starts a separate
 top-level thread. Use it only when the user asks for one.
 
-Leave `runtimeMode` inherited, or lower it when the task needs less access. A
-lowered mode can confine the child to the thread's checkout and the temporary
-directory, which is why a separate worktree belongs there. Never raise the mode
-above the parent's. Do not select `approval-required` to restrain a worker: the
-child then waits on approvals that only the user can grant in the T3 UI, and the
-parent cannot answer them. If the parent itself runs in that mode, tell the user
-that the child will need their approvals.
+Give the worker the lowest `runtimeMode` its task works in, and never raise it
+above the parent's mode. An inherited `full-access` mode drops the sandbox and
+permission limits that the headless CLIs apply, so inherit it only when the task
+needs it, and say so in the report. `auto` is the lower mode to use, and it
+differs by provider:
+
+- Codex: the child writes only to the thread's checkout and the temporary
+  directory and has no network access. `gh`, `git fetch`, and dependency
+  installs fail there without prompting, and tools cannot write caches under the
+  home directory. Use `auto` for local work, tell the worker it has no network,
+  and put anything it would otherwise fetch, such as the pull request
+  description, in the prompt. Inherit when the task needs the network or wider
+  writes.
+- Claude: the child keeps network access and can edit a worktree under the
+  temporary directory. Use `auto` unless the task needs more.
+
+Do not select `approval-required` to restrain a worker: the child then waits on
+approvals that only the user can grant in the T3 UI, and the parent cannot
+answer them. If the parent itself runs in that mode, tell the user that the
+child will need their approvals.
 
 ## Await the result
 

@@ -38,10 +38,12 @@ fits.
 
 Inside T3 Code, run the analysis as a T3 child task: read and apply the
 `t3-delegation` skill, using a read-only task with the `research` role. It
-replaces the artifact directory, `claude-headless` commands, and session resume
-described below; the question, prompt contract, spot-checks, and report still
-apply. Everywhere else, and when `t3-delegation` selects the CLI, use
-`claude-headless` as described below.
+replaces the artifact directory, `claude-headless` commands, session resume, and
+follow-up prompt rules described below; the question, prompt contract,
+spot-checks, and report still apply. Everywhere else, and when `t3-delegation`
+selects the CLI, use `claude-headless` as described below. The session is inside
+T3 Code when the host says so or offers the `t3-code` MCP server's
+`delegate_task` tool, which may be listed as deferred.
 
 ## Workflow
 

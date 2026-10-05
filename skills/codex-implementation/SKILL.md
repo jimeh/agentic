@@ -35,10 +35,13 @@ API, product, and UX decisions in the parent. Decompose ambiguous work first.
 
 Inside T3 Code, run the implementer as a T3 child task: read and apply the
 `t3-delegation` skill, using the `implementation` role. It replaces the artifact
-directory, `codex-headless` commands, and session resume described below; the
-starting-tip record, prompt shape, post-run inspection, review, and delivery
-still apply. Everywhere else, and when `t3-delegation` selects the CLI, use
-`codex-headless` as described below.
+directory, `codex-headless` commands, session resume, and follow-up prompt rules
+described below and in the delivery and continuation reference; the starting-tip
+record, prompt shape, post-run inspection, review, and delivery still apply.
+Everywhere else, and when `t3-delegation` selects the CLI, use `codex-headless`
+as described below. The session is inside T3 Code when the host says so or
+offers the `t3-code` MCP server's `delegate_task` tool, which may be listed as
+deferred.
 
 A child task starts in the current thread's checkout. Treat a clean checkout
 dedicated to this thread, such as a T3 worktree, as satisfying the isolation

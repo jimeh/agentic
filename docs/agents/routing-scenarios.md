@@ -57,23 +57,25 @@ have not been re-run through an evaluator.
 
 The T3 Code transport rows were checked on October 5, 2026 against T3 Code
 server 0.0.46-nightly.20261005 from a Claude thread. Probe child tasks
-established the checkout, sandbox, approval, tool, and skill facts recorded in
-the [tooling notes](tooling-notes.md). One Codex child task then reviewed the
-change that introduced `t3-delegation`, with the `review` role and the model and
-effort from the Codex configuration. It returned a complete report, left the
-checkout unchanged, and traced each T3 Code row to the stated outcome. A second
-child task carried the first round's brief and findings to verify the
-corrections. Both reviews ran in plan mode, which the skill prescribed at the
-time. The skill now prescribes the default interaction mode, after a read-only
-Codex child in that mode also completed without approvals or changes.
+established the checkout, sandbox, approval, network, tool, and skill facts
+recorded in the [tooling notes](tooling-notes.md), including edits confined to a
+parent-created worktree by Codex children in `full-access` and `auto` and by a
+Claude child in `auto`.
 
-Two further Codex child tasks each made a two-file edit in a parent-created
-worktree under the temporary directory, one with inherited `full-access` and one
-in `auto`. Both edited only their worktree, committed nothing, and left the
-thread's checkout unchanged. This exercised the transport and an evaluator's
-reading of the skills. It did not exercise an agent selecting the transport
-unprompted, a substantial implementation child task, concurrent implementers, or
-a Codex parent delegating to Claude.
+A dual review of the pull request that introduced `t3-delegation` then ran as
+that skill prescribed at the time: a fresh native Claude reviewer and a Codex
+child task with the `review` role, default interaction mode, inherited runtime
+mode, and the model and effort from the Codex configuration, started together
+with the Codex task asynchronous. T3 woke the parent when the child finished.
+Both reviewers returned complete reports, left the checkout unchanged, and
+traced each T3 Code row above to its stated outcome. Their findings led to the
+checkout snapshot, the runtime mode rule, and the detection sentence in each
+Transport section.
+
+This exercised the transport and two evaluators' reading of the skills. It did
+not exercise an agent selecting the transport unprompted, a review run in
+`auto`, a substantial implementation child task, concurrent implementers, or a
+Codex parent delegating to Claude.
 
 The installer test uses the real selection and cleanup policy with synthetic
 roots and homes. It checks both worker families, directional exceptions,

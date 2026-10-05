@@ -37,10 +37,12 @@ fits.
 
 Inside T3 Code, run the implementer as a T3 child task: read and apply the
 `t3-delegation` skill, using the `implementation` role. It replaces the artifact
-directory, `claude-headless` commands, and session resume described below; the
-starting-tip record, prompt contract, post-run inspection, and delivery still
-apply. Everywhere else, and when `t3-delegation` selects the CLI, use
-`claude-headless` as described below.
+directory, `claude-headless` commands, session resume, and follow-up prompt
+rules described below; the starting-tip record, prompt contract, post-run
+inspection, and delivery still apply. Everywhere else, and when `t3-delegation`
+selects the CLI, use `claude-headless` as described below. The session is inside
+T3 Code when the host says so or offers the `t3-code` MCP server's
+`delegate_task` tool, which may be listed as deferred.
 
 A child task starts in the current thread's checkout. Treat a clean checkout
 dedicated to this thread, such as a T3 worktree, as satisfying the isolation

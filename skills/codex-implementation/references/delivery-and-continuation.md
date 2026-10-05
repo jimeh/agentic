@@ -60,6 +60,10 @@ open.
 
 ## Iteration
 
+This section covers a worker that ran through `codex-headless`. A worker that
+ran as a T3 child task cannot be resumed: follow the `t3-delegation` skill's
+continuation rule, whose follow-up prompt carries the full brief.
+
 Follow-up fixes are cheaper through the same Codex session than a fresh
 zero-context run, and keep the context Codex already built. Read the session ID
 from the previous successful run's `run.json` (the `jq -e` form fails instead of

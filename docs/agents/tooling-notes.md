@@ -59,21 +59,28 @@ intake. They record tool-specific behavior that source inspection may miss.
   the `-o` file. `item.completed` events carry full command output, so keep them
   out of any condensed log.
 - T3 Code child tasks (`delegate_task`, server 0.0.46-nightly.20261005): a child
-  runs in the parent thread's checkout and branch, receives no parent history,
+  starts in the parent thread's checkout and branch, receives no parent history,
   and still has its own subagent and `t3-code` tools plus the installed skills.
-  For a Codex child, an inherited `full-access` parent gives
-  `danger-full-access` with approval policy `never`; `auto` and
-  `auto-accept-edits` give `workspace-write` limited to the checkout and `/tmp`
-  with restricted network. No mode gives a read-only sandbox, and plan
-  interaction mode changes only the collaboration mode. A child in
-  `approval-required` stops at its first command on an approval request that
-  `t3_pending_request_respond` cannot answer. Omitting `target.options` does not
-  select the effort in the user's Codex configuration. A Codex child told to
-  work in a parent-created worktree under `$TMPDIR` by absolute path edited only
-  that worktree, under both inherited `full-access` and `auto`; the thread stays
-  bound to the parent's checkout. A Codex child listed no computer-use tools.
-  `orchestrator_capabilities` returned about 195,000 characters with three
-  providers enabled.
+  The thread stays bound to the parent's checkout whatever the child does.
+  - Codex sandbox: an inherited `full-access` parent gives `danger-full-access`
+    with approval policy `never`. `auto` and `auto-accept-edits` give
+    `workspace-write` limited to the checkout and `/tmp` with no network: `gh`
+    and `git ls-remote` failed at once without an escalation, and Mise could not
+    write its cache under the home directory. No mode gives a read-only sandbox,
+    and plan interaction mode changes only the collaboration mode.
+  - Claude in `auto`: `gh` and `git ls-remote` succeeded without a visible
+    permission step. The shell's working directory resets to the thread's
+    checkout after each call.
+  - Worktrees: a child told to work in a parent-created worktree under `$TMPDIR`
+    by absolute path edited only that worktree. This held for Codex in
+    `full-access` and `auto`, and for Claude in `auto`.
+  - A child in `approval-required` stops at its first command on an approval
+    request that `t3_pending_request_respond` cannot answer.
+  - Omitting `target.options` does not select the effort in the user's Codex
+    configuration.
+  - A Codex child listed no computer-use tools.
+  - `orchestrator_capabilities` returned about 195,000 characters with three
+    providers enabled.
 - Bun drops a bare `--` when it is the first argument to a script
   (`./run.ts -- -c x` yields `["-c", "x"]`). The headless runners rely on
   `--artifact-dir` or another option preceding `--`; a leading `--` cannot be
