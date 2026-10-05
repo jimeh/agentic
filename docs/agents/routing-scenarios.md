@@ -69,9 +69,9 @@ with the `review` role, default interaction mode, inherited runtime mode, and
 the model and effort from the Codex configuration, started together with the
 Codex task asynchronous. T3 woke the parent when the child finished. Both
 reviewers returned complete reports and left the checkout unchanged. Both traced
-each T3 Code row above to its stated outcome, the Claude reviewer on condition
-that the agent recognizes it is inside T3 Code. Their findings led to the
-checkout snapshot, the runtime mode rule, and the detection sentence in each
+each T3 Code row that existed then to its stated outcome, the Claude reviewer on
+condition that the agent recognizes it is inside T3 Code. Their findings led to
+the checkout snapshot, the runtime mode rule, and the detection sentence in each
 Transport section.
 
 A follow-up round then verified those corrections, which exercised the follow-up
@@ -80,12 +80,29 @@ child task carrying the brief and accepted findings, run in `auto` without
 network access as the runtime mode rule now prescribes for local work. Both
 confirmed the corrections, and the checkout snapshot was unchanged afterwards.
 
-This exercised the transport and two evaluators' reading of the skills. It did
-not exercise an agent selecting the transport unprompted, a substantial
-implementation child task, concurrent implementers, or a Codex parent delegating
-to Claude. Separate top-level threads in `auto`, `auto-accept-edits`, and
-`approval-required` established how a parent's mode limits its children; the
-parent in each was Claude.
+Two fresh top-level threads then tested unprompted selection, one Claude and one
+Codex, each in `full-access` and each asked only to have the other engine review
+the latest commit. A setup note told them to read the skills and global rules
+from the checkout under review, because the installed copies predated the
+change. Judged from their recorded tool calls, both read the provider review
+skill and `t3-delegation`, took a checkout snapshot, and started one child task
+with an explicit model and effort, the `review` role, default interaction mode,
+and `auto`, asynchronously. Both were woken by the child, verified its findings,
+and confirmed the snapshot. Neither used a headless CLI.
+
+Separate top-level threads in `auto`, `auto-accept-edits`, and
+`approval-required` established how a parent's mode limits its children; those
+were runtime probes, not scenario evaluations, so the restricted-parent row and
+the direct-request row have not been evaluated by a fresh agent.
+
+Three implementation child tasks then ran at once in `auto`, each in its own
+parent-created worktree, making a one-file edit and running the project's
+checks. Each changed only its own worktree; the tooling notes record which
+checks ran for each provider.
+
+Not exercised: discovery of the skills from their installed descriptions alone,
+a substantial implementation child task, and the headless CLI as the alternative
+for a restricted parent.
 
 The installer test uses the real selection and cleanup policy with synthetic
 roots and homes. It checks both worker families, directional exceptions,

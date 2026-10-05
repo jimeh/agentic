@@ -17,7 +17,9 @@ started, awaited, and continued.
 
 When no worker skill fits, such as a direct request for a child task, write the
 brief and the nested-delegation prohibition from the global delegation rules
-yourself and apply the rest of this skill unchanged.
+yourself and apply the rest of this skill. There is then no headless CLI
+transport to fall back to: where this skill names one, do the work in the parent
+or tell the user that the child task route is unavailable.
 
 ## Select the transport
 
@@ -102,11 +104,13 @@ git rev-parse --abbrev-ref HEAD
 - Implementation in a separate worktree, when the calling skill requires
   isolation or several implementers run concurrently: create each worktree
   yourself under the temporary directory, as the calling skill's commands do,
-  and put its absolute path in the prompt. The child starts in the thread's
-  checkout, and its shell can return there between calls, so tell it to work
-  only in that worktree, to name the worktree path in every command, and to
-  touch no other checkout. Take a snapshot of the thread's checkout first and
-  confirm it is unchanged afterwards. T3 still shows the child against the
+  and put its absolute path in the prompt. Prepare the worktree in the parent
+  first with the project's setup, so tools are trusted and dependencies are
+  installed, because a Codex child in `auto` can do neither. The child starts in
+  the thread's checkout, and its shell can return there between calls, so tell
+  it to work only in that worktree, to name the worktree path in every command,
+  and to touch no other checkout. Take a snapshot of the thread's checkout first
+  and confirm it is unchanged afterwards. T3 still shows the child against the
   thread's checkout, so judge the result from the worktree itself.
 
 `t3_thread_launch` can bind a thread to a worktree, but it starts a separate
@@ -115,9 +119,9 @@ top-level thread. Use it only when the user asks for one.
 Runtime modes run from narrowest to broadest: `approval-required`,
 `auto-accept-edits`, `auto`, `full-access`. T3 rejects a child mode broader than
 the parent's, and `orchestrator_capabilities` reports the parent's mode. Only
-`auto` and `full-access` run unattended. In the two narrower modes a child stops
-on approvals that only the user can grant in the T3 UI, and the parent cannot
-answer them, so never select those modes to restrain a worker.
+`auto` and `full-access` run unattended. In the two narrower modes a child can
+stop on an approval that only the user can grant in the T3 UI, and the parent
+cannot answer it, so never select those modes to restrain a worker.
 
 Give the worker the lowest unattended mode its task works in. An inherited
 `full-access` mode drops the sandbox and permission limits that the headless
@@ -125,11 +129,16 @@ CLIs apply, so inherit it only when the task needs it, and say so in the report.
 `auto` is the lower mode to use, and it differs by provider:
 
 - Codex: the child writes only to the thread's checkout and the temporary
-  directory, and its network access is restricted. Commands that reach the
-  network, such as `gh` and Git remote operations, fail there without prompting,
-  and tools cannot write caches under the home directory. Use `auto` for local
-  work, tell the worker it has no network, and put anything it would otherwise
-  fetch, such as the pull request description, in the prompt.
+  directory, has restricted network access, and cannot listen on a local port.
+  Commands that reach the network, such as `gh` and Git remote operations, fail
+  there without prompting. So does anything that writes under the home
+  directory, such as tool state, caches, and commit signing. Static checks ran
+  there, but a test suite that starts a local server or signs commits did not.
+  Use `auto` for local work that fits those limits, tell the worker what it
+  cannot do, and put anything it would otherwise fetch, such as the pull request
+  description, in the prompt. When an implementer must run checks that need
+  more, inherit the parent's mode, or keep `auto` and run those checks in the
+  parent.
 - Claude: the child keeps network access and can edit a worktree under the
   temporary directory. Use `auto` unless the task needs more.
 
@@ -139,7 +148,7 @@ When the parent's own mode limits the child:
   do there, do it in the parent and pass the result in the prompt, or tell the
   user what the worker cannot do.
 - Parent in `approval-required` or `auto-accept-edits`: no unattended mode is
-  available. Before delegating, tell the user that the child will wait on their
+  available. Before delegating, tell the user that the child may wait on their
   approvals, and offer the headless CLI transport as the alternative.
 
 ## Await the result

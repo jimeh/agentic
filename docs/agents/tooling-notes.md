@@ -58,12 +58,12 @@ intake. They record tool-specific behavior that source inspection may miss.
   ignored. On failure Codex emits `error` then `turn.failed` and never writes
   the `-o` file. `item.completed` events carry full command output, so keep them
   out of any condensed log.
-- T3 Code child tasks (`delegate_task`, server 0.0.46-nightly.20261005, observed
-  from a Claude thread in `full-access` on Linux): a child starts in the parent
-  thread's checkout and branch, receives no parent history, and still has its
-  own subagent and `t3-code` tools plus the installed skills. `delegate_task`
-  has no workspace parameter, and a child thread's metadata named the parent's
-  checkout.
+- T3 Code child tasks (`delegate_task`, server 0.0.46-nightly.20261005). Unless
+  a line says otherwise, the parent was a Claude thread in `full-access` on
+  Linux. A child starts in the parent thread's checkout and branch, receives no
+  parent history, and still has its own subagent and `t3-code` tools plus the
+  installed skills. `delegate_task` has no workspace parameter, and a child
+  thread's metadata named the parent's checkout.
   - Codex sandbox: an inherited `full-access` parent gave `danger-full-access`
     with approval policy `never`. `auto` and `auto-accept-edits` gave
     `workspace-write` limited to the checkout and `/tmp` with restricted
@@ -75,7 +75,7 @@ intake. They record tool-specific behavior that source inspection may miss.
     child wrote to a parent-created worktree under a `$TMPDIR` inside `/tmp`.
   - Codex network in `auto`: `gh pr view` and `git ls-remote` failed at once
     with no escalation, and Mise could not write its cache under the home
-    directory. Other network commands and `auto-accept-edits` were not tried.
+    directory. Other network commands were not tried.
   - Claude in `auto`: `gh pr view` and `git ls-remote` succeeded without a
     visible permission step. The shell's working directory reset to the thread's
     checkout after a call.
@@ -83,6 +83,15 @@ intake. They record tool-specific behavior that source inspection may miss.
     by absolute path edited only that worktree. This held for Codex in
     `full-access` and `auto`, and for Claude in `auto`, through its shell and
     through its Write and Edit tools.
+  - Checks in `auto`, three children at once in separate worktrees. A Codex
+    child in a worktree the parent had prepared passed `mise run lint` but
+    failed 26 of 176 unit tests: the PR-monitor tests could not listen on a
+    local port, and the vendor-skills fixtures could not sign commits because
+    GnuPG writes under the home directory. A Codex child in an unprepared
+    worktree could not run Mise at all, because Mise could not record the new
+    config as trusted. A Claude child in an unprepared worktree installed
+    dependencies and passed lint and the full test suite. Each child changed
+    only its own worktree.
   - A Codex child in `approval-required` stopped at its first command on an
     approval request that `t3_pending_request_respond` cannot answer. A Claude
     child that inherited `auto-accept-edits` stopped the same way on
