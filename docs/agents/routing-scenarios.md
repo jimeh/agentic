@@ -4,33 +4,35 @@ Use these cases when revising workflow selection. Evaluate the relevant skill
 entry points with only the task facts, without supplying expected answers to an
 independent evaluator. Do not perform GitHub mutations during scenario checks.
 
-| Request and context                                                  | Expected behavior                                                                                                      |
-| -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| Small fix, file PR, and babysit                                      | Parent implementation, commit, file-pr, babysit-pr; no added reviewers.                                                |
-| Review this change; current session authored it                      | review-code selects one fresh native reviewer with no parent history.                                                  |
-| Review this change; current session did not author it                | review-code performs direct inspection.                                                                                |
-| Explicit Codex CLI review                                            | codex-review executes one fresh CLI reviewer using review-code's contract.                                             |
-| Codex review requested inside T3 Code from a Claude thread           | codex-review runs one read-only Codex child task through t3-delegation; no headless CLI.                               |
-| Explicit Codex CLI review inside T3 Code                             | codex-review uses codex-headless because the user named the CLI.                                                       |
-| Dual review inside T3 Code from a Claude thread                      | Fresh native Claude reviewer and a Codex child task, started together; no headless CLI.                                |
-| Follow-up round for a reviewer that ran as a T3 child task           | New child task carrying the prior brief, findings, and revision boundaries; the child thread is not messaged.          |
-| Codex implementation inside T3 Code, clean thread worktree           | codex-implementation runs one Codex child task with exclusive ownership of the checkout.                               |
-| Codex implementation inside T3 Code needing isolation or concurrency | The parent creates each worktree and one Codex child task works in it by absolute path; no headless CLI.               |
-| Codex computer use inside T3 Code                                    | codex-computer-use keeps codex-headless.                                                                               |
-| Worker skill outside T3 Code                                         | Headless CLI transport, unchanged.                                                                                     |
-| Explicit ship-feature-pr                                             | Full delivery with Codex and Claude review; continue corrections according to invalidated risk.                        |
-| Only request CodeRabbit on an existing PR                            | Trigger, wait, inspect, and report; no independent local reviewers or unsolicited fixes and thread mutations.          |
-| Dual review a colleague's PR, then post selected feedback            | dual-review reports only; after the user selects feedback, post it as a review with GitHub attribution; no babysit-pr. |
-| Babysit a colleague's PR the user has taken over                     | babysit-pr operates as it does on the user's own PR.                                                                   |
-| Reword the description of a colleague's PR                           | write-pr-copy with jimeh's footer before bot-managed sections; other attribution unchanged.                            |
-| Third verified correction; no user budget                            | Continue authorized stewardship while making progress.                                                                 |
-| User supplied a correction limit, now exhausted                      | Stop at that explicit limit and report the concrete remaining work.                                                    |
-| Delegated reviewer loads review-code                                 | Review directly; do not spawn another reviewer.                                                                        |
-| Host defaults to full history but supports fork_turns                | Explicitly set fork_turns="none" and supply a focused brief.                                                           |
-| Native host cannot isolate context                                   | Fresh CLI session or parent execution.                                                                                 |
-| Worker asked to launch another model without parent authority        | Decline nested delegation and report the scope boundary.                                                               |
-| High-stakes review or hard task; user named no model                 | Opus 5.5 workers; Fable is not selected.                                                                               |
-| User names Fable for one review, then delegates other work           | Fable for the named review only; Opus 5.5 for the later delegation.                                                    |
+| Request and context                                                                     | Expected behavior                                                                                                               |
+| --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Small fix, file PR, and babysit                                                         | Parent implementation, commit, file-pr, babysit-pr; no added reviewers.                                                         |
+| Review this change; current session authored it                                         | review-code selects one fresh native reviewer with no parent history.                                                           |
+| Review this change; current session did not author it                                   | review-code performs direct inspection.                                                                                         |
+| Explicit Codex CLI review                                                               | codex-review executes one fresh CLI reviewer using review-code's contract.                                                      |
+| Codex review requested inside T3 Code from a Claude thread                              | codex-review runs one read-only Codex child task through t3-delegation; no headless CLI.                                        |
+| Explicit Codex CLI review inside T3 Code                                                | codex-review uses codex-headless because the user named the CLI.                                                                |
+| Direct request for a Codex child task inside T3 Code                                    | The matching codex-* skill when one fits, otherwise t3-delegation loaded before delegate_task; model and effort set explicitly. |
+| Dual review inside T3 Code from a Claude thread                                         | Fresh native Claude reviewer and a Codex child task, started together; no headless CLI.                                         |
+| Follow-up round for a reviewer that ran as a T3 child task                              | New child task carrying the prior brief, findings, and revision boundaries; the child thread is not messaged.                   |
+| Codex implementation inside T3 Code, clean thread worktree                              | codex-implementation runs one Codex child task with exclusive ownership of the checkout.                                        |
+| Codex implementation inside T3 Code needing isolation or concurrency                    | The parent creates each worktree and one Codex child task works in it by absolute path; no headless CLI.                        |
+| Codex computer use inside T3 Code                                                       | codex-computer-use keeps codex-headless.                                                                                        |
+| Worker requested inside T3 Code from a thread in approval-required or auto-accept-edits | Tell the user the child would wait on their approvals and offer the headless CLI; no silent delegation.                         |
+| Worker skill outside T3 Code                                                            | Headless CLI transport, unchanged.                                                                                              |
+| Explicit ship-feature-pr                                                                | Full delivery with Codex and Claude review; continue corrections according to invalidated risk.                                 |
+| Only request CodeRabbit on an existing PR                                               | Trigger, wait, inspect, and report; no independent local reviewers or unsolicited fixes and thread mutations.                   |
+| Dual review a colleague's PR, then post selected feedback                               | dual-review reports only; after the user selects feedback, post it as a review with GitHub attribution; no babysit-pr.          |
+| Babysit a colleague's PR the user has taken over                                        | babysit-pr operates as it does on the user's own PR.                                                                            |
+| Reword the description of a colleague's PR                                              | write-pr-copy with jimeh's footer before bot-managed sections; other attribution unchanged.                                     |
+| Third verified correction; no user budget                                               | Continue authorized stewardship while making progress.                                                                          |
+| User supplied a correction limit, now exhausted                                         | Stop at that explicit limit and report the concrete remaining work.                                                             |
+| Delegated reviewer loads review-code                                                    | Review directly; do not spawn another reviewer.                                                                                 |
+| Host defaults to full history but supports fork_turns                                   | Explicitly set fork_turns="none" and supply a focused brief.                                                                    |
+| Native host cannot isolate context                                                      | Fresh worker through the matching worker skill, or parent execution.                                                            |
+| Worker asked to launch another model without parent authority                           | Decline nested delegation and report the scope boundary.                                                                        |
+| High-stakes review or hard task; user named no model                                    | Opus 5.5 workers; Fable is not selected.                                                                                        |
+| User names Fable for one review, then delegates other work                              | Fable for the named review only; Opus 5.5 for the later delegation.                                                             |
 
 ## Verification evidence
 
@@ -80,8 +82,10 @@ confirmed the corrections, and the checkout snapshot was unchanged afterwards.
 
 This exercised the transport and two evaluators' reading of the skills. It did
 not exercise an agent selecting the transport unprompted, a substantial
-implementation child task, concurrent implementers, a parent thread outside
-`full-access`, or a Codex parent delegating to Claude.
+implementation child task, concurrent implementers, or a Codex parent delegating
+to Claude. Separate top-level threads in `auto`, `auto-accept-edits`, and
+`approval-required` established how a parent's mode limits its children; the
+parent in each was Claude.
 
 The installer test uses the real selection and cleanup policy with synthetic
 roots and homes. It checks both worker families, directional exceptions,

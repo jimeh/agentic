@@ -63,9 +63,9 @@ A fresh Codex session starts with zero context. Every fresh prompt carries:
 goal, exact repo and paths, constraints and non-goals, proof expected (the exact
 test command), and output shape. A resumed session keeps its context, so a
 follow-up prompt carries only the revision boundary, the correction, and the
-proof expected. A T3 child task cannot be resumed, so its follow-up is a fresh
-prompt that also carries the earlier brief and result. Prohibit further native
-or CLI model delegation unless the parent explicitly authorized that structure.
+proof expected. For a worker that ran as a T3 child task, follow `t3-delegation`
+for follow-up prompts instead. Prohibit further native or CLI model delegation
+unless the parent explicitly authorized that structure.
 
 ## Verify and deliver
 

@@ -70,6 +70,9 @@ intake. They record tool-specific behavior that source inspection may miss.
     network; `auto` reported approval policy `auto_review`. No mode gave a
     read-only sandbox, and plan interaction mode changed only the collaboration
     mode.
+  - Codex sandbox on macOS: the `auto` writable roots were the checkout,
+    `/private/tmp`, and the per-user directory under `/private/var/folders`. A
+    child wrote to a parent-created worktree under a `$TMPDIR` inside `/tmp`.
   - Codex network in `auto`: `gh pr view` and `git ls-remote` failed at once
     with no escalation, and Mise could not write its cache under the home
     directory. Other network commands and `auto-accept-edits` were not tried.
@@ -78,10 +81,19 @@ intake. They record tool-specific behavior that source inspection may miss.
     checkout after a call.
   - Worktrees: a child told to work in a parent-created worktree under `$TMPDIR`
     by absolute path edited only that worktree. This held for Codex in
-    `full-access` and `auto`, and for Claude in `auto` editing through its
-    shell. Claude's file-edit tools were not tried there.
+    `full-access` and `auto`, and for Claude in `auto`, through its shell and
+    through its Write and Edit tools.
   - A Codex child in `approval-required` stopped at its first command on an
-    approval request that `t3_pending_request_respond` cannot answer.
+    approval request that `t3_pending_request_respond` cannot answer. A Claude
+    child that inherited `auto-accept-edits` stopped the same way on
+    `git ls-remote`; a Codex child there ran it, failed on the network, and
+    requested no escalation.
+  - Parent mode, tested with separate top-level threads: parents in `auto`,
+    `auto-accept-edits`, and `approval-required` could all call `delegate_task`
+    without an approval. T3 rejected every child mode broader than the parent's
+    with `runtime_mode_escalation_denied`, in the order `approval-required`,
+    `auto-accept-edits`, `auto`, `full-access`. A Codex child that inherited
+    `auto` got the same sandbox as one lowered to `auto`.
   - Omitting `target.options` did not select the effort in the user's Codex
     configuration.
   - A Codex child listed no computer-use tools.

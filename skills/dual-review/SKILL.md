@@ -69,9 +69,8 @@ review as stale.
 
 When a caller supplies both prior reviewer sessions, findings, and prior and new
 immutable base-head pairs, apply the `review-code` continuation criteria to both
-reviewers. Resume only when both sessions qualify and remain available. A
-reviewer that ran as a T3 child task continues through a new task carrying the
-prior brief and findings, as `t3-delegation` describes.
+reviewers. Resume only when both sessions qualify and remain available. For a
+reviewer that ran as a T3 child task, follow `t3-delegation` for continuation.
 
 Use fresh reviewers when continuation is unavailable, revision identity is
 uncertain, incremental coverage is ambiguous, or scope materially broadened. The

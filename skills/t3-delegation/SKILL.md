@@ -1,9 +1,10 @@
 ---
 name: t3-delegation
 description: >-
-  Run a delegated worker as a T3 Code child task instead of a headless CLI. Use
-  inside T3 Code once a worker skill or workflow has selected a separate worker;
-  does not decide whether to delegate.
+  Run a delegated worker as a T3 Code child task instead of a headless CLI. Load
+  before calling T3 Code's delegate_task, whether a worker skill selected the
+  worker or the user asked for a child task directly; does not decide whether to
+  delegate.
 ---
 
 # T3 Delegation
@@ -13,6 +14,10 @@ thread. Inside T3 Code, that replaces the `codex-headless` and `claude-headless`
 transports. The calling skill still owns whether to delegate, the brief, the
 prompt contract, verification, and the report. This skill owns how the worker is
 started, awaited, and continued.
+
+When no worker skill fits, such as a direct request for a child task, write the
+brief and the nested-delegation prohibition from the global delegation rules
+yourself and apply the rest of this skill unchanged.
 
 ## Select the transport
 
@@ -107,11 +112,17 @@ git rev-parse --abbrev-ref HEAD
 `t3_thread_launch` can bind a thread to a worktree, but it starts a separate
 top-level thread. Use it only when the user asks for one.
 
-Give the worker the lowest `runtimeMode` its task works in, and never raise it
-above the parent's mode. An inherited `full-access` mode drops the sandbox and
-permission limits that the headless CLIs apply, so inherit it only when the task
-needs it, and say so in the report. `auto` is the lower mode to use, and it
-differs by provider:
+Runtime modes run from narrowest to broadest: `approval-required`,
+`auto-accept-edits`, `auto`, `full-access`. T3 rejects a child mode broader than
+the parent's, and `orchestrator_capabilities` reports the parent's mode. Only
+`auto` and `full-access` run unattended. In the two narrower modes a child stops
+on approvals that only the user can grant in the T3 UI, and the parent cannot
+answer them, so never select those modes to restrain a worker.
+
+Give the worker the lowest unattended mode its task works in. An inherited
+`full-access` mode drops the sandbox and permission limits that the headless
+CLIs apply, so inherit it only when the task needs it, and say so in the report.
+`auto` is the lower mode to use, and it differs by provider:
 
 - Codex: the child writes only to the thread's checkout and the temporary
   directory, and its network access is restricted. Commands that reach the
@@ -120,17 +131,16 @@ differs by provider:
   work, tell the worker it has no network, and put anything it would otherwise
   fetch, such as the pull request description, in the prompt.
 - Claude: the child keeps network access and can edit a worktree under the
-  temporary directory through its shell. Use `auto` unless the task needs more.
+  temporary directory. Use `auto` unless the task needs more.
 
-Inheriting helps only when the parent has the access the task needs, because a
-child cannot exceed its parent. When the parent is restricted too, do the
-network or wider-write step in the parent and pass the result in the prompt, or
-tell the user what the worker cannot do.
+When the parent's own mode limits the child:
 
-Do not select `approval-required` to restrain a worker: the child then waits on
-approvals that only the user can grant in the T3 UI, and the parent cannot
-answer them. If the parent itself runs in that mode, tell the user that the
-child will need their approvals.
+- Parent in `auto`: the child gets `auto` at most. For a step the child cannot
+  do there, do it in the parent and pass the result in the prompt, or tell the
+  user what the worker cannot do.
+- Parent in `approval-required` or `auto-accept-edits`: no unattended mode is
+  available. Before delegating, tell the user that the child will wait on their
+  approvals, and offer the headless CLI transport as the alternative.
 
 ## Await the result
 

@@ -117,9 +117,15 @@ Start new subagents without inherited conversation history. Explicitly set
 self-contained brief with objective, paths or revisions, constraints, allowed
 actions, expected output, and verification. Let workers inspect source rather
 than pasting histories. If the host cannot provide fresh native context, use a
-fresh CLI session or do the work in the parent. Reuse task-specific sessions for
-relevant follow-ups. Review briefs include requirements and evidence, not the
-implementer's conclusions.
+fresh worker through the matching worker skill or do the work in the parent.
+Reuse task-specific sessions for relevant follow-ups. Review briefs include
+requirements and evidence, not the implementer's conclusions.
+
+To run a worker on another engine, or a separate worker that a native subagent
+cannot provide, use the matching `codex-*` or `claude-*` skill rather than
+calling a host delegation tool or a model CLI directly. The skill selects the
+transport and carries the model, effort, access, and verification rules. Inside
+T3 Code, load the `t3-delegation` skill before calling `delegate_task`.
 
 Delegated workers perform the task directly. Include an explicit prohibition on
 further native or CLI model delegation in each worker prompt unless the parent
