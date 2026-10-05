@@ -56,26 +56,32 @@ repeated ambiguity and was dropped. The two placement fixes from the last run
 have not been re-run through an evaluator.
 
 The T3 Code transport rows were checked on October 5, 2026 against T3 Code
-server 0.0.46-nightly.20261005 from a Claude thread. Probe child tasks
-established the checkout, sandbox, approval, network, tool, and skill facts
-recorded in the [tooling notes](tooling-notes.md), including edits confined to a
-parent-created worktree by Codex children in `full-access` and `auto` and by a
-Claude child in `auto`.
+server 0.0.46-nightly.20261005 from a Claude thread in `full-access` mode. Probe
+child tasks, run before and between the review rounds below, established the
+checkout, sandbox, approval, network, tool, and skill facts recorded in the
+[tooling notes](tooling-notes.md).
 
-A dual review of the pull request that introduced `t3-delegation` then ran as
-that skill prescribed at the time: a fresh native Claude reviewer and a Codex
-child task with the `review` role, default interaction mode, inherited runtime
-mode, and the model and effort from the Codex configuration, started together
-with the Codex task asynchronous. T3 woke the parent when the child finished.
-Both reviewers returned complete reports, left the checkout unchanged, and
-traced each T3 Code row above to its stated outcome. Their findings led to the
+A dual review of the pull request that introduced `t3-delegation` ran as that
+skill then prescribed: a fresh native Claude reviewer and a Codex child task
+with the `review` role, default interaction mode, inherited runtime mode, and
+the model and effort from the Codex configuration, started together with the
+Codex task asynchronous. T3 woke the parent when the child finished. Both
+reviewers returned complete reports and left the checkout unchanged. Both traced
+each T3 Code row above to its stated outcome, the Claude reviewer on condition
+that the agent recognizes it is inside T3 Code. Their findings led to the
 checkout snapshot, the runtime mode rule, and the detection sentence in each
 Transport section.
 
+A follow-up round then verified those corrections, which exercised the follow-up
+row. The Claude reviewer was resumed natively. The Codex reviewer was a new
+child task carrying the brief and accepted findings, run in `auto` without
+network access as the runtime mode rule now prescribes for local work. Both
+confirmed the corrections, and the checkout snapshot was unchanged afterwards.
+
 This exercised the transport and two evaluators' reading of the skills. It did
-not exercise an agent selecting the transport unprompted, a review run in
-`auto`, a substantial implementation child task, concurrent implementers, or a
-Codex parent delegating to Claude.
+not exercise an agent selecting the transport unprompted, a substantial
+implementation child task, concurrent implementers, a parent thread outside
+`full-access`, or a Codex parent delegating to Claude.
 
 The installer test uses the real selection and cleanup policy with synthetic
 roots and homes. It checks both worker families, directional exceptions,

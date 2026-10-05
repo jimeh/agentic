@@ -74,7 +74,19 @@ the parent's mode, and plan mode adds no sandbox.
 Nothing enforces a worker's boundary, so verify it with a checkout snapshot:
 `HEAD`, the branch, and a hash of the staged, unstaged, and untracked content.
 `git status` alone misses a commit and a second edit to an already-modified
-file.
+file. This shape captures all three and leaves ignored files out:
+
+```bash
+git rev-parse HEAD
+git rev-parse --abbrev-ref HEAD
+{
+  git diff --binary --cached
+  echo
+  git diff --binary
+  git ls-files --others --exclude-standard
+  git ls-files --others --exclude-standard | git hash-object --stdin-paths
+} | git hash-object --stdin
+```
 
 - Read-only work, such as review and analysis: state the read-only boundary in
   the prompt. Take a checkout snapshot before starting and confirm it is
@@ -86,10 +98,11 @@ file.
   isolation or several implementers run concurrently: create each worktree
   yourself under the temporary directory, as the calling skill's commands do,
   and put its absolute path in the prompt. The child starts in the thread's
-  checkout, so tell it to work only in that worktree and to touch no other
-  checkout. Take a snapshot of the thread's checkout first and confirm it is
-  unchanged afterwards. T3 still shows the child against the thread's checkout,
-  so judge the result from the worktree itself.
+  checkout, and its shell can return there between calls, so tell it to work
+  only in that worktree, to name the worktree path in every command, and to
+  touch no other checkout. Take a snapshot of the thread's checkout first and
+  confirm it is unchanged afterwards. T3 still shows the child against the
+  thread's checkout, so judge the result from the worktree itself.
 
 `t3_thread_launch` can bind a thread to a worktree, but it starts a separate
 top-level thread. Use it only when the user asks for one.
@@ -101,14 +114,18 @@ needs it, and say so in the report. `auto` is the lower mode to use, and it
 differs by provider:
 
 - Codex: the child writes only to the thread's checkout and the temporary
-  directory and has no network access. `gh`, `git fetch`, and dependency
-  installs fail there without prompting, and tools cannot write caches under the
-  home directory. Use `auto` for local work, tell the worker it has no network,
-  and put anything it would otherwise fetch, such as the pull request
-  description, in the prompt. Inherit when the task needs the network or wider
-  writes.
+  directory, and its network access is restricted. Commands that reach the
+  network, such as `gh` and Git remote operations, fail there without prompting,
+  and tools cannot write caches under the home directory. Use `auto` for local
+  work, tell the worker it has no network, and put anything it would otherwise
+  fetch, such as the pull request description, in the prompt.
 - Claude: the child keeps network access and can edit a worktree under the
-  temporary directory. Use `auto` unless the task needs more.
+  temporary directory through its shell. Use `auto` unless the task needs more.
+
+Inheriting helps only when the parent has the access the task needs, because a
+child cannot exceed its parent. When the parent is restricted too, do the
+network or wider-write step in the parent and pass the result in the prompt, or
+tell the user what the worker cannot do.
 
 Do not select `approval-required` to restrain a worker: the child then waits on
 approvals that only the user can grant in the T3 UI, and the parent cannot
