@@ -1,8 +1,9 @@
 ---
 name: claude-analysis
 description: >-
-  Delegate bounded read-only analysis to Claude CLI when a separate worker
-  is selected. No edits, code review, or final judgment.
+  Delegate bounded read-only analysis to Claude, through a T3 Code child task
+  or the Claude CLI, when a separate worker is selected. No edits, code review,
+  or final judgment.
 ---
 
 # Claude Analysis
@@ -22,7 +23,7 @@ execution arrangement; do not attempt to bypass the runner restrictions.
 ## Worker boundary
 
 The parent chooses whether delegation is needed. Prefer a native worker with no
-inherited history when it satisfies the task; use this CLI for explicit
+inherited history when it satisfies the task; use this skill for explicit
 selection or isolation and continuation needs. Start initial sessions fresh,
 with a brief containing objective, paths or revisions, constraints, allowed
 actions, expected output, and verification. Do not paste parent histories.
@@ -32,6 +33,17 @@ not invoke delegation skills or launch model workers through native tools or
 CLIs unless the parent explicitly authorizes that structure." Resume the same
 worker for relevant follow-ups; start fresh when its task context no longer
 fits.
+
+## Transport
+
+Inside T3 Code, run the analysis as a T3 child task: read and apply the
+`t3-delegation` skill, using a read-only task with the `research` role. It
+replaces the artifact directory, `claude-headless` commands, session resume, and
+follow-up prompt rules described below; the question, prompt contract,
+spot-checks, and report still apply. Everywhere else, and when `t3-delegation`
+selects the CLI, use `claude-headless` as described below. The session is inside
+T3 Code when the host says so or offers the `t3-code` MCP server's
+`delegate_task` tool, which may be listed as deferred.
 
 ## Workflow
 

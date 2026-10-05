@@ -1,8 +1,9 @@
 ---
 name: codex-implementation
 description: >-
-  Execute settled implementation tasks through Codex CLI when a separate
-  worker is selected. The parent owns scope, verification, and delivery.
+  Execute settled implementation tasks through Codex, using a T3 Code child
+  task or the Codex CLI, when a separate worker is selected. The parent owns
+  scope, verification, and delivery.
 ---
 
 # Codex Implementation
@@ -16,7 +17,7 @@ Do not hand Codex an entire project or vague feature. Split the work first.
 ## Worker boundary
 
 The parent chooses whether delegation is needed. Prefer a native worker with no
-inherited history when it satisfies the task; use this CLI for explicit
+inherited history when it satisfies the task; use this skill for explicit
 selection or isolation and continuation needs. Start initial sessions fresh,
 with a brief containing objective, paths or revisions, constraints, allowed
 actions, expected output, and verification. Do not paste parent histories.
@@ -29,6 +30,25 @@ fits.
 
 Delegate only settled work with observable success criteria. Keep architecture,
 API, product, and UX decisions in the parent. Decompose ambiguous work first.
+
+## Transport
+
+Inside T3 Code, run the implementer as a T3 child task: read and apply the
+`t3-delegation` skill, using the `implementation` role. It replaces the artifact
+directory, `codex-headless` commands, session resume, and follow-up prompt rules
+described below and in the delivery and continuation reference; the starting-tip
+record, prompt shape, post-run inspection, review, and delivery still apply.
+Everywhere else, and when `t3-delegation` selects the CLI, use `codex-headless`
+as described below. The session is inside T3 Code when the host says so or
+offers the `t3-code` MCP server's `delegate_task` tool, which may be listed as
+deferred.
+
+A child task starts in the current thread's checkout. Treat a clean checkout
+dedicated to this thread, such as a T3 worktree, as satisfying the isolation
+rule for a single implementer. When the checkout holds unrelated changes or
+implementers run concurrently, create the worktree as shown under Isolated
+Worktree Command Shape and have the child work in it by absolute path, as
+`t3-delegation` describes.
 
 ## Workflow
 

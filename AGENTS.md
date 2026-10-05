@@ -73,6 +73,12 @@ skills. This is not a shell-level prohibition on invoking model executables;
 Codex workers rely on the prompt boundary rather than skill installation
 filters.
 
+Inside T3 Code the same worker skills start the worker as a T3 child task
+instead, following the `t3-delegation` skill, which owns that transport for both
+engines. The headless runners remain the transport everywhere else and for
+`codex-computer-use`. A child task has no runner-level delegation denial and no
+read-only sandbox, so those boundaries rest on the prompt there.
+
 To add a new skill, just create the directory — the installer picks it up
 automatically. Stale symlinks are cleaned up on each run, including links that
 an `only`/`exclude` change scoped out of a target root.

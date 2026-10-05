@@ -1,8 +1,9 @@
 ---
 name: codex-analysis
 description: >-
-  Delegate bounded read-only analysis to Codex CLI when a separate worker is
-  selected. No edits, code review, or final judgment.
+  Delegate bounded read-only analysis to Codex, through a T3 Code child task or
+  the Codex CLI, when a separate worker is selected. No edits, code review, or
+  final judgment.
 ---
 
 # Codex Analysis
@@ -16,7 +17,7 @@ it is for analysis and investigation, not patching or final judgement.
 ## Worker boundary
 
 The parent chooses whether delegation is needed. Prefer a native worker with no
-inherited history when it satisfies the task; use this CLI for explicit
+inherited history when it satisfies the task; use this skill for explicit
 selection or isolation and continuation needs. Start initial sessions fresh,
 with a brief containing objective, paths or revisions, constraints, allowed
 actions, expected output, and verification. Do not paste parent histories.
@@ -30,6 +31,17 @@ fits.
 Use this for source-checkable extraction, comparison, and triage of large logs,
 documents, datasets, or multi-file evidence. Keep architecture decisions,
 implementation, code review, and GUI work in their owning workflows.
+
+## Transport
+
+Inside T3 Code, run the analysis as a T3 child task: read and apply the
+`t3-delegation` skill, using a read-only task with the `research` role. It
+replaces the artifact directory, `codex-headless` commands, session resume, and
+follow-up prompt rules described below; the question, prompt shape, spot-checks,
+and report still apply. Everywhere else, and when `t3-delegation` selects the
+CLI, use `codex-headless` as described below. The session is inside T3 Code when
+the host says so or offers the `t3-code` MCP server's `delegate_task` tool,
+which may be listed as deferred.
 
 ## Workflow
 

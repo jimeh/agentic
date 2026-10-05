@@ -64,13 +64,14 @@ isolation, and review once that decision is made.
   omitted model falls back to a default that may be neither.
 - Do not infer a context-window preference. Let Claude Code and the active
   provider choose their normal context behavior.
-- For Claude CLI delegation from another executor, use the `claude-*` skill for
-  the task. Its `claude-headless` transport owns exact model IDs and effort
-  defaults.
-- Hand GPT work to the `codex-*` skills, which wrap the Codex CLI. Prefer Claude
-  models unless the user asks for GPT or Codex, a skill or workflow needs that
-  engine, or the work calls for it — cross-model review independence, bulk
-  read-only throughput, or capacity running alongside the current session.
+- For Claude delegation from another executor, use the `claude-*` skill for the
+  task. Its transport owns exact model IDs and effort defaults: `t3-delegation`
+  inside T3 Code, `claude-headless` elsewhere.
+- Hand GPT work to the `codex-*` skills, which run Codex as a T3 child task
+  inside T3 Code and through the Codex CLI elsewhere. Prefer Claude models
+  unless the user asks for GPT or Codex, a skill or workflow needs that engine,
+  or the work calls for it — cross-model review independence, bulk read-only
+  throughput, or capacity running alongside the current session.
 - If delegated output is below the bar, iterate with the selected agent or take
   the work back into the current session. Ask before adding another worker
   beyond the approved scope.

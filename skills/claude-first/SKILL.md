@@ -1,9 +1,8 @@
 ---
 name: claude-first
 description: >-
-  Explicit session mode using Claude CLI for implementation and bulk
-  analysis while Codex owns decisions and delivery. Never infer from
-  ordinary work.
+  Explicit session mode using Claude for implementation and bulk analysis
+  while Codex owns decisions and delivery. Never infer from ordinary work.
 ---
 
 # Claude First
@@ -53,9 +52,11 @@ A fresh Claude session starts without this conversation's context. Every fresh
 prompt must carry the objective, repository, constraints, authority boundary,
 success criteria, and proof expected. A resumed session keeps its context, so a
 follow-up prompt carries only the revision boundary, the correction, and the
-proof expected. Prohibit further native or CLI model delegation unless
-explicitly authorized; the headless runner denies native worker tools and
-delegation skills.
+proof expected. Inside T3 Code the worker skills run Claude as a T3 child task
+instead of the Claude CLI; follow `t3-delegation` for its follow-up prompts.
+Prohibit further native or CLI model delegation unless explicitly authorized.
+The headless runner denies native worker tools and delegation skills, but a T3
+child task does not, so there the prompt is the only guard.
 
 Treat Claude's report as evidence. Inspect the repository state and fill missing
 or invalidated verification before presenting the result. Use review-code for

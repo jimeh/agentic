@@ -13,6 +13,10 @@ deciding next actions.
 
 This skill is for observation and verification, not implementation or review.
 
+Keep the `codex-headless` transport inside T3 Code as well. A Codex T3 child
+task has not been shown to expose Codex's computer-use tooling, so do not route
+this work through `t3-delegation`.
+
 ## Workflow
 
 1. Understand the user's goal.
