@@ -1,7 +1,7 @@
 ---
 name: codex-first
 description: >-
-  Explicit session mode using Codex CLI for implementation while Claude owns
+  Explicit session mode using Codex for implementation while Claude owns
   decisions and delivery. Never infer from ordinary work.
 ---
 
@@ -52,8 +52,10 @@ decides how. Route through:
 - `codex-review` — independent review of Claude-authored work
 - `codex-computer-use` — GUI/runtime observation and verification
 
-The worker skill owns sandbox, checkout isolation, artifact handling, and
-continuation mechanics. Follow it rather than duplicating invocation policy.
+The worker skill owns transport, sandbox, checkout isolation, artifact handling,
+and continuation mechanics. Follow it rather than duplicating invocation policy.
+Inside T3 Code it runs Codex as a T3 child task instead of the Codex CLI, except
+for `codex-computer-use`.
 
 ## Prompt Contract
 
@@ -61,8 +63,9 @@ A fresh Codex session starts with zero context. Every fresh prompt carries:
 goal, exact repo and paths, constraints and non-goals, proof expected (the exact
 test command), and output shape. A resumed session keeps its context, so a
 follow-up prompt carries only the revision boundary, the correction, and the
-proof expected. Prohibit further native or CLI model delegation unless the
-parent explicitly authorized that structure.
+proof expected. A T3 child task cannot be resumed, so its follow-up is a fresh
+prompt that also carries the earlier brief and result. Prohibit further native
+or CLI model delegation unless the parent explicitly authorized that structure.
 
 ## Verify and deliver
 

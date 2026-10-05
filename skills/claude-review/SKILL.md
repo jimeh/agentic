@@ -1,8 +1,9 @@
 ---
 name: claude-review
 description: >-
-  Execute a delegated review through Claude CLI. Use when explicitly
-  requested or selected by the review workflow; review-code owns generic routing.
+  Execute a delegated review through Claude, using a T3 Code child task or the
+  Claude CLI. Use when explicitly requested or selected by the review workflow;
+  review-code owns generic routing.
 ---
 
 # Claude Review
@@ -27,7 +28,7 @@ execution arrangement; do not attempt to bypass the runner restrictions.
 ## Worker boundary
 
 The parent chooses whether delegation is needed. Prefer a native worker with no
-inherited history when it satisfies the task; use this CLI for explicit
+inherited history when it satisfies the task; use this skill for explicit
 selection or isolation and continuation needs. Start initial sessions fresh,
 with a brief containing objective, paths or revisions, constraints, allowed
 actions, expected output, and verification. Do not paste parent histories.
@@ -37,6 +38,15 @@ not invoke delegation skills or launch model workers through native tools or
 CLIs unless the parent explicitly authorizes that structure." Resume the same
 worker for relevant follow-ups; start fresh when its task context no longer
 fits.
+
+## Transport
+
+Inside T3 Code, run the reviewer as a T3 child task: read and apply the
+`t3-delegation` skill, using a read-only task with the `review` role. It
+replaces the artifact directory, `claude-headless` commands, and session resume
+described below; the `review-code` brief, the prompt contract, and finding
+acceptance still apply. Everywhere else, and when `t3-delegation` selects the
+CLI, use `claude-headless` as described below.
 
 ## Workflow
 

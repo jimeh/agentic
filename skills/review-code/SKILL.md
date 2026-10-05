@@ -30,9 +30,11 @@ the change. If it did, use a fresh native reviewer without inherited history
 conversation or conclusions.
 
 Use codex-review or claude-review when the user explicitly selects that CLI
-transport, or when native tooling cannot provide required isolation or persisted
+transport, when the user names an engine the current host has no native worker
+for, or when native tooling cannot provide required isolation or persisted
 continuation. A request for a named engine selects that engine, not necessarily
-a CLI. Never infer dual-review from a generic review request.
+a CLI: inside T3 Code those skills run the reviewer as a T3 child task. Never
+infer dual-review from a generic review request.
 
 A delegated reviewer executes the review directly. Loading this shared standard
 from a transport or orchestration skill does not authorize another delegation.

@@ -28,7 +28,8 @@ Preflight both channels, then start exactly one fresh Codex reviewer and one
 fresh Claude reviewer concurrently when practical. Use review-code transport
 selection for each channel: prefer a fresh native reviewer for the current
 engine when it provides the required isolation and continuation, otherwise use
-the corresponding CLI review skill.
+the corresponding provider review skill. That skill selects its transport: a T3
+child task inside T3 Code, the headless CLI elsewhere.
 
 Do not count the orchestrator as a reviewer. Start native reviewers without
 parent history, explicitly using `fork_turns="none"` where supported, do not
@@ -68,7 +69,9 @@ review as stale.
 
 When a caller supplies both prior reviewer sessions, findings, and prior and new
 immutable base-head pairs, apply the `review-code` continuation criteria to both
-reviewers. Resume only when both sessions qualify and remain available.
+reviewers. Resume only when both sessions qualify and remain available. A
+reviewer that ran as a T3 child task continues through a new task carrying the
+prior brief and findings, as `t3-delegation` describes.
 
 Use fresh reviewers when continuation is unavailable, revision identity is
 uncertain, incremental coverage is ambiguous, or scope materially broadened. The

@@ -1,8 +1,9 @@
 ---
 name: claude-implementation
 description: >-
-  Execute settled implementation tasks through Claude CLI when a separate
-  worker is selected. The parent owns scope, verification, and delivery.
+  Execute settled implementation tasks through Claude, using a T3 Code child
+  task or the Claude CLI, when a separate worker is selected. The parent owns
+  scope, verification, and delivery.
 ---
 
 # Claude Implementation
@@ -21,7 +22,7 @@ execution arrangement; do not attempt to bypass the runner restrictions.
 ## Worker boundary
 
 The parent chooses whether delegation is needed. Prefer a native worker with no
-inherited history when it satisfies the task; use this CLI for explicit
+inherited history when it satisfies the task; use this skill for explicit
 selection or isolation and continuation needs. Start initial sessions fresh,
 with a brief containing objective, paths or revisions, constraints, allowed
 actions, expected output, and verification. Do not paste parent histories.
@@ -31,6 +32,23 @@ not invoke delegation skills or launch model workers through native tools or
 CLIs unless the parent explicitly authorizes that structure." Resume the same
 worker for relevant follow-ups; start fresh when its task context no longer
 fits.
+
+## Transport
+
+Inside T3 Code, run the implementer as a T3 child task: read and apply the
+`t3-delegation` skill, using the `implementation` role. It replaces the artifact
+directory, `claude-headless` commands, and session resume described below; the
+starting-tip record, prompt contract, post-run inspection, and delivery still
+apply. Everywhere else, and when `t3-delegation` selects the CLI, use
+`claude-headless` as described below.
+
+A child task starts in the current thread's checkout. Treat a clean checkout
+dedicated to this thread, such as a T3 worktree, as satisfying the isolation
+rule for a single implementer. When the checkout holds unrelated changes or
+implementers run concurrently, create the worktree with the commands under
+Isolated worktree and have the child work in it by absolute path, as
+`t3-delegation` describes. For a decision trail, create the private trail file
+yourself and put its path in the prompt.
 
 ## Workflow
 
