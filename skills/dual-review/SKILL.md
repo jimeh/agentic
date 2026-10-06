@@ -75,7 +75,10 @@ reviewer that ran as a T3 child task, follow `t3-delegation` for continuation.
 Use fresh reviewers when continuation is unavailable, revision identity is
 uncertain, incremental coverage is ambiguous, or scope materially broadened. The
 caller decides when both perspectives need renewed review; this skill executes
-and reconciles that review.
+and reconciles that review. Brief resumed reviewers as `review-code` prescribes
+for follow-up rounds; fresh reviewers of a broadened or rethought scope get an
+initial brief. Keep each finding's origin through reconciliation, because the
+caller's convergence decision depends on it.
 
 ## Report
 

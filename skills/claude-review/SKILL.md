@@ -134,8 +134,9 @@ claude-headless \
 The block above relies on the runner default model; add `--model` and `--effort`
 only to repeat what the initial run used when it overrode that default. Give the
 reviewer revision boundaries and concise finding summaries, then have it inspect
-the delta itself. Start fresh if the scope materially broadens or the old target
-is unavailable.
+the delta itself. Scope the prompt as `review-code` prescribes for follow-up
+rounds. Start fresh if the scope materially broadens or the old target is
+unavailable.
 
 ## Lifecycle and failure handling
 

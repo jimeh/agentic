@@ -66,10 +66,11 @@ required by `dual-review`. If either engine remains unavailable, stop before
 mutation when practical; if it fails later, retain the draft and report the
 coverage gap.
 
-Honor explicit user correction budgets. Otherwise continue authorized fixes
-while making meaningful progress. Reassess repeated unsuccessful attempts; ask
-for a decision when progress stalls, scope materially expands, or the next step
-requires new authority. A push count alone is not a stopping condition.
+Honor explicit user correction budgets. Otherwise apply the Check Convergence
+section of `babysit-pr` to every correction round, including rounds on internal
+review findings that precede the babysitting handoff. Reassess repeated
+unsuccessful attempts; ask for a decision when progress stalls, scope materially
+expands, or the next step requires new authority.
 
 Include an external PR reviewer when the user or repository requires it. When a
 change is complex, large, architectural, security-sensitive, concerned with
@@ -167,7 +168,8 @@ below. A new SHA alone does not invalidate unaffected evidence.
 ## Babysit to Readiness
 
 Hand `babysit-pr` the open draft, reconciled internal findings, reviewed
-revisions and resumable session handles, evidence ledger, and any explicit user
+revisions and resumable session handles, evidence ledger, correction rounds
+already completed with their convergence outcomes, and any explicit user
 correction budget. Local reviewer findings remain actionable even when they are
 not represented on GitHub. That skill owns checks, feedback rounds, fixes,
 replies, thread resolution, normal correction commits and pushes, exact-head
@@ -185,7 +187,7 @@ Choose follow-up internal review by what the correction invalidates:
 
 When an external reviewer was selected, use its provider-specific skill once on
 an internally accepted candidate rather than on every push. Feed its findings
-through the same progress checkpoints and `babysit-pr` loop. Keep technical
+through the same convergence rules and `babysit-pr` loop. Keep technical
 verification separate from clearing a provider's blocking GitHub review state.
 
 ## Hand Back

@@ -133,6 +133,27 @@ genuine continuation. Inspect the effects of both base and head deltas and
 identify the new pair covered. Use a fresh review when revision identity or
 incremental coverage is uncertain or scope materially broadened.
 
+## Scope Follow-Up Rounds
+
+A follow-up round verifies corrections; it is not another open-ended review. Ask
+whether each prior finding is resolved and whether its correction introduced a
+concrete defect or made earlier code wrong. Point the reviewer at the delta and
+what it could invalidate, not at a list of further failure modes to search for.
+
+Keep the requirements identical to the first round's. When the user changed one,
+say so and attribute the change. Never restate a correction as a requirement:
+that raises the standard each round and hides whether the original contract is
+met.
+
+Mark each finding as located in the original change or in correction code, and
+name the earlier finding whose fix it traces to when there is one. Report which
+prior findings are resolved.
+
+When the review of a second or later batch of corrections still produces
+findings, the workflow that owns the corrections decides how to proceed before
+fixing any of them. The Check Convergence section of `babysit-pr` defines that
+decision; apply it when the owning workflow has no rule of its own.
+
 ## Report
 
 Lead with confirmed findings ordered by severity. Then give the exact target

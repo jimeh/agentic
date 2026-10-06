@@ -25,7 +25,13 @@ independent evaluator. Do not perform GitHub mutations during scenario checks.
 | Dual review a colleague's PR, then post selected feedback                               | dual-review reports only; after the user selects feedback, post it as a review with GitHub attribution; no babysit-pr.          |
 | Babysit a colleague's PR the user has taken over                                        | babysit-pr operates as it does on the user's own PR.                                                                            |
 | Reword the description of a colleague's PR                                              | write-pr-copy with jimeh's footer before bot-managed sections; other attribution unchanged.                                     |
-| Third verified correction; no user budget                                               | Continue authorized stewardship while making progress.                                                                          |
+| Review of the second correction round finds material defects in original code           | Converging; run another round.                                                                                                  |
+| Review of the second correction round finds nothing material                            | Diminishing; stop requesting agent and bot review, fix none of their findings, and report them.                                 |
+| Two consecutive reviews find material defects in one component's correction code        | Churning; rethink the component within scope, make one consolidated correction, and start a new review of the whole component.  |
+| Rethink of a churning component would change scope, behavior, or a requirement          | Ask the user before proceeding.                                                                                                 |
+| Fifth correction round would be needed; no user budget                                  | Leave the PR safe and ask the user, reporting the outcome and options.                                                          |
+| Second-round agent reviewer suggests a cheap hardening change with no failure path      | Report it as residual risk or follow-up work; no fix.                                                                           |
+| Follow-up review round requested                                                        | Brief verifies prior findings and correction defects against unchanged requirements; findings carry their origin.               |
 | User supplied a correction limit, now exhausted                                         | Stop at that explicit limit and report the concrete remaining work.                                                             |
 | Delegated reviewer loads review-code                                                    | Review directly; do not spawn another reviewer.                                                                                 |
 | Host defaults to full history but supports fork_turns                                   | Explicitly set fork_turns="none" and supply a focused brief.                                                                    |
@@ -103,6 +109,24 @@ checks ran for each provider.
 Not exercised: discovery of the skills from their installed descriptions alone,
 a substantial implementation child task, and the headless CLI as the alternative
 for a restricted parent.
+
+The convergence rows were checked on October 6, 2026 by a fresh native evaluator
+with no parent history, no file ownership, and no mutation or further
+delegation. It read the review and delivery skills without this table and
+answered twelve cases covering the three outcomes, a rethink that drops a stated
+feature, the fifth-round ask, an exhausted user budget, a review loop outside
+babysit-pr, repeated CI fixes, a human reviewer's request, a follow-up brief,
+and correction rounds before the ship-feature-pr handoff. Nine reached the
+intended behavior. The other three exposed that review-code and babysit-pr
+counted rounds differently, that the outcomes overlapped without a precedence,
+and that a rethink's whole-component review conflicted with delta-scoped
+follow-ups. One consolidated correction addressed those, and the resumed
+evaluator confirmed them resolved. It also found two conflicts in the corrected
+text, on dual-review briefs for a rethought component and on "fix nothing
+further" beside a human request. Both were fixed and checked by inspection, not
+re-run. Still open: an agent that reviews outside babysit-pr reaches Check
+Convergence only after its second correction batch, so it does not see the
+materiality rule before making that batch.
 
 The installer test uses the real selection and cleanup policy with synthetic
 roots and homes. It checks both worker families, directional exceptions,

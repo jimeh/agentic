@@ -39,9 +39,9 @@ valid unresolved blocking feedback, satisfied required reviews, a mergeable
 branch, and non-draft state. Never infer permission to merge.
 
 Honor explicit user correction budgets. Otherwise continue authorized fixes
-while making meaningful progress. Reassess repeated unsuccessful attempts and
-escalate stalled progress, material scope changes, or new authority needs. Batch
-related fixes; a push count alone is not a stopping condition.
+while review rounds converge, as Check Convergence defines. Reassess repeated
+unsuccessful attempts and escalate stalled progress, material scope changes, or
+new authority needs. Batch related fixes.
 
 Inherit review requirements from the user, repository, or explicitly selected
 workflow. Do not initiate independent review merely because babysitting was
@@ -100,8 +100,54 @@ cannot invalidate it. Choose follow-up review by affected risk:
   invalidates all prior reasoning. Use `dual-review` continuation when the
   caller requires both Codex and Claude coverage.
 
+Scope every follow-up review as `review-code` prescribes for follow-up rounds.
+
 When the user supplied a correction budget, count bot-driven corrections too. Do
 not wait for or debug CI on a head that another known fix will supersede.
+
+## Check Convergence
+
+A correction round is one batch of fixes made in response to review findings.
+Fixes for CI failures and merge conflicts are not correction rounds. Closing a
+round's findings does not show that the PR is converging, because each fix is
+new code that the next review can fault.
+
+A finding is material when it is confirmed and either has a concrete failure
+path in supported use or breaks the PR's stated requirements. Judge supported
+use by what the component's real inputs can contain, not by what a reviewer can
+construct. From the second correction round on, fix only material findings from
+agent and bot reviewers. Report their other concerns, hardening suggestions, and
+optional improvements as accepted residual risk or follow-up work, however cheap
+the fix looks. A human reviewer's request still gets a fix or a reply.
+
+When the review that follows a second or later correction round produces valid
+findings, classify them before fixing anything. For each finding, note whether
+it lies in code from the original change or in code a correction added or
+rewrote, and whether the previous review found a defect in the same component,
+rule, or state. Take the first outcome that fits:
+
+1. **Diminishing:** no finding is material. Stop requesting agent and bot
+   review, fix none of their remaining findings, and report those as accepted
+   residual risk or follow-up work.
+2. **Churning:** a material finding lies in correction code, in a component
+   where the previous review also found a defect in correction code. Stop fixing
+   that component one finding at a time. Restate the requirement and invariant
+   it must hold, enumerate its states or cases once, and look for a simpler
+   design, including removing a mechanism an earlier correction added. Make one
+   consolidated correction that also covers any other material findings, then
+   start a new review of the whole component under `review-code`, not a
+   follow-up of the delta.
+3. **Converging:** anything else. Run another round.
+
+Proceed with a rethink that keeps the PR's stated scope and behavior. Ask the
+user first when it would change scope, user-visible behavior, or a requirement,
+or when it means accepting a known limitation.
+
+Without an explicit user budget, ask the user before a fifth correction round
+whatever the outcome, and when a rethought component churns again. Leave the PR
+in its safe current state and report the outcome, the remaining findings, and
+the options: narrow or split the PR, accept documented risk, or authorize
+further rounds.
 
 ## Reply and Resolve
 
@@ -138,6 +184,6 @@ report the blocker.
 
 Mark a draft ready only when the requested completion condition holds on the
 exact remote head. Report the final SHA, checks, review decision, unresolved
-thread count, fixes and replies made, preserved local work, remaining risk, and
-whether the PR is ready. Merge only when the user separately and explicitly
-authorizes it.
+thread count, fixes and replies made, each convergence outcome with the findings
+it deferred, preserved local work, remaining risk, and whether the PR is ready.
+Merge only when the user separately and explicitly authorizes it.
