@@ -66,11 +66,11 @@ required by `dual-review`. If either engine remains unavailable, stop before
 mutation when practical; if it fails later, retain the draft and report the
 coverage gap.
 
-Honor explicit user correction budgets. Otherwise apply the Check Convergence
-section of `babysit-pr` to every correction round, including rounds on internal
-review findings that precede the babysitting handoff. Reassess repeated
-unsuccessful attempts; ask for a decision when progress stalls, scope materially
-expands, or the next step requires new authority.
+Honor explicit user correction budgets. With or without one, apply the Check
+Convergence section of `babysit-pr` to every correction round, including rounds
+on internal review findings that precede the babysitting handoff. Reassess
+repeated unsuccessful attempts; ask for a decision when progress stalls, scope
+materially expands, or the next step requires new authority.
 
 Include an external PR reviewer when the user or repository requires it. When a
 change is complex, large, architectural, security-sensitive, concerned with

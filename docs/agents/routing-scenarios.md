@@ -4,41 +4,45 @@ Use these cases when revising workflow selection. Evaluate the relevant skill
 entry points with only the task facts, without supplying expected answers to an
 independent evaluator. Do not perform GitHub mutations during scenario checks.
 
-| Request and context                                                                     | Expected behavior                                                                                                               |
-| --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| Small fix, file PR, and babysit                                                         | Parent implementation, commit, file-pr, babysit-pr; no added reviewers.                                                         |
-| Review this change; current session authored it                                         | review-code selects one fresh native reviewer with no parent history.                                                           |
-| Review this change; current session did not author it                                   | review-code performs direct inspection.                                                                                         |
-| Explicit Codex CLI review                                                               | codex-review executes one fresh CLI reviewer using review-code's contract.                                                      |
-| Codex review requested inside T3 Code from a Claude thread                              | codex-review runs one read-only Codex child task through t3-delegation; no headless CLI.                                        |
-| Explicit Codex CLI review inside T3 Code                                                | codex-review uses codex-headless because the user named the CLI.                                                                |
-| Direct request for a Codex child task inside T3 Code                                    | The matching codex-* skill when one fits, otherwise t3-delegation loaded before delegate_task; model and effort set explicitly. |
-| Dual review inside T3 Code from a Claude thread                                         | Fresh native Claude reviewer and a Codex child task, started together; no headless CLI.                                         |
-| Follow-up round for a reviewer that ran as a T3 child task                              | New child task carrying the prior brief, findings, and revision boundaries; the child thread is not messaged.                   |
-| Codex implementation inside T3 Code, clean thread worktree                              | codex-implementation runs one Codex child task with exclusive ownership of the checkout.                                        |
-| Codex implementation inside T3 Code needing isolation or concurrency                    | The parent creates each worktree and one Codex child task works in it by absolute path; no headless CLI.                        |
-| Codex computer use inside T3 Code                                                       | codex-computer-use keeps codex-headless.                                                                                        |
-| Worker requested inside T3 Code from a thread in approval-required or auto-accept-edits | Tell the user the child would wait on their approvals and offer the headless CLI; no silent delegation.                         |
-| Worker skill outside T3 Code                                                            | Headless CLI transport, unchanged.                                                                                              |
-| Explicit ship-feature-pr                                                                | Full delivery with Codex and Claude review; continue corrections according to invalidated risk.                                 |
-| Only request CodeRabbit on an existing PR                                               | Trigger, wait, inspect, and report; no independent local reviewers or unsolicited fixes and thread mutations.                   |
-| Dual review a colleague's PR, then post selected feedback                               | dual-review reports only; after the user selects feedback, post it as a review with GitHub attribution; no babysit-pr.          |
-| Babysit a colleague's PR the user has taken over                                        | babysit-pr operates as it does on the user's own PR.                                                                            |
-| Reword the description of a colleague's PR                                              | write-pr-copy with jimeh's footer before bot-managed sections; other attribution unchanged.                                     |
-| Review of the second correction round finds material defects in original code           | Converging; run another round.                                                                                                  |
-| Review of the second correction round finds nothing material                            | Diminishing; stop requesting agent and bot review, fix none of their findings, and report them.                                 |
-| Two consecutive reviews find material defects in one component's correction code        | Churning; rethink the component within scope, make one consolidated correction, and start a new review of the whole component.  |
-| Rethink of a churning component would change scope, behavior, or a requirement          | Ask the user before proceeding.                                                                                                 |
-| Fifth correction round would be needed; no user budget                                  | Leave the PR safe and ask the user, reporting the outcome and options.                                                          |
-| Second-round agent reviewer suggests a cheap hardening change with no failure path      | Report it as residual risk or follow-up work; no fix.                                                                           |
-| Follow-up review round requested                                                        | Brief verifies prior findings and correction defects against unchanged requirements; findings carry their origin.               |
-| User supplied a correction limit, now exhausted                                         | Stop at that explicit limit and report the concrete remaining work.                                                             |
-| Delegated reviewer loads review-code                                                    | Review directly; do not spawn another reviewer.                                                                                 |
-| Host defaults to full history but supports fork_turns                                   | Explicitly set fork_turns="none" and supply a focused brief.                                                                    |
-| Native host cannot isolate context                                                      | Fresh worker through the matching worker skill, or parent execution.                                                            |
-| Worker asked to launch another model without parent authority                           | Decline nested delegation and report the scope boundary.                                                                        |
-| High-stakes review or hard task; user named no model                                    | Opus 5.5 workers; Fable is not selected.                                                                                        |
-| User names Fable for one review, then delegates other work                              | Fable for the named review only; Opus 5.5 for the later delegation.                                                             |
+| Request and context                                                                                          | Expected behavior                                                                                                                                  |
+| ------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Small fix, file PR, and babysit                                                                              | Parent implementation, commit, file-pr, babysit-pr; no added reviewers.                                                                            |
+| Review this change; current session authored it                                                              | review-code selects one fresh native reviewer with no parent history.                                                                              |
+| Review this change; current session did not author it                                                        | review-code performs direct inspection.                                                                                                            |
+| Explicit Codex CLI review                                                                                    | codex-review executes one fresh CLI reviewer using review-code's contract.                                                                         |
+| Codex review requested inside T3 Code from a Claude thread                                                   | codex-review runs one read-only Codex child task through t3-delegation; no headless CLI.                                                           |
+| Explicit Codex CLI review inside T3 Code                                                                     | codex-review uses codex-headless because the user named the CLI.                                                                                   |
+| Direct request for a Codex child task inside T3 Code                                                         | The matching codex-* skill when one fits, otherwise t3-delegation loaded before delegate_task; model and effort set explicitly.                    |
+| Dual review inside T3 Code from a Claude thread                                                              | Fresh native Claude reviewer and a Codex child task, started together; no headless CLI.                                                            |
+| Follow-up round for a reviewer that ran as a T3 child task                                                   | New child task carrying the prior brief, findings, and revision boundaries; the child thread is not messaged.                                      |
+| Codex implementation inside T3 Code, clean thread worktree                                                   | codex-implementation runs one Codex child task with exclusive ownership of the checkout.                                                           |
+| Codex implementation inside T3 Code needing isolation or concurrency                                         | The parent creates each worktree and one Codex child task works in it by absolute path; no headless CLI.                                           |
+| Codex computer use inside T3 Code                                                                            | codex-computer-use keeps codex-headless.                                                                                                           |
+| Worker requested inside T3 Code from a thread in approval-required or auto-accept-edits                      | Tell the user the child would wait on their approvals and offer the headless CLI; no silent delegation.                                            |
+| Worker skill outside T3 Code                                                                                 | Headless CLI transport, unchanged.                                                                                                                 |
+| Explicit ship-feature-pr                                                                                     | Full delivery with Codex and Claude review; continue corrections according to invalidated risk.                                                    |
+| Only request CodeRabbit on an existing PR                                                                    | Trigger, wait, inspect, and report; no independent local reviewers or unsolicited fixes and thread mutations.                                      |
+| Dual review a colleague's PR, then post selected feedback                                                    | dual-review reports only; after the user selects feedback, post it as a review with GitHub attribution; no babysit-pr.                             |
+| Babysit a colleague's PR the user has taken over                                                             | babysit-pr operates as it does on the user's own PR.                                                                                               |
+| Reword the description of a colleague's PR                                                                   | write-pr-copy with jimeh's footer before bot-managed sections; other attribution unchanged.                                                        |
+| Review of the second correction round finds material defects in original code                                | Converging; run another round.                                                                                                                     |
+| Review of the second correction round finds nothing material                                                 | Diminishing; fix none of the findings, request no further review of those corrections, and report them.                                            |
+| Two consecutive reviews find correction-caused defects in one component; the latest is material              | Churning; rethink the component within scope, make one consolidated correction, and have the required reviewers review the whole component afresh. |
+| Two corrections in a row each break untouched original code in one component                                 | Churning, because each finding traces to a correction.                                                                                             |
+| Internal rounds end as Diminishing; a required external reviewer has not run                                 | The external review still runs once on the accepted candidate.                                                                                     |
+| User allows eight correction rounds; the second-round review finds nothing material                          | Diminishing still applies; the budget replaces only the fifth-round ask.                                                                           |
+| Churning under direct babysit-pr where the workflow requires no reviewer                                     | Rethink, verify it directly, and say so in the report; no added reviewer.                                                                          |
+| Rethink of a churning component would change scope, behavior, or a requirement, or accept a known limitation | Ask the user before proceeding.                                                                                                                    |
+| Fifth correction round would be needed; no user budget                                                       | Leave the PR safe and ask the user, reporting the outcome and options.                                                                             |
+| Second-round agent reviewer suggests a cheap hardening change with no failure path                           | Report it as residual risk or follow-up work; no fix.                                                                                              |
+| Follow-up review round requested                                                                             | Brief verifies prior findings and correction defects against unchanged requirements; findings carry their origin.                                  |
+| User supplied a correction limit, now exhausted                                                              | Stop at that explicit limit and report the concrete remaining work.                                                                                |
+| Delegated reviewer loads review-code                                                                         | Review directly; do not spawn another reviewer.                                                                                                    |
+| Host defaults to full history but supports fork_turns                                                        | Explicitly set fork_turns="none" and supply a focused brief.                                                                                       |
+| Native host cannot isolate context                                                                           | Fresh worker through the matching worker skill, or parent execution.                                                                               |
+| Worker asked to launch another model without parent authority                                                | Decline nested delegation and report the scope boundary.                                                                                           |
+| High-stakes review or hard task; user named no model                                                         | Opus 5.5 workers; Fable is not selected.                                                                                                           |
+| User names Fable for one review, then delegates other work                                                   | Fable for the named review only; Opus 5.5 for the later delegation.                                                                                |
 
 ## Verification evidence
 
@@ -113,20 +117,29 @@ for a restricted parent.
 The convergence rows were checked on October 6, 2026 by a fresh native evaluator
 with no parent history, no file ownership, and no mutation or further
 delegation. It read the review and delivery skills without this table and
-answered twelve cases covering the three outcomes, a rethink that drops a stated
-feature, the fifth-round ask, an exhausted user budget, a review loop outside
-babysit-pr, repeated CI fixes, a human reviewer's request, a follow-up brief,
-and correction rounds before the ship-feature-pr handoff. Nine reached the
-intended behavior. The other three exposed that review-code and babysit-pr
-counted rounds differently, that the outcomes overlapped without a precedence,
-and that a rethink's whole-component review conflicted with delta-scoped
-follow-ups. One consolidated correction addressed those, and the resumed
-evaluator confirmed them resolved. It also found two conflicts in the corrected
-text, on dual-review briefs for a rethought component and on "fix nothing
-further" beside a human request. Both were fixed and checked by inspection, not
-re-run. Still open: an agent that reviews outside babysit-pr reaches Check
-Convergence only after its second correction batch, so it does not see the
-materiality rule before making that batch.
+answered twelve cases covering the three outcomes, a cheap unverified concern, a
+rethink that drops a stated feature, the fifth-round ask, an exhausted user
+budget, a review loop outside babysit-pr, repeated CI fixes, a human reviewer's
+request, a follow-up brief, and correction rounds before the ship-feature-pr
+handoff. Nine reached the intended behavior. The other three exposed that
+review-code and babysit-pr counted rounds differently, that the outcomes
+overlapped without a precedence, and that a rethink's whole-component review
+conflicted with delta-scoped follow-ups. One consolidated correction addressed
+those, and the resumed evaluator confirmed them resolved. It also found two
+conflicts in the corrected text, on dual-review briefs for a rethought component
+and on "fix nothing further" beside a human request. Both were fixed and checked
+by inspection, not re-run. Still open: an agent that reviews outside babysit-pr
+reaches Check Convergence only after its second correction batch, so it does not
+see the materiality rule before making that batch.
+
+A dual review of that pull request, a Codex child task and a fresh native Claude
+reviewer on one brief, then found five gaps that no scenario had covered. The
+Diminishing outcome could cancel a required review that had not run. The
+materiality rule was narrower than review-code's finding standard. Churning
+tested only where a finding lay, not whether a correction caused it. An explicit
+budget could be read as switching the rules off. And a rethink's review named no
+reviewer when the workflow required none. One consolidated correction addressed
+them and added a row for each.
 
 The installer test uses the real selection and cleanup policy with synthetic
 roots and homes. It checks both worker families, directional exceptions,

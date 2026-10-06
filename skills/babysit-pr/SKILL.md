@@ -38,10 +38,10 @@ to get the PR ready, require the current head to have green required checks, no
 valid unresolved blocking feedback, satisfied required reviews, a mergeable
 branch, and non-draft state. Never infer permission to merge.
 
-Honor explicit user correction budgets. Otherwise continue authorized fixes
-while review rounds converge, as Check Convergence defines. Reassess repeated
-unsuccessful attempts and escalate stalled progress, material scope changes, or
-new authority needs. Batch related fixes.
+Honor explicit user correction budgets, and with or without one continue
+authorized fixes only while review rounds converge, as Check Convergence
+defines. Reassess repeated unsuccessful attempts and escalate stalled progress,
+material scope changes, or new authority needs. Batch related fixes.
 
 Inherit review requirements from the user, repository, or explicitly selected
 workflow. Do not initiate independent review merely because babysitting was
@@ -112,42 +112,52 @@ Fixes for CI failures and merge conflicts are not correction rounds. Closing a
 round's findings does not show that the PR is converging, because each fix is
 new code that the next review can fault.
 
-A finding is material when it is confirmed and either has a concrete failure
-path in supported use or breaks the PR's stated requirements. Judge supported
-use by what the component's real inputs can contain, not by what a reviewer can
-construct. From the second correction round on, fix only material findings from
-agent and bot reviewers. Report their other concerns, hardening suggestions, and
-optional improvements as accepted residual risk or follow-up work, however cheap
-the fix looks. A human reviewer's request still gets a fix or a reply.
+These rules govern only the loop of corrections and the reviews that verify
+them. They never cancel a required review that has not run, the closure of a
+reviewer's blocking state, or the review a later delta needs under Address a
+Review Round.
+
+A finding is material when `review-code` would accept it as confirmed, its
+trigger occurs in supported use, and it is more than a hardening suggestion or
+optional improvement. That includes a breach of a stated requirement, briefed
+invariant, or repository rule, and a validation gap `review-code` would accept.
+Supported use covers every input the component can receive, hostile input
+included, and excludes cases that nothing can supply. From the second correction
+round on, fix only material findings from agent and bot reviewers. Report their
+other concerns as accepted residual risk or follow-up work, however cheap the
+fix looks. A human reviewer's request still gets a fix or a reply.
 
 When the review that follows a second or later correction round produces valid
-findings, classify them before fixing anything. For each finding, note whether
-it lies in code from the original change or in code a correction added or
-rewrote, and whether the previous review found a defect in the same component,
-rule, or state. Take the first outcome that fits:
+findings, classify them before fixing anything. A finding is correction-caused
+when it lies in code a correction added or rewrote, or when it traces to a
+correction that made earlier code wrong. Take the first outcome that fits:
 
-1. **Diminishing:** no finding is material. Stop requesting agent and bot
-   review, fix none of their remaining findings, and report those as accepted
-   residual risk or follow-up work.
-2. **Churning:** a material finding lies in correction code, in a component
-   where the previous review also found a defect in correction code. Stop fixing
-   that component one finding at a time. Restate the requirement and invariant
-   it must hold, enumerate its states or cases once, and look for a simpler
-   design, including removing a mechanism an earlier correction added. Make one
-   consolidated correction that also covers any other material findings, then
-   start a new review of the whole component under `review-code`, not a
-   follow-up of the delta.
+1. **Diminishing:** no finding is material. End the loop: fix none of these
+   findings, request no further review of the corrections already made, and
+   report the findings as accepted residual risk or follow-up work.
+2. **Churning:** a material finding is correction-caused, and the previous
+   review also found a correction-caused defect in the same component, rule, or
+   state. Stop fixing it one finding at a time. Restate the requirement and
+   invariant it must hold, enumerate its states or cases once, and look for a
+   simpler design, including removing a mechanism an earlier correction added.
+   Make one consolidated correction that also covers any other material
+   findings. Then have the reviewers this workflow already requires review the
+   whole component afresh, not as a follow-up of the delta. When it requires
+   none, verify the rethink directly and say so in the report.
 3. **Converging:** anything else. Run another round.
 
 Proceed with a rethink that keeps the PR's stated scope and behavior. Ask the
 user first when it would change scope, user-visible behavior, or a requirement,
 or when it means accepting a known limitation.
 
-Without an explicit user budget, ask the user before a fifth correction round
-whatever the outcome, and when a rethought component churns again. Leave the PR
-in its safe current state and report the outcome, the remaining findings, and
-the options: narrow or split the PR, accept documented risk, or authorize
-further rounds.
+Ask the user when the review of a rethought component still finds a material
+defect in it. Without an explicit user budget, also ask before a fifth
+correction round whatever the outcome, and again after every two further rounds
+when the user authorizes more without a number. An explicit budget replaces only
+that count: the materiality rule, the classification, and the rethink still
+apply within it. When asking, leave the PR in its safe current state and report
+the outcome, the remaining findings, and the options: narrow or split the PR,
+accept documented risk, or authorize further rounds.
 
 ## Reply and Resolve
 
