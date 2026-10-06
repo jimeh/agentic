@@ -112,10 +112,11 @@ Fixes for CI failures and merge conflicts are not correction rounds. Closing a
 round's findings does not show that the PR is converging, because each fix is
 new code that the next review can fault.
 
-These rules govern only the loop of corrections and the reviews that verify
-them. They never cancel a required review that has not run, the closure of a
-reviewer's blocking state, or the review a later delta needs under Address a
-Review Round.
+These rules cover findings from agent and bot reviewers, and govern only the
+loop of corrections and the reviews that verify them. A human reviewer's request
+is outside them and still gets a fix or a reply. They never cancel a required
+review that has not run, the closure of a reviewer's blocking state, or the
+review a later delta needs under Address a Review Round.
 
 A finding is material when `review-code` would accept it as confirmed, its
 trigger occurs in supported use, and it is more than a hardening suggestion or
@@ -123,9 +124,8 @@ optional improvement. That includes a breach of a stated requirement, briefed
 invariant, or repository rule, and a validation gap `review-code` would accept.
 Supported use covers every input the component can receive, hostile input
 included, and excludes cases that nothing can supply. From the second correction
-round on, fix only material findings from agent and bot reviewers. Report their
-other concerns as accepted residual risk or follow-up work, however cheap the
-fix looks. A human reviewer's request still gets a fix or a reply.
+round on, fix only material findings. Report the others as accepted residual
+risk or follow-up work, however cheap the fix looks.
 
 When the review that follows a second or later correction round produces valid
 findings, classify them before fixing anything. A finding is correction-caused

@@ -35,6 +35,8 @@ independent evaluator. Do not perform GitHub mutations during scenario checks.
 | Rethink of a churning component would change scope, behavior, or a requirement, or accept a known limitation | Ask the user before proceeding.                                                                                                                    |
 | Fifth correction round would be needed; no user budget                                                       | Leave the PR safe and ask the user, reporting the outcome and options.                                                                             |
 | Second-round agent reviewer suggests a cheap hardening change with no failure path                           | Report it as residual risk or follow-up work; no fix.                                                                                              |
+| Second-round agent reviewer reports an untested correction branch or a breached repository rule              | Material when review-code would accept it; fix it.                                                                                                 |
+| Review after the second correction round holds bot nits and a human reviewer's rename request                | Diminishing covers the bot findings only; the human's request still gets a fix or a reply.                                                         |
 | Follow-up review round requested                                                                             | Brief verifies prior findings and correction defects against unchanged requirements; findings carry their origin.                                  |
 | User supplied a correction limit, now exhausted                                                              | Stop at that explicit limit and report the concrete remaining work.                                                                                |
 | Delegated reviewer loads review-code                                                                         | Review directly; do not spawn another reviewer.                                                                                                    |
@@ -140,6 +142,13 @@ tested only where a finding lay, not whether a correction caused it. An explicit
 budget could be read as switching the rules off. And a rethink's review named no
 reviewer when the workflow required none. One consolidated correction addressed
 them and added a row for each.
+
+Both reviewers then verified the corrections and judged the five gaps resolved.
+They found two defects in the corrected text: a converging row that the Churning
+change had made imprecise, and a Diminishing rewording that again covered a
+human reviewer's request. The section now states once which findings it covers,
+and both cases have rows. The corrected text has not been re-run through a
+scenario evaluator.
 
 The installer test uses the real selection and cleanup policy with synthetic
 roots and homes. It checks both worker families, directional exceptions,
