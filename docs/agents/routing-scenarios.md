@@ -22,7 +22,14 @@ independent evaluator. Do not perform GitHub mutations during scenario checks.
 | Worker skill outside T3 Code                                                                                 | Headless CLI transport, unchanged.                                                                                                                 |
 | Explicit ship-feature-pr                                                                                     | Full delivery with Codex and Claude review; continue corrections according to invalidated risk.                                                    |
 | Only request CodeRabbit on an existing PR                                                                    | Trigger, wait, inspect, and report; no independent local reviewers or unsolicited fixes and thread mutations.                                      |
-| Dual review a colleague's PR, then post selected feedback                                                    | dual-review reports only; after the user selects feedback, post it as a review with GitHub attribution; no babysit-pr.                             |
+| Review or dual review a colleague's PR; no posting grant                                                     | review-pr runs dual-review and reports a verdict with classified findings; nothing posted.                                                         |
+| Review the user's own PR                                                                                     | review-code, plus dual-review only if requested; no verdict or approval.                                                                           |
+| Review a colleague's PR and approve if everything is fine; verdict approve                                   | review-pr submits an approval with optional notes collapsed and follow-ups visible.                                                                |
+| Colleague's PR; "submit your review" without mentioning approval; verdict approve                            | review-pr posts any optional and follow-up notes as a comment review and reports the PR ready to approve.                                          |
+| Same grant; verdict request changes                                                                          | Report only; ask before posting.                                                                                                                   |
+| Follow-up round in a thread whose earlier request granted posting                                            | Report only; the earlier grant does not carry over.                                                                                                |
+| Colleague's PR with CI pending or failing                                                                    | No waiting; report check state; verdict unaffected.                                                                                                |
+| After a report, post selected feedback on a colleague's PR                                                   | Post the selected items as one review with GitHub attribution; no babysit-pr.                                                                      |
 | Babysit a colleague's PR the user has taken over                                                             | babysit-pr operates as it does on the user's own PR.                                                                                               |
 | Reword the description of a colleague's PR                                                                   | write-pr-copy with jimeh's footer before bot-managed sections; other attribution unchanged.                                                        |
 | Review of the second correction round finds material defects in original code that no correction caused      | Converging; run another round.                                                                                                                     |
@@ -155,3 +162,14 @@ roots and homes. It checks both worker families, directional exceptions,
 disabled-link cleanup, retained Vercel guidance, and preservation of unmanaged
 content. Runner tests check emitted Claude delegation denials. Neither test
 invokes a live model or updates installed user configuration.
+
+The `review-pr` rows were checked on October 6, 2026 by two fresh native
+evaluators with no file ownership, GitHub access, or further delegation. Their
+scenarios came from colleague-PR threads between September 2 and October 6. The
+first run found that generic "submit your review" requests matched no grant,
+that the `review-code` comment default competed with the grant rules, that the
+blocking threshold had no floor, and that seeding follow-up reviewers conflicted
+with `dual-review`. All four were corrected. The second run routed every case as
+expected; its remaining notes on classification boundaries, root-cause
+deduplication, and comment-review wording were then tightened without a third
+run. This tests interpretation, not live end-to-end reviews.

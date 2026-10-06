@@ -1,0 +1,5 @@
+interface:
+  display_name: "Pull Request Review"
+  short_description: "Review another author's PR and recommend a verdict"
+  default_prompt:
+    "Use $review-pr to review this pull request and report a merge verdict."
