@@ -139,10 +139,11 @@ codex-headless --artifact-dir "$NEXT_ARTIFACT_DIR" --resume "$SESSION_ID" \
 
 Give the resumed reviewer revision boundaries and concise finding summaries,
 then have it inspect the delta from the repository rather than pasting prior
-reports or large diffs. Before resuming, confirm the intended prior and current
-review targets remain available and match the requested review. Use a fresh
-reviewer when they do not, continuation is unavailable, or the reviewed scope
-materially broadens.
+reports or large diffs. Scope the prompt as `review-code` prescribes for
+follow-up rounds. Before resuming, confirm the intended prior and current review
+targets remain available and match the requested review. Use a fresh reviewer
+when they do not, continuation is unavailable, or the reviewed scope materially
+broadens.
 
 Do not retry automatically when Codex reports no issues. If the run fails,
 report that and decide whether direct review is still useful.
