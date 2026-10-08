@@ -38,6 +38,7 @@ const managedDelegationSkills = [
   "claude-implementation",
   "claude-review",
   "dual-review",
+  "review-pr",
   "ship-feature-pr",
   "multi-agent-execution",
   "codex-analysis",

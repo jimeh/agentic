@@ -1,13 +1,19 @@
 ---
 name: dual-review
 description: >-
-  Run and reconcile Codex and Claude reviews. Use only when explicitly requested
-  or required by a user-selected ship-feature-pr workflow.
+  Run and reconcile Codex and Claude reviews. Use only when explicitly requested,
+  run by review-pr, or required by a user-selected ship-feature-pr workflow.
 ---
 
 # Dual Review
 
 Do not infer dual review from change size, risk, PR filing, or babysitting.
+
+When the user asks for a dual review of a pull request that the active GitHub
+CLI account did not author and the user has not taken over, also apply
+`review-pr`. It owns the merge verdict, follow-up scope, and what may be posted;
+this skill supplies the reconciled review. Reviews that `babysit-pr` or
+`ship-feature-pr` run do not apply it.
 
 Read and apply the `review-code` skill as the shared standard for target
 pinning, the review brief, inspection, finding acceptance, revision coverage,
@@ -34,7 +40,8 @@ child task inside T3 Code, the headless CLI elsewhere.
 Do not count the orchestrator as a reviewer. Start native reviewers without
 parent history, explicitly using `fork_turns="none"` where supported, do not
 expose either initial report to the other reviewer, and do not seed them with
-existing review conclusions unless the user asked to verify those conclusions.
+existing review conclusions unless the user asked to verify those conclusions or
+`review-pr` is running a follow-up round.
 
 Run both channels regardless of known or unknown implementation provenance. Do
 not infer authorship, weight findings by engine, or substitute two sessions from
