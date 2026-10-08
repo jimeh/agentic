@@ -57,6 +57,8 @@ Add to the `review-code` brief:
 
 - the pull request description, linked issues, stated scope, and non-goals;
 - the author's replies and decisions on earlier review threads;
+- the target repository's written instructions that apply to the changed files,
+  such as `AGENTS.md`, `CLAUDE.md`, and contributing guides;
 - operational facts or conventions the user supplied, such as a deployment
   procedure; and
 - the finding class and origin definitions below, copied into the brief, with an
@@ -78,7 +80,13 @@ Give every accepted finding one class:
   data loss, security exposure, and outages, even when the trigger needs an
   uncommon but supported input or configuration. A defect whose impact is
   limited and recoverable, such as a misleading message or a manual retry, is
-  optional.
+  optional. A clear breach of an explicit rule in the repository's written
+  instructions, such as `AGENTS.md` or a contributing guide, about the code,
+  configuration, or documentation the pull request changes also blocks when the
+  pull request introduces it. Drop breaches of rules that a configured formatter
+  or linter checks, even when this pull request fails them, and report the check
+  state as observed. A convention that is not written in the repository never
+  blocks on its own.
 - **Question:** a concern that depends on facts you cannot inspect, such as a
   deployment procedure, team convention, or intended behavior. Ask rather than
   assert severity.
@@ -116,15 +124,17 @@ When the author has pushed changes or replied:
 - Read the author's replies first. Treat a reasoned decline of an optional or
   follow-up item as settled. Re-raise a declined blocking finding only with
   evidence the reasoning does not address.
-- Scope the round as `review-code` scopes follow-up rounds: whether each earlier
-  finding is fixed, defects introduced by the new commits, and any new changes
-  beyond those fixes. Do not raise new optional items in code already reviewed
-  and unchanged, even when a reviewer reports them; omit them from the report,
-  including from dismissals. Treat a newly found blocking defect in unchanged
-  code like any blocking finding, and say an earlier round missed it. Treat a
-  new follow-up found there like any other follow-up. Post a new question found
-  there under a grant only when it could reveal a blocking defect; report the
-  rest to the user only.
+- Scope the round as `review-code` scopes follow-up rounds, and review any new
+  changes beyond the fixes as a first round would. The author owns the
+  corrections, so the convergence rules of `babysit-pr` do not apply; these
+  rules and the verdict do. Do not raise new optional items in code unchanged
+  since the last reviewed head, even when a reviewer reports them; omit them
+  from the report, including from dismissals. In the author's corrections, raise
+  a new optional item only for a risk the new commits introduced. Treat a newly
+  found blocking defect in unchanged code like any blocking finding, and say an
+  earlier round missed it. Treat a new follow-up found there like any other
+  follow-up. Post a new question found there under a grant only when it could
+  reveal a blocking defect; report the rest to the user only.
 - Give both reviewers the earlier findings with their status and the author's
   replies. Verifying earlier conclusions is the purpose of the round, so this is
   the verification request `dual-review` allows seeding for. Prefer

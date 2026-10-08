@@ -32,6 +32,8 @@ independent evaluator. Do not perform GitHub mutations during scenario checks.
 | Colleague's PR; "post whatever the outcome"; verdict approve                                                 | review-pr submits an approval.                                                                                                                     |
 | Colleague's PR; "submit your review"; verdict approve; the only finding is a non-blocking question           | review-pr posts the question as a comment review and reports the PR ready to approve.                                                              |
 | Colleague's PR; a defect gives wrong billing totals only for an uncommon supported currency                  | Blocking; verdict request changes.                                                                                                                 |
+| Colleague's PR breaks an explicit rule in the repository's AGENTS.md                                         | Blocking; verdict request changes.                                                                                                                 |
+| Third review round of a colleague's PR with new non-blocking findings                                        | review-pr follow-up rules and verdict; no babysit-pr convergence classification.                                                                   |
 | Follow-up round in a thread whose earlier request granted posting                                            | Report only; the earlier grant does not carry over.                                                                                                |
 | Follow-up round with a posting grant finds a new optional item and a new follow-up in unchanged code         | Drop the optional item; post the follow-up in the visible follow-ups section.                                                                      |
 | Follow-up round under "post whatever the outcome"; a new question in unchanged code decides the verdict      | Verdict undecided; submit a comment review carrying the question.                                                                                  |
@@ -189,4 +191,10 @@ fourth fresh evaluator ran eleven scenarios and found that a taken-over pull
 request could still be approved conditionally, that approval wording was
 undefined, and nine narrower ambiguities. All were corrected, and the same
 evaluator confirmed the corrections, raising four further wording gaps that were
-then closed. This tests interpretation, not live end-to-end reviews.
+then closed. A follow-up on October 8 made explicit written repository rules
+blocking and kept the `babysit-pr` convergence rules out of colleague reviews. A
+fresh evaluator routed its five scenarios as intended and found that
+`review-code` acceptance and the reviewer brief could drop a rule breach with no
+failure path. Those and two narrower gaps, unclassified linter breaches and
+optional notes on correction code, were corrected and the corrections confirmed.
+This tests interpretation, not live end-to-end reviews.

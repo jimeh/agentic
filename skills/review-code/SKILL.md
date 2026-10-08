@@ -110,9 +110,11 @@ material evidence gap, and report the command and result.
 ## Accept Findings from Evidence
 
 Treat each observation as a candidate until the code, requirements, or
-observable behavior supports a concrete failure path. Verify cited locations and
-relevant assumptions. Discard vague, speculative, purely stylistic, or
-non-actionable suggestions unless they expose material risk.
+observable behavior supports a concrete failure path. A clear breach of a stated
+requirement or of an explicit rule in the target repository's written
+instructions needs no separate failure path; cite the rule. Verify cited
+locations and relevant assumptions. Discard vague, speculative, purely
+stylistic, or non-actionable suggestions unless they expose material risk.
 
 For each confirmed finding, provide severity, file and line, triggering
 conditions, concrete impact, and a concise fix direction. Order severity by user
