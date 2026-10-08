@@ -78,12 +78,19 @@ enabled = true
 [plugins."unified-computer-use@openai-bundled"]
 enabled = true
 
+[plugins."code-review@openai-bundled"]
+enabled = true
+
 [[skills.config]]
 name = "build-web-apps:supabase-postgres-best-practices"
 enabled = false
 
 [[skills.config]]
 name = "build-web-apps:stripe-best-practices"
+enabled = false
+
+[[skills.config]]
+path = "/Users/jimeh/.codex/skills/hatch-pet/SKILL.md"
 enabled = false
 
 [mcp_servers]
