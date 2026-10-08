@@ -9,9 +9,11 @@ description: >-
 
 Do not infer dual review from change size, risk, PR filing, or babysitting.
 
-When the target is a pull request that the active GitHub CLI account did not
-author, also apply `review-pr`. It owns the merge verdict, follow-up scope, and
-what may be posted; this skill supplies the reconciled review.
+When the user asks for a dual review of a pull request that the active GitHub
+CLI account did not author and the user has not taken over, also apply
+`review-pr`. It owns the merge verdict, follow-up scope, and what may be posted;
+this skill supplies the reconciled review. Reviews that `babysit-pr` or
+`ship-feature-pr` run do not apply it.
 
 Read and apply the `review-code` skill as the shared standard for target
 pinning, the review brief, inspection, finding acceptance, revision coverage,

@@ -25,9 +25,9 @@ Post Selected Feedback.
 ## Select the Reviewer
 
 When the user asks to review a pull request that the active GitHub CLI account
-did not author, use `review-pr`. It applies this standard and adds the merge
-verdict, follow-up scope, and posting grants. A delegated reviewer ignores this
-routing and reviews directly.
+did not author and the user has not taken over, use `review-pr`. It applies this
+standard and adds the merge verdict, follow-up scope, and posting grants. A
+delegated reviewer ignores this routing and reviews directly.
 
 For a generic review request, inspect directly if this session did not author
 the change. If it did, use a fresh native reviewer without inherited history
@@ -170,15 +170,16 @@ coverage as a completed current review.
 
 ## Post Selected Feedback
 
-Post only feedback the user selected, on any pull request. Delegated reviewers
-never post.
+Post only feedback the user selected or a `review-pr` grant covers, on any pull
+request. Delegated reviewers never post.
 
 - Refresh the pull request head. If it moved since the review, recheck each
   selected item and its inline anchor. When any no longer fits, report it and
   wait for the user's decision before posting anything.
 - Submit one review containing every selected item, with `commit_id` set to the
-  verified head and an explicit event: the one the user chose, or `COMMENT` by
-  default. Never infer an approval or change request.
+  verified head and an explicit event: the one the user chose, the one
+  `review-pr` assigns, or `COMMENT` by default. Never infer an approval or
+  change request otherwise.
 - Apply the GitHub attribution style from the global instructions to the review
   body and every inline comment.
 - Confirm the submitted state from the response and report the review URL.

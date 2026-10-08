@@ -24,13 +24,17 @@ independent evaluator. Do not perform GitHub mutations during scenario checks.
 | Only request CodeRabbit on an existing PR                                                                    | Trigger, wait, inspect, and report; no independent local reviewers or unsolicited fixes and thread mutations.                                      |
 | Review or dual review a colleague's PR; no posting grant                                                     | review-pr runs dual-review and reports a verdict with classified findings; nothing posted.                                                         |
 | Review the user's own PR                                                                                     | review-code, plus dual-review only if requested; no verdict or approval.                                                                           |
+| Review a colleague's PR the user has taken over                                                              | Treated as the user's own PR; no review-pr verdict or approval.                                                                                    |
 | Review a colleague's PR and approve if everything is fine; verdict approve                                   | review-pr submits an approval with optional notes collapsed and follow-ups visible.                                                                |
 | Colleague's PR; "submit your review" without mentioning approval; verdict approve                            | review-pr posts any optional and follow-up notes as a comment review and reports the PR ready to approve.                                          |
-| Same grant; verdict request changes                                                                          | Report only; ask before posting.                                                                                                                   |
+| Colleague's PR; "submit your review" without mentioning approval; verdict request changes                    | review-pr submits request changes with the blocking findings inline.                                                                               |
+| Colleague's PR; "post whatever the outcome"; verdict approve                                                 | review-pr submits an approval.                                                                                                                     |
+| Colleague's PR; a defect gives wrong billing totals only for an uncommon supported currency                  | Blocking; verdict request changes.                                                                                                                 |
 | Follow-up round in a thread whose earlier request granted posting                                            | Report only; the earlier grant does not carry over.                                                                                                |
+| Follow-up round with a posting grant finds a new optional item and a new follow-up in unchanged code         | Drop the optional item; report the follow-up to the user without posting it.                                                                       |
 | Colleague's PR with CI pending or failing                                                                    | No waiting; report check state; verdict unaffected.                                                                                                |
-| After a report, post selected feedback on a colleague's PR                                                   | Post the selected items as one review with GitHub attribution; no babysit-pr.                                                                      |
-| Babysit a colleague's PR the user has taken over                                                             | babysit-pr operates as it does on the user's own PR.                                                                                               |
+| After a report, post selected feedback on a colleague's PR                                                   | Post only the selected items as one review with GitHub attribution; request changes if one blocks, otherwise comment; no babysit-pr.               |
+| Babysit a colleague's PR the user has taken over                                                             | babysit-pr operates as it does on the user's own PR, including any dual review; no review-pr.                                                      |
 | Reword the description of a colleague's PR                                                                   | write-pr-copy with jimeh's footer before bot-managed sections; other attribution unchanged.                                                        |
 | Review of the second correction round finds material defects in original code that no correction caused      | Converging; run another round.                                                                                                                     |
 | Review of the second correction round finds nothing material                                                 | Diminishing; fix none of the findings, request no further review of those corrections, and report them.                                            |
@@ -172,4 +176,9 @@ blocking threshold had no floor, and that seeding follow-up reviewers conflicted
 with `dual-review`. All four were corrected. The second run routed every case as
 expected; its remaining notes on classification boundaries, root-cause
 deduplication, and comment-review wording were then tightened without a third
-run. This tests interpretation, not live end-to-end reviews.
+run. On October 8, 2026, after the grant, blocking-threshold, and taken-over
+changes, a third fresh evaluator routed all fifteen of its scenarios as
+intended. Its wording findings on requests that match no grant, head movement
+before a selection is posted, selection bodies, an earlier change request that
+stays in effect, and taken-over routing were corrected without a fourth run.
+This tests interpretation, not live end-to-end reviews.

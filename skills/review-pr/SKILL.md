@@ -3,7 +3,7 @@ name: review-pr
 description: >-
   Review another author's pull request and recommend a merge verdict. Use when
   asked to review, dual-review, or re-review a PR the active GitHub CLI account
-  did not author. Posting and approval need an explicit grant.
+  did not author or take over. Posting and approval need an explicit grant.
 ---
 
 # Pull Request Review
@@ -29,10 +29,15 @@ its `author.login` with the active GitHub CLI account on the pull request's host
 - The same author means the user's own pull request. Use `review-code`, plus
   `dual-review` only when requested. GitHub does not let authors approve their
   own pull requests, so no verdict or approval applies.
+- A pull request the user has taken over counts as their own, whatever its
+  author.
 - A branch without a pull request is not a pull request review. Use
   `review-code`.
 - When either lookup fails or the host is unauthenticated, ask the user before
   reviewing.
+
+Apply this skill only when the user asks for the review. A review that
+`babysit-pr` or `ship-feature-pr` runs follows that workflow instead.
 
 When the pull request contains commits from the active account, say so in the
 report. A branch rule requiring approval of the most recent push may discount
@@ -55,9 +60,10 @@ Add to the `review-code` brief:
   instruction that every reviewer finding states both. Reviewers cannot be
   assumed to load this skill.
 
-Do not wait for CI, other reviewers, or bots. Keeping CI green is the author's
-responsibility. Report check state as observed and never gate the verdict or an
-approval on it, including under a grant to approve if everything is fine.
+Do not wait for CI, other GitHub reviewers, or bots. Keeping CI green is the
+author's responsibility. Report check state as observed and never gate the
+verdict or an approval on it, including under a grant to approve if everything
+is fine.
 
 ## Classify Findings
 
@@ -65,9 +71,11 @@ Give every accepted finding one class:
 
 - **Blocking:** a confirmed defect with a realistic trigger and material impact
   that the pull request either introduces or leaves unfixed within its own
-  stated goal. When the trigger needs an uncommon but already supported input or
-  configuration, the defect blocks only if it can cause data loss, a security
-  exposure, or an outage; otherwise it is optional.
+  stated goal. Material impact includes incorrect results, financial errors,
+  data loss, security exposure, and outages, even when the trigger needs an
+  uncommon but supported input or configuration. A defect whose impact is
+  limited and recoverable, such as a misleading message or a manual retry, is
+  optional.
 - **Question:** a concern that depends on facts you cannot inspect, such as a
   deployment procedure, team convention, or intended behavior. Ask rather than
   assert severity.
@@ -105,17 +113,21 @@ When the author has pushed changes or replied:
 - Read the author's replies first. Treat a reasoned decline of an optional or
   follow-up item as settled. Re-raise a declined blocking finding only with
   evidence the reasoning does not address.
-- Scope the round to whether each earlier finding is fixed, defects introduced
-  by the new commits, and any new changes beyond those fixes. Do not raise new
-  optional items in code already reviewed and unchanged, even when a reviewer
-  reports them. Report a newly found blocking defect in unchanged code, and say
-  an earlier round missed it.
+- Scope the round as `review-code` scopes follow-up rounds: whether each earlier
+  finding is fixed, defects introduced by the new commits, and any new changes
+  beyond those fixes. Do not raise new optional items in code already reviewed
+  and unchanged, even when a reviewer reports them; omit them from the report.
+  Report a newly found blocking defect in unchanged code, and say an earlier
+  round missed it. Report new questions and follow-ups found there to the user
+  only; a grant does not post them.
 - Give both reviewers the earlier findings with their status and the author's
   replies. Verifying earlier conclusions is the purpose of the round, so this is
   the verification request `dual-review` allows seeding for. Prefer
   `dual-review` continuation and start fresh reviewers only when it does not
   qualify.
-- Report a status table of earlier findings before any new ones.
+- Report a status table of earlier findings before any new ones. When the user's
+  earlier review requested changes, say it stays in effect until an approval or
+  dismissal replaces it.
 
 ## Report
 
@@ -136,7 +148,9 @@ to a `COMMENT` review because a grant is unclear.
 
 A grant comes from the user's current request and covers only the round that
 request starts. It never carries into later rounds; each follow-up request needs
-its own grant. Outcomes a grant does not name stay report-only:
+its own grant. A request to post after a report grants posting for that report.
+Each grant covers only the cells in its row, and a request that names specific
+events covers only those. A request that matches no row stays report-only:
 
 | User grant                     | Approve verdict    | Request changes verdict | Undecided verdict |
 | ------------------------------ | ------------------ | ----------------------- | ----------------- |
@@ -144,30 +158,39 @@ its own grant. Outcomes a grant does not name stay report-only:
 | "Post whatever the outcome"    | Submit an approval | Submit request changes  | Submit a comment  |
 | "Post findings, don't approve" | See below          | Submit request changes  | Submit a comment  |
 
-A request to post or submit findings or the review that does not mention
-approval, such as "submit your review on my behalf", is the "Post findings,
-don't approve" grant. Under it, an approve verdict with optional or follow-up
-notes posts them as a comment review; without notes it posts nothing. Either
-way, report that the pull request is ready to approve.
+"Whatever the outcome" and equivalent wording include approval. Any other
+request to post or submit findings or the review that does not mention approval,
+such as "submit your review on my behalf", is the "Post findings, don't approve"
+grant. Under it, an approve verdict with optional or follow-up notes posts them
+as a comment review; without notes it posts nothing. Either way, report that the
+pull request is ready to approve.
+
+A grant posts every accepted finding this round may post, in the layout below.
+When the user selects findings instead, post only those. Unless the user names
+the event, request changes when the selection includes a blocking finding and
+comment otherwise.
 
 A request for a pending or draft review creates the review with its comments and
 never submits it, whatever the verdict. When the grant is still ambiguous for
 the actual outcome, report and ask.
 
 Post through the `review-code` posting rules, including the head refresh and the
-GitHub attribution style. If the head moved from the pinned head, do not post on
-a grant; report the movement and wait.
+GitHub attribution style. If the head moved from the pinned head, do not post,
+even for a selection; report the movement and wait. This replaces the
+`review-code` recheck.
 
 Lay out a posted review as follows:
 
 - The review body states the outcome in a sentence and lists findings that
   cannot anchor inline. A comment review for an approve verdict says there are
-  no blocking findings; it never reads as an approval.
+  no blocking findings; it never reads as an approval. Under a selection, the
+  body describes only what is posted and never states a verdict the user held
+  back.
 - Blocking findings and questions go inline where the diff allows. Each comment
   names its file and line in the text so it reads on its own.
 - Follow-ups go in a visible body section that recommends tracking each one
   separately from this pull request.
-- Optional notes go in a collapsed `<details>` section of the body. Post an
-  optional note inline only when the user selected it.
+- Optional notes go in a collapsed `<details>` section of the body. Post a
+  selected optional note inline where it anchors.
 
 Resolve review threads only when the user asks.
