@@ -94,6 +94,7 @@ describe("GitHub observation", () => {
     });
     const result = await observe(client, target);
     expect(result.headSha).toBe(sha);
+    expect(result.viewer).toBe("me");
     expect(result.reviewDecision).toBe("APPROVED");
     expect(result.checks.map((check) => [check.id, check.state])).toEqual([
       ["check:1", "pending"],

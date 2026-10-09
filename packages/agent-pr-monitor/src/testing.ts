@@ -200,5 +200,7 @@ export function respond(variables: Variables, state: FixtureState) {
           : [],
     );
   }
-  return { data: { repository: { pullRequest } } };
+  return {
+    data: { viewer: { login: "me" }, repository: { pullRequest } },
+  };
 }

@@ -224,15 +224,16 @@ describe("durable waiting", () => {
     ).toBe(2);
   });
 
-  test("does not repeatedly wake on transient UNKNOWN merge state", async () => {
+  test("does not report a known conflict again after a transient UNKNOWN merge state", async () => {
     const { options } = await fixture();
-    await monitor({ ...options, observe: sequence([snapshot()]) });
+    const conflicted = snapshot({ mergeStateStatus: "DIRTY" });
+    await monitor({ ...options, observe: sequence([conflicted]) });
     const result = await monitor({
       ...options,
       observe: sequence([
         snapshot({ mergeStateStatus: "UNKNOWN" }),
-        snapshot(),
-        snapshot(),
+        conflicted,
+        conflicted,
       ]),
     });
     expect(result.kind).toBe("timeout");

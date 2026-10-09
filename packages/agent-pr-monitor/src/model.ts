@@ -37,6 +37,8 @@ export type Thread = {
 export type Snapshot = {
   observedAt: string;
   url: string;
+  /** Login the token authenticates as; absent in cursors written before it was recorded. */
+  viewer?: string | null;
   headSha: string;
   state: "open" | "closed" | "merged";
   draft: boolean;
@@ -51,8 +53,7 @@ export type Change = {
   kind:
     | "head_changed"
     | "pr_changed"
-    | "review_decision_changed"
-    | "merge_state_changed"
+    | "merge_conflict"
     | "checks_failed"
     | "checks_completed"
     | "feedback_changed"
@@ -69,6 +70,21 @@ function changedIds<T extends { id: string }>(
   return [...new Set([...old.keys(), ...current.keys()])]
     .filter((id) => old.get(id) !== current.get(id))
     .sort();
+}
+
+/** GraphQL omits the `[bot]` suffix that REST and users include. */
+export function normalizeLogin(login: string): string {
+  return login.toLowerCase().replace(/\[bot\]$/, "");
+}
+
+/** The caller's own comments, replies, and reviews are not news to it. */
+export function feedbackFromOthers(
+  feedback: Feedback[],
+  viewer: string | null | undefined,
+): Feedback[] {
+  if (!viewer) return feedback;
+  const own = normalizeLogin(viewer);
+  return feedback.filter((item) => normalizeLogin(item.author) !== own);
 }
 
 export function checksComplete(checks: Check[]): boolean {
@@ -100,20 +116,23 @@ export function changesBetween(
       changes.push({ kind: "checks_completed" });
     }
   }
-  if (previous.state !== current.state || previous.draft !== current.draft) {
-    changes.push({ kind: "pr_changed" });
-  }
-  if (previous.reviewDecision !== current.reviewDecision) {
-    changes.push({ kind: "review_decision_changed" });
-  }
+  // Draft state, review decision, and other merge states are summarized in each
+  // result but do not wake the caller: they mostly restate events reported here.
+  if (previous.state !== current.state) changes.push({ kind: "pr_changed" });
   if (
-    current.mergeStateStatus !== "UNKNOWN" &&
-    previous.mergeStateStatus !== current.mergeStateStatus
+    current.mergeStateStatus === "DIRTY" &&
+    previous.mergeStateStatus !== "DIRTY"
   ) {
-    changes.push({ kind: "merge_state_changed" });
+    changes.push({ kind: "merge_conflict" });
   }
   for (const [kind, ids] of [
-    ["feedback_changed", changedIds(previous.feedback, current.feedback)],
+    [
+      "feedback_changed",
+      changedIds(
+        feedbackFromOthers(previous.feedback, current.viewer),
+        feedbackFromOthers(current.feedback, current.viewer),
+      ),
+    ],
     ["threads_changed", changedIds(previous.threads, current.threads)],
   ] as const) {
     if (ids.length) changes.push({ kind, ids });

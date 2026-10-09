@@ -43,6 +43,10 @@ const help = `Usage: agent-pr-monitor <snapshot|wait|evaluate> <https://HOST/OWN
 With no baseline, wait returns an initial snapshot. Reuse the state file for
 subsequent waits. Output is one JSON result with a run ID, observed head SHA,
 summary, and private artifact paths. It never authorizes readiness or merging.
+wait returns on a head change, a failed check, completed checks, feedback or
+thread changes, a new merge conflict, or the PR closing, merging, or reopening.
+Feedback written by the token's own account never returns a wait. It satisfies
+feedback-received only when --reviewer names that account.
 Exit codes: 0 snapshot/change, 2 timeout, 1 error, 130 SIGINT, 143 SIGTERM.
 Each poll is one GraphQL request per 100 checks, reviews, comments, or threads.
 Auth: GH_TOKEN/GITHUB_TOKEN for github.com; GH_ENTERPRISE_TOKEN or

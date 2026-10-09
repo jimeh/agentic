@@ -1,4 +1,4 @@
-import type { Snapshot } from "./model";
+import { feedbackFromOthers, normalizeLogin, type Snapshot } from "./model";
 
 export const conditionNames = [
   "checks-finished",
@@ -67,10 +67,6 @@ export function validateGoal(goal: Goal): void {
     (!goal.checks.length || goal.checks.some((c) => !c.trim()))
   )
     throw new Error("Check names must not be empty");
-}
-
-function author(login: string): string {
-  return login.toLowerCase().replace(/\[bot\]$/, "");
 }
 
 /** Evaluate structured GitHub evidence without interpreting review text. */
@@ -206,7 +202,7 @@ export async function evaluateGoal(
             f.kind === "review" &&
             f.reviewState !== "PENDING" &&
             f.commitSha?.toLowerCase() === s.headSha.toLowerCase() &&
-            author(f.author) === author(goal.reviewer!) &&
+            normalizeLogin(f.author) === normalizeLogin(goal.reviewer!) &&
             Number.isFinite(submittedAt(f.id)) &&
             (!goal.since || submittedAt(f.id) > Date.parse(goal.since)),
         )
@@ -277,11 +273,13 @@ export async function evaluateGoal(
       continue;
     }
     if (name === "feedback-received") {
-      const feedback = s.feedback.filter(
-        (f) =>
-          Date.parse(f.updatedAt) > Date.parse(goal.since!) &&
-          (!goal.reviewer || author(f.author) === author(goal.reviewer)),
-      );
+      // A named reviewer is taken as given, even when it is the caller's own account.
+      const reviewer = goal.reviewer && normalizeLogin(goal.reviewer);
+      const feedback = (
+        reviewer
+          ? s.feedback.filter((f) => normalizeLogin(f.author) === reviewer)
+          : feedbackFromOthers(s.feedback, s.viewer)
+      ).filter((f) => Date.parse(f.updatedAt) > Date.parse(goal.since!));
       result(
         feedback.length ? "met" : "not_met",
         feedback.length
