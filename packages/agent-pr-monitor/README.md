@@ -69,8 +69,9 @@ are the caller's own actions. They do not satisfy `feedback-received` and do not
 return a wait, so replying to a thread or posting a bot command does not wake
 the caller. Passing that account as `--reviewer` makes its feedback satisfy
 `feedback-received`. A person commenting from the same account is ignored too. A
-review thread that account opens or deletes does not return a change wait
-either. Later changes to the thread do, such as its resolution.
+new unresolved review thread opened by that account does not return a change
+wait either, and neither does the removal of a thread it opened. A resolution of
+such a thread does.
 
 These conditions describe submitted GitHub metadata, not a bot's current work
 queue. Pending drafts cannot establish completion and do not revoke an earlier

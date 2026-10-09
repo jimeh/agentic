@@ -172,6 +172,13 @@ describe("meaningful changes", () => {
         snapshot({ viewer: "me", threads: [thread("own", "Me", true)] }),
       ),
     ).toEqual([{ kind: "threads_changed", ids: ["own"] }]);
+    // Resolved before it was first observed: the resolution is still news.
+    expect(
+      changesBetween(
+        before,
+        snapshot({ viewer: "me", threads: [thread("own", "Me", true)] }),
+      ),
+    ).toEqual([{ kind: "threads_changed", ids: ["own"] }]);
     for (const author of ["reviewer", null])
       expect(
         changesBetween(

@@ -90,8 +90,8 @@ export function feedbackFromOthers(
 }
 
 /**
- * A thread the caller opens or deletes is its own feedback. A change to a thread
- * that stays, such as a resolution, is reported whoever opened the thread.
+ * A thread the caller opens or deletes is its own feedback. A resolution is
+ * reported whoever opened the thread, including on a thread first seen resolved.
  */
 function changedThreadIds(previous: Snapshot, current: Snapshot): string[] {
   // The opener is left out of the comparison so older cursors match.
@@ -106,7 +106,7 @@ function changedThreadIds(previous: Snapshot, current: Snapshot): string[] {
   const after = new Map(current.threads.map((thread) => [thread.id, thread]));
   return ids.filter((id) => {
     const [old, now] = [before.get(id), after.get(id)];
-    if (old && now) return true;
+    if ((old && now) || now?.resolved) return true;
     const author = (old ?? now)?.author;
     return !author || normalizeLogin(author) !== own;
   });
