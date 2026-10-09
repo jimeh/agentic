@@ -113,8 +113,8 @@ or removed feedback, a thread's state changing, a new merge conflict, or the PR
 closing, merging, or reopening. Draft state, review decision, and merge state
 are in every result's summary but do not return a wait on their own. Comments,
 replies, and reviews from the account the token authenticates as never return a
-wait, so the caller's own replies do not wake it, and neither does a thread that
-account opens. A person commenting from that same account is ignored too.
+wait, so the caller's own replies do not wake it, and neither does that account
+opening a thread. A person commenting from that same account is ignored too.
 Resolving a thread and pushing a commit still return the next wait.
 
 ### Launch the command
@@ -218,14 +218,13 @@ background goal wait reports a nonzero exit.
 Probe first, then wait only if the goal is unmet. `--since` does two jobs:
 review and feedback conditions count only evidence newer than it, and a goal
 wait returns `attention_required` on its first poll for another account's
-feedback newer than it. Waiting again after inspecting that feedback therefore
-depends on what the probe shows:
+feedback newer than it. To wait again after inspecting that feedback:
 
-- While no review condition is met, move `--since` forward to the timestamp of
-  the newest inspected item, not to the current time, so a review submitted
-  after it still counts.
-- Once a review condition is met, moving `--since` past that review would
-  discard it, and the goal would stay unmet until another review arrived. Wait
-  on the remaining conditions only, without `--since` unless one of them
-  requires it. When that wait returns, confirm the whole goal with one probe
-  that uses the original `--since`.
+- Move `--since` forward to the timestamp of the newest inspected item, not to
+  the current time, so evidence submitted after it still counts and feedback
+  that arrives before the wait starts is still reported.
+- When a review or feedback condition is already met, that move would discard
+  the evidence that met it, and the goal would stay unmet until more arrived.
+  Leave the met condition out of the wait and keep the moved `--since`. When the
+  wait returns, confirm the whole goal with one probe that uses the original
+  `--since`.
