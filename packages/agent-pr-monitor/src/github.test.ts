@@ -71,7 +71,11 @@ function clientFixture(options: FixtureOptions = {}) {
         },
       );
     if (options.changeHead && requests.length > 1) state.sha = "b".repeat(40);
-    return Response.json(respond(body.variables, state));
+    const response = respond(body.variables, state);
+    // Like GraphQL: a field the query does not select is not returned.
+    if (!/\bviewer\s*\{/.test(body.query))
+      delete (response.data as { viewer?: unknown }).viewer;
+    return Response.json(response);
   }) as typeof fetch;
   return {
     client: createClient(target, "fake-test-token", fetchImpl),
@@ -94,6 +98,7 @@ describe("GitHub observation", () => {
     });
     const result = await observe(client, target);
     expect(result.headSha).toBe(sha);
+    expect(result.viewer).toBe("me");
     expect(result.reviewDecision).toBe("APPROVED");
     expect(result.checks.map((check) => [check.id, check.state])).toEqual([
       ["check:1", "pending"],
@@ -114,6 +119,7 @@ describe("GitHub observation", () => {
     expect(result.threads).toHaveLength(2);
     expect(result.threads.filter((thread) => !thread.resolved)).toHaveLength(1);
     expect(result.threads[0].outdated).toBe(true);
+    expect(result.threads[0].author).toBe("reviewer");
     const serialized = JSON.stringify(result);
     for (const body of ["comment body", "review body", "inline body"])
       expect(serialized).not.toContain(body);

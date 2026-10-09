@@ -246,11 +246,13 @@ mise run pr-monitor -- wait https://github.com/OWNER/REPO/pull/123
 ```
 
 The first snapshot establishes a durable baseline. Subsequent waits stay quiet
-until a head change, failed or completed checks, review feedback, thread state,
-or PR state changes. Each poll is a single GraphQL request, once a minute by
-default, and `--initial-delay` postpones the first poll when nothing can happen
-yet. Each invocation prints one JSON result and saves private artifacts. It
-never writes to GitHub or decides whether a PR is ready to merge. Run
+until the head changes, a check fails, checks complete, another account leaves
+or edits feedback, a thread's state changes, the branch starts to conflict, or
+the PR closes, merges, or reopens. The authenticated account's own comments and
+reviews do not wake a wait. Each poll is a single GraphQL request, once a minute
+by default, and `--initial-delay` postpones the first poll when nothing can
+happen yet. Each invocation prints one JSON result and saves private artifacts.
+It never writes to GitHub or decides whether a PR is ready to merge. Run
 `agent-pr-monitor --help` for authentication, timeouts, and state paths. The
 [`babysit-pr` monitoring reference](skills/babysit-pr/references/monitoring.md)
 describes agent execution and result handling.

@@ -1,5 +1,6 @@
 import { setTimeout as sleep } from "node:timers/promises";
 import { ObservationError } from "./github";
+import { feedbackFromOthers, type Snapshot } from "./model";
 import {
   evaluateGoal,
   validateGoal,
@@ -19,6 +20,15 @@ export type GoalMonitorOptions = {
   now?: () => number;
   sleep?: (ms: number, signal: AbortSignal) => Promise<void>;
 };
+
+function othersFeedback(snapshot: Snapshot): Map<string, string> {
+  return new Map(
+    feedbackFromOthers(snapshot.feedback, snapshot.viewer).map((f) => [
+      f.id,
+      JSON.stringify(f),
+    ]),
+  );
+}
 
 /** Goal probes do not read, lock, or advance the legacy change cursor. */
 export async function monitorGoal(options: GoalMonitorOptions) {
@@ -86,7 +96,10 @@ export async function monitorGoal(options: GoalMonitorOptions) {
       head ??= observation.snapshot.headSha;
       if (head.toLowerCase() !== observation.snapshot.headSha.toLowerCase())
         return finish("head_changed");
-      let changedFeedback = observation.snapshot.feedback.some((f) =>
+      let changedFeedback = feedbackFromOthers(
+        observation.snapshot.feedback,
+        observation.snapshot.viewer,
+      ).some((f) =>
         previousFeedback
           ? previousFeedback.get(f.id) !== JSON.stringify(f)
           : Boolean(
@@ -105,12 +118,10 @@ export async function monitorGoal(options: GoalMonitorOptions) {
       if (options.mode === "evaluate") return finish("evaluation");
       if (evaluation.satisfied) {
         // Re-observe every condition, not just the SHA: checks and reviews can change between observations.
-        const beforeConfirmation = new Map(
-          observation.snapshot.feedback.map((f) => [f.id, JSON.stringify(f)]),
-        );
+        const beforeConfirmation = othersFeedback(observation.snapshot);
         observation = await options.observe(signal);
-        changedFeedback ||= observation.snapshot.feedback.some(
-          (f) => beforeConfirmation.get(f.id) !== JSON.stringify(f),
+        changedFeedback ||= [...othersFeedback(observation.snapshot)].some(
+          ([id, item]) => beforeConfirmation.get(id) !== item,
         );
         if (signal.aborted) break;
         observations++;
@@ -131,9 +142,7 @@ export async function monitorGoal(options: GoalMonitorOptions) {
       if (observation.snapshot.state !== "open")
         return finish("attention_required");
       if (changedFeedback) return finish("attention_required");
-      previousFeedback = new Map(
-        observation.snapshot.feedback.map((f) => [f.id, JSON.stringify(f)]),
-      );
+      previousFeedback = othersFeedback(observation.snapshot);
     } catch (error) {
       if (signal.aborted) break;
       if (!(error instanceof ObservationError))

@@ -174,23 +174,39 @@ uncertain. Never clear review state cosmetically.
 ## Wait and Finish
 
 Start independent external review and CI concurrently on a settled candidate
-when both are required. For external waiting, read
-[PR monitoring](references/monitoring.md) and use `agent-pr-monitor` to filter
-unchanged state without model calls. Prefer running it directly in the parent;
-delegate only when substantive triage or follow-up work benefits from another
+when both are required. Before the first external wait, read
+[PR monitoring](references/monitoring.md), which covers both ways to wait and
+what each one does not report:
+
+- When the host provides a pull request watcher, such as T3 Code's
+  `watch_pull_request` tool, start it from the parent thread and end the turn.
+  The host wakes the thread on the events its tool description lists.
+- Otherwise run `agent-pr-monitor` directly in the parent to filter unchanged
+  state without model calls.
+
+Do not write a polling loop, sleep-and-check script, or repeated status read to
+wait. When the completion condition depends on something neither wait reports,
+use an `agent-pr-monitor` goal probe or goal wait from the same reference.
+Delegate only when substantive triage or follow-up work benefits from another
 model. A bounded comment-posting request does not need monitoring.
 
-Use changed identifiers and links to select feedback bodies and failure logs
-that need inspection. Reconcile them with the current head, complete unresolved
-thread set, and review state before acting. Check liveness before retrying a bot
-or job. A monitor event reports an observation, not readiness or permission to
-merge; refresh the exact remote head and required gates before finishing.
+Use the items in a wake, or a monitor result's changed identifiers and links, to
+select feedback bodies and failure logs that need inspection. Reconcile them
+with the current head, complete unresolved thread set, and review state before
+acting. Check liveness before retrying a bot or job. A wake or monitor event
+reports an observation, not readiness or permission to merge; refresh the exact
+remote head and required gates before finishing.
 
 Route actionable CI failures and new feedback through the same bounded loop. If
 an explicit user budget is exhausted or repeated attempts make no progress, a
 required reviewer is unavailable, a user decision is needed, permissions fail,
 or external state cannot progress, leave the PR in its safe current state and
 report the blocker.
+
+A slow reviewer or a long job is not a blocker. Under a host watch, end the turn
+with one line saying what the PR is waiting for and leave the watch running.
+Stop a host watch before a final report, a blocker report, or a question for the
+user, and start it again if stewardship resumes.
 
 Mark a draft ready only when the requested completion condition holds on the
 exact remote head. Report the final SHA, checks, review decision, unresolved

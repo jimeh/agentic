@@ -125,6 +125,100 @@ describe("meaningful changes", () => {
     ]);
   });
 
+  test("ignores feedback from the authenticated account", () => {
+    const own = (id: string, overrides = {}) =>
+      feedback(id, { author: "Me", ...overrides });
+    const before = snapshot({
+      feedback: [own("reply"), own("removed"), feedback("theirs")],
+    });
+    const after = snapshot({
+      viewer: "me",
+      feedback: [
+        own("reply", { bodyHash: "edited" }),
+        own("new"),
+        feedback("theirs"),
+      ],
+    });
+    expect(changesBetween(before, after)).toEqual([]);
+    expect(
+      changesBetween(before, {
+        ...after,
+        feedback: [...after.feedback, feedback("theirs-new")],
+      }),
+    ).toEqual([{ kind: "feedback_changed", ids: ["theirs-new"] }]);
+    // Without a known viewer nothing can be attributed, so everything reports.
+    expect(changesBetween(before, { ...after, viewer: null })).toEqual([
+      { kind: "feedback_changed", ids: ["new", "removed", "reply"] },
+    ]);
+  });
+
+  test("ignores a thread the authenticated account opens or deletes, not later changes to it", () => {
+    const thread = (id: string, author: string | null, resolved = false) => ({
+      id,
+      resolved,
+      outdated: false,
+      path: "src/a.ts",
+      line: 1,
+      url: null,
+      author,
+    });
+    const before = snapshot({ viewer: "me" });
+    const opened = snapshot({ viewer: "me", threads: [thread("own", "Me")] });
+    expect(changesBetween(before, opened)).toEqual([]);
+    expect(changesBetween(opened, before)).toEqual([]);
+    expect(
+      changesBetween(
+        opened,
+        snapshot({ viewer: "me", threads: [thread("own", "Me", true)] }),
+      ),
+    ).toEqual([{ kind: "threads_changed", ids: ["own"] }]);
+    // Resolved before it was first observed: the resolution is still news.
+    expect(
+      changesBetween(
+        before,
+        snapshot({ viewer: "me", threads: [thread("own", "Me", true)] }),
+      ),
+    ).toEqual([{ kind: "threads_changed", ids: ["own"] }]);
+    for (const author of ["reviewer", null])
+      expect(
+        changesBetween(
+          before,
+          snapshot({ viewer: "me", threads: [thread("theirs", author)] }),
+        ),
+      ).toEqual([{ kind: "threads_changed", ids: ["theirs"] }]);
+    // A cursor written before the opener was recorded matches the same thread.
+    const { author: _author, ...legacy } = thread("theirs", "reviewer");
+    expect(
+      changesBetween(
+        snapshot({ threads: [legacy] }),
+        snapshot({ viewer: "me", threads: [thread("theirs", "reviewer")] }),
+      ),
+    ).toEqual([]);
+  });
+
+  test("reports lifecycle changes and a new merge conflict, not draft, review decision, or other merge states", () => {
+    const before = snapshot();
+    expect(
+      changesBetween(
+        before,
+        snapshot({
+          draft: true,
+          reviewDecision: "APPROVED",
+          mergeStateStatus: "CLEAN",
+        }),
+      ),
+    ).toEqual([]);
+    expect(changesBetween(before, snapshot({ state: "merged" }))).toEqual([
+      { kind: "pr_changed" },
+    ]);
+    const conflicted = snapshot({ mergeStateStatus: "DIRTY" });
+    expect(changesBetween(before, conflicted)).toEqual([
+      { kind: "merge_conflict" },
+    ]);
+    expect(changesBetween(conflicted, conflicted)).toEqual([]);
+    expect(changesBetween(conflicted, before)).toEqual([]);
+  });
+
   test("ignores API ordering and transient unknown mergeability", () => {
     const before = snapshot({
       checks: [check("a"), check("b")],

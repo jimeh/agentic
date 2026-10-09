@@ -26,6 +26,7 @@ const query = `query MonitorPullRequest(
   $withComments: Boolean!, $commentsAfter: String,
   $withThreads: Boolean!, $threadsAfter: String
 ) {
+  viewer { login }
   repository(owner: $owner, name: $repo) {
     pullRequest(number: $number) {
       url headRefOid state isDraft reviewDecision mergeStateStatus
@@ -133,6 +134,7 @@ type PullRequestNode = {
   reviewThreads?: Page<ThreadNode>;
 };
 export type QueryResult = {
+  viewer?: Actor;
   repository: { pullRequest: PullRequestNode | null } | null;
 };
 
@@ -294,6 +296,7 @@ export async function observe(
   const commentNodes: CommentNode[] = [];
   const threadNodes: ThreadNode[] = [];
   let pr: PullRequestNode | null = null;
+  let viewer: string | null = null;
   let requests = 0;
 
   while (connections.some((name) => wanted[name])) {
@@ -327,6 +330,7 @@ export async function observe(
     if (pr && node.headRefOid !== pr.headRefOid)
       throw new ObservationError("PR head changed during observation", 1000);
     pr ??= node;
+    viewer ??= page.viewer?.login ?? null;
 
     const pages: Partial<Record<Connection, Page<unknown> | undefined>> = {
       checks: node.commits?.nodes[0]?.commit.statusCheckRollup?.contexts ?? {
@@ -468,10 +472,12 @@ export async function observe(
     path: thread.path,
     line: thread.line,
     url: thread.comments.nodes[0]?.url ?? null,
+    author: thread.comments.nodes[0]?.author?.login ?? null,
   }));
   return {
     observedAt: new Date().toISOString(),
     url: pr.url,
+    viewer,
     headSha: pr.headRefOid,
     state:
       pr.state === "MERGED"

@@ -417,6 +417,24 @@ describe("goal evaluation", () => {
       ).satisfied,
     ).toBe(false);
   });
+  test("the caller's own feedback is not received feedback unless it names itself as reviewer", async () => {
+    const o = observation();
+    o.snapshot.viewer = "Bot";
+    const since = "2026-09-19T11:59:59Z";
+    for (const [reviewer, satisfied] of [
+      [undefined, false],
+      ["bot", true],
+    ] as const)
+      expect(
+        (
+          await evaluateGoal(
+            o,
+            goal(["feedback-received"], { since, reviewer }),
+            signal,
+          )
+        ).satisfied,
+      ).toBe(satisfied);
+  });
 });
 
 function runner(
@@ -524,6 +542,22 @@ describe("goal waiting", () => {
     ).toMatchObject({ kind: "attention_required", satisfied: false });
   });
 
+  test("the caller's own feedback does not wake a pending waiter", async () => {
+    const before = observation();
+    before.snapshot.viewer = "bot";
+    before.snapshot.feedback = [];
+    before.snapshot.checks = [{ ...check, state: "pending", conclusion: null }];
+    const after = structuredClone(before);
+    after.snapshot.feedback = [review];
+    // The since baseline would otherwise expose the reply on the first observation.
+    for (const sequence of [[before, after], [after]])
+      expect(
+        await runner(sequence, {
+          goal: goal(["checks-pass"], { since: "2026-09-19T11:00:00Z" }),
+        }).run(),
+      ).toMatchObject({ kind: "timeout" });
+  });
+
   test("feedback arriving during an unmet confirmation returns attention", async () => {
     const pending = observation();
     pending.snapshot.feedback = [];
@@ -543,6 +577,20 @@ describe("goal waiting", () => {
         observations: sequence.length,
         satisfied: false,
       });
+  });
+
+  test("the caller's own feedback during an unmet confirmation does not return attention", async () => {
+    const passing = observation();
+    passing.snapshot.viewer = "bot";
+    passing.snapshot.feedback = [];
+    const confirmation = structuredClone(passing);
+    confirmation.snapshot.checks = [
+      { ...check, state: "pending", conclusion: null },
+    ];
+    confirmation.snapshot.feedback = [review];
+    expect(await runner([passing, confirmation]).run()).toMatchObject({
+      kind: "timeout",
+    });
   });
 
   test("a caller can abort an in-flight observation", async () => {

@@ -4,7 +4,7 @@
 conditions. `wait --until` repeats the same evaluation, pinning the initial head
 and returning when the goal is met or the caller needs to inspect a change.
 Neither command reads, locks, or advances the existing change-based wait cursor.
-Plain `snapshot` and `wait` retain their existing behavior and artifacts.
+Plain `snapshot` and `wait` keep their own cursor and artifacts.
 
 The agent-config installer links `agent-pr-monitor` into `~/.local/bin`. Run
 these commands from any project checkout; they do not require an Agentic working
@@ -36,7 +36,7 @@ agent-pr-monitor evaluate "$PR_URL" --until feedback-received \
 | `review-finished`   | Selected reviewer submitted `APPROVED`, `CHANGES_REQUESTED`, or `COMMENTED` on this head; the latest submitted review is not dismissed. |
 | `review-approved`   | Selected reviewer's latest explicit decision on this head is `APPROVED`; a later dismissal invalidates it.                              |
 | `threads-resolved`  | All threads are resolved. `--ignore-outdated` explicitly excludes outdated threads.                                                     |
-| `feedback-received` | Feedback was created or edited strictly after `--since`. This requires a timestamp, and does not imply the content is actionable.       |
+| `feedback-received` | Another account created or edited feedback strictly after `--since`. This requires a timestamp and does not imply it is actionable.     |
 | `non-draft`         | GitHub reports the PR is not a draft.                                                                                                   |
 | `mergeable`         | GitHub reports `MERGEABLE`. This describes conflict status, not whether all merge policies are satisfied.                               |
 | `merged` / `closed` | GitHub reports that exact lifecycle state; merged is distinct from closed without merging.                                              |
@@ -63,6 +63,15 @@ New walkthrough comments and later `COMMENTED` reviews do not revoke an existing
 approval. A later `CHANGES_REQUESTED` or `DISMISSED` review prevents approval; a
 subsequent `APPROVED` restores it. A latest dismissed review does not satisfy
 `review-finished` either. Old-head reviews never satisfy either condition.
+
+Comments, replies, and reviews written by the account the token authenticates as
+are the caller's own actions. They do not satisfy `feedback-received` and do not
+return a wait, so replying to a thread or posting a bot command does not wake
+the caller. Passing that account as `--reviewer` makes its feedback satisfy
+`feedback-received`. A person commenting from the same account is ignored too. A
+new unresolved review thread opened by that account does not return a change
+wait either, and neither does the removal of a thread it opened. A resolution of
+such a thread does.
 
 These conditions describe submitted GitHub metadata, not a bot's current work
 queue. Pending drafts cannot establish completion and do not revoke an earlier
@@ -97,11 +106,12 @@ nonzero codes are expected outcomes; Mise may also print its task-failed footer.
 A failed selected check for a checks-pass goal, requested changes or dismissal
 that prevents the goal, or an unknown condition returns control to the caller.
 Pending checks and absent submitted reviews keep waiting. New or edited feedback
-during an unmet wait returns `attention_required`, including apparent progress
-messages; the caller interprets their content. `--since` also exposes feedback
-updated after the baseline on the first observation. Closed PRs return control
-when remaining goals are unmet. A satisfied goal takes precedence over feedback
-notifications and still requires the final confirmation observation.
+from another account during an unmet wait returns `attention_required`,
+including apparent progress messages; the caller interprets their content.
+`--since` also exposes such feedback updated after the baseline on the first
+observation. Closed PRs return control when remaining goals are unmet. A
+satisfied goal takes precedence over feedback notifications and still requires
+the final confirmation observation.
 
 The existing `--interval`, `--initial-delay`, and `--timeout` apply to goal
 waits. `evaluate` does not accept an initial delay. Transient GitHub observation
@@ -116,8 +126,9 @@ evidence is needed.
 Inside the Agentic repository, `mise run pr-monitor -- ...` runs the local
 source during development. Installed agents use `agent-pr-monitor` directly.
 
-`mise run test:pr-monitor` exercises structured review precedence, synthetic
-GitHub pagination and required-check discovery, actual CLI exit behavior, legacy
-cursor isolation, head changes, cancellation and confirmation races. Tests never
-need a real API key. `evaluateGoal` accepts an in-memory observation, so it can
-be evaluated against several goals without additional GitHub reads.
+`mise run test:pr-monitor` exercises change detection, structured review
+precedence, synthetic GitHub pagination and required-check discovery, actual CLI
+exit behavior, legacy cursor isolation, head changes, cancellation and
+confirmation races. Tests never need a real API key. `evaluateGoal` accepts an
+in-memory observation, so it can be evaluated against several goals without
+additional GitHub reads.

@@ -32,11 +32,15 @@ export type Thread = {
   path: string;
   line: number | null;
   url: string | null;
+  /** Login that opened the thread; absent in cursors written before it was recorded. */
+  author?: string | null;
 };
 
 export type Snapshot = {
   observedAt: string;
   url: string;
+  /** Login the token authenticates as; absent in cursors written before it was recorded. */
+  viewer?: string | null;
   headSha: string;
   state: "open" | "closed" | "merged";
   draft: boolean;
@@ -51,8 +55,7 @@ export type Change = {
   kind:
     | "head_changed"
     | "pr_changed"
-    | "review_decision_changed"
-    | "merge_state_changed"
+    | "merge_conflict"
     | "checks_failed"
     | "checks_completed"
     | "feedback_changed"
@@ -69,6 +72,44 @@ function changedIds<T extends { id: string }>(
   return [...new Set([...old.keys(), ...current.keys()])]
     .filter((id) => old.get(id) !== current.get(id))
     .sort();
+}
+
+/** GraphQL omits the `[bot]` suffix that REST and users include. */
+export function normalizeLogin(login: string): string {
+  return login.toLowerCase().replace(/\[bot\]$/, "");
+}
+
+/** The caller's own comments, replies, and reviews are not news to it. */
+export function feedbackFromOthers(
+  feedback: Feedback[],
+  viewer: string | null | undefined,
+): Feedback[] {
+  if (!viewer) return feedback;
+  const own = normalizeLogin(viewer);
+  return feedback.filter((item) => normalizeLogin(item.author) !== own);
+}
+
+/**
+ * A thread the caller opens or deletes is its own feedback. A resolution is
+ * reported whoever opened the thread, including on a thread first seen resolved.
+ */
+function changedThreadIds(previous: Snapshot, current: Snapshot): string[] {
+  // The opener is left out of the comparison so older cursors match.
+  const state = ({ author: _author, ...thread }: Thread) => thread;
+  const ids = changedIds(
+    previous.threads.map(state),
+    current.threads.map(state),
+  );
+  if (!current.viewer) return ids;
+  const own = normalizeLogin(current.viewer);
+  const before = new Map(previous.threads.map((thread) => [thread.id, thread]));
+  const after = new Map(current.threads.map((thread) => [thread.id, thread]));
+  return ids.filter((id) => {
+    const [old, now] = [before.get(id), after.get(id)];
+    if ((old && now) || now?.resolved) return true;
+    const author = (old ?? now)?.author;
+    return !author || normalizeLogin(author) !== own;
+  });
 }
 
 export function checksComplete(checks: Check[]): boolean {
@@ -100,21 +141,24 @@ export function changesBetween(
       changes.push({ kind: "checks_completed" });
     }
   }
-  if (previous.state !== current.state || previous.draft !== current.draft) {
-    changes.push({ kind: "pr_changed" });
-  }
-  if (previous.reviewDecision !== current.reviewDecision) {
-    changes.push({ kind: "review_decision_changed" });
-  }
+  // Draft state, review decision, and other merge states are summarized in each
+  // result but do not wake the caller: they mostly restate events reported here.
+  if (previous.state !== current.state) changes.push({ kind: "pr_changed" });
   if (
-    current.mergeStateStatus !== "UNKNOWN" &&
-    previous.mergeStateStatus !== current.mergeStateStatus
+    current.mergeStateStatus === "DIRTY" &&
+    previous.mergeStateStatus !== "DIRTY"
   ) {
-    changes.push({ kind: "merge_state_changed" });
+    changes.push({ kind: "merge_conflict" });
   }
   for (const [kind, ids] of [
-    ["feedback_changed", changedIds(previous.feedback, current.feedback)],
-    ["threads_changed", changedIds(previous.threads, current.threads)],
+    [
+      "feedback_changed",
+      changedIds(
+        feedbackFromOthers(previous.feedback, current.viewer),
+        feedbackFromOthers(current.feedback, current.viewer),
+      ),
+    ],
+    ["threads_changed", changedThreadIds(previous, current)],
   ] as const) {
     if (ids.length) changes.push({ kind, ids });
   }
