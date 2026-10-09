@@ -40,6 +40,12 @@ independent evaluator. Do not perform GitHub mutations during scenario checks.
 | Colleague's PR with CI pending or failing                                                                    | No waiting; report check state; verdict unaffected.                                                                                                |
 | After a report, post selected feedback on a colleague's PR                                                   | Post only the selected items as one review with GitHub attribution; request changes if one blocks, otherwise comment; no babysit-pr.               |
 | Babysit a colleague's PR the user has taken over                                                             | babysit-pr operates as it does on the user's own PR, including any dual review; no review-pr.                                                      |
+| Babysit a PR inside T3 Code                                                                                  | babysit-pr handles existing feedback, starts watch_pull_request in the parent, and ends the turn; no agent-pr-monitor wait or polling loop.        |
+| Babysit a PR on a host without a pull request watcher                                                        | agent-pr-monitor snapshot and wait run directly in the parent.                                                                                     |
+| T3 Code wake arrives; completion needs a named bot's review of the current head                              | One agent-pr-monitor evaluate goal probe; no polling loop and no inference from the wake text.                                                     |
+| Babysitting inside T3 Code; completion depends on a non-required check that passes silently                  | Bounded agent-pr-monitor wait --until goal wait alongside the watch; no hand-written loop.                                                         |
+| Babysitting inside T3 Code reaches a blocker or needs a user decision                                        | Stop the watch before reporting or asking; watch again if stewardship resumes.                                                                     |
+| Delegated worker asked to wait on a PR inside T3 Code                                                        | The worker cannot watch; the parent keeps the watch, or the worker uses agent-pr-monitor.                                                          |
 | Reword the description of a colleague's PR                                                                   | write-pr-copy with jimeh's footer before bot-managed sections; other attribution unchanged.                                                        |
 | Review of the second correction round finds material defects in original code that no correction caused      | Converging; run another round.                                                                                                                     |
 | Review of the second correction round finds nothing material                                                 | Diminishing; fix none of the findings, request no further review of those corrections, and report them.                                            |
@@ -198,3 +204,19 @@ fresh evaluator routed its five scenarios as intended and found that
 failure path. Those and two narrower gaps, unclassified linter breaches and
 optional notes on correction code, were corrected and the corrections confirmed.
 This tests interpretation, not live end-to-end reviews.
+
+The PR waiting rows were checked on October 9, 2026 by a fresh native evaluator
+with no file ownership, network access, or further delegation. It read
+`babysit-pr`, its monitoring reference, the `agent-pr-monitor` help text, and
+the `watch_pull_request` tool description from T3 Code, without this table, and
+answered eleven cases. Seven reached the intended behavior. The other four
+exposed that a goal wait beside a watch conflicted with the rule against a
+second wait, that the launch rules named only the parent, that a slow human
+approval could read as a blocker, and that restarting a stopped watch had no
+test for comment-only churn. It also found that goal exit codes and kinds were
+undocumented in the reference and that a wake could be read as a readiness
+check. All were corrected. The resumed evaluator judged the five affected cases
+clear and found two new gaps, on moving `--since` past inspected feedback and on
+when a goal wait is worth adding beside a watch. Both were tightened without a
+third run. Not exercised: a live T3 Code wake, a goal wait running beside a
+watch, and Codex as the host.

@@ -33,7 +33,8 @@ The Bun workspace separates the repository tooling by ownership:
   active ruleset reads for required-check discovery. `evaluate` probes once and
   `wait --until` loops over the same evaluator without advancing the change
   cursor. Review completion and approval use submitted GitHub review metadata
-  scoped to the selected reviewer and head. `gh` is only an authentication
+  scoped to the selected reviewer and head. Feedback written by the
+  authenticated account never wakes a wait. `gh` is only an authentication
   fallback. Its tests run in `test:unit`, with `test:pr-monitor` available for
   focused work. The headless runner core remains specific to model subprocesses.
 - `packages/vendor-skills` owns reviewed third-party skill intake and updates.
@@ -78,6 +79,9 @@ instead, following the `t3-delegation` skill, which owns that transport for both
 engines. The headless runners remain the transport everywhere else and for
 `codex-computer-use`. A child task has no runner-level delegation denial and no
 read-only sandbox, so those boundaries rest on the prompt there.
+
+`babysit-pr` waits through the host's pull request watcher where one exists, as
+in T3 Code, and uses `agent-pr-monitor` elsewhere and for goal probes.
 
 To add a new skill, just create the directory — the installer picks it up
 automatically. Stale symlinks are cleaned up on each run, including links that
