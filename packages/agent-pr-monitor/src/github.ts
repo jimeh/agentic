@@ -472,6 +472,7 @@ export async function observe(
     path: thread.path,
     line: thread.line,
     url: thread.comments.nodes[0]?.url ?? null,
+    author: thread.comments.nodes[0]?.author?.login ?? null,
   }));
   return {
     observedAt: new Date().toISOString(),

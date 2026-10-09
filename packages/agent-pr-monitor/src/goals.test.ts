@@ -579,6 +579,20 @@ describe("goal waiting", () => {
       });
   });
 
+  test("the caller's own feedback during an unmet confirmation does not return attention", async () => {
+    const passing = observation();
+    passing.snapshot.viewer = "bot";
+    passing.snapshot.feedback = [];
+    const confirmation = structuredClone(passing);
+    confirmation.snapshot.checks = [
+      { ...check, state: "pending", conclusion: null },
+    ];
+    confirmation.snapshot.feedback = [review];
+    expect(await runner([passing, confirmation]).run()).toMatchObject({
+      kind: "timeout",
+    });
+  });
+
   test("a caller can abort an in-flight observation", async () => {
     const controller = new AbortController();
     let entered!: () => void;

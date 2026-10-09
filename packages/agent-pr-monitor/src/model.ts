@@ -32,6 +32,8 @@ export type Thread = {
   path: string;
   line: number | null;
   url: string | null;
+  /** Login that opened the thread; absent in cursors written before it was recorded. */
+  author?: string | null;
 };
 
 export type Snapshot = {
@@ -87,6 +89,29 @@ export function feedbackFromOthers(
   return feedback.filter((item) => normalizeLogin(item.author) !== own);
 }
 
+/**
+ * A thread the caller opens or deletes is its own feedback. A change to a thread
+ * that stays, such as a resolution, is reported whoever opened the thread.
+ */
+function changedThreadIds(previous: Snapshot, current: Snapshot): string[] {
+  // The opener is left out of the comparison so older cursors match.
+  const state = ({ author: _author, ...thread }: Thread) => thread;
+  const ids = changedIds(
+    previous.threads.map(state),
+    current.threads.map(state),
+  );
+  if (!current.viewer) return ids;
+  const own = normalizeLogin(current.viewer);
+  const before = new Map(previous.threads.map((thread) => [thread.id, thread]));
+  const after = new Map(current.threads.map((thread) => [thread.id, thread]));
+  return ids.filter((id) => {
+    const [old, now] = [before.get(id), after.get(id)];
+    if (old && now) return true;
+    const author = (old ?? now)?.author;
+    return !author || normalizeLogin(author) !== own;
+  });
+}
+
 export function checksComplete(checks: Check[]): boolean {
   return (
     checks.length > 0 && checks.every((check) => check.state !== "pending")
@@ -133,7 +158,7 @@ export function changesBetween(
         feedbackFromOthers(current.feedback, current.viewer),
       ),
     ],
-    ["threads_changed", changedIds(previous.threads, current.threads)],
+    ["threads_changed", changedThreadIds(previous, current)],
   ] as const) {
     if (ids.length) changes.push({ kind, ids });
   }

@@ -152,6 +152,43 @@ describe("meaningful changes", () => {
     ]);
   });
 
+  test("ignores a thread the authenticated account opens or deletes, not later changes to it", () => {
+    const thread = (id: string, author: string | null, resolved = false) => ({
+      id,
+      resolved,
+      outdated: false,
+      path: "src/a.ts",
+      line: 1,
+      url: null,
+      author,
+    });
+    const before = snapshot({ viewer: "me" });
+    const opened = snapshot({ viewer: "me", threads: [thread("own", "Me")] });
+    expect(changesBetween(before, opened)).toEqual([]);
+    expect(changesBetween(opened, before)).toEqual([]);
+    expect(
+      changesBetween(
+        opened,
+        snapshot({ viewer: "me", threads: [thread("own", "Me", true)] }),
+      ),
+    ).toEqual([{ kind: "threads_changed", ids: ["own"] }]);
+    for (const author of ["reviewer", null])
+      expect(
+        changesBetween(
+          before,
+          snapshot({ viewer: "me", threads: [thread("theirs", author)] }),
+        ),
+      ).toEqual([{ kind: "threads_changed", ids: ["theirs"] }]);
+    // A cursor written before the opener was recorded matches the same thread.
+    const { author: _author, ...legacy } = thread("theirs", "reviewer");
+    expect(
+      changesBetween(
+        snapshot({ threads: [legacy] }),
+        snapshot({ viewer: "me", threads: [thread("theirs", "reviewer")] }),
+      ),
+    ).toEqual([]);
+  });
+
   test("reports lifecycle changes and a new merge conflict, not draft, review decision, or other merge states", () => {
     const before = snapshot();
     expect(
