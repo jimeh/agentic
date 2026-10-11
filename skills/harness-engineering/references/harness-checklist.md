@@ -82,6 +82,8 @@ only the relevant sections.
 
 - Language linters cover the primary source languages.
 - Shell scripts use `shellcheck` and, when formatting matters, `shfmt`.
+- Dockerfiles use `hadolint` and, where Docker is available,
+  `docker build --check`.
 - Markdown/docs use a formatter plus markdown linting when docs are active
   project inputs.
 - YAML, JSON, TOML, or schema-heavy config has parser or schema validation.

@@ -7,4 +7,5 @@ existing package manager, task runner, and project conventions.
 - `tooling-github-actions.md`: `actionlint`, `zizmor`, and `pinact` checks.
 - `tooling-gitnexus.md`: Bun-backed GitNexus via `mise`.
 - `tooling-hooks-dependencies.md`: Lefthook and dependency cooldown snippets.
-- `tooling-language-checks.md`: shell, Python, Rust, Go, and Ruby checks.
+- `tooling-language-checks.md`: shell, Dockerfile, Python, Rust, Go, and Ruby
+  checks.
