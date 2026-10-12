@@ -250,6 +250,11 @@ Do not run agent-config install from a delivery worktree. Test installer
 behavior with a synthetic `--root`: a temporary HOME alone can still link Claude
 settings to tracked files and let plugin setup write through that symlink.
 
+A worktree that Treeboot did not bootstrap has no installed dependencies, and
+`mise run lint` fails there with `Cannot find module '@jimeh/agent-harness'`.
+Run `mise run setup` to bootstrap it. A bare `bun install` skips the Git hooks
+and the CodeGraph index.
+
 Use [tooling notes](docs/agents/tooling-notes.md) for installer, headless CLI,
 provider-specific, and vendor-intake quirks. Use the
 [routing scenarios](docs/agents/routing-scenarios.md) when changing skill
