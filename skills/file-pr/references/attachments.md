@@ -73,14 +73,21 @@ When some files upload and others fail, `gh` still creates or updates the target
 with the ones that succeeded, exits non-zero, and prints the target's URL. Treat
 that as a published target, not a failed command:
 
-- Do not run the create command again.
+- Do not run the create or comment command again.
 - The body still holds the local path of each failed file. Retry those files
-  through `gh pr edit --attach` or `gh issue edit --attach`, which rewrites a
-  reference left in the existing body. If the retry fails, remove the reference.
+  through the matching edit, which keeps the existing body and rewrites the
+  reference left in it. For a description, use `gh pr edit --attach` or
+  `gh issue edit --attach`. For a comment, use
+  `gh pr comment --edit-last --attach` or
+  `gh issue comment --edit-last --attach`.
+- `--edit-last` edits the account's most recent comment on the target. Confirm
+  that the failed comment is still that one before using it.
+- If the retry fails or cannot reach the comment, remove the reference.
 - Read the body back once and confirm that no local path remains.
 
 `gh` uploads the files before it writes the target. When that write fails, the
 command prints no new target URL and the uploaded files stay on GitHub with
-nothing referencing them. Every rerun uploads them again, so do not retry
-blindly. Confirm through a read-only check whether the target was created or
+nothing referencing them. Every rerun uploads them again, and a rerun after a
+write that did land creates a duplicate. Do not retry blindly. Confirm through a
+read-only check whether the pull request, issue, or comment was created or
 updated, fix the cause the error names, and then run the command once.
