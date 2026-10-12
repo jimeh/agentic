@@ -21,8 +21,9 @@ tracker. Ask when a fork, multiple plausible remotes, or another ambiguity could
 send the issue to the wrong repository.
 
 Confirm that the repository has issues enabled and determine its visibility.
-Stop before publication if the proposed content may expose credentials, private
-data, security-sensitive details, or information unsuitable for that visibility.
+Stop before publication if the proposed content, including any screenshot or
+recording, may expose credentials, private data, security-sensitive details, or
+information unsuitable for that visibility. An upload cannot be undone.
 
 Do not create more issues than the user requested. Search open and closed issues
 for the same problem or outcome before filing. If a plausible duplicate exists,
@@ -57,11 +58,18 @@ interpolate issue prose into a shell command. Do not combine
 `gh issue create --template` with `--body` or `--body-file`. Render the selected
 template into the final body and apply its supported metadata explicitly.
 
+Upload each screenshot or recording the body references with `--attach` on the
+same create command. Read
+[GitHub attachments](../file-pr/references/attachments.md) first: it covers the
+requirements, how the body must reference a file, and recovery when an upload
+fails.
+
 Some `gh issue create` metadata, including issue type and issue relationships,
-may be applied after GitHub creates the base issue. If creation reports an
-error, do not retry until read-only inspection establishes whether the issue
-already exists and which metadata landed. Never create a second issue while the
-first attempt remains uncertain.
+may be applied after GitHub creates the base issue, and an attachment that fails
+to upload leaves the issue created. If creation reports an error, do not retry
+until read-only inspection establishes whether the issue already exists and
+which metadata landed. Never create a second issue while the first attempt
+remains uncertain.
 
 Take the issue URL from the create command's output and confirm it names the
 intended repository. When the request includes metadata applied after creation,

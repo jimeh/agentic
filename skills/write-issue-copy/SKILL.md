@@ -66,6 +66,15 @@ evidence. Omit credentials, private data, machine-local paths, usernames, host
 details, agent orchestration, review routing, token usage, and other internal
 workflow telemetry. State meaningful unknowns and limitations plainly.
 
+When a supplied or captured screenshot or recording shows the problem better
+than text, such as a visual defect, place it where it supports the description
+as a Markdown image that references the local file path, with alt text
+describing what it shows. Put a recording alone in its own paragraph. The
+publishing workflow uploads the files and replaces the paths, so name the
+referenced files to the caller and keep every reference above the footer. An
+attachment reference is the one local path that belongs. Prefer a code block
+when the exact text matters.
+
 If the user asks only for a title, return only the title. If they ask only for a
 description, return only the description.
 
@@ -83,8 +92,10 @@ Before returning the copy, verify that it:
 - distinguishes verified evidence from proposed work and open questions;
 - satisfies the applicable template without inventing required answers;
 - includes observable acceptance criteria when they help define completion;
-- carries the attribution footer described above; and
-- contains no stale, sensitive, machine-local, or process-only details.
+- carries the attribution footer described above;
+- places every attachment reference above the footer; and
+- contains no stale, sensitive, or process-only details, and no machine-local
+  path other than an attachment reference.
 
 Apply technical-communication's final clarity check before returning copy. Read
 it as a maintainer or implementer unfamiliar with the conversation: make the

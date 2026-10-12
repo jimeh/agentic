@@ -43,6 +43,15 @@ provenance footer. Verify that the copy reflects the whole branch, contains no
 template-discovery or machine-local details, and reports only validation that
 actually occurred.
 
+When the branch changes something a reviewer would judge by looking at it, such
+as UI, rendered output, or terminal layout, give `write-pr-copy` screenshots or
+a short recording of the result to place in the description. Use captures that
+verification already produced. Capture new ones only when the tools at hand can
+already run and drive the project; otherwise file without them and say so in the
+report. Review every file for credentials, private data, and unrelated content
+before attaching it: an upload cannot be undone, and anyone who can read the
+repository can open the file.
+
 Respect an explicit draft or ready-state request. Otherwise create a normal
 ready-for-review pull request when the branch is complete and verified; use a
 draft when known work or material validation remains.
@@ -56,6 +65,12 @@ prose into a shell command. Pass `--base`, `--head`, and the draft state
 explicitly. Before running the command, review the body file and the command's
 repository, base, head, draft flag, and title. Take the PR URL from the create
 command's output and confirm it names the intended repository.
+
+Upload each file the body references with `--attach` on the same create command.
+Read [GitHub attachments](references/attachments.md) first: it covers the
+requirements, how the body must reference a file, and recovery when an upload
+fails. A create command that exits non-zero after printing a PR URL has created
+the pull request, so repair that pull request instead of creating another.
 
 Return the PR URL and state. Do not wait for CI or reviews, request reviewers,
 respond to feedback, or mark a draft ready unless the user also invoked a
