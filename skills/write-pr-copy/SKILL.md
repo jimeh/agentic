@@ -65,9 +65,18 @@ repository template requires.
   results, and omit local helper paths.
 - Keep Testing distinct from Manual QA. Include manual steps only when they are
   concrete reviewer or user workflows, not generic CI instructions.
+- Show a visible result when screenshots or recordings of it exist. For a change
+  to UI, rendered output, or terminal layout, place each supplied or captured
+  file where it supports the text. Reference a screenshot as a Markdown image of
+  the local file path, with alt text describing what it shows. Reference a
+  recording with the same syntax and empty alt text, alone in its own paragraph.
+  The publishing workflow uploads the files and replaces the paths, so name the
+  referenced files to the caller. Prefer a code block when the exact text
+  matters, and never describe a visual that was not observed.
 - Omit machine-local paths, usernames, home directories, host details, template
   status, agent orchestration, review routing, token usage, and other internal
-  workflow telemetry.
+  workflow telemetry. An attachment reference is the one local path that
+  belongs.
 - Mention CI or review state only when the template requires it or it materially
   helps the reviewer, and only when the state was verified current for the head.
 - State meaningful limitations or residual risk plainly.
@@ -95,8 +104,10 @@ Before returning the copy, verify that it:
 - preserves the issue's intent, qualifications, and exact technical names;
 - makes only evidence-backed validation, rollout, CI, and review claims;
 - gives reviewers the material tradeoffs, limitations, and residual risk;
-- carries the attribution footer described above; and
-- contains no stale, machine-local, or process-only details.
+- carries the attribution footer described above;
+- places every attachment reference above the footer; and
+- contains no stale or process-only details, and no machine-local path other
+  than an attachment reference.
 
 Apply technical-communication's final clarity check before returning copy. Read
 it as a reviewer unfamiliar with the conversation: make the problem, intended

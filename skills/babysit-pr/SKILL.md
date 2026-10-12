@@ -167,6 +167,14 @@ agent-authored human-facing top-level comment, review body, inline comment, or
 reply with the comment line from the GitHub attribution style in the global
 instructions.
 
+When a comment or an updated description is clearer with a screenshot or
+recording, such as one showing a corrected visual defect, upload it with
+`--attach` on `gh pr comment` or `gh pr edit`. Read
+[GitHub attachments](../file-pr/references/attachments.md) first for the
+requirements, body references, and failure recovery. Review every file for
+credentials, private data, and unrelated content before attaching it: an upload
+cannot be undone. Inline review replies cannot carry attachments.
+
 Resolve a thread only after verifying its concern is fixed, invalid, or already
 satisfied on the current head. Leave unresolved anything still valid or
 uncertain. Never clear review state cosmetically.
