@@ -67,13 +67,13 @@ details, agent orchestration, review routing, token usage, and other internal
 workflow telemetry. State meaningful unknowns and limitations plainly.
 
 When a supplied or captured screenshot or recording shows the problem better
-than text, such as a visual defect, place it where it supports the description
-as a Markdown image that references the local file path, with alt text
-describing what it shows. Put a recording alone in its own paragraph. The
-publishing workflow uploads the files and replaces the paths, so name the
-referenced files to the caller and keep every reference above the footer. An
-attachment reference is the one local path that belongs. Prefer a code block
-when the exact text matters.
+than text, such as a visual defect, place it where it supports the description.
+Reference a screenshot as a Markdown image of the local file path, with alt text
+describing what it shows. Reference a recording with the same syntax and empty
+alt text, alone in its own paragraph. The publishing workflow uploads the files
+and replaces the paths, so name the referenced files to the caller and keep
+every reference above the footer. An attachment reference is the one local path
+that belongs. Prefer a code block when the exact text matters.
 
 If the user asks only for a title, return only the title. If they ask only for a
 description, return only the description.

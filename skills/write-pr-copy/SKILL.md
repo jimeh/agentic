@@ -67,11 +67,12 @@ repository template requires.
   concrete reviewer or user workflows, not generic CI instructions.
 - Show a visible result when screenshots or recordings of it exist. For a change
   to UI, rendered output, or terminal layout, place each supplied or captured
-  file where it supports the text, as a Markdown image that references the local
-  file path with alt text describing what it shows. Put a recording alone in its
-  own paragraph. The publishing workflow uploads the files and replaces the
-  paths, so name the referenced files to the caller. Prefer a code block when
-  the exact text matters, and never describe a visual that was not observed.
+  file where it supports the text. Reference a screenshot as a Markdown image of
+  the local file path, with alt text describing what it shows. Reference a
+  recording with the same syntax and empty alt text, alone in its own paragraph.
+  The publishing workflow uploads the files and replaces the paths, so name the
+  referenced files to the caller. Prefer a code block when the exact text
+  matters, and never describe a visual that was not observed.
 - Omit machine-local paths, usernames, home directories, host details, template
   status, agent orchestration, review routing, token usage, and other internal
   workflow telemetry. An attachment reference is the one local path that

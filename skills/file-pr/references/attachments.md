@@ -48,8 +48,11 @@ every file there. An appended file is acceptable in a comment.
   avoid the mismatch.
 - Write alt text that says what the image shows. The `<file>#<alt text>` flag
   form applies only to an appended file.
-- Put a recording's reference alone in its own paragraph. There it renders as a
-  player; anywhere else it becomes a link. A video takes no alt text.
+- Reference a recording with the same inline image syntax and empty alt text, as
+  in `![](/tmp/pr-evidence/demo.webm)`, alone in its own paragraph. There `gh`
+  replaces it with a bare URL that renders as a player; anywhere else it becomes
+  a link. `gh` rejects `#<alt text>` on a video and a video embedded through a
+  reference-style definition.
 - `gh` leaves a path inside a code fence or inline code span unchanged.
 
 ```sh
@@ -75,3 +78,9 @@ that as a published target, not a failed command:
   through `gh pr edit --attach` or `gh issue edit --attach`, which rewrites a
   reference left in the existing body. If the retry fails, remove the reference.
 - Read the body back once and confirm that no local path remains.
+
+`gh` uploads the files before it writes the target. When that write fails, the
+command prints no new target URL and the uploaded files stay on GitHub with
+nothing referencing them. Every rerun uploads them again, so do not retry
+blindly. Confirm through a read-only check whether the target was created or
+updated, fix the cause the error names, and then run the command once.
