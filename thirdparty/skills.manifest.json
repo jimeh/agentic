@@ -160,6 +160,18 @@
           "path": "skills/typesafe-ai"
         }
       ]
+    },
+    {
+      "id": "security-audit-skill",
+      "type": "git",
+      "url": "https://github.com/cloudflare/security-audit-skill.git",
+      "ref": "main",
+      "skills": [
+        {
+          "name": "security-audit",
+          "path": "skills/security-audit"
+        }
+      ]
     }
   ]
 }

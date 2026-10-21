@@ -91,6 +91,16 @@
       "contentHash": "sha256:436b5791f0fadab205aad521abf430fcbed443f1d53c4a55c5edbd0f34262d86",
       "skillsCliVersion": null
     },
+    "security-audit": {
+      "manifestSourceId": "security-audit-skill",
+      "sourceType": "git",
+      "sourceUrl": "https://github.com/cloudflare/security-audit-skill.git",
+      "ref": "main",
+      "resolvedCommit": "c1c8a8c1471069fb0e188eeaff69b8e8db6564a8",
+      "upstreamPath": "skills/security-audit",
+      "contentHash": "sha256:fa4dd5ed51db55b469497dc6757dc60240d9642763469ca65376abb9045322c2",
+      "skillsCliVersion": null
+    },
     "shadcn": {
       "manifestSourceId": "ui",
       "sourceType": "git",
