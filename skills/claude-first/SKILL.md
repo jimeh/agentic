@@ -12,7 +12,7 @@ default executor for suitable hands-on work for the rest of the session. "Do
 this one yourself" overrides it for one task; the user can end the mode at any
 time.
 
-Opus 5.5 at high effort is the default delegated model, and Fable 5.1 at high
+Opus 5.5 at xhigh effort is the default delegated model, and Fable 5.1 at high
 effort is the alternative only when the user names Fable for the task. Honor
 explicit model and effort overrides.
 

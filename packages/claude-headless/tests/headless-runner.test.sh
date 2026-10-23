@@ -81,7 +81,7 @@ run_headless default
 grep -Fx -- '--model' "$capture_dir/default.args" >/dev/null
 grep -Fx -- 'claude-opus-5-5' "$capture_dir/default.args" >/dev/null
 grep -Fx -- '--effort' "$capture_dir/default.args" >/dev/null
-grep -Fx -- 'high' "$capture_dir/default.args" >/dev/null
+grep -Fx -- 'xhigh' "$capture_dir/default.args" >/dev/null
 grep -Fx -- '--setting-sources' "$capture_dir/default.args" >/dev/null
 grep -Fx -- 'user' "$capture_dir/default.args" >/dev/null
 grep -Fx -- '--permission-mode' "$capture_dir/default.args" >/dev/null
@@ -166,7 +166,7 @@ run_headless opus --model opus --setting-sources user,project \
   --permission-mode auto --session-id 11111111-1111-4111-8111-111111111111
 
 grep -Fx -- 'claude-opus-5-5' "$capture_dir/opus.args" >/dev/null
-grep -Fx -- 'high' "$capture_dir/opus.args" >/dev/null
+grep -Fx -- 'xhigh' "$capture_dir/opus.args" >/dev/null
 grep -Fx -- 'user,project' "$capture_dir/opus.args" >/dev/null
 grep -Fx -- 'auto' "$capture_dir/opus.args" >/dev/null
 grep -Fx -- '--session-id' "$capture_dir/opus.args" >/dev/null
@@ -293,7 +293,7 @@ PATH="$fake_bin:$PATH" \
   OPUS_API_KEY="test" \
   "$repo_root/bin/opus" < /dev/null >/dev/null 2>/dev/null
 grep -Fx -- 'claude-opus-5-5' "$capture_dir/opus-wrapper.args" >/dev/null
-grep -Fx -- 'high' "$capture_dir/opus-wrapper.args" >/dev/null
+grep -Fx -- 'xhigh' "$capture_dir/opus-wrapper.args" >/dev/null
 if grep -F '[1m]' "$capture_dir/opus-wrapper.args" >/dev/null; then
   echo "opus wrapper forced 1M context" >&2
   exit 1

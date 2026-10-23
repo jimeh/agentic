@@ -94,7 +94,7 @@ Use `user,project` only for a trusted checkout where project guidance helps. Use
 `--setting-sources user` otherwise. Do not load `local` settings by default.
 Never use `--safe-mode`, `--bare`, or bypass-permissions mode.
 
-The runner defaults to Opus 5.5 at high effort. Pass `--model fable` for Fable
+The runner defaults to Opus 5.5 at xhigh effort. Pass `--model fable` for Fable
 5.1 at high effort only when the user names Fable for this task. Explicit user
 model or effort instructions win. Do not force a context size.
 

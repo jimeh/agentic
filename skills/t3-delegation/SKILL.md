@@ -54,11 +54,11 @@ Call `delegate_task` with:
 Route models as the CLI transports do. T3's own default effort can be lower, so
 never leave the effort unset.
 
-- Claude: Opus 5.5 at high effort. Use Fable 5.1 at high effort only when the
+- Claude: Opus 5.5 at xhigh effort. Use Fable 5.1 at high effort only when the
   user names Fable for this work.
 - Codex: the `model` and `model_reasoning_effort` in the user's Codex
   configuration (`${CODEX_HOME:-$HOME/.codex}/config.toml`), which is what
-  `codex-headless` runs with. Use high effort when the configuration sets none.
+  `codex-headless` runs with. Use xhigh effort when the configuration sets none.
 
 Explicit user model or effort instructions win.
 
