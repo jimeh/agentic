@@ -25,3 +25,9 @@ Evidence that shaped the rules:
 The hukube reviews covered the web surface only. The desktop and mobile
 references generalize the same workflow from platform tooling and conventions;
 revise them when real reviews on those surfaces show what holds.
+
+The web platform checks restate Vercel's Web Interface Guidelines
+(<https://github.com/vercel-labs/web-interface-guidelines>), which the vendored
+`web-design-guidelines` skill applies as a static source audit, as observations
+of the running app plus a source-only list for the orchestrator. House copy
+conventions from those guidelines apply only when a project adopts them.

@@ -165,7 +165,9 @@ corrected code in its first pass. Carry its decisions and deferred follow-ups
 into the PR description, and keep its brief, findings, decisions, and UX
 correction commits for later rounds. When applying Check Convergence, count UX
 correction rounds separately from code-review rounds, so the first `dual-review`
-findings are not treated as a later round.
+findings are not treated as a later round. An explicit user correction budget
+and the fifth-round checkpoint count batches across both streams unless the user
+scopes them otherwise.
 
 When the change has nothing a user sees or touches, skip this step and say so in
 the report.

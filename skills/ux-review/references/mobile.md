@@ -21,14 +21,32 @@ changes between versions.
     `revoke`, or `reset` sets permissions. `status_bar <device> override` gives
     stable screenshots. `simctl` cannot tap; pair it with one of the drivers
     above.
-  - Android: `adb exec-out screencap -p` captures the screen,
-    `adb shell input tap`, `swipe`, `text`, and `keyevent` drive it, and
-    `adb shell uiautomator dump` reads the view tree.
-    `adb shell cmd uimode night yes` switches to dark mode,
+  - Android: record the review device's serial and pass
+    `adb -s "$REVIEW_SERIAL"` on every command; stop if that device is
+    unavailable rather than falling back to the default device.
+    `adb exec-out screencap -p` captures the screen, `adb shell input tap`,
+    `swipe`, `text`, and `keyevent` drive it, and `adb shell uiautomator dump`
+    reads the view tree. `adb shell cmd uimode night yes` switches to dark mode,
     `adb shell settings put system font_scale` changes text size, and
     `adb shell pm revoke` withdraws a permission.
 
 Run `xcrun simctl help` or `adb help` for current options rather than guessing.
+
+## Platform checks
+
+- **Accessibility:** every control has a label and role in the view tree
+  (`uiautomator dump`, or the Xcode Accessibility Inspector), and the main path
+  works with VoiceOver or TalkBack when accessibility is in scope.
+- **Touch:** targets meet the platform minimum, about 44 by 44 points on iOS and
+  48 by 48 dp on Android, and gestures have a visible alternative.
+- **Text and display:** layouts hold at the largest text size, in dark mode,
+  with increased contrast, and with reduced motion.
+- **Input:** fields raise the fitting keyboard type, offer autofill where it
+  helps, and stay visible above the keyboard.
+- **Locale:** dates, numbers, and currency follow the device locale, and a
+  right-to-left language mirrors the layout when supported.
+
+Source-only rules come from the project's own guidelines, if it has any.
 
 ## Hazards
 

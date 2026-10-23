@@ -23,6 +23,20 @@ and OS shortcuts.
   native app without such tests has no scripted driver; plan its real-OS checks
   as confirmed computer use or as uncovered.
 
+## Platform checks
+
+- **Accessibility:** every control has a name and role in the platform's
+  accessibility tree, the main path works with the keyboard alone, and focus is
+  always visible.
+- **Platform conventions:** menus, shortcuts, window controls, dialogs, and drag
+  and drop follow the operating system's conventions.
+- **Display:** layouts hold at the minimum window size, with OS text scaling,
+  increased contrast, reduced motion, and both system themes.
+- **Locale:** dates, numbers, and currency follow the system locale.
+
+The renderer of a web-based desktop app also gets the web platform checks and
+source-only rules.
+
 ## Hazards
 
 - **Computer use acts on the user's real desktop.** Start it only after the user

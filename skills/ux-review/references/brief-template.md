@@ -79,7 +79,9 @@ as missed.
   widths on the web and desktop, including the minimum window; a small phone, a
   large phone with a cutout, both orientations, and a tablet on mobile when
   supported.
-- Both themes, and the largest text size or zoom the platform offers.
+- Both themes, the largest text size or zoom the platform offers, reduced
+  motion, and a second locale.
+- The surface's platform checks from its reference.
 - Every supported input: keyboard-only, pointer, touch and gestures, and a
   screen reader for the main path when accessibility is in scope.
 - A second engine or platform for the main path when the app supports more than

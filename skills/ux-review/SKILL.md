@@ -58,8 +58,8 @@ itself.
 
 ## Choose the Surface and Driver
 
-Identify each surface the change reaches and load its reference for drivers and
-hazards:
+Identify each surface the change reaches and load its reference for drivers,
+platform checks, and hazards:
 
 - [web](references/web.md): a browser, or the web build of a desktop app;
 - [desktop](references/desktop.md): Electron, Tauri, or native desktop apps,
@@ -124,7 +124,8 @@ drive the app, so do not use plan mode or the read-only transports of
 `claude-review` and `codex-review`.
 
 - Prefer a native subagent of the current host that can run a shell and reach
-  the driver.
+  the driver. Apply the same model and effort routing as below, and confirm the
+  host accepts those settings before launch.
 - Inside T3 Code, a child task through `t3-delegation` also works. Use the
   `review` role and a runtime mode that lets it start the app and its driver.
   `t3-delegation` describes each mode's limits: a Codex child in `auto` cannot
@@ -152,6 +153,9 @@ retry. Require the whole report in the reviewer's final message.
 Treat every finding as a candidate:
 
 - Reproduce each blocking finding yourself before acting on it.
+- Check the changed source against the source-only rules in the surface
+  reference and in any guidelines it had you fetch for the brief, and add hits
+  as findings with file and line.
 - Rule out the driver artifacts listed in the surface references. Re-run a
   keyboard focus finding with human-paced input. Treat a result seen only under
   emulation or on a simulator as low confidence when it depends on hardware,
