@@ -4,8 +4,8 @@ description: >-
   Have a fresh reviewer try a user-facing change in the running app, web,
   desktop, or mobile, as a new user would, then triage findings and re-check
   fixes. Use for requests to review the UX or usability of a running feature,
-  or when a delivery workflow selects it; static UI code audits use
-  web-design-guidelines.
+  to audit UI code against interface guidelines, or when a delivery workflow
+  selects it.
 ---
 
 # UX Review
@@ -55,6 +55,23 @@ workflow or at the user's request, name the commits that corrected UX findings
 as a risk area in its brief. UX corrections have introduced interaction
 regressions that only code review caught. This skill never starts a code review
 itself.
+
+## Static Audit
+
+When the user asks to audit UI code against interface guidelines without a
+running app, such as a component library or named files, run a static audit
+instead of the workflow below. It needs no reviewer, environment, or verdict,
+and it stays read-only.
+
+1. Fetch the current guidelines named in the surface reference, or use its
+   built-in list without the network and say so.
+2. Read the named files, or ask which files to audit when none are named.
+3. Check every rule, observable and source-only alike, against the source.
+4. Report findings grouped by file, one terse line each in `file:line` form,
+   with a pass mark for each clean file. Explain a finding only when its fix is
+   not obvious.
+
+House conventions apply only when the project adopts them, as in the review.
 
 ## Choose the Surface and Driver
 

@@ -30,4 +30,7 @@ The web platform checks restate Vercel's Web Interface Guidelines
 (<https://github.com/vercel-labs/web-interface-guidelines>), which the vendored
 `web-design-guidelines` skill applies as a static source audit, as observations
 of the running app plus a source-only list for the orchestrator. House copy
-conventions from those guidelines apply only when a project adopts them.
+conventions from those guidelines apply only when a project adopts them. The
+static audit replaces that vendored skill, which is excluded from installation.
+It fetches both the review checklist (`command.md`) and the build-time rules
+(`AGENTS.md`) because each carries rules the other lacks.

@@ -64,7 +64,7 @@ targetRoots = ["~/.agents/skills"]
 
 [[skillSymlinks]]
 sourceRoot = "thirdparty/skills"
-exclude = ["unslop"]
+exclude = ["unslop", "web-design-guidelines"]
 targetRoots = ["~/.claude/skills", "~/.agents/skills"]
 
 [claude]

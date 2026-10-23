@@ -62,8 +62,10 @@ implementation, and review workers for both engines are installed into both
 `~/.claude/skills/` and `~/.agents/skills/`. The `codex-first` and
 `codex-computer-use` handoffs remain Claude-only; `claude-first` remains
 Codex-only. `multi-agent-execution` contains Claude-specific routing and stays
-Claude-only. `react-high-performance` and vendored `unslop` remain in source but
-are excluded from installation. Base rules own the shared writing fundamentals.
+Claude-only. `react-high-performance` and the vendored `unslop` and
+`web-design-guidelines` skills remain in source but are excluded from
+installation; `ux-review` covers the Web Interface Guidelines, including static
+audits. Base rules own the shared writing fundamentals.
 
 The CLI worker skills use the corresponding headless runner for model routing,
 streaming, sessions, and private artifacts. Both share `packages/agent-headless`
