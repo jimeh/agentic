@@ -11,7 +11,9 @@ Use Codex when the right next step is to observe or operate a running UI. Claude
 stays responsible for planning, interpretation, validation, summarising, and
 deciding next actions.
 
-This skill is for observation and verification, not implementation or review.
+This skill is for observation and verification, not implementation or code
+review. A `ux-review` run may use it as its reviewer transport; that skill's
+brief then replaces the prompting strategy below.
 
 Keep the `codex-headless` transport inside T3 Code as well. A Codex T3 child
 task has not been shown to expose Codex's computer-use tooling, so do not route

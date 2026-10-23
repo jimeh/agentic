@@ -14,7 +14,9 @@ earlier reviews; adapt them rather than paraphrasing them away.
   workers through native tools or CLIs unless the parent explicitly authorizes
   that structure.
 - Do not edit, create, or delete files in the repository, and do not commit,
-  stage, stash, reset, switch branches, push, or post anything.
+  stage, stash, reset, switch branches, push, or post anything. Name any ignored
+  scratch paths the project's recipes write to, such as a data directory, as the
+  only exception.
 - Save screenshots and scripts under an absolute scratch path outside the
   checkout.
 - Name the environment the reviewer may touch, the data it may create, change,
@@ -98,14 +100,16 @@ as missed.
    areas and the keyboard?
 6. Can a user ever lose work, or change something they cannot see, without a
    clear warning? Is it always clear what an action will act on?
-7. Did the project hand-roll something an established package does better? The
-   reviewer may read only the named source directory for this question, after
-   the rest of the review.
 
 Add feature-specific questions, such as:
 
 > Could a dead session ever be mistaken for a live one, including from the tab
 > strip alone?
+
+When a project rule prefers established packages over hand-rolled interaction
+code, also ask whether the feature hand-rolled something a package does better.
+Name the one source directory the reviewer may read for that question, after the
+rest of the review.
 
 ## 8. Out of scope
 
@@ -154,4 +158,7 @@ Put the whole report in the final message, not in a file.
 Carry the original brief, the findings, the triage decisions, and the corrected
 revision. Ask the reviewer to confirm each corrected finding in the running app,
 check what the corrections could disturb nearby, and report new problems as
-located in the correction. Do not ask for a new open-ended review.
+located in the correction. When a later correction changed an interaction
+without a UX finding behind it, such as a moved control, scope the round to that
+interaction, including whether a user still finds it without being told. Do not
+ask for a new open-ended review.

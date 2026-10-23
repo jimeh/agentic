@@ -50,8 +50,7 @@ non-goal.
 
 For a change a user sees or touches, the contract also says where each new
 control goes and which common pattern it follows, how each supported input
-reaches it, and what its empty, loading, and error states show. Placement left
-to implementation is rarely where a user looks.
+reaches it, and what its empty, loading, and error states show.
 
 Apply the global testing and verification rules. Keep a compact revision-bound
 evidence ledger: command or observation, scope, outcome, behavior proved, test
@@ -71,7 +70,9 @@ required by `dual-review`. If either engine remains unavailable, stop before
 mutation when practical; if it fails later, retain the draft and report the
 coverage gap. For a user-facing change, also confirm that the app can run in a
 local or test environment for `ux-review`, and report that coverage gap the same
-way when it cannot.
+way when it cannot. When its review will need computer use or other real-desktop
+automation, ask for that confirmation now, while the user is present; it covers
+this run's reviews.
 
 Honor explicit user correction budgets. With or without one, apply the Check
 Convergence section of `babysit-pr` to every correction round, including rounds
@@ -118,7 +119,9 @@ or external state; provision those separately when needed.
 
 Direct implementation by the orchestrator is acceptable when the change is small
 enough that delegation adds more overhead than perspective. Give any implementer
-the settled contract and focused verification expectations.
+the settled contract and focused verification expectations. For a user-facing
+change, those include checking the change in the running app at the sizes and
+themes the contract names.
 
 The implementer owns focused tests and checks while building. The orchestrator
 owns inspection and evidence sufficiency, filling only missing or invalidated
@@ -154,12 +157,15 @@ moving uncommitted implementation concurrently.
 ## Review the Experience
 
 When the change has a surface a user sees or touches, run `ux-review` on the
-committed feature head after the implementer's own visual check. It owns the
-review environment, the reviewer brief, triage, and the re-check. Batch its
-accepted findings into one correction round through the implementer, commit the
-corrections, and let its re-check confirm them before filing, so `dual-review`
-covers the corrected code in its first pass. Carry its decisions and deferred
-follow-ups into the PR description.
+committed feature head after the implementer's running-app check. It owns the
+review environment, the reviewer brief, triage, and the re-check. Send its
+accepted findings to the implementer as one batch, commit the corrections, and
+let its re-check confirm them before filing, so `dual-review` covers the
+corrected code in its first pass. Carry its decisions and deferred follow-ups
+into the PR description, and keep its brief, findings, decisions, and UX
+correction commits for later rounds. When applying Check Convergence, count UX
+correction rounds separately from code-review rounds, so the first `dual-review`
+findings are not treated as a later round.
 
 When the change has nothing a user sees or touches, skip this step and say so in
 the report.
@@ -176,8 +182,9 @@ practical, but treat CI as a delivery gate only on the intended final head.
 ## Run Independent Review
 
 Use `dual-review` against the pushed exact head. Supply the repository, base and
-head revisions, condensed feature contract, and evidence ledger, and ask it to
-retain resumable reviewer sessions for follow-up.
+head revisions, condensed feature contract, evidence ledger, and any UX
+correction commits as a risk area, and ask it to retain resumable reviewer
+sessions for follow-up.
 
 Accept only complete Codex and Claude coverage of the intended revision. Recheck
 the reconciled findings against the feature contract, then batch all confirmed
@@ -189,11 +196,12 @@ below. A new SHA alone does not invalidate unaffected evidence.
 
 Hand `babysit-pr` the open draft, reconciled internal findings, reviewed
 revisions and resumable session handles, evidence ledger, correction rounds
-already completed with their convergence outcomes, and any explicit user
-correction budget. Local reviewer findings remain actionable even when they are
-not represented on GitHub. That skill owns checks, feedback rounds, fixes,
-replies, thread resolution, normal correction commits and pushes, exact-head
-monitoring, and the final draft-to-ready transition.
+already completed with their convergence outcomes, the `ux-review` brief,
+findings, and decisions, and any explicit user correction budget. Local reviewer
+findings remain actionable even when they are not represented on GitHub. That
+skill owns checks, feedback rounds, fixes, replies, thread resolution, normal
+correction commits and pushes, exact-head monitoring, and the final
+draft-to-ready transition.
 
 Choose follow-up internal review by what the correction invalidates:
 
@@ -205,8 +213,9 @@ Choose follow-up internal review by what the correction invalidates:
   behavior, material scope expansion, or another change that invalidates both
   reviews.
 
-Add a `ux-review` re-check when a correction changes what a user sees or how
-they interact with it.
+Add a `ux-review` re-check, carrying its original brief, findings, and
+decisions, when a correction changes what a user sees or how they interact with
+it, and name that correction as a UX risk area in the code follow-up review.
 
 When an external reviewer was selected, use its provider-specific skill once on
 an internally accepted candidate rather than on every push. Feed its findings
@@ -216,9 +225,10 @@ verification separate from clearing a provider's blocking GitHub review state.
 ## Hand Back
 
 Before marking the PR ready, verify that the exact remote head has all required
-CI and composed review coverage, no valid blocking feedback remains, material
-risks are closed or explicitly accepted, and the delivery checkout safely holds
-the expected branch with the intended upstream.
+CI and composed review coverage, including any required `ux-review` re-check, no
+valid blocking feedback remains, material risks are closed or explicitly
+accepted, and the delivery checkout safely holds the expected branch with the
+intended upstream.
 
 Remove only workflow-created worktrees and implementation branches, and only
 after the delivery branch is safely handed back. Preserve the intake dirty-state

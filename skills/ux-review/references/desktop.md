@@ -17,13 +17,18 @@ and OS shortcuts.
 - **Computer use.** Claude's computer use where the host offers it, the
   `codex-computer-use` skill from a Claude session, or Codex's own computer use
   in a Codex session. It drives the real pointer and keyboard from screenshots.
-- **Platform accessibility automation** when the project already uses it, such
-  as macOS System Events through `osascript`, or Windows UI Automation.
+- **Platform UI automation** when the project already uses it, such as UI tests,
+  macOS System Events through `osascript`, or Windows UI Automation. It moves
+  the real desktop too, so it needs the same confirmation as computer use. A
+  native app without such tests has no scripted driver; plan its real-OS checks
+  as confirmed computer use or as uncovered.
 
 ## Hazards
 
-- **Computer use acts on the user's real desktop.** Limit it to the app under
-  review. Do not operate other apps, files, or signed-in accounts. Run the app
+- **Computer use acts on the user's real desktop.** Start it only after the user
+  confirms, as `SKILL.md` requires. Limit it to the app under review and the
+  minimum OS surfaces a named check needs, such as a Finder window on a scratch
+  folder. Never operate signed-in accounts or the user's own files. Run the app
   with a scratch profile or data directory. OS permission prompts for
   accessibility or screen recording are the user's to grant; stop and report
   them.

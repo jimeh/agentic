@@ -2,9 +2,9 @@
 
 First-party skill. It generalizes the "experience review" step run on the hukube
 feature stack in October 2026: nine reviews across PRs #8 to #15 and a follow-up
-on #14, each by a fresh Claude Opus 5.5 reviewer, plus a later Codex-coordinated
-PR (#22) that ran no independent review because the step lived only in the
-coordinator's briefs and Claude-only memory.
+on #14, each by a fresh Claude reviewer, plus a later Codex-coordinated PR (#22)
+that ran no independent review because the step lived only in the coordinator's
+briefs and Claude-only memory.
 
 Evidence that shaped the rules:
 

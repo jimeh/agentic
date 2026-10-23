@@ -28,13 +28,15 @@ changes between versions.
     `adb shell settings put system font_scale` changes text size, and
     `adb shell pm revoke` withdraws a permission.
 
-Run `simctl help` or `adb help` for current options rather than guessing.
+Run `xcrun simctl help` or `adb help` for current options rather than guessing.
 
 ## Hazards
 
 - **Use a dedicated simulator, emulator, or test device.** Never review on the
-  user's personal device or with their accounts. Erase or reset only a device
-  created or named for the review.
+  user's personal device or with their accounts. Create one for the review when
+  none is named for it, for example with `xcrun simctl create` or
+  `avdmanager create avd`, and erase or reset only such a device. Close it
+  afterwards, with `device_close` inside T3 Code.
 - **A simulator is not a device.** Performance, camera, haptics, push,
   biometrics, and sensors are approximate or missing. Label findings that depend
   on them as low confidence, or list them as not checked.
