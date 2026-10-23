@@ -1,0 +1,10 @@
+interface:
+  display_name: "Plan Feature"
+  short_description: "Settle an implementation contract before coding"
+  default_prompt:
+    "Use $plan-feature to settle a grounded implementation contract for this
+    feature, including verification and, for user-facing work, placement and
+    states."
+
+policy:
+  allow_implicit_invocation: true

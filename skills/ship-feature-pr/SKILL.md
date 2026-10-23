@@ -33,24 +33,11 @@ checkout is the only safe home of the feature branch until handback succeeds.
 
 ## Settle Scope and Evidence
 
-Resolve the requested outcome, remote base, repository instructions, and latest
-applicable plan. Reuse a user-approved plan when it still matches the code. Fill
-small code-grounded gaps directly; return material product, scope, or
-architecture choices to the user unless they explicitly delegated them.
-
-For a non-trivial feature without a plan, use a fresh planning perspective when
-available. Sanity-check the result against the actual code and freeze a concise
-implementation contract covering objective, constraints, expected scope,
-observable success, important failure paths, risks, non-goals, and proportionate
-verification.
-
-Map each material success, failure, boundary, regression, and supported-platform
-concern to a planned test or other evidence, or record it as an explicit
-non-goal.
-
-For a change a user sees or touches, the contract also says where each new
-control goes and which common pattern it follows, how each supported input
-reaches it, and what its empty, loading, and error states show.
+Resolve the remote base and run the preflight below, then use `plan-feature` to
+settle and freeze the implementation contract, including its verification map
+and, for a user-facing change, its experience decisions. Ask it for a plan file
+when the implementer will need one. Material product, scope, or architecture
+choices go back to the user unless they explicitly delegated them.
 
 Apply the global testing and verification rules. Keep a compact revision-bound
 evidence ledger: command or observation, scope, outcome, behavior proved, test
@@ -121,8 +108,8 @@ Direct implementation by the orchestrator is acceptable when the change is small
 enough that delegation adds more overhead than perspective. Give any implementer
 the settled contract and focused verification expectations. For a user-facing
 change, those include checking the change in the running app at the sizes and
-themes the contract names. For a web UI change, fetch the current build-time
-guidelines that the `ux-review` web reference names and put their rules in the
+themes the contract names. For a web UI change, put the guideline rules the
+contract settled, with the markup and CSS rules from the same fetch, in the
 implementer's brief, so they shape the code rather than only its review.
 
 The implementer owns focused tests and checks while building. The orchestrator
