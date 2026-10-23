@@ -36,10 +36,10 @@ host's web tool from both
 `https://raw.githubusercontent.com/vercel-labs/web-interface-guidelines/main/command.md`
 and
 `https://raw.githubusercontent.com/vercel-labs/web-interface-guidelines/main/AGENTS.md`;
-each carries rules the other lacks. It adds any observable rule this list lacks
-to the brief and keeps any source-only rule for its own check. Without the
-network, use this list and report that the rules were not refreshed. A static
-audit fetches the same files.
+`AGENTS.md` is the build-time version, and each carries rules the other lacks.
+It adds any observable rule this list lacks to the brief and keeps any
+source-only rule for its own check. Without the network, use this list and
+report that the rules were not refreshed. A static audit fetches the same files.
 
 - **Accessibility:** every control has an accessible name and its role comes
   from a native element (`button`, `a`, `label`, `table`) rather than an ARIA

@@ -121,7 +121,9 @@ Direct implementation by the orchestrator is acceptable when the change is small
 enough that delegation adds more overhead than perspective. Give any implementer
 the settled contract and focused verification expectations. For a user-facing
 change, those include checking the change in the running app at the sizes and
-themes the contract names.
+themes the contract names. For a web UI change, fetch the current build-time
+guidelines that the `ux-review` web reference names and put their rules in the
+implementer's brief, so they shape the code rather than only its review.
 
 The implementer owns focused tests and checks while building. The orchestrator
 owns inspection and evidence sufficiency, filling only missing or invalidated
