@@ -48,6 +48,11 @@ Map each material success, failure, boundary, regression, and supported-platform
 concern to a planned test or other evidence, or record it as an explicit
 non-goal.
 
+For a change a user sees or touches, the contract also says where each new
+control goes and which common pattern it follows, how each supported input
+reaches it, and what its empty, loading, and error states show. Placement left
+to implementation is rarely where a user looks.
+
 Apply the global testing and verification rules. Keep a compact revision-bound
 evidence ledger: command or observation, scope, outcome, behavior proved, test
 names or count when relevant, and environment limits. Evidence carries forward
@@ -64,7 +69,9 @@ explicit authorization.
 Before implementation, verify repository and base access plus both channels
 required by `dual-review`. If either engine remains unavailable, stop before
 mutation when practical; if it fails later, retain the draft and report the
-coverage gap.
+coverage gap. For a user-facing change, also confirm that the app can run in a
+local or test environment for `ux-review`, and report that coverage gap the same
+way when it cannot.
 
 Honor explicit user correction budgets. With or without one, apply the Check
 Convergence section of `babysit-pr` to every correction round, including rounds
@@ -144,6 +151,19 @@ even when implementation itself occurred in the delivery checkout. Create it
 from a captured revision after shared-checkout handoff; do not copy or perturb a
 moving uncommitted implementation concurrently.
 
+## Review the Experience
+
+When the change has a surface a user sees or touches, run `ux-review` on the
+committed feature head after the implementer's own visual check. It owns the
+review environment, the reviewer brief, triage, and the re-check. Batch its
+accepted findings into one correction round through the implementer, commit the
+corrections, and let its re-check confirm them before filing, so `dual-review`
+covers the corrected code in its first pass. Carry its decisions and deferred
+follow-ups into the PR description.
+
+When the change has nothing a user sees or touches, skip this step and say so in
+the report.
+
 ## File the Draft PR
 
 Use `file-pr` to push the delivery branch and create a draft pull request. Its
@@ -185,6 +205,9 @@ Choose follow-up internal review by what the correction invalidates:
   behavior, material scope expansion, or another change that invalidates both
   reviews.
 
+Add a `ux-review` re-check when a correction changes what a user sees or how
+they interact with it.
+
 When an external reviewer was selected, use its provider-specific skill once on
 an internally accepted candidate rather than on every push. Feed its findings
 through the same convergence rules and `babysit-pr` loop. Keep technical
@@ -203,7 +226,8 @@ baseline. If handback or cleanup is unsafe, retain the branch and draft PR and
 report the blocker.
 
 Report the PR URL and base, final head, shipped scope and deviations, review
-outcomes, proportionate verification, accepted risk, correction pushes, final
-checkout and branch, cleanup, and preserved local work. When a decision trail
-was used, include its material pivots, unresolved flags, path, and lifecycle.
-Leave merging to a separate explicit user instruction.
+outcomes including the UX review or why it was skipped, proportionate
+verification, accepted risk, correction pushes, final checkout and branch,
+cleanup, and preserved local work. When a decision trail was used, include its
+material pivots, unresolved flags, path, and lifecycle. Leave merging to a
+separate explicit user instruction.

@@ -1,0 +1,9 @@
+interface:
+  display_name: "UX Review"
+  short_description: "Fresh-eyes review of a feature in the running app"
+  default_prompt:
+    "Use $ux-review to have a fresh reviewer use this feature in the running
+    app, then triage the findings and re-check any fixes."
+
+policy:
+  allow_implicit_invocation: false
