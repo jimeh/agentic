@@ -89,7 +89,7 @@ grep -Fx -- 'plan' "$capture_dir/default.args" >/dev/null
 grep -Fx -- '--disallowed-tools' "$capture_dir/default.args" >/dev/null
 grep -Fx -- 'Skill(codex-analysis)' "$capture_dir/default.args" >/dev/null
 grep -Fx -- 'Skill(codex-computer-use)' "$capture_dir/default.args" >/dev/null
-grep -Fx -- 'Skill(codex-first)' "$capture_dir/default.args" >/dev/null
+grep -Fx -- 'Skill(implement-feature)' "$capture_dir/default.args" >/dev/null
 grep -Fx -- 'Skill(codex-implementation)' "$capture_dir/default.args" >/dev/null
 grep -Fx -- 'Skill(codex-review)' "$capture_dir/default.args" >/dev/null
 grep -Fx -- 'Skill(claude-analysis)' "$capture_dir/default.args" >/dev/null

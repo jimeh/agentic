@@ -37,13 +37,11 @@ staleSymlinkCleanup = [
   { sourceDir = "thirdparty/skills", targetDir = "~/.agents/skills" },
 ]
 
-# Bounded CLI workers are shared. Session modes and computer-use handoffs
-# remain directional; unused skills stay in source without resident descriptions.
+# Bounded CLI workers are shared. The computer-use handoff stays Claude-only;
+# unused skills stay in source without resident descriptions.
 [[skillSymlinks]]
 sourceRoot = "skills"
 exclude = [
-  "codex-first",
-  "claude-first",
   "codex-computer-use",
   "frontend-design-systems",
   "multi-agent-execution",
@@ -54,13 +52,8 @@ targetRoots = ["~/.claude/skills", "~/.agents/skills"]
 
 [[skillSymlinks]]
 sourceRoot = "skills"
-only = ["codex-first", "codex-computer-use", "multi-agent-execution"]
+only = ["codex-computer-use", "multi-agent-execution"]
 targetRoots = ["~/.claude/skills"]
-
-[[skillSymlinks]]
-sourceRoot = "skills"
-only = ["claude-first"]
-targetRoots = ["~/.agents/skills"]
 
 [[skillSymlinks]]
 sourceRoot = "thirdparty/skills"

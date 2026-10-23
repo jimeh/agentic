@@ -1,0 +1,9 @@
+interface:
+  display_name: "Implement Feature"
+  short_description: "Run implementation: direct or delegated, inspected"
+  default_prompt:
+    "Use $implement-feature to implement this settled change, choosing direct or
+    delegated work and the checkout, then inspect and integrate the result."
+
+policy:
+  allow_implicit_invocation: true

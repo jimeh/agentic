@@ -13,8 +13,8 @@ review, correction, and readiness mutations named here. It does not authorize
 merging, deploying, or releasing.
 
 Do not infer this workflow from requests to implement, file a PR, or babysit.
-Use the ordinary implementation, commit, file-pr, and babysit-pr workflows for
-those requests unless the user explicitly selects this skill.
+Use `implement-feature`, `commit`, `file-pr`, and `babysit-pr` for those
+requests unless the user explicitly selects this skill.
 
 ## Preserve the Delivery Checkout
 
@@ -77,40 +77,22 @@ once before invoking it. Otherwise omit external review by default. The
 ## Implement and Integrate
 
 Prepare the feature branch in the delivery checkout from a refreshed and
-verified base. Commit any tracked, feature-owned plan separately when it must be
-available to the implementer.
+verified base. Commit any tracked, feature-owned plan file separately when the
+implementer needs it.
 
-For non-trivial work, use a fresh same-engine implementer. By default, let one
-implementer edit the delivery checkout so its changes remain directly visible.
-This workflow's topology choice is authoritative over a delegated implementation
-skill's generic default; the concrete isolation conditions below still apply.
-Give it exclusive mutation ownership of that checkout until it hands control
-back: the orchestrator may inspect files and diffs, but must not edit files,
-mutate Git state, or run potentially mutating commands concurrently. Require the
-implementer to leave Git operations to the orchestrator. If another writer
-appears, pause and account for the resulting state rather than guessing
-ownership.
+Use `implement-feature` for the implementation, with these workflow choices,
+which are authoritative over its defaults:
 
-Use a separate worktree and branch for each implementer when multiple
-implementers run concurrently. Also isolate a single implementer when another
-actor must mutate the delivery checkout while it runs, or when the feature
-scope, local dirt, or broad tooling makes change attribution unsafe.
-Non-overlapping intake dirt alone does not require isolation. Keep
-implementation in the delivery checkout when destructive validation can run
-safely in its own disposable checkout after handoff. If that need arises while
-shared implementation is still moving, pause and capture it before validation or
-switch to isolation; otherwise isolate upfront when resets, perturbations,
-generated-output cleanup, watchers, services, or other environment state make
-that materially safer. Worktrees do not isolate shared processes, ports, caches,
-or external state; provision those separately when needed.
-
-Direct implementation by the orchestrator is acceptable when the change is small
-enough that delegation adds more overhead than perspective. Give any implementer
-the settled contract and focused verification expectations. For a user-facing
-change, those include checking the change in the running app at the sizes and
-themes the contract names. For a web UI change, put the guideline rules the
-contract settled, with the markup and CSS rules from the same fetch, in the
-implementer's brief, so they shape the code rather than only its review.
+- For non-trivial work, use a fresh same-engine implementer unless the user's
+  instruction or session routing preference names another engine. Direct
+  implementation by the orchestrator is acceptable when the change is small
+  enough that delegation adds more overhead than perspective.
+- The delivery checkout is the implementer's checkout by default, and the intake
+  snapshot is its starting baseline. Isolate under `implement-feature`'s
+  conditions; non-overlapping intake dirt alone does not require isolation.
+- Give the implementer the frozen contract, its verification map, and, for a
+  user-facing change, the experience decisions and guideline rules the contract
+  settled.
 
 The implementer owns focused tests and checks while building. The orchestrator
 owns inspection and evidence sufficiency, filling only missing or invalidated
@@ -118,30 +100,12 @@ evidence. Reviewers inspect independently and run focused reproducers only for
 concrete suspected defects. CI owns the clean-environment and repository-wide
 gates it actually runs.
 
-When the implementer hands back control, account for every changed and untracked
-path against that checkout's starting baseline: the intake snapshot for shared
-work, or the recorded clean starting state for an isolated worktree. Inspect the
-complete diff and evidence, and send settled corrections back through the same
-session when practical. In the delivery checkout, use `commit` to create the
-feature commit with explicit feature-owned scope. Before and after each feature
-commit, compare non-feature staged, unstaged, and untracked state with the
-captured baseline. Stop before push if any unrelated state changed.
-
-For isolated work, capture the complete result on its implementation branch
-before moving it. Record the delivery tip from which each implementation branch
-started and verify that the branch descends from it. If the delivery head has
-advanced, reconcile the implementation branch onto the current delivery head
-before integration. Integrate without sweeping in unrelated delivery-checkout
-changes, but never move, reset, or remove another implementer's active branch or
-checkout. Keep the implementation worktree and session until handback.
-
-For later corrections, reuse the implementer when practical. A shared-checkout
-implementer continues from the current delivery head. Realign an isolated
-implementation branch to the landed delivery head only after all previous work
-has been safely captured. Use a disposable worktree for destructive validation
-even when implementation itself occurred in the delivery checkout. Create it
-from a captured revision after shared-checkout handoff; do not copy or perturb a
-moving uncommitted implementation concurrently.
+In the delivery checkout, use `commit` to create each feature commit with
+explicit feature-owned scope. Before and after each feature commit, compare
+non-feature staged, unstaged, and untracked state with the intake snapshot. Stop
+before push if any unrelated state changed. Integrate isolated results as
+`implement-feature` describes, and keep each implementation worktree and session
+until handback.
 
 ## Review the Experience
 

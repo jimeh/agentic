@@ -64,7 +64,8 @@ Explicit user model or effort instructions win.
 
 The child starts from the task prompt and the project's instructions, without
 parent history. Write the calling skill's prompt contract into `task` in full,
-even though the child can usually load installed skills by name.
+even though the child can usually load installed skills by name. For
+implementation, that is the `implement-feature` brief.
 
 Nothing mechanically stops a child from delegating further: it has its own
 subagent and T3 tools, and the `claude-headless` denials do not apply. Include
@@ -103,14 +104,14 @@ git rev-parse --abbrev-ref HEAD
   the checkout until it finishes.
 - Implementation in a separate worktree, when the calling skill requires
   isolation or several implementers run concurrently: create each worktree
-  yourself under the temporary directory, as the calling skill's commands do,
-  and put its absolute path in the prompt. Prepare the worktree in the parent
-  first with the project's setup, so tools are trusted and dependencies are
-  installed, because a Codex child in `auto` can do neither. The child starts in
-  the thread's checkout, and its shell can return there between calls, so tell
-  it to work only in that worktree, to name the worktree path in every command,
-  and to touch no other checkout. Take a snapshot of the thread's checkout first
-  and confirm it is unchanged afterwards. T3 still shows the child against the
+  yourself under the temporary directory, as `implement-feature` shows, and put
+  its absolute path in the prompt. Prepare the worktree in the parent first with
+  the project's setup, so tools are trusted and dependencies are installed,
+  because a Codex child in `auto` can do neither. The child starts in the
+  thread's checkout, and its shell can return there between calls, so tell it to
+  work only in that worktree, to name the worktree path in every command, and to
+  touch no other checkout. Take a snapshot of the thread's checkout first and
+  confirm it is unchanged afterwards. T3 still shows the child against the
   thread's checkout, so judge the result from the worktree itself.
 
 `t3_thread_launch` can bind a thread to a worktree, but it starts a separate

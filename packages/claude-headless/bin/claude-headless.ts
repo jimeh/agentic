@@ -34,16 +34,15 @@ type ModelSelection = {
 
 const managedDelegationSkills = [
   "claude-analysis",
-  "claude-first",
   "claude-implementation",
   "claude-review",
   "dual-review",
+  "implement-feature",
   "review-pr",
   "ship-feature-pr",
   "multi-agent-execution",
   "codex-analysis",
   "codex-computer-use",
-  "codex-first",
   "codex-implementation",
   "codex-review",
 ];

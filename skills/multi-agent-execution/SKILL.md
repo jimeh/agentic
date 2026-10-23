@@ -2,8 +2,8 @@
 name: multi-agent-execution
 description: >-
   Coordinate scoped delegation when the user or an invoked workflow calls
-  for multiple agents. Owns decomposition, isolation, and Claude model
-  routing.
+  for multiple agents. Owns decomposition and Claude model routing;
+  implement-feature owns checkouts and integration.
 ---
 
 # Multi-Agent Execution
@@ -11,7 +11,8 @@ description: >-
 Use this skill when multi-agent execution is active, either because the user
 requested it or an invoked workflow calls for delegation. The invoking workflow
 decides whether and when to delegate; this skill governs decomposition, routing,
-isolation, and review once that decision is made.
+and review once that decision is made. `implement-feature` governs checkout
+topology, ownership, inspection, and integration for implementation work.
 
 ## Delegation
 
@@ -23,14 +24,9 @@ isolation, and review once that decision is made.
 - Start workers without inherited parent history. Use `fork_turns="none"` when
   supported, otherwise a fresh native or CLI context. Send a focused brief and
   prohibit further delegation unless the parent explicitly authorized it.
-- Give every concurrent implementation agent a dedicated worktree, and never let
-  multiple implementation agents edit the same checkout. For one implementer,
-  use the topology selected by the invoking workflow; it is authoritative for
-  that task. Otherwise follow the delegated implementation skill. When neither
-  defines one, prefer the current checkout if it can grant exclusive mutation
-  ownership and safely account for every change. Isolate when shared state,
-  unrelated dirt, destructive verification, or concurrent mutation creates
-  concrete conflict or attribution risk.
+- For implementation agents, follow `implement-feature` for the checkout,
+  ownership, inspection, and integration. The invoking workflow's topology
+  choice wins over its default.
 - Reconcile delegated results before acting on them.
 - Do not silently add agents or reviewers beyond the requested or documented
   workflow scope.

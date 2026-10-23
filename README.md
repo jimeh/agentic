@@ -97,9 +97,10 @@ Claude marketplace; the remaining plugin sources are retained but deprecated.
 Bounded `codex-*` and `claude-*` analysis, implementation, and review skills are
 available to both engines. They start workers through the headless runners, or
 as T3 Code child tasks through `t3-delegation` when the session runs inside T3
-Code. Session-mode skills remain directional. `react-high-performance` and
-vendored `unslop` are excluded from installation; shared writing guidance lives
-in `rules/base.md`. See [agent instructions](AGENTS.md) for selection and worker
+Code. `implement-feature` owns implementation orchestration for both engines.
+`react-high-performance` and the vendored `unslop` and `web-design-guidelines`
+skills are excluded from installation; shared writing guidance lives in
+`rules/base.md`. See [agent instructions](AGENTS.md) for selection and worker
 boundaries.
 
 Use `mise run setup` to bootstrap a delivery worktree, but do not run

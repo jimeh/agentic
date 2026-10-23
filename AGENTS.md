@@ -59,13 +59,13 @@ directory remains so previously installed links are removed.
 
 Skill symlink entries accept `only`/`exclude` glob lists. Bounded analysis,
 implementation, and review workers for both engines are installed into both
-`~/.claude/skills/` and `~/.agents/skills/`. The `codex-first` and
-`codex-computer-use` handoffs remain Claude-only; `claude-first` remains
-Codex-only. `multi-agent-execution` contains Claude-specific routing and stays
-Claude-only. `react-high-performance` and the vendored `unslop` and
-`web-design-guidelines` skills remain in source but are excluded from
-installation; `ux-review` covers the Web Interface Guidelines, including static
-audits. Base rules own the shared writing fundamentals.
+`~/.claude/skills/` and `~/.agents/skills/`, and `implement-feature` owns the
+orchestration they share. The `codex-computer-use` handoff remains Claude-only.
+`multi-agent-execution` contains Claude-specific routing and stays Claude-only.
+`react-high-performance` and the vendored `unslop` and `web-design-guidelines`
+skills remain in source but are excluded from installation; `ux-review` covers
+the Web Interface Guidelines, including static audits. Base rules own the shared
+writing fundamentals.
 
 The CLI worker skills use the corresponding headless runner for model routing,
 streaming, sessions, and private artifacts. Both share `packages/agent-headless`

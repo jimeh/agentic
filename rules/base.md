@@ -124,8 +124,10 @@ requirements and evidence, not the implementer's conclusions.
 To run a worker on another engine, or a separate worker that a native subagent
 cannot provide, use the matching `codex-*` or `claude-*` skill rather than
 calling a host delegation tool or a model CLI directly. The skill selects the
-transport and carries the model, effort, access, and verification rules. Inside
-T3 Code, load the `t3-delegation` skill before calling `delegate_task`.
+transport and carries the model, effort, and access rules; `implement-feature`
+owns how implementation work is briefed, inspected, and integrated, and how a
+user's request to route hands-on work to an engine for the session is honored.
+Inside T3 Code, load the `t3-delegation` skill before calling `delegate_task`.
 
 Delegated workers perform the task directly. Include an explicit prohibition on
 further native or CLI model delegation in each worker prompt unless the parent

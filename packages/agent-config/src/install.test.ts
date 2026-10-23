@@ -784,6 +784,7 @@ test("repository skill policy shares workers and removes disabled managed links"
     }),
   );
   const shared = [
+    "implement-feature",
     "codex-analysis",
     "codex-implementation",
     "codex-review",
@@ -791,12 +792,7 @@ test("repository skill policy shares workers and removes disabled managed links"
     "claude-implementation",
     "claude-review",
   ];
-  const retained = [
-    "codex-first",
-    "claude-first",
-    "codex-computer-use",
-    "react-high-performance",
-  ];
+  const retained = ["codex-computer-use", "react-high-performance"];
   for (const name of [...shared, ...retained]) {
     mkdirSync(join(root, "skills", name), { recursive: true });
     writeFileSync(join(root, "skills", name, "SKILL.md"), `# ${name}\n`);
@@ -819,6 +815,11 @@ test("repository skill policy shares workers and removes disabled managed links"
       join(home, target, "skills/unslop"),
     );
     mkdirSync(join(home, target, "skills/unmanaged"));
+    for (const retired of ["codex-first", "claude-first"])
+      symlinkSync(
+        join(root, "skills", retired),
+        join(home, target, "skills", retired),
+      );
   }
   const result = run(home, ["--root", root]);
   expect(result.status).toBe(0);
@@ -832,20 +833,14 @@ test("repository skill policy shares workers and removes disabled managed links"
     ).toBe(false);
     expect(existsSync(join(home, target, "skills/unslop"))).toBe(false);
     expect(existsSync(join(home, target, "skills/unmanaged"))).toBe(true);
+    for (const retired of ["codex-first", "claude-first"])
+      expect(() => lstatSync(join(home, target, "skills", retired))).toThrow();
     expect(
       readlinkSync(join(home, target, "skills/vercel-react-best-practices")),
     ).toBe(join(root, "thirdparty/skills/vercel-react-best-practices"));
   }
-  expect(existsSync(join(home, ".agents/skills/codex-first"))).toBe(false);
   expect(existsSync(join(home, ".agents/skills/codex-computer-use"))).toBe(
     false,
-  );
-  expect(existsSync(join(home, ".claude/skills/claude-first"))).toBe(false);
-  expect(readlinkSync(join(home, ".agents/skills/claude-first"))).toBe(
-    join(root, "skills/claude-first"),
-  );
-  expect(readlinkSync(join(home, ".claude/skills/codex-first"))).toBe(
-    join(root, "skills/codex-first"),
   );
   expect(readlinkSync(join(home, ".claude/skills/codex-computer-use"))).toBe(
     join(root, "skills/codex-computer-use"),

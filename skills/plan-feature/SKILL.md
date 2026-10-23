@@ -3,9 +3,9 @@ name: plan-feature
 description: >-
   Settle an implementation contract for a non-trivial feature or change before
   code is written: scope, success, failure paths, verification, and, for a
-  user-facing change, placement and states. Use when asked to plan a feature
-  or when a delivery workflow selects it; structural alternatives use
-  architect.
+  user-facing change, placement and states. Use when asked to plan a feature,
+  or when implement-feature or a delivery workflow needs a contract;
+  structural alternatives use architect.
 ---
 
 # Plan Feature
