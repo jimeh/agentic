@@ -90,6 +90,8 @@ grep -Fx -- '--disallowed-tools' "$capture_dir/default.args" >/dev/null
 grep -Fx -- 'Skill(codex-analysis)' "$capture_dir/default.args" >/dev/null
 grep -Fx -- 'Skill(codex-computer-use)' "$capture_dir/default.args" >/dev/null
 grep -Fx -- 'Skill(implement-feature)' "$capture_dir/default.args" >/dev/null
+grep -Fx -- 'Skill(plan-feature)' "$capture_dir/default.args" >/dev/null
+grep -Fx -- 'Skill(ux-review)' "$capture_dir/default.args" >/dev/null
 grep -Fx -- 'Skill(codex-implementation)' "$capture_dir/default.args" >/dev/null
 grep -Fx -- 'Skill(codex-review)' "$capture_dir/default.args" >/dev/null
 grep -Fx -- 'Skill(claude-analysis)' "$capture_dir/default.args" >/dev/null

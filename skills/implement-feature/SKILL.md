@@ -5,7 +5,8 @@ description: >-
   delegate, choose the checkout, brief and inspect a worker, integrate, and
   clean up. Use to implement a settled plan or feature, when a workflow or
   worker skill hands over implementation, or when the user routes hands-on work
-  to an engine for the session. Small fixes need no skill.
+  to an engine for the session. Small fixes need no skill unless a session
+  routing preference is active.
 ---
 
 # Implement Feature
@@ -17,10 +18,13 @@ started, monitored, and continued.
 
 ## Authority
 
-- Implementation authority covers editing files within the requested scope.
-  Committing on the user's branch needs commit authority. Pushing, opening a
-  pull request, or integrating into another checkout or the main branch needs
-  the user's say-so or an owning workflow that grants it.
+- Implementation authority covers editing files within the requested scope,
+  including staging an isolated result into the checkout the user asked you to
+  implement in. Committing on the user's branch needs commit authority. Pushing,
+  opening a pull request, or integrating into any other checkout or the main
+  branch needs the user's say-so or an owning workflow that grants it. A human
+  reviews the work before it ships; for a standalone change that usually means a
+  pull request, which needs that separate authority.
 - One writer per checkout. While a worker runs, the orchestrator may read files
   and diffs, but must not edit files, change Git state, or run commands that may
   mutate the checkout. If another writer appears, pause and account for the
@@ -60,21 +64,24 @@ settle it first.
 
 Prefer a native subagent of the current engine, started without parent history
 (`fork_turns="none"` where supported). Use the matching worker skill for the
-other engine, or when native tools cannot provide the isolation or continuation
-the task needs. Set the model and effort explicitly: `multi-agent-execution`
-routing in a Claude host, and the configured model and effort that
-`t3-delegation` describes in a Codex host. A worker skill applies its own
-transport's routing.
+other engine, or when native tools cannot provide the isolation, continuation,
+or model options the task needs; inside T3 Code, `t3-delegation` says when a
+child task is required. Set the model and effort explicitly:
+`multi-agent-execution` routing in a Claude host, and the configured model and
+effort that `t3-delegation` describes in a Codex host. A worker skill applies
+its own transport's routing. Other skills that delegate workers follow this
+paragraph.
 
 ### Session routing preference
 
-When the user routes hands-on work to an engine for the rest of the session,
-such as "use Codex for implementation from now on", honor it for later hands-on
-work until they end it, including small fixes, tests, and bulk reading. Use the
-matching worker skill: `codex-implementation` or `claude-implementation` for
-code changes, `codex-analysis` or `claude-analysis` for read-only work, and
-`codex-review` or `claude-review` for review. "Do this one yourself" overrides
-it for one task. The list of work kept with the orchestrator still applies.
+When the user routes work to an engine for the rest of the session, such as "use
+Codex for implementation from now on", honor it for the kinds of work they named
+until they end it, including small tasks of that kind. Implementation goes
+through `codex-implementation` or `claude-implementation`. When the user also
+names read-only work or review, use `codex-analysis` or `claude-analysis`, and
+`codex-review` or `claude-review`; `review-code` applies the preference when it
+selects a reviewer. "Do this one yourself" overrides it for one task. The list
+of work kept with the orchestrator still applies.
 
 ## Choose the Checkout
 
@@ -94,14 +101,29 @@ Use a separate worktree and branch for each implementer when:
   unsafe while implementation runs.
 
 Run destructive validation in a disposable worktree created from a captured
-revision after the implementer hands back; never copy or perturb a moving
-uncommitted implementation. Worktrees do not isolate processes, ports, caches,
-or external state; provision those separately.
+revision after the implementer hands back; the integration reference shows how
+to capture shared-checkout work without committing. Never copy or perturb a
+moving uncommitted implementation. Worktrees do not isolate processes, ports,
+caches, or external state; provision those separately.
 
 Before starting, record the starting baseline: the branch,
 `START_TIP="$(git rev-parse HEAD)"`, and, when unrelated changes stay in the
-checkout, the content-hash snapshot that `t3-delegation` describes. `git status`
-alone misses a commit and a second edit to an already modified file.
+checkout, a per-path snapshot. `git status` alone misses a commit and a second
+edit to an already modified file, and a single hash cannot say which path
+changed:
+
+```bash
+BASELINE="$(mktemp)"
+{ git diff --name-only -z HEAD; git ls-files -z -o --exclude-standard; } |
+  while IFS= read -r -d '' f; do
+    printf '%s\t%s\n' "$(git hash-object -- "$f" 2>/dev/null || echo missing)" "$f"
+  done | sort > "$BASELINE"
+printf 'index\t%s\n' "$(git diff --cached --binary | git hash-object --stdin)" \
+  >> "$BASELINE"
+```
+
+Run it again after the worker finishes and compare: a changed hash on a path
+that was dirty before is the worker's edit to the user's work.
 
 To isolate, create the worktree from the starting tip and prepare it with the
 project's setup before a worker uses it:
@@ -115,7 +137,8 @@ git worktree add -b "$BRANCH" "$WORKTREE_DIR" "$START_TIP"
 ```
 
 When the task depends on uncommitted input, use the current checkout or move
-only explicitly scoped input into the worktree. Never copy unrelated changes.
+only explicitly scoped input into the worktree, committed there as its own
+commit before the worker starts. Never copy unrelated changes.
 
 ## Brief the Implementer
 
@@ -138,7 +161,7 @@ Constraints:
   are required.
 - You run unattended; the parent cannot answer questions mid-task. Complete
   every step the objective covers, stopping early only for the conditions
-  above.
+  above, and do not end on a description of work you have not run.
 
 Files to inspect first:
 - <paths if known>
@@ -153,18 +176,19 @@ Report:
 - summary and files changed
 - material decisions and assumptions
 - verification run and result
-- limitations or blockers
+- limitations or blockers, and any missing requirement with the next step
 ```
 
 For a user-facing change, the verification includes checking the change in the
-running app at the sizes and themes the contract names. For a web UI change,
-include the guideline rules the contract settled, with the markup and CSS rules
-from the same fetch. Let the worker read the repository; do not paste diffs or
-project instructions.
+running app at the sizes and themes the contract names, whoever implements it.
+For a web UI change, include the guideline rules the contract settled, with the
+markup and CSS rules from the same fetch. Let the worker read the repository; do
+not paste diffs or project instructions.
 
 ## Inspect the Result
 
-After the worker's transport reports success:
+After the worker's transport reports success, or after your own direct
+implementation:
 
 - Inspect the status, the working-tree diff, and `git diff "$START_TIP" HEAD`. A
   worker may commit despite the brief, and a review of the working tree alone
@@ -180,13 +204,13 @@ After the worker's transport reports success:
 
 ## Correct
 
-Send settled corrections back to the same worker when practical. A resumed
-session gets only what is wrong, the revision boundary, and the proof expected.
-A T3 Code child task cannot be resumed, so its follow-up carries the full brief,
-as `t3-delegation` describes. A shared-checkout implementer continues from the
-current head. If the scope grows, stop and split it. If repeated attempts make
-no progress, reassess the approach or take the work back, and honor any budget
-the user set.
+Send settled corrections back to the same worker when practical, and start a
+fresh one when its task context no longer fits. A resumed session gets only what
+is wrong, the revision boundary, and the proof expected. A T3 Code child task
+cannot be resumed, so its follow-up carries the full brief, as `t3-delegation`
+describes. A shared-checkout implementer continues from the current head. If the
+scope grows, stop and split it. If repeated attempts make no progress, reassess
+the approach or take the work back, and honor any budget the user set.
 
 ## Integrate and Clean Up
 
@@ -205,7 +229,7 @@ commands. These rules hold regardless:
 - Never move, reset, or remove another implementer's active branch or checkout.
 - Reset a worktree to the destination only after the previous round is
   integrated, meaning committed on the destination. A staged squash is not
-  integrated.
+  integrated; apply later rounds as deltas, as the reference shows.
 - Keep a branch that backs an open pull request.
 
 Remove worktrees, branches, and artifacts this workflow created once the result
@@ -214,4 +238,6 @@ is delivered or abandoned.
 ## Report
 
 Report what changed, the files changed, the verification run and what it proves,
-deviations from the contract with their reasons, and what remains.
+deviations from the contract and any adjustments you made after inspection, with
+their reasons, and what remains. When the work was blocked or a requirement was
+missing, say why and what decision or information unblocks it.

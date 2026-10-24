@@ -154,8 +154,8 @@ drive the app, so do not use plan mode or the read-only transports of
   that transport's prompting guidance; the transport skill still owns
   invocation, artifacts, and failure handling.
 
-Set the model and effort explicitly, following the routing in `t3-delegation` or
-the chosen transport skill and any user instruction; an omitted model can fall
+Choose the engine, model, and effort as `implement-feature` describes for
+delegated workers, and honor any user instruction; an omitted model can fall
 back to a weaker default.
 
 When no fresh reviewer can reach the driver, do the review yourself with the
@@ -182,7 +182,9 @@ Treat every finding as a candidate:
 - Decide per finding: fix, fix differently with the reason, follow-up, or reject
   with the reason. Fix what would block, confuse, or slow a user or looks
   unfinished in the changed surface. Record taste and problems that predate the
-  change as follow-ups.
+  change as follow-ups. For a review of a whole surface rather than a change,
+  the reviewed surface is the scope, so its problems are findings, not
+  follow-ups.
 - A capability that the agreed contract, or the user's request when there is no
   contract, requires and the change lacks is a defect. Record a missing
   capability outside it as a follow-up and raise it as a product question in the
@@ -191,8 +193,9 @@ Treat every finding as a candidate:
 ## Correct and Re-Check
 
 With fix authority, make or hand over corrections as settled behavior: exact
-copy, the reviewer's evidence, a test for each behavior that can be tested, and
-a check in the running app at the sizes and themes that matter.
+copy, the reviewer's evidence, a regression test for each material behavioral
+correction, and a check in the running app at the sizes and themes that matter.
+Presentation-only corrections need running-app evidence rather than tests.
 
 Then re-check in the running app, pinned to the corrected revision or, for
 uncommitted corrections, a fresh checkout snapshot. Send the reviewer a

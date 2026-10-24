@@ -37,14 +37,16 @@ the `t3-code` MCP server's `delegate_task` tool, which may be listed as
 deferred.
 
 A child task starts in the current thread's checkout. When `implement-feature`
-isolates the work, have the child work in the worktree by absolute path, as
-`t3-delegation` describes. For a decision trail, create the private trail file
-yourself and put its path in the prompt.
+isolates the work, use `isolation: "worktree"` or have the child work in a
+parent-created worktree by absolute path, as `t3-delegation` describes. For a
+decision trail, create the private trail file yourself and put its path in the
+prompt.
 
 ## Run Claude
 
 Write the brief to a private artifact directory and run `claude-headless` from
-the checkout `implement-feature` chose, the current one or a worktree:
+the checkout `implement-feature` chose, the current one or a worktree, with
+`CHECKOUT_DIR` set to its absolute path:
 
 ```bash
 ARTIFACT_DIR="$(mktemp -d "${TMPDIR:-/tmp}/claude-implementation.XXXXXX")"
@@ -126,8 +128,9 @@ NEXT_PROMPT="$NEXT_ARTIFACT_DIR/prompt.md"
 ```
 
 The block relies on the runner's default model; add `--model` and `--effort`
-only to repeat what the initial run used when it overrode that default. Shape
-the follow-up as `implement-feature` describes.
+only to repeat what the initial run used when it overrode that default. When a
+decision trail is in use, repeat `-- --add-dir "$ARTIFACT_DIR"` so the trail
+stays writable. Shape the follow-up as `implement-feature` describes.
 
 ## Lifecycle
 

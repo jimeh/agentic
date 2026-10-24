@@ -35,9 +35,10 @@ checkout is the only safe home of the feature branch until handback succeeds.
 
 Resolve the remote base and run the preflight below, then use `plan-feature` to
 settle and freeze the implementation contract, including its verification map
-and, for a user-facing change, its experience decisions. Ask it for a plan file
-when the implementer will need one. Material product, scope, or architecture
-choices go back to the user unless they explicitly delegated them.
+and, for a user-facing change, its experience decisions. For a non-trivial
+feature, ask it for a fresh planning perspective, and ask for a plan file when
+the implementer will need one. Material product, scope, or architecture choices
+go back to the user unless they explicitly delegated them.
 
 Apply the global testing and verification rules. Keep a compact revision-bound
 evidence ledger: command or observation, scope, outcome, behavior proved, test
@@ -116,11 +117,13 @@ accepted findings to the implementer as one batch, commit the corrections, and
 let its re-check confirm them before filing, so `dual-review` covers the
 corrected code in its first pass. Carry its decisions and deferred follow-ups
 into the PR description, and keep its brief, findings, decisions, and UX
-correction commits for later rounds. When applying Check Convergence, count UX
-correction rounds separately from code-review rounds, so the first `dual-review`
-findings are not treated as a later round. An explicit user correction budget
-and the fifth-round checkpoint count batches across both streams unless the user
-scopes them otherwise.
+correction commits for later rounds.
+
+Check Convergence counts rounds in two ways. For deciding which findings to fix,
+count UX and code-review rounds separately, so the first `dual-review` findings
+count as a first round. For an explicit user correction budget and the
+fifth-round checkpoint, count every correction batch from both streams together,
+unless the user scoped the budget otherwise.
 
 When the change has nothing a user sees or touches, skip this step and say so in
 the report.

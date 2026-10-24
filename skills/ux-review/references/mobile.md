@@ -53,8 +53,9 @@ Source-only rules come from the project's own guidelines, if it has any.
 - **Use a dedicated simulator, emulator, or test device.** Never review on the
   user's personal device or with their accounts. Create one for the review when
   none is named for it, for example with `xcrun simctl create` or
-  `avdmanager create avd`, and erase or reset only such a device. Close it
-  afterwards, with `device_close` inside T3 Code.
+  `avdmanager create avd`, and erase or reset only such a device. Afterwards,
+  shut it down, with `device_close` and `shutdown: true` inside T3 Code, and
+  delete a device you created.
 - **A simulator is not a device.** Performance, camera, haptics, push,
   biometrics, and sensors are approximate or missing. Label findings that depend
   on them as low confidence, or list them as not checked.

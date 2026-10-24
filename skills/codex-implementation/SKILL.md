@@ -31,13 +31,14 @@ inside T3 Code when the host says so or offers the `t3-code` MCP server's
 `delegate_task` tool, which may be listed as deferred.
 
 A child task starts in the current thread's checkout. When `implement-feature`
-isolates the work, have the child work in the worktree by absolute path, as
-`t3-delegation` describes.
+isolates the work, use `isolation: "worktree"` or have the child work in a
+parent-created worktree by absolute path, as `t3-delegation` describes.
 
 ## Run Codex
 
 Write the brief to a private artifact directory and run `codex-headless` from
-the checkout `implement-feature` chose, the current one or a worktree:
+the checkout `implement-feature` chose, the current one or a worktree, with
+`CHECKOUT_DIR` set to its absolute path:
 
 ```bash
 ARTIFACT_DIR="$(mktemp -d "${TMPDIR:-/tmp}/codex-implementation.XXXXXX")"

@@ -38,7 +38,11 @@ Use the calling skill's headless CLI transport instead when:
 - the user explicitly asks for the CLI.
 
 A same-provider worker may still use the host's native subagent tool when the
-calling skill prefers one and that tool supports the selected model.
+calling skill prefers one, that tool supports the selected model, and no model
+options are requested or inherited. When `orchestrator_capabilities` reports
+nonempty `inheritedOptions` for the same provider and model, or the task needs
+specific options such as effort, use a child task: native subagents cannot
+reliably apply T3 model options.
 
 ## Start the worker
 
@@ -73,8 +77,14 @@ the calling skill's prohibition on nested delegation in every prompt.
 
 ## Access and workspace
 
-A child task starts in the current thread's checkout, on the same branch, and
-`delegate_task` cannot bind it elsewhere. No mode gives a read-only sandbox.
+A child task starts in the current thread's checkout, on the same branch, unless
+`delegate_task` sets `isolation: "worktree"`. That creates a separate worktree
+under `~/.t3/worktrees/<project>/` on a new `t3/...` branch at the parent's
+current commit, runs the project's setup, and does not copy uncommitted edits.
+T3 can rename that branch after the task, and the worktree stays after the child
+finishes, so read its path and branch from `git worktree list` or the child
+thread when integrating, and remove it during cleanup. No mode gives a read-only
+sandbox.
 
 Set `interactionMode` to `default` for every worker. An omitted value inherits
 the parent's mode, and plan mode adds no sandbox.
@@ -103,16 +113,18 @@ git rev-parse --abbrev-ref HEAD
   one implementer there at a time, and give it exclusive mutation ownership of
   the checkout until it finishes.
 - Implementation in a separate worktree, when the calling skill requires
-  isolation or several implementers run concurrently: create each worktree
-  yourself under the temporary directory, as `implement-feature` shows, and put
-  its absolute path in the prompt. Prepare the worktree in the parent first with
-  the project's setup, so tools are trusted and dependencies are installed,
-  because a Codex child in `auto` can do neither. The child starts in the
-  thread's checkout, and its shell can return there between calls, so tell it to
-  work only in that worktree, to name the worktree path in every command, and to
-  touch no other checkout. Take a snapshot of the thread's checkout first and
-  confirm it is unchanged afterwards. T3 still shows the child against the
-  thread's checkout, so judge the result from the worktree itself.
+  isolation or several implementers run concurrently: when the starting state is
+  committed, prefer `isolation: "worktree"`, and record the parent's `HEAD` as
+  the starting tip. Otherwise, create each worktree yourself under the temporary
+  directory, as `implement-feature` shows, and put its absolute path in the
+  prompt. Prepare the worktree in the parent first with the project's setup, so
+  tools are trusted and dependencies are installed, because a Codex child in
+  `auto` can do neither. The child starts in the thread's checkout, and its
+  shell can return there between calls, so tell it to work only in that
+  worktree, to name the worktree path in every command, and to touch no other
+  checkout. Take a snapshot of the thread's checkout first and confirm it is
+  unchanged afterwards. T3 still shows the child against the thread's checkout,
+  so judge the result from the worktree itself.
 
 `t3_thread_launch` can bind a thread to a worktree, but it starts a separate
 top-level thread. Use it only when the user asks for one.

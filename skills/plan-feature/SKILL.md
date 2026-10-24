@@ -39,19 +39,17 @@ recommended shape and make the choice the first open question.
 
 ## Get a Fresh Perspective
 
-A change is non-trivial when it touches several modules, adds user-facing
-behavior, or has a failure path the request does not settle. For one, get one
-fresh perspective without parent history: a fresh planner when no plan exists,
-or a fresh reviewer of the draft or updated plan when one does. One fresh
-perspective covers the whole planning step, including an `architect` pass.
+Get one fresh perspective without parent history when an owning workflow or the
+user asks for one, or when the change spans several modules and has a failure
+path the request does not settle. Otherwise plan directly. The fresh perspective
+is a fresh planner when no plan exists, or a fresh reviewer of the draft or
+updated plan when one does, and one covers the whole planning step, including an
+`architect` pass.
 
-Prefer a native subagent of the current engine, started without parent history
-and told not to delegate further, unless the user names another engine. Set its
-model and effort explicitly, following the host's delegation routing:
-`multi-agent-execution` in a Claude host, and the configured model and effort
-that `t3-delegation` describes in a Codex host. When delegation is unavailable
-or the user declines it, plan directly and say so. Check the result against the
-code before adopting it.
+Start it as `implement-feature` describes for delegated workers, told not to
+delegate further, unless the user names another engine. When delegation is
+unavailable or the user declines it, plan directly and say so. Check the result
+against the code before adopting it.
 
 ## Write the Contract
 

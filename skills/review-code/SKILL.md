@@ -32,7 +32,9 @@ delegated reviewer ignores this routing and reviews directly.
 For a generic review request, inspect directly if this session did not author
 the change. If it did, use a fresh native reviewer without inherited history
 (`fork_turns="none"` where supported). Supply a compact brief, not the authoring
-conversation or conclusions.
+conversation or conclusions. When the user set a session routing preference that
+covers review, as `implement-feature` describes, use that engine's review skill
+instead.
 
 Use codex-review or claude-review when the user explicitly selects that CLI
 transport, when the user names an engine the current host has no native worker
