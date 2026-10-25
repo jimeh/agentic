@@ -2,10 +2,9 @@
 name: ux-review
 description: >-
   Have a fresh reviewer try a user-facing change in the running app, web,
-  desktop, or mobile, as a new user would, then triage findings and re-check
-  fixes. Use for requests to review the UX or usability of a running feature,
-  to audit UI code against interface guidelines, or when a delivery workflow
-  selects it.
+  desktop, or mobile, then triage findings and re-check fixes; also audits UI
+  code against interface guidelines. Use only when explicitly requested or
+  required by a user-selected ship-feature-pr workflow.
 ---
 
 # UX Review
@@ -46,8 +45,11 @@ emulator, or test device, never on the user's personal device.
 
 ## When to Run
 
-Run when the user asks or an owning workflow selects this skill. A change with
-nothing a user sees or touches skips it, and the report says so.
+Run only when the user explicitly asks for a UX review or a guideline audit, or
+when a workflow the user selected, such as `ship-feature-pr`, requires it.
+Finishing a UI change is not a request: the implementer's own running-app check
+covers it. A change with nothing a user sees or touches skips it, and the report
+says so.
 
 When an implementer built the change, run it after the implementer has checked
 the change in the running app. When a code review follows, whether in an owning

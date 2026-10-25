@@ -6,4 +6,4 @@ interface:
     app, then triage the findings and re-check any fixes."
 
 policy:
-  allow_implicit_invocation: true
+  allow_implicit_invocation: false
