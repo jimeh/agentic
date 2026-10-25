@@ -70,7 +70,7 @@ claude-headless \
   < "$PROMPT"
 ```
 
-The runner defaults to Opus 5.5 at xhigh effort. Pass `--model fable` for Fable
+The runner defaults to Opus 5.5 at high effort. Pass `--model fable` for Fable
 5.1 at high effort only when the user names Fable for this task. Pass an
 explicit `--effort` only when the user overrides the model-family default.
 Context size is Claude CLI's decision.

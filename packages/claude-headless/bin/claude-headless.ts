@@ -157,11 +157,11 @@ function parseArgs(argv: string[]): Options {
 // is always explicit because Opus 5.5 defaults to medium.
 const KNOWN_MODELS: Record<string, { effort: string; model: string }> = {
   "claude-fable-5-1": { effort: "high", model: "claude-fable-5-1" },
-  "claude-opus-5-5": { effort: "xhigh", model: "claude-opus-5-5" },
+  "claude-opus-5-5": { effort: "high", model: "claude-opus-5-5" },
   fable: { effort: "high", model: "claude-fable-5-1" },
   "fable-5-1": { effort: "high", model: "claude-fable-5-1" },
-  opus: { effort: "xhigh", model: "claude-opus-5-5" },
-  "opus-5-5": { effort: "xhigh", model: "claude-opus-5-5" },
+  opus: { effort: "high", model: "claude-opus-5-5" },
+  "opus-5-5": { effort: "high", model: "claude-opus-5-5" },
 };
 
 function selectModel(requestedModel: string, effort?: string): ModelSelection {
