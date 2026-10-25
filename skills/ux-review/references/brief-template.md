@@ -19,6 +19,12 @@ earlier reviews; adapt them rather than paraphrasing them away.
   only exception.
 - Save screenshots and scripts under an absolute scratch path outside the
   checkout.
+- When the user did not consent to computer use and OS automation for this run:
+
+> Do not use computer use, OS automation, or any tool that asks for desktop or
+> OS permission. If a tool asks for an approval, stop using it and list the
+> check it served as not checked.
+
 - Name the environment the reviewer may touch, the data it may create, change,
   or delete, and what it must never touch.
 
@@ -131,9 +137,10 @@ Omit this section when a stricter cold review matters more than the comparison.
 
 Put the whole report in the final message, not in a file.
 
-- Findings ordered by harm, each with what was seen, steps or a screenshot path,
-  the driver, platform or device, theme, and size, what a user expects instead
-  with the comparable pattern, a suggested fix, and a severity:
+- Findings ordered by harm, each with what was seen, the screenshot you viewed,
+  the repro script and step that reach it, the driver, platform or device,
+  theme, and size, what a user expects instead with the comparable pattern, a
+  suggested fix, and a severity:
   - **blocks**: a user cannot complete a task, loses work, or is misled about
     what happened;
   - **confuses**: a user is likely to misread state or take the wrong action;
@@ -152,15 +159,22 @@ Put the whole report in the final message, not in a file.
 - How discovery went.
 - Not checked, with reasons. Do not claim a check you did not make.
 - Verdict: ready, ready after named fixes, or not ready.
-- Screenshot list, one line each.
+- Screenshots you viewed, one line each. Judge how the app looks only from
+  screenshots you viewed; a saved file you did not open is not evidence.
+- Repro scripts: keep the driver scripts you ran, each runnable from a fresh
+  start of the app with one command, and list those commands. A re-check replays
+  them.
 - Cleanup confirmation.
 
 ## Follow-up round
 
-Carry the original brief, the findings, the triage decisions, and the corrected
-revision. Ask the reviewer to confirm each corrected finding in the running app,
-check what the corrections could disturb nearby, and report new problems as
-located in the correction. When a later correction changed an interaction
-without a UX finding behind it, such as a moved control, scope the round to that
-interaction, including whether a user still finds it without being told. Do not
-ask for a new open-ended review.
+Carry the path to the saved brief, or the brief itself when the reviewer cannot
+read it, with the findings, the triage decisions, the repro scripts, and the
+corrected revision. Ask the reviewer to replay each corrected finding's script
+first, then confirm the finding in the running app by eye, check what the
+corrections could disturb nearby, and report new problems as located in the
+correction. A script that no longer reaches its state is a result to report.
+When a later correction changed an interaction without a UX finding behind it,
+such as a moved control, scope the round to that interaction, including whether
+a user still finds it without being told. Do not ask for a new open-ended
+review.

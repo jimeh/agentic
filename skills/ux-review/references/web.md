@@ -15,13 +15,16 @@ tool behavior changes between versions.
    engine, such as WebKit, when the app supports more than one.
 2. **agent-browser** in a fresh named session for each run, with absolute
    screenshot paths and a bounded timeout around `screenshot`.
-3. **Host preview tools**, such as T3 Code's `preview_*` tools. Always open a
-   new tab with `reuseExistingTab: false` and pass its `tabId` on every call; an
-   omitted `tabId` can fall back to the user's visible tab. Pass a scratch
-   `profileId` from `preview_status`. When none exists, ask the user or switch
-   drivers; never use the default profile, which carries the user's logins.
-   Close the tab during cleanup. Older T3 Code builds refused these tools to
-   native subagents, so confirm the reviewer can call them before briefing.
+3. **Host preview tools**, such as T3 Code's `preview_*` tools, only for checks
+   that need no screenshot or snapshot. Their snapshots have timed out against a
+   local app, from parent threads and child tasks alike, while clicks and keys
+   still arrived. Always open a new tab with `reuseExistingTab: false` and pass
+   its `tabId` on every call; an omitted `tabId` can fall back to the user's
+   visible tab. Pass a scratch `profileId` from `preview_status`. When none
+   exists, ask the user or switch drivers; never use the default profile, which
+   carries the user's logins. Close the tab during cleanup. Older T3 Code builds
+   refused these tools to native subagents, so confirm the reviewer can call
+   them before briefing.
 
 ## Platform checks
 

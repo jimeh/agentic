@@ -98,8 +98,9 @@ subagent or child task to call.
   instructions, or the task runner. When none exists and the review will recur,
   suggest `create-verification-skill` in the report.
 - Give the reviewer its own app instance, data directory or profile, and driver
-  session: a browser context, a desktop window, or a dedicated simulator. A
-  shared instance blocks fault states and leaves its debris behind.
+  session: a browser context, a desktop window, or a dedicated simulator. Start
+  each round with a fresh data directory or profile. A shared or reused instance
+  blocks fault states and leaves its debris behind.
 - Prepare the states the reviewer cannot easily produce itself, such as limited
   permissions, a backend it may stop or kill, offline or flaky network, a
   version mismatch, large data, a second window, or an app killed in the
@@ -116,7 +117,8 @@ subagent or child task to call.
 Build the brief from [the brief template](references/brief-template.md), which
 holds the section order, the severity scale, the output contract, and wording
 that worked. Include the hazards from the surface references and the project's
-own notes. These rules decide the review's value:
+own notes. Save the brief to a file in the scratch directory, so later rounds
+can point to it. These rules decide the review's value:
 
 - Describe the feature as capabilities in user terms, not where its controls
   are. Finding the feature is part of the review unless the brief says discovery
@@ -131,7 +133,8 @@ own notes. These rules decide the review's value:
 - List known issues, owner decisions, and standing project rules, such as a
   restriction on new key bindings, so the reviewer neither reports them nor
   proposes fixes that break them.
-- Include the prohibition on nested delegation.
+- Include the prohibition on nested delegation, and state whether the user
+  consented to computer use and OS automation for this run.
 
 ## Run the Reviewer
 
@@ -140,30 +143,36 @@ Start one fresh reviewer with no parent history, explicitly using
 drive the app, so do not use plan mode or the read-only transports of
 `claude-review` and `codex-review`.
 
+The reviewer runs on your own harness and model at your effort, unless the user,
+a session routing preference that covers UX review, or an owning workflow names
+another; start a named engine as `implement-feature` describes for delegated
+workers. Where the host does not inherit your model and effort, set them
+explicitly, using high effort when yours is unknown, because an omitted model
+can fall back to a weaker default.
+
 - Prefer a native subagent of the current host that can run a shell and reach
-  the driver. Apply the same model and effort routing as below, and confirm the
-  host accepts those settings before launch.
-- Inside T3 Code, a child task through `t3-delegation` also works. Use the
-  `review` role and a runtime mode that lets it start the app and its driver.
-  `t3-delegation` describes each mode's limits: a Codex child in `auto` cannot
-  listen on a local port or write under the home directory, so a dev server or a
-  simulator install then runs in the parent, which passes the result in the
-  brief.
+  the driver.
+- Inside T3 Code, a child task through `t3-delegation` also works, on this
+  thread's provider instance and model with its inherited options. Use the
+  `review` role and a runtime mode that lets it start the app and its driver. A
+  Codex child in `auto` cannot launch Chromium, connect to a local port, or
+  write under the home directory, so a Codex reviewer of a local app needs
+  `full-access`; say in the report that its sandbox was off.
 - When only another transport can reach the driver, such as `codex-computer-use`
   for computer use from a Claude session, use it. This skill's brief replaces
   that transport's prompting guidance; the transport skill still owns
   invocation, artifacts, and failure handling.
-
-Choose the engine, model, and effort as `implement-feature` describes for
-delegated workers, and honor any user instruction; an omitted model can fall
-back to a weaker default.
 
 When no fresh reviewer can reach the driver, do the review yourself with the
 same brief, and report that it lacked a fresh reviewer.
 
 Expect 15 to 45 minutes. Apply the reviewer lifecycle rules of the provider
 skills: a quiet reviewer is normal, and only a diagnosed failure justifies a
-retry. Require the whole report in the reviewer's final message.
+retry. A reviewer stopped on an approval prompt, such as a computer-use or OS
+permission request, has gone beyond its brief or its mode. Never answer the
+prompt for the user. Cancel the reviewer, then rerun it with a brief or mode
+that avoids the prompt, or report the check as uncovered. Require the whole
+report in the reviewer's final message.
 
 ## Triage
 
@@ -198,15 +207,22 @@ correction, and a check in the running app at the sizes and themes that matter.
 Presentation-only corrections need running-app evidence rather than tests.
 
 Then re-check in the running app, pinned to the corrected revision or, for
-uncommitted corrections, a fresh checkout snapshot. Send the reviewer a
-follow-up scoped to the corrected findings and what those corrections could
-disturb nearby. Inside T3 Code, that is a new child task carrying the original
-brief, the findings, and the decisions. It is not another open-ended review. The
-implementer's or your own check is the minimum for polish and does not replace
-this re-check for a blocking, confusing, or slowing finding. Apply the Check
-Convergence section of `babysit-pr` when corrections keep producing findings.
-Then hand the corrected revision and the UX correction commits back to the user
-or the owning workflow.
+uncommitted corrections, a fresh checkout snapshot. Size the re-check to the
+findings:
+
+- For polish, a looks-unfinished or taste finding, replay its repro script
+  yourself and view the screenshot it saves.
+- For a blocking, confusing, or slowing finding, send a fresh reviewer a
+  follow-up scoped to the corrected findings and what those corrections could
+  disturb nearby. It replays the repro scripts first, then judges the corrected
+  states by eye. Inside T3 Code, that is a new child task. It carries the path
+  to the saved brief, or the brief itself when the reviewer cannot read the
+  file, the findings, the decisions, and the scripts. It is not another
+  open-ended review.
+
+Apply the Check Convergence section of `babysit-pr` when corrections keep
+producing findings. Then hand the corrected revision and the UX correction
+commits back to the user or the owning workflow.
 
 ## Report
 
@@ -218,7 +234,7 @@ Lead with the verdict: ready, ready after named fixes, or not ready. Then give:
 - how discovery went before the reviewer knew where the feature was;
 - states, platforms, and inputs not covered, and why;
 - the re-check result and the UX correction commits;
-- the brief, findings, and decisions, kept for a later re-check;
+- the brief, findings, decisions, and repro scripts, kept for a later re-check;
 - proposed documentation changes: new launch recipes, fault-state recipes, and
   driver hazards for the project's verification skill or agent instructions, so
   a coordinator on another engine finds them; and

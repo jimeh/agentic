@@ -142,16 +142,17 @@ CLIs apply, so inherit it only when the task needs it, and say so in the report.
 `auto` is the lower mode to use, and it differs by provider:
 
 - Codex: the child writes only to the thread's checkout and the temporary
-  directory, has restricted network access, and cannot listen on a local port.
-  Commands that reach the network, such as `gh` and Git remote operations, fail
-  there without prompting. So does anything that writes under the home
-  directory, such as tool state, caches, and commit signing. Static checks ran
-  there, but a test suite that starts a local server or signs commits did not.
-  Use `auto` for local work that fits those limits, tell the worker what it
-  cannot do, and put anything it would otherwise fetch, such as the pull request
-  description, in the prompt. When an implementer must run checks that need
-  more, inherit the parent's mode, or keep `auto` and run those checks in the
-  parent.
+  directory, has restricted network access, and can neither listen on nor
+  connect to a local port. Chromium does not launch there either, so browser
+  checks against a local app need `full-access`. Commands that reach the
+  network, such as `gh` and Git remote operations, fail there without prompting.
+  So does anything that writes under the home directory, such as tool state,
+  caches, and commit signing. Static checks ran there, but a test suite that
+  starts a local server or signs commits did not. Use `auto` for local work that
+  fits those limits, tell the worker what it cannot do, and put anything it
+  would otherwise fetch, such as the pull request description, in the prompt.
+  When an implementer must run checks that need more, inherit the parent's mode,
+  or keep `auto` and run those checks in the parent.
 - Claude: the child keeps network access and can edit a worktree under the
   temporary directory. Use `auto` unless the task needs more.
 
