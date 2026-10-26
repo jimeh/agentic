@@ -105,7 +105,10 @@ intake. They record tool-specific behavior that source inspection may miss.
     `auto` got the same sandbox as one lowered to `auto`.
   - Omitting `target.options` did not select the effort in the user's Codex
     configuration.
-  - A Codex child listed no computer-use tools.
+  - An earlier Codex child listed no computer-use tools. On 2026-10-26 a Codex
+    child in `full-access` drove a macOS app in the background through
+    `cua_repl` without an approval; in `auto`, `cua_repl` waited on a per-app
+    approval prompt.
   - `orchestrator_capabilities` returned about 195,000 characters with three
     providers enabled.
 - Bun drops a bare `--` when it is the first argument to a script

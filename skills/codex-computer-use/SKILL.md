@@ -1,8 +1,9 @@
 ---
 name: codex-computer-use
 description: >-
-  Delegate GUI or runtime observation to Codex CLI from Claude. Use for
-  running-app verification, not implementation or static review.
+  Delegate GUI or runtime observation to Codex from Claude, as a T3 Code child
+  task or through the Codex CLI. Use for running-app verification, not
+  implementation or static review.
 ---
 
 # Codex Computer Use
@@ -15,9 +16,13 @@ This skill is for observation and verification, not implementation or code
 review. A `ux-review` run may use it as its reviewer transport; that skill's
 brief then replaces the prompting strategy below.
 
-Keep the `codex-headless` transport inside T3 Code as well. A Codex T3 child
-task has not been shown to expose Codex's computer-use tooling, so do not route
-this work through `t3-delegation`.
+Codex drives an app in the background through its accessibility tree, so the
+user keeps their pointer and keyboard. Use `gpt-6.1-sol`.
+
+Inside T3 Code, start a Codex child task through `t3-delegation`, in
+`full-access`, with the prompt shape below. Its computer-use tool, `cua_repl`,
+worked there; in `auto` it stopped on a per-app approval prompt. Elsewhere, use
+`codex-headless` as below.
 
 ## Workflow
 

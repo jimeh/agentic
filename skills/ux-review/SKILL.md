@@ -160,10 +160,17 @@ can fall back to a weaker default.
   Codex child in `auto` cannot launch Chromium, connect to a local port, or
   write under the home directory, so a Codex reviewer of a local app needs
   `full-access`; say in the report that its sandbox was off.
-- When only another transport can reach the driver, such as `codex-computer-use`
-  for computer use from a Claude session, use it. This skill's brief replaces
-  that transport's prompting guidance; the transport skill still owns
+- When only another transport can reach the driver, use it. This skill's brief
+  replaces that transport's prompting guidance; the transport skill still owns
   invocation, artifacts, and failure handling.
+
+A review that needs computer use runs on Codex with `gpt-6.1-sol`, whatever the
+parent's engine, because Codex drives the app in the background while the user
+keeps their pointer and keyboard. Claude's computer use takes over both, so a
+Claude reviewer never uses it. Inside T3 Code, start a Codex child task in
+`full-access` through `t3-delegation`; elsewhere, use `codex-computer-use`. The
+desktop reference describes the driver. A review whose other checks suit the
+parent's model can split: scripted checks there, real-OS checks with Codex.
 
 When no fresh reviewer can reach the driver, do the review yourself with the
 same brief, and report that it lacked a fresh reviewer.

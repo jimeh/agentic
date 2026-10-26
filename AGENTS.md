@@ -78,9 +78,10 @@ filters.
 
 Inside T3 Code the same worker skills start the worker as a T3 child task
 instead, following the `t3-delegation` skill, which owns that transport for both
-engines. The headless runners remain the transport everywhere else and for
-`codex-computer-use`. A child task has no runner-level delegation denial and no
-read-only sandbox, so those boundaries rest on the prompt there.
+engines, including `codex-computer-use`, whose child task needs `full-access`.
+The headless runners remain the transport everywhere else. A child task has no
+runner-level delegation denial and no read-only sandbox, so those boundaries
+rest on the prompt there.
 
 `babysit-pr` waits through the host's pull request watcher where one exists, as
 in T3 Code, and uses `agent-pr-monitor` elsewhere and for goal probes.
