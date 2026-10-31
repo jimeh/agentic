@@ -188,9 +188,10 @@ Choose follow-up internal review by what the correction invalidates:
   behavior, material scope expansion, or another change that invalidates both
   reviews.
 
-Add a `ux-review` re-check, carrying its original brief, findings, and
-decisions, when a correction changes what a user sees or how they interact with
-it, and name that correction as a UX risk area in the code follow-up review.
+When a correction changes what a user sees or how they interact with it, name it
+as a UX risk area in the code follow-up review, and decide whether it needs
+`ux-review` as you did for the change: a re-check carrying the original brief,
+findings, and decisions when one ran.
 
 When an external reviewer was selected, use its provider-specific skill once on
 an internally accepted candidate rather than on every push. Feed its findings

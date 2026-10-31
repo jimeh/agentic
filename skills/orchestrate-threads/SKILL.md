@@ -52,10 +52,9 @@ requests only when the user asks.
 Call `t3_thread_launch` with a `workspaceStrategy` of type `worktree`, the base
 branch as `baseRef`, and `startFromOrigin: true`. Workers inherit this thread's
 provider, model, and modes unless the user names others; ask which model to use
-when this thread runs on Fable 5.1. Workers must be able to push, run `gh`, and
-start their reviewers, which a Codex thread can do only in `full-access`. If
-this thread's mode cannot give them that, or cannot write the ledger, ask the
-user to change it before launching.
+when this thread runs on Fable 5.1. Workers need `full-access` to push, run
+`gh`, and start their reviewers, so when this thread runs in another mode, ask
+the user to switch it before launching.
 
 The first message is the whole brief, since the worker has no history. Include
 this thread's id as the coordinator (`currentThreadId` from `t3_thread_list`),
@@ -68,17 +67,16 @@ shared resources it may collide with, standing rules, and this contract:
 > workflow's reviews cover the head. Never merge, and never resolve a review
 > thread just to get there; list the ones you leave open.
 >
-> When ready, stop any pull request watch, run `git switch --detach` so the
-> merge can delete the branch, and report to the coordinator with
-> `t3_thread_send` in `auto` mode: the URL and head SHA, a summary, decisions,
-> open threads and why, gaps, and what the user should check by hand. Then end
-> the turn.
+> When ready, and again after any later change to the head, stop any pull
+> request watch and report to the coordinator with `t3_thread_send` in `auto`
+> mode: the URL and head SHA, a summary, decisions, open threads and why, gaps,
+> and what the user should check by hand. Then end the turn.
 >
 > To catch up with the base, rebase onto it as the `rebase` skill describes and
 > force-push with lease to this pull request's branch. The user grants that
 > force-push for this branch only. A rebased head is not a continuation of the
 > reviewed one: review again whatever the base's new commits or the conflict
-> resolution could affect, then report again.
+> resolution could affect.
 >
 > Send questions, blockers, and failures to the coordinator the same way, not to
 > your own thread.
@@ -96,12 +94,13 @@ shared resources it may collide with, standing rules, and this contract:
 
 ## Merge
 
-Merge granted pull requests one at a time, in the ledger's order. Do not trust
-the ready report alone: check the readiness rule yourself against the current
-head and pull request state, including feedback posted since the report. Also
-confirm the user accepted the open threads and confirmed the hand checks, and
-asked again after a rebase that could affect them, that no worktree holds the
-branch, and that `closingIssuesReferences` lists only the right issues.
+Merge granted pull requests one at a time, in the ledger's order, without
+`--delete-branch`; wrap-up removes the branch. Before each merge, check the
+readiness rule yourself against the current pull request, including feedback
+posted since the last report. That report must be for the current head, and the
+user must have confirmed its hand checks and accepted its open threads, or
+confirmed them on an earlier head when nothing since could affect them. Check
+that `closingIssuesReferences` lists only the right issues.
 
 After a merge, tell the other active workers on that base that it moved. If the
 base then fails its checks, stop merging and tell the user.
@@ -116,8 +115,7 @@ has one.
 ## Wrap Up a Thread
 
 After a thread's pull request merges, settle the thread and update the ledger.
-Remove its worktree and local branch when the worktree is clean and both its
-HEAD and the branch tip equal the merged head from
-`gh pr view <number> --json headRefOid`; after a squash merge Git cannot tell
-you the branch merged. Otherwise ask. When builds are large, clean the build
-output of idle worktrees with the project's clean command.
+Remove its worktree and branches when the worktree is clean and its HEAD equals
+the merged head from `gh pr view <number> --json headRefOid`, since Git cannot
+see a squash merge. Otherwise ask. When builds are large, clean the build output
+of idle worktrees with the project's clean command.
