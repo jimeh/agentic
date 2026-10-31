@@ -40,6 +40,12 @@ feature, ask it for a fresh planning perspective, and ask for a plan file when
 the implementer will need one. Material product, scope, or architecture choices
 go back to the user unless they explicitly delegated them.
 
+Deliver one pull request per run. When the contract splits into several pull
+requests, settle the split and deliver the first. Report the rest as proposed
+follow-up runs, each with its scope, contract section, and dependencies, for the
+user or a coordinating thread to start. Do not continue into them here: every
+earlier round stays in this thread's context and makes each later turn costlier.
+
 Apply the global testing and verification rules. Keep a compact revision-bound
 evidence ledger: command or observation, scope, outcome, behavior proved, test
 names or count when relevant, and environment limits. Evidence carries forward
@@ -84,10 +90,14 @@ implementer needs it.
 Use `implement-feature` for the implementation, with these workflow choices,
 which are authoritative over its defaults:
 
-- For non-trivial work, use a fresh same-engine implementer unless the user's
-  instruction or session routing preference names another engine. Direct
-  implementation by the orchestrator is acceptable when the change is small
-  enough that delegation adds more overhead than perspective.
+- Use a fresh implementer for the implementation and for each correction batch,
+  on the same engine unless the user's instruction or session routing preference
+  names another. Correction batches follow the
+  [corrections reference](../implement-feature/references/corrections.md).
+  Implement directly only a change of a few lines, or a mechanical,
+  documentation, or test-only correction. This thread's context carries every
+  review round that follows, so code written here makes each later turn
+  costlier.
 - The delivery checkout is the implementer's checkout by default, and the intake
   snapshot is its starting baseline. Isolate under `implement-feature`'s
   conditions; non-overlapping intake dirt alone does not require isolation.

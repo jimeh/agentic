@@ -36,12 +36,14 @@ reviewer may create, change, or delete, and require it to clean up.
 Computer use and OS-level automation drive the user's real desktop. Before
 starting either, get the user's confirmation for this run, even inside a
 workflow that authorized everything else; an owning workflow may ask during its
-preflight. Without it, use scripted drivers only and report the real-OS checks
-as uncovered. Once confirmed, limit it to the app under review and the minimum
-OS surfaces a named check needs, such as a Finder window on a scratch folder.
-Never operate signed-in accounts or the user's own files, and leave OS
-permission prompts to the user. Review mobile apps on a dedicated simulator,
-emulator, or test device, never on the user's personal device.
+preflight. A brief from a coordinating thread that quotes the user's consent for
+the threads it starts counts as that confirmation. Without it, use scripted
+drivers only and report the real-OS checks as uncovered. Once confirmed, limit
+it to the app under review and the minimum OS surfaces a named check needs, such
+as a Finder window on a scratch folder. Never operate signed-in accounts or the
+user's own files, and leave OS permission prompts to the user. Review mobile
+apps on a dedicated simulator, emulator, or test device, never on the user's
+personal device.
 
 ## When to Run
 
@@ -183,6 +185,13 @@ prompt for the user. Cancel the reviewer, then rerun it with a brief or mode
 that avoids the prompt, or report the check as uncovered. Require the whole
 report in the reviewer's final message.
 
+A review blocked by its driver, such as repeated timeouts on one window or
+action, is a blocked review, not a product verdict. Do not rerun it unchanged:
+the same path fails the same way. Rerun once only after changing what the
+diagnosis points at, such as reaching the surface another way. Otherwise cover
+what a scripted driver or your own hand check can reach, and report the rest as
+uncovered.
+
 ## Triage
 
 Treat every finding as a candidate:
@@ -213,6 +222,8 @@ Treat every finding as a candidate:
 With fix authority, make or hand over corrections as settled behavior: exact
 copy, the reviewer's evidence, a regression test for each material behavioral
 correction, and a check in the running app at the sizes and themes that matter.
+Behavioral corrections follow the
+[corrections reference](../implement-feature/references/corrections.md).
 Presentation-only corrections need running-app evidence rather than tests.
 
 Then re-check in the running app, pinned to the corrected revision or, for
@@ -235,7 +246,8 @@ commits back to the user or the owning workflow.
 
 ## Report
 
-Lead with the verdict: ready, ready after named fixes, or not ready. Then give:
+Lead with the verdict: ready, ready after named fixes, not ready, or blocked
+when the driver or environment prevented the review. Then give:
 
 - the revision, environment, surfaces, drivers, platforms or devices, sizes, and
   themes covered;

@@ -43,6 +43,18 @@ independent evaluator. Do not perform GitHub mutations during scenario checks.
 | Grill me on my plan                                                                                          | grilling only; plan-feature does not load.                                                                                                         |
 | Choose between two module designs, then plan the feature                                                     | architect recommends; plan-feature plans on that shape with the choice as its first open question.                                                 |
 | Explicit ship-feature-pr                                                                                     | Full delivery: plan-feature contract, ux-review for a user-facing change or a stated skip, then Codex and Claude review.                           |
+| ship-feature-pr contract splits into three pull requests                                                     | Deliver the first; report the other two as proposed follow-up runs with scope and dependencies; no second PR in this thread.                       |
+| ship-feature-pr implementation of a multi-file feature                                                       | A fresh implementer builds it and each correction batch; the parent implements only tiny, mechanical, documentation, or test-only changes.         |
+| Review round returns three findings in one queued-write state machine                                        | One group: name the invariant, model the states, fix where the invariant lives, test every enumerated path, report touched earlier fixes.          |
+| Reviewer finds a contrast defect at one call site                                                            | The finding names the invariant and lists other sites with the same pattern it checked, saying which share the defect.                             |
+| UX reviewer hits the same driver timeout on one window after a reconnect                                     | Verdict blocked, not a product verdict; no unchanged rerun; scripted or hand checks where possible, the rest uncovered.                            |
+| Orchestrate work on this project from this T3 Code thread                                                    | orchestrate-threads: ledger, one worktree thread per PR with a full brief and report-back contract; merges only under the user's grant.            |
+| Coordinator thread asked to orchestrate outside T3 Code                                                      | orchestrate-threads says it needs T3 Code's thread tools and stops.                                                                                |
+| Worker launched by a coordinator needs a user decision                                                       | It sends the question to the coordinator with t3_thread_send in auto mode; no question in its own thread.                                          |
+| User tells the coordinator to skip UX review for one thread                                                  | That brief marks the skip for that thread only; the ledger does not carry it into later briefs.                                                    |
+| Coordinator must reach a worker whose turn has run for an hour                                               | t3_thread_send in auto mode, which steers the running turn; not queue mode.                                                                        |
+| Two worker PRs report ready; coordinator holds standing merge authority                                      | Merge one; tell the other worker the base moved; merge it only after its head contains the new base and checks pass again.                         |
+| UI change finished in a worker thread; the brief quotes the user's consent to Codex computer use             | ux-review treats the quoted consent as confirmation for this run.                                                                                  |
 | Only request CodeRabbit on an existing PR                                                                    | Trigger, wait, inspect, and report; no independent local reviewers or unsolicited fixes and thread mutations.                                      |
 | Review or dual review a colleague's PR; no posting grant                                                     | review-pr runs dual-review and reports a verdict with classified findings; nothing posted.                                                         |
 | Review the user's own PR                                                                                     | review-code, plus dual-review only if requested; no verdict or approval.                                                                           |
@@ -248,3 +260,13 @@ clear and found two new gaps, on moving `--since` past inspected feedback and on
 when a goal wait is worth adding beside a watch. Both were tightened without a
 third run. Not exercised: a live T3 Code wake, a goal wait running beside a
 watch, and Codex as the host.
+
+The rows for `orchestrate-threads`, one pull request per `ship-feature-pr` run,
+correction batches, finding sweeps, and blocked UX reviews were added on October
+31, 2026 from an audit of the Huterm project's T3 Code threads between October
+19 and 31: about 640 threads and 100 merged pull requests. They were checked
+only by a manual read of the changed skills against each row, without a fresh
+evaluator, which is weaker evidence than the runs above. Not exercised: a live
+coordinator run under the new skill, and whether correction batches made under
+the new reference need fewer review rounds than the median of two observed in
+that audit.
