@@ -83,8 +83,9 @@ dismissals briefly.
 ## Address a Review Round
 
 Resolve user or product decisions before editing. Batch confirmed fixes, then
-use the repository's normal implementation and validation workflow. Make each
-batch as the
+use the repository's normal implementation and validation workflow, or the
+implementer routing an owning workflow hands over, such as a fresh implementer
+for each batch. Make each batch as the
 [corrections reference](../implement-feature/references/corrections.md)
 describes: grouped by mechanism, fixed where the invariant lives, and tested
 across the paths it enumerates. Add or adjust tests when the concrete regression

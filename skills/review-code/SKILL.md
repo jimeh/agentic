@@ -152,6 +152,8 @@ A follow-up round verifies corrections; it is not another open-ended review. Ask
 whether each prior finding is resolved and whether its correction introduced a
 concrete defect or made earlier code wrong. Point the reviewer at the delta and
 what it could invalidate, not at a list of further failure modes to search for.
+A sweep for sites with the same pattern covers only the patterns of findings in
+this round.
 
 Keep the requirements identical to the first round's. When the user changed one,
 say so and attribute the change. Never restate a correction as a requirement:

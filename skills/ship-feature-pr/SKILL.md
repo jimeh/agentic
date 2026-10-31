@@ -135,6 +135,9 @@ count as a first round. For an explicit user correction budget and the
 fifth-round checkpoint, count every correction batch from both streams together,
 unless the user scoped the budget otherwise.
 
+A blocked `ux-review` verdict is a coverage gap, not a pass. Keep the pull
+request in draft until the user accepts the uncovered checks, and report them.
+
 When the change has nothing a user sees or touches, skip this step and say so in
 the report.
 
@@ -165,11 +168,12 @@ below. A new SHA alone does not invalidate unaffected evidence.
 Hand `babysit-pr` the open draft, reconciled internal findings, reviewed
 revisions and resumable session handles, evidence ledger, correction rounds
 already completed with their convergence outcomes, the `ux-review` brief,
-findings, and decisions, and any explicit user correction budget. Local reviewer
-findings remain actionable even when they are not represented on GitHub. That
-skill owns checks, feedback rounds, fixes, replies, thread resolution, normal
-correction commits and pushes, exact-head monitoring, and the final
-draft-to-ready transition.
+findings, and decisions, any explicit user correction budget, and the
+implementer routing above, which also covers correction batches made while
+babysitting. Local reviewer findings remain actionable even when they are not
+represented on GitHub. That skill owns checks, feedback rounds, fixes, replies,
+thread resolution, normal correction commits and pushes, exact-head monitoring,
+and the final draft-to-ready transition.
 
 Choose follow-up internal review by what the correction invalidates:
 

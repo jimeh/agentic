@@ -5,6 +5,10 @@ worker to make them: code review, UX review, or bot feedback on a pull request.
 It covers how a fix is made so that it closes the finding without creating the
 next one. `babysit-pr` owns whether a round runs and when the loop stops.
 
+Apply the rules below to behavioral findings. A documentation, wording,
+presentation, or mechanical finding needs only the fix and the evidence that
+closes it, unless the same defect may sit at other sites; then search for them.
+
 Corrections cause most late review findings. A fix that matches the reported
 scenario leaves other paths to the same defect open, and a fix to shared state
 adds orderings that the next review faults. Each rule below targets one of
@@ -44,7 +48,8 @@ those.
 - Cover the enumerated paths, not only the reported scenario: table-driven tests
   over the variants and, for an ordering defect, a deterministic test that holds
   one step at the point where the race occurs.
-- Each new test must fail without its fix, as the global testing rules require.
+- Show each new test failing without its fix as the global testing rules prefer,
+  so a test that cannot fail does not pass for coverage.
 - Rerun the tests that earlier rounds added. They guard earlier fixes.
 
 ## Report
