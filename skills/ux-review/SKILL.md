@@ -4,7 +4,7 @@ description: >-
   Have a fresh reviewer try a user-facing change in the running app, web,
   desktop, or mobile, then triage findings and re-check fixes; also audits UI
   code against interface guidelines. Use only when explicitly requested or
-  required by a user-selected ship-feature-pr workflow.
+  called for by a user-selected ship-feature-pr workflow.
 ---
 
 # UX Review
@@ -48,7 +48,7 @@ personal device.
 ## When to Run
 
 Run only when the user explicitly asks for a UX review or a guideline audit, or
-when a workflow the user selected, such as `ship-feature-pr`, requires it.
+when a workflow the user selected, such as `ship-feature-pr`, calls for it.
 Finishing a UI change is not a request: the implementer's own running-app check
 covers it. A change with nothing a user sees or touches skips it, and the report
 says so.
@@ -185,12 +185,12 @@ prompt for the user. Cancel the reviewer, then rerun it with a brief or mode
 that avoids the prompt, or report the check as uncovered. Require the whole
 report in the reviewer's final message.
 
-A review blocked by its driver, such as repeated timeouts on one window or
-action, is a blocked review, not a product verdict. Do not rerun it unchanged:
-the same path fails the same way. Rerun once only after changing what the
-diagnosis points at, such as reaching the surface another way. Otherwise cover
-what a scripted driver or your own hand check can reach, and report the rest as
-uncovered.
+When the driver keeps failing, as with repeated timeouts on one window, do not
+rerun unchanged: the same path fails the same way. Rerun once only after
+changing what the diagnosis points at. Otherwise cover what a scripted driver or
+your own hand check can reach, and report the rest as uncovered. The verdict is
+blocked only when the driver prevented the review as a whole; it says nothing
+about the product.
 
 ## Triage
 

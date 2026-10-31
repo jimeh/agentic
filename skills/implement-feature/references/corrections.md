@@ -48,8 +48,8 @@ those.
 - Cover the enumerated paths, not only the reported scenario: table-driven tests
   over the variants and, for an ordering defect, a deterministic test that holds
   one step at the point where the race occurs.
-- Show each new test failing without its fix as the global testing rules prefer,
-  so a test that cannot fail does not pass for coverage.
+- Where the global testing rules call for it, show a new test failing without
+  its fix.
 - Rerun the tests that earlier rounds added. They guard earlier fixes.
 
 ## Report

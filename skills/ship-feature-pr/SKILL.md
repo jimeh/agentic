@@ -41,10 +41,11 @@ the implementer will need one. Material product, scope, or architecture choices
 go back to the user unless they explicitly delegated them.
 
 Deliver one pull request per run. When the contract splits into several pull
-requests, settle the split and deliver the first. Report the rest as proposed
-follow-up runs, each with its scope, contract section, and dependencies, for the
-user or a coordinating thread to start. Do not continue into them here: every
-earlier round stays in this thread's context and makes each later turn costlier.
+requests, settle the split and deliver the one that should land first. Report
+the rest as proposed follow-up runs, each with its scope, contract section, and
+dependencies, for the user or a coordinating thread to start. Do not continue
+into them here: every earlier round stays in this thread's context and makes
+each later turn costlier.
 
 Apply the global testing and verification rules. Keep a compact revision-bound
 evidence ledger: command or observation, scope, outcome, behavior proved, test
@@ -62,11 +63,11 @@ explicit authorization.
 Before implementation, verify repository and base access plus both channels
 required by `dual-review`. If either engine remains unavailable, stop before
 mutation when practical; if it fails later, retain the draft and report the
-coverage gap. For a user-facing change, also confirm that the app can run in a
-local or test environment for `ux-review`, and report that coverage gap the same
-way when it cannot. When its review will need computer use or other real-desktop
-automation, ask for that confirmation now, while the user is present; it covers
-this run's reviews.
+coverage gap. When `ux-review` is likely, also confirm that the app can run in a
+local or test environment, and report that coverage gap the same way when it
+cannot. When its review will need computer use or other real-desktop automation
+and no brief already quotes the user's consent, ask for it now, while the user
+is present; it covers this run's reviews.
 
 Honor explicit user correction budgets. With or without one, apply the Check
 Convergence section of `babysit-pr` to every correction round, including rounds
@@ -120,14 +121,19 @@ until handback.
 
 ## Review the Experience
 
-When the change has a surface a user sees or touches, run `ux-review` on the
-committed feature head after the implementer's running-app check. It owns the
-review environment, the reviewer brief, triage, and the re-check. Send its
-accepted findings to the implementer as one batch, commit the corrections, and
-let its re-check confirm them before filing, so `dual-review` covers the
-corrected code in its first pass. Carry its decisions and deferred follow-ups
-into the PR description, and keep its brief, findings, decisions, and UX
-correction commits for later rounds.
+Decide whether the change needs `ux-review`. Run it for a new or reworked
+interaction, or a surface where users could get lost or lose work; skip it for
+changes the implementer's running-app check covers well, such as copy or small
+visual adjustments, and when the user skipped it. Say which and why in the
+report.
+
+Run it on the committed feature head after the implementer's running-app check.
+It owns the review environment, the reviewer brief, triage, and the re-check.
+Send its accepted findings to the implementer as one batch, commit the
+corrections, and let its re-check confirm them before filing, so `dual-review`
+covers the corrected code in its first pass. Carry its decisions and deferred
+follow-ups into the PR description, and keep its brief, findings, decisions, and
+UX correction commits for later rounds.
 
 Check Convergence counts rounds in two ways. For deciding which findings to fix,
 count UX and code-review rounds separately, so the first `dual-review` findings
@@ -137,9 +143,6 @@ unless the user scoped the budget otherwise.
 
 A blocked `ux-review` verdict is a coverage gap, not a pass. Keep the pull
 request in draft until the user accepts the uncovered checks, and report them.
-
-When the change has nothing a user sees or touches, skip this step and say so in
-the report.
 
 ## File the Draft PR
 

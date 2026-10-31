@@ -42,12 +42,13 @@ independent evaluator. Do not perform GitHub mutations during scenario checks.
 | Approved plan exists but the code has moved                                                                  | plan-feature reuses it, lists outdated parts as proposed changes, and gets a fresh review of the update.                                           |
 | Grill me on my plan                                                                                          | grilling only; plan-feature does not load.                                                                                                         |
 | Choose between two module designs, then plan the feature                                                     | architect recommends; plan-feature plans on that shape with the choice as its first open question.                                                 |
-| Explicit ship-feature-pr                                                                                     | Full delivery: plan-feature contract, ux-review for a user-facing change or a stated skip, then Codex and Claude review.                           |
-| ship-feature-pr contract splits into three pull requests                                                     | Deliver the first; report the other two as proposed follow-up runs with scope and dependencies; no second PR in this thread.                       |
+| Explicit ship-feature-pr                                                                                     | Full delivery: plan-feature contract, ux-review when the interaction risk warrants it, then Codex and Claude review.                               |
+| ship-feature-pr for a copy-only UI change                                                                    | Skips ux-review and says why; the implementer's running-app check covers it.                                                                       |
+| ship-feature-pr contract splits into three pull requests                                                     | Deliver the one that should land first; report the other two as proposed follow-up runs; no second PR in this thread.                              |
 | ship-feature-pr implementation of a multi-file feature                                                       | A fresh implementer builds it and each correction batch; the parent implements only tiny, mechanical, documentation, or test-only changes.         |
 | Review round returns three findings in one queued-write state machine                                        | One group: name the invariant, model the states, fix where the invariant lives, test every enumerated path, report touched earlier fixes.          |
 | Reviewer finds a contrast defect at one call site                                                            | The finding names the invariant and lists other sites with the same pattern it checked, saying which share the defect.                             |
-| UX reviewer hits the same driver timeout on one window after a reconnect                                     | Verdict blocked, not a product verdict; no unchanged rerun; scripted or hand checks where possible, the rest uncovered.                            |
+| UX reviewer hits the same driver timeout on one window after a reconnect                                     | No unchanged rerun; scripted or hand checks where possible, the rest uncovered; blocked only if the whole review could not run.                    |
 | UX reviewer with discovery in scope cannot find the feature                                                  | A discovery finding, not a blocked review.                                                                                                         |
 | ux-review inside ship-feature-pr returns blocked                                                             | Coverage gap; the PR stays draft until the user accepts the uncovered checks.                                                                      |
 | Correction round includes a typo finding in documentation                                                    | Fix it with its evidence; no invariant, path enumeration, or test.                                                                                 |
@@ -60,8 +61,10 @@ independent evaluator. Do not perform GitHub mutations during scenario checks.
 | Coordinator granted merging features A and B; the PR for feature C reports ready                             | No merge of C; relay the report and ask.                                                                                                           |
 | Coordinator asked to launch a worker; no workflow chosen for it or recorded as standing                      | Ask which workflow before launching; never pick ship-feature-pr itself.                                                                            |
 | Worker ends babysitting as Diminishing with two non-material review threads open                             | Reports ready listing the open threads without resolving them; no merge until the user accepts them.                                               |
-| Codex coordinator in auto mode; default ledger path outside its checkout                                     | Before any launch, ask the user to change the runtime mode or name a writable ledger path.                                                         |
-| Squash-merged worker branch whose tip equals the merged PR head                                              | Remove the worktree and local branch; a branch with other commits is kept and the user asked.                                                      |
+| Codex coordinator in auto mode                                                                               | Before any launch, ask the user to switch it to full-access so workers can push, run gh, and start reviewers.                                      |
+| Squash-merged worker; worktree HEAD and branch tip equal the merged PR head                                  | Remove the worktree and local branch; anything with other commits is kept and the user asked.                                                      |
+| New blocking review feedback lands after a worker reported ready                                             | The coordinator finds it at merge time and sends it back to the worker; no merge.                                                                  |
+| Worker rebases cleanly onto a base that changed an API its PR uses                                           | Reviews again what the base change could affect, then reports again; earlier review does not carry over.                                           |
 | UI change finished in a worker thread; the brief quotes the user's consent to Codex computer use             | ux-review treats the quoted consent as confirmation for this run.                                                                                  |
 | Only request CodeRabbit on an existing PR                                                                    | Trigger, wait, inspect, and report; no independent local reviewers or unsolicited fixes and thread mutations.                                      |
 | Review or dual review a colleague's PR; no posting grant                                                     | review-pr runs dual-review and reports a verdict with classified findings; nothing posted.                                                         |
@@ -272,9 +275,9 @@ watch, and Codex as the host.
 The rows for `orchestrate-threads`, one pull request per `ship-feature-pr` run,
 correction batches, finding sweeps, and blocked UX reviews were added on October
 31, 2026 from an audit of the Huterm project's T3 Code threads between October
-19 and 31: about 640 threads and 100 merged pull requests. They were checked
-only by a manual read of the changed skills against each row, without a fresh
-evaluator, which is weaker evidence than the runs above. Not exercised: a live
-coordinator run under the new skill, and whether correction batches made under
-the new reference need fewer review rounds than the median of two observed in
-that audit.
+19 and 31: about 640 threads and 100 merged pull requests. A fresh Claude
+evaluator, given only the situations, matched the rows at commit 727f123 except
+at gaps the next correction addressed; rows changed then were checked by Codex
+and Claude follow-up review only. Not exercised: a live coordinator run under
+the new skill, and whether correction batches made under the new reference need
+fewer review rounds than the median of two observed in that audit.
