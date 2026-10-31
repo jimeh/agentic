@@ -86,6 +86,12 @@ rest on the prompt there.
 `babysit-pr` waits through the host's pull request watcher where one exists, as
 in T3 Code, and uses `agent-pr-monitor` elsewhere and for goal probes.
 
+`orchestrate-threads` is a T3 Code-only coordinator: it launches one top-level
+worker thread per pull request, usually running `ship-feature-pr`, and owns
+merge order. `ship-feature-pr` delivers one pull request per run. Correction
+batches in `implement-feature`, `babysit-pr`, `ship-feature-pr`, and `ux-review`
+share `skills/implement-feature/references/corrections.md`.
+
 To add a new skill, just create the directory — the installer picks it up
 automatically. Stale symlinks are cleaned up on each run, including links that
 an `only`/`exclude` change scoped out of a target root.

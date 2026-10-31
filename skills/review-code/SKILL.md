@@ -78,7 +78,8 @@ contract directly in its prompt. Include:
 - the inspection-first execution policy and permission to run only focused
   reproducers for concrete suspected defects;
 - the required finding fields: severity, file and line, triggering conditions,
-  concrete impact, and fix direction; and
+  concrete impact, and fix direction, plus the broken invariant and other sites
+  with the same pattern when they apply; and
 - an explicit no-findings verdict when appropriate plus a separate validation
   and test-quality verdict covering material success, failure, boundary, and
   regression gaps and whether changed tests could pass over broken behavior.
@@ -119,7 +120,10 @@ locations and relevant assumptions. Discard vague, speculative, purely
 stylistic, or non-actionable suggestions unless they expose material risk.
 
 For each confirmed finding, provide severity, file and line, triggering
-conditions, concrete impact, and a concise fix direction. Order severity by user
+conditions, concrete impact, and a concise fix direction. When the defect breaks
+a rule the code must hold, name that invariant, and list the other sites with
+the same pattern that you checked, saying which share the defect. A fix that
+covers only the reported scenario invites another round. Order severity by user
 and system impact plus realistic likelihood, not reviewer emphasis. Treat a
 validation gap as a finding only when it leaves material behavior or risk
 unclosed.

@@ -55,6 +55,11 @@ earlier reviews; adapt them rather than paraphrasing them away.
 - The driver to use, with the fallbacks and hazards from the surface reference
   and the project's notes.
 - Known driver artifacts not to report as app problems.
+- A first step that proves the driver reaches the change:
+
+> Before anything else, reach the changed surface and view a screenshot of it.
+> If the driver cannot reach it after one reconnect, stop and report the review
+> as blocked, with the exact error and the step that failed.
 
 ## 4. Tasks as user goals
 
@@ -158,7 +163,8 @@ Put the whole report in the final message, not in a file.
 - What works well, stated plainly.
 - How discovery went.
 - Not checked, with reasons. Do not claim a check you did not make.
-- Verdict: ready, ready after named fixes, or not ready.
+- Verdict: ready, ready after named fixes, not ready, or blocked when the driver
+  or environment prevented the review. Blocked says nothing about the product.
 - Screenshots you viewed, one line each. Judge how the app looks only from
   screenshots you viewed; a saved file you did not open is not evidence.
 - Repro scripts: keep the driver scripts you ran, each runnable from a fresh

@@ -34,3 +34,13 @@ conventions from those guidelines apply only when a project adopts them. The
 static audit replaces that vendored skill, which is excluded from installation.
 It fetches both the review checklist (`command.md`) and the build-time rules
 (`AGENTS.md`) because each carries rules the other lacks.
+
+The Huterm run from October 25 to 31, 2026 was the first large desktop use: 91
+reviewer and re-check runs, all through Codex background computer use on a
+native GPUI app. They found keyboard, focus, dismissal, and contrast defects
+that the dual code review had missed. Nineteen runs ended blocked by the driver,
+most of them repeated `js execution timed out; kernel reset` errors on one
+Settings window, and immediate retries of the same path almost never got
+further. Those blocked runs reported "not ready", which read like a product
+verdict. The blocked verdict, the driver probe as the brief's first step, and
+the rule against unchanged reruns came from that run.

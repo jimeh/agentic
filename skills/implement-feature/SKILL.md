@@ -204,13 +204,15 @@ implementation:
 
 ## Correct
 
-Send settled corrections back to the same worker when practical, and start a
-fresh one when its task context no longer fits. A resumed session gets only what
-is wrong, the revision boundary, and the proof expected. A T3 Code child task
-cannot be resumed, so its follow-up carries the full brief, as `t3-delegation`
-describes. A shared-checkout implementer continues from the current head. If the
-scope grows, stop and split it. If repeated attempts make no progress, reassess
-the approach or take the work back, and honor any budget the user set.
+Make or brief corrections for review findings as
+[the corrections reference](references/corrections.md) describes. Send settled
+corrections back to the same worker when practical, and start a fresh one when
+its task context no longer fits. A resumed session gets only what is wrong, the
+revision boundary, and the proof expected. A T3 Code child task cannot be
+resumed, so its follow-up carries the full brief, as `t3-delegation` describes.
+A shared-checkout implementer continues from the current head. If the scope
+grows, stop and split it. If repeated attempts make no progress, reassess the
+approach or take the work back, and honor any budget the user set.
 
 ## Integrate and Clean Up
 
