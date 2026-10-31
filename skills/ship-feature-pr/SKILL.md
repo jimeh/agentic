@@ -40,6 +40,12 @@ feature, ask it for a fresh planning perspective, and ask for a plan file when
 the implementer will need one. Material product, scope, or architecture choices
 go back to the user unless they explicitly delegated them.
 
+Deliver one pull request per run. When the contract splits into several pull
+requests, settle the split and deliver the one that should land first. Report
+the rest as proposed follow-up runs, each with its scope, contract section, and
+dependencies, for the user or a coordinating thread to start. Do not continue
+into them here.
+
 Apply the global testing and verification rules. Keep a compact revision-bound
 evidence ledger: command or observation, scope, outcome, behavior proved, test
 names or count when relevant, and environment limits. Evidence carries forward
@@ -56,11 +62,11 @@ explicit authorization.
 Before implementation, verify repository and base access plus both channels
 required by `dual-review`. If either engine remains unavailable, stop before
 mutation when practical; if it fails later, retain the draft and report the
-coverage gap. For a user-facing change, also confirm that the app can run in a
-local or test environment for `ux-review`, and report that coverage gap the same
-way when it cannot. When its review will need computer use or other real-desktop
-automation, ask for that confirmation now, while the user is present; it covers
-this run's reviews.
+coverage gap. When `ux-review` is likely, also confirm that the app can run in a
+local or test environment, and report that coverage gap the same way when it
+cannot. When its review will need computer use or other real-desktop automation
+and no brief already quotes the user's consent, ask for it now, while the user
+is present; it covers this run's reviews.
 
 Honor explicit user correction budgets. With or without one, apply the Check
 Convergence section of `babysit-pr` to every correction round, including rounds
@@ -84,10 +90,12 @@ implementer needs it.
 Use `implement-feature` for the implementation, with these workflow choices,
 which are authoritative over its defaults:
 
-- For non-trivial work, use a fresh same-engine implementer unless the user's
-  instruction or session routing preference names another engine. Direct
-  implementation by the orchestrator is acceptable when the change is small
-  enough that delegation adds more overhead than perspective.
+- Use a fresh implementer for the implementation and for each correction batch,
+  on the same engine unless the user's instruction or session routing preference
+  names another. Correction batches follow the
+  [corrections reference](../implement-feature/references/corrections.md).
+  Implement directly only a change of a few lines, or a mechanical,
+  documentation, or test-only correction.
 - The delivery checkout is the implementer's checkout by default, and the intake
   snapshot is its starting baseline. Isolate under `implement-feature`'s
   conditions; non-overlapping intake dirt alone does not require isolation.
@@ -110,14 +118,19 @@ until handback.
 
 ## Review the Experience
 
-When the change has a surface a user sees or touches, run `ux-review` on the
-committed feature head after the implementer's running-app check. It owns the
-review environment, the reviewer brief, triage, and the re-check. Send its
-accepted findings to the implementer as one batch, commit the corrections, and
-let its re-check confirm them before filing, so `dual-review` covers the
-corrected code in its first pass. Carry its decisions and deferred follow-ups
-into the PR description, and keep its brief, findings, decisions, and UX
-correction commits for later rounds.
+Decide whether the change needs `ux-review`. Run it for a new or reworked
+interaction, or a surface where users could get lost or lose work; skip it for
+changes the implementer's running-app check covers well, such as copy or small
+visual adjustments, and when the user skipped it. Say which and why in the
+report.
+
+Run it on the committed feature head after the implementer's running-app check.
+It owns the review environment, the reviewer brief, triage, and the re-check.
+Send its accepted findings to the implementer as one batch, commit the
+corrections, and let its re-check confirm them before filing, so `dual-review`
+covers the corrected code in its first pass. Carry its decisions and deferred
+follow-ups into the PR description, and keep its brief, findings, decisions, and
+UX correction commits for later rounds.
 
 Check Convergence counts rounds in two ways. For deciding which findings to fix,
 count UX and code-review rounds separately, so the first `dual-review` findings
@@ -125,8 +138,8 @@ count as a first round. For an explicit user correction budget and the
 fifth-round checkpoint, count every correction batch from both streams together,
 unless the user scoped the budget otherwise.
 
-When the change has nothing a user sees or touches, skip this step and say so in
-the report.
+A blocked `ux-review` verdict is a coverage gap, not a pass. Keep the pull
+request in draft until the user accepts the uncovered checks, and report them.
 
 ## File the Draft PR
 
@@ -155,11 +168,12 @@ below. A new SHA alone does not invalidate unaffected evidence.
 Hand `babysit-pr` the open draft, reconciled internal findings, reviewed
 revisions and resumable session handles, evidence ledger, correction rounds
 already completed with their convergence outcomes, the `ux-review` brief,
-findings, and decisions, and any explicit user correction budget. Local reviewer
-findings remain actionable even when they are not represented on GitHub. That
-skill owns checks, feedback rounds, fixes, replies, thread resolution, normal
-correction commits and pushes, exact-head monitoring, and the final
-draft-to-ready transition.
+findings, and decisions, any explicit user correction budget, and the
+implementer routing above, which also covers correction batches made while
+babysitting. Local reviewer findings remain actionable even when they are not
+represented on GitHub. That skill owns checks, feedback rounds, fixes, replies,
+thread resolution, normal correction commits and pushes, exact-head monitoring,
+and the final draft-to-ready transition.
 
 Choose follow-up internal review by what the correction invalidates:
 
@@ -171,9 +185,10 @@ Choose follow-up internal review by what the correction invalidates:
   behavior, material scope expansion, or another change that invalidates both
   reviews.
 
-Add a `ux-review` re-check, carrying its original brief, findings, and
-decisions, when a correction changes what a user sees or how they interact with
-it, and name that correction as a UX risk area in the code follow-up review.
+When a correction changes what a user sees or how they interact with it, name it
+as a UX risk area in the code follow-up review, and decide whether it needs
+`ux-review` as you did for the change: a re-check carrying the original brief,
+findings, and decisions when one ran.
 
 When an external reviewer was selected, use its provider-specific skill once on
 an internally accepted candidate rather than on every push. Feed its findings

@@ -4,7 +4,7 @@ description: >-
   Have a fresh reviewer try a user-facing change in the running app, web,
   desktop, or mobile, then triage findings and re-check fixes; also audits UI
   code against interface guidelines. Use only when explicitly requested or
-  required by a user-selected ship-feature-pr workflow.
+  called for by a user-selected ship-feature-pr workflow.
 ---
 
 # UX Review
@@ -36,17 +36,19 @@ reviewer may create, change, or delete, and require it to clean up.
 Computer use and OS-level automation drive the user's real desktop. Before
 starting either, get the user's confirmation for this run, even inside a
 workflow that authorized everything else; an owning workflow may ask during its
-preflight. Without it, use scripted drivers only and report the real-OS checks
-as uncovered. Once confirmed, limit it to the app under review and the minimum
-OS surfaces a named check needs, such as a Finder window on a scratch folder.
-Never operate signed-in accounts or the user's own files, and leave OS
-permission prompts to the user. Review mobile apps on a dedicated simulator,
-emulator, or test device, never on the user's personal device.
+preflight. A brief from a coordinating thread that quotes the user's consent for
+the threads it starts counts as that confirmation. Without it, use scripted
+drivers only and report the real-OS checks as uncovered. Once confirmed, limit
+it to the app under review and the minimum OS surfaces a named check needs, such
+as a Finder window on a scratch folder. Never operate signed-in accounts or the
+user's own files, and leave OS permission prompts to the user. Review mobile
+apps on a dedicated simulator, emulator, or test device, never on the user's
+personal device.
 
 ## When to Run
 
 Run only when the user explicitly asks for a UX review or a guideline audit, or
-when a workflow the user selected, such as `ship-feature-pr`, requires it.
+when a workflow the user selected, such as `ship-feature-pr`, calls for it.
 Finishing a UI change is not a request: the implementer's own running-app check
 covers it. A change with nothing a user sees or touches skips it, and the report
 says so.
@@ -183,6 +185,12 @@ prompt for the user. Cancel the reviewer, then rerun it with a brief or mode
 that avoids the prompt, or report the check as uncovered. Require the whole
 report in the reviewer's final message.
 
+When the driver keeps failing, do not rerun unchanged. Rerun once only after
+changing what the diagnosis points at. Otherwise cover what a scripted driver or
+your own hand check can reach, and report the rest as uncovered. The verdict is
+blocked only when the driver prevented the review as a whole; it says nothing
+about the product.
+
 ## Triage
 
 Treat every finding as a candidate:
@@ -213,6 +221,8 @@ Treat every finding as a candidate:
 With fix authority, make or hand over corrections as settled behavior: exact
 copy, the reviewer's evidence, a regression test for each material behavioral
 correction, and a check in the running app at the sizes and themes that matter.
+Behavioral corrections follow the
+[corrections reference](../implement-feature/references/corrections.md).
 Presentation-only corrections need running-app evidence rather than tests.
 
 Then re-check in the running app, pinned to the corrected revision or, for
@@ -235,7 +245,8 @@ commits back to the user or the owning workflow.
 
 ## Report
 
-Lead with the verdict: ready, ready after named fixes, or not ready. Then give:
+Lead with the verdict: ready, ready after named fixes, not ready, or blocked
+when the driver or environment prevented the review. Then give:
 
 - the revision, environment, surfaces, drivers, platforms or devices, sizes, and
   themes covered;

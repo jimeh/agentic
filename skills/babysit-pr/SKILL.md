@@ -83,9 +83,12 @@ dismissals briefly.
 ## Address a Review Round
 
 Resolve user or product decisions before editing. Batch confirmed fixes, then
-use the repository's normal implementation and validation workflow. Add or
-adjust tests when the concrete regression risk justifies them; otherwise record
-the focused static, build, runtime, or manual evidence that closes the concern.
+use the repository's normal implementation and validation workflow, or the
+implementer routing an owning workflow hands over. Make each batch as the
+[corrections reference](../implement-feature/references/corrections.md)
+describes. Add or adjust tests when the concrete regression risk justifies them;
+otherwise record the focused static, build, runtime, or manual evidence that
+closes the concern.
 
 Use `commit` for every correction commit and push normally. Preserve earlier
 test and review evidence when its revision is an ancestor and the new delta

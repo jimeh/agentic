@@ -59,6 +59,9 @@ source-only rules.
 - **Builds share a bundle identifier.** A worktree build and the main checkout's
   build can carry the same bundle identifier, so Codex computer use refuses the
   identifier as ambiguous. Address the app by its full bundle path.
+- **Codex computer use can time out on one window every time,** as with
+  `js execution timed out; kernel reset`, even after a reconnect. Treat it as a
+  driver limit for that surface, as the skill's retry rule describes.
 - **A background drag does not resize a window.** Set the window size through
   the app's own state or launch arguments, or list the size check as not
   checked.

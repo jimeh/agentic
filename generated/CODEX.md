@@ -50,6 +50,10 @@ problems into simple and understandable concepts and solutions.
   refactor unrelated code.
 - Read the relevant code before editing. Build context from the actual codebase,
   not assumptions.
+- Build user interfaces accessible from the start: native or properly labelled
+  controls with accessible names, roles, and states; full keyboard use with
+  visible focus; and enough contrast. Follow the platform's conventions, and
+  handle empty, loading, and error states.
 
 ## Questions Are Read-Only
 

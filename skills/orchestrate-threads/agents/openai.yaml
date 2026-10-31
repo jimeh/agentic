@@ -1,0 +1,9 @@
+interface:
+  display_name: "Orchestrate Threads"
+  short_description: "Coordinate T3 Code worker threads, one per PR"
+  default_prompt:
+    "Use $orchestrate-threads to coordinate work on this project from this
+    thread, launching one worker thread per pull request."
+
+policy:
+  allow_implicit_invocation: false
