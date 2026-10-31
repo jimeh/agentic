@@ -185,8 +185,7 @@ prompt for the user. Cancel the reviewer, then rerun it with a brief or mode
 that avoids the prompt, or report the check as uncovered. Require the whole
 report in the reviewer's final message.
 
-When the driver keeps failing, as with repeated timeouts on one window, do not
-rerun unchanged: the same path fails the same way. Rerun once only after
+When the driver keeps failing, do not rerun unchanged. Rerun once only after
 changing what the diagnosis points at. Otherwise cover what a scripted driver or
 your own hand check can reach, and report the rest as uncovered. The verdict is
 blocked only when the driver prevented the review as a whole; it says nothing

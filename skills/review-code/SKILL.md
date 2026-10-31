@@ -122,11 +122,10 @@ stylistic, or non-actionable suggestions unless they expose material risk.
 For each confirmed finding, provide severity, file and line, triggering
 conditions, concrete impact, and a concise fix direction. When the defect breaks
 a rule the code must hold, name that invariant, and list the other sites with
-the same pattern that you checked, saying which share the defect. A fix that
-covers only the reported scenario invites another round. Order severity by user
-and system impact plus realistic likelihood, not reviewer emphasis. Treat a
-validation gap as a finding only when it leaves material behavior or risk
-unclosed.
+the same pattern that you checked, saying which share the defect. Order severity
+by user and system impact plus realistic likelihood, not reviewer emphasis.
+Treat a validation gap as a finding only when it leaves material behavior or
+risk unclosed.
 
 Keep plausible but unverified concerns separate from confirmed findings. Say
 explicitly when there are no substantive findings. Always provide a separate

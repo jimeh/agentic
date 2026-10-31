@@ -44,8 +44,7 @@ Deliver one pull request per run. When the contract splits into several pull
 requests, settle the split and deliver the one that should land first. Report
 the rest as proposed follow-up runs, each with its scope, contract section, and
 dependencies, for the user or a coordinating thread to start. Do not continue
-into them here: every earlier round stays in this thread's context and makes
-each later turn costlier.
+into them here.
 
 Apply the global testing and verification rules. Keep a compact revision-bound
 evidence ledger: command or observation, scope, outcome, behavior proved, test
@@ -96,9 +95,7 @@ which are authoritative over its defaults:
   names another. Correction batches follow the
   [corrections reference](../implement-feature/references/corrections.md).
   Implement directly only a change of a few lines, or a mechanical,
-  documentation, or test-only correction. This thread's context carries every
-  review round that follows, so code written here makes each later turn
-  costlier.
+  documentation, or test-only correction.
 - The delivery checkout is the implementer's checkout by default, and the intake
   snapshot is its starting baseline. Isolate under `implement-feature`'s
   conditions; non-overlapping intake dirt alone does not require isolation.

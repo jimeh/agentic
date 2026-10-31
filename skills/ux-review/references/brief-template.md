@@ -169,7 +169,7 @@ Put the whole report in the final message, not in a file.
 - How discovery went.
 - Not checked, with reasons. Do not claim a check you did not make.
 - Verdict: ready, ready after named fixes, not ready, or blocked when the driver
-  or environment prevented the review. Blocked says nothing about the product.
+  or environment prevented the review.
 - Screenshots you viewed, one line each. Judge how the app looks only from
   screenshots you viewed; a saved file you did not open is not evidence.
 - Repro scripts: keep the driver scripts you ran, each runnable from a fresh
