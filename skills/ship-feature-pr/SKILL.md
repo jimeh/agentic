@@ -36,9 +36,9 @@ checkout is the only safe home of the feature branch until handback succeeds.
 Resolve the remote base and run the preflight below, then use `plan-feature` to
 settle and freeze the implementation contract, including its verification map
 and, for a user-facing change, its experience decisions. For a non-trivial
-feature, ask it for a fresh planning perspective, and ask for a plan file when
-the implementer will need one. Material product, scope, or architecture choices
-go back to the user unless they explicitly delegated them.
+feature, ask it for a plan review, and ask for a plan file when the implementer
+will need one. Material product, scope, or architecture choices go back to the
+user unless they explicitly delegated them.
 
 Deliver one pull request per run. When the contract splits into several pull
 requests, settle the split and deliver the one that should land first. Report

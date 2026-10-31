@@ -37,20 +37,6 @@ designs, use `architect` first. It recommends a shape; the user chooses unless
 they delegated the choice. When the request also asks for a plan, plan on the
 recommended shape and make the choice the first open question.
 
-## Get a Fresh Perspective
-
-Get one fresh perspective without parent history when an owning workflow or the
-user asks for one, or when the change spans several modules and has a failure
-path the request does not settle. Otherwise plan directly. The fresh perspective
-is a fresh planner when no plan exists, or a fresh reviewer of the draft or
-updated plan when one does, and one covers the whole planning step, including an
-`architect` pass.
-
-Start it as `implement-feature` describes for delegated workers, told not to
-delegate further, unless the user names another engine. When delegation is
-unavailable or the user declines it, plan directly and say so. Check the result
-against the code before adopting it.
-
 ## Write the Contract
 
 Cover:
@@ -104,6 +90,27 @@ by whoever implements.
 
 Record any new key binding or other scarce global resource as a decision in the
 contract, and follow project rules that reserve them.
+
+## Review the Plan
+
+Have the drafted plan reviewed before it is presented or accepted when the user
+or an owning workflow asks, or when the plan is substantial or more complex than
+usual and a second reader would likely catch a gap before implementation starts.
+Otherwise skip the review. For a reused plan, review the updated parts. One
+review covers the whole planning step, including an `architect` pass.
+
+Use the other engine unless the user names one: `codex-analysis` from a Claude
+host, `claude-analysis` from a Codex host. Brief the reviewer with the request,
+the base revision, the repository instructions, and the draft as a file or in
+the brief, but not the planning conversation. Ask for wrong assumptions about
+the code, missing scope, unhandled failure paths, and verification gaps, each
+with evidence, and tell it not to delegate further.
+
+When the other engine is unavailable, use a fresh same-engine worker as
+`implement-feature` describes and say the review was not cross-engine. When
+delegation is unavailable or the user declines it, say the plan was not
+reviewed. Check each finding against the code before revising the plan, and
+carry material disagreements into the open questions.
 
 ## Accept and Hand Over
 
