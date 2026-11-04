@@ -15,7 +15,7 @@ export type Source = {
 
 /** Changes applied to an upstream skill when it is vendored. */
 export type SkillOverrides = {
-  /** Load the skill only when the user or a prompt names it. */
+  /** Load the skill only when the user invokes it: `/name` in Claude, an explicit mention in Codex. */
   explicitOnly?: boolean;
 };
 

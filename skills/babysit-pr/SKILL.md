@@ -29,9 +29,11 @@ base, remote head SHA, head branch, draft state, review decision, merge state,
 checks, reviewers, and repository-specific requirements.
 
 Use the existing PR, branch, and checkout as authoritative. Before changing
-anything, note any local staged, unstaged, or untracked work; a clean checkout
-needs nothing more. Preserve non-overlapping changes and stop when local work
-conflicts with the PR branch or requested corrections.
+anything, snapshot the checkout: for a clean one, `HEAD` plus an empty
+`git status --porcelain`; when local staged, unstaged, or untracked work exists,
+record it per path as `implement-feature` shows. Preserve non-overlapping work
+exactly and stop when local work conflicts with the PR branch or requested
+corrections.
 
 Translate the user's request into a completion condition. When they simply ask
 to get the PR ready, require the current head to have green required checks, no

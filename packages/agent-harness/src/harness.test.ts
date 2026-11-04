@@ -121,7 +121,7 @@ test("reports an explicitOnly vendored skill that still loads implicitly", () =>
 
   const errors = harnessErrors(root).join("\n");
   expect(errors).toContain("needs disable-model-invocation: true");
-  expect(errors).toContain("needs allow_implicit_invocation: false");
+  expect(errors).toContain("needs policy.allow_implicit_invocation: false");
 });
 
 test("accepts an explicitOnly vendored skill with both flags applied", () => {
@@ -133,4 +133,29 @@ test("accepts an explicitOnly vendored skill with both flags applied", () => {
   });
 
   expect(harnessErrors(root).join("\n")).not.toContain("explicitOnly");
+});
+
+test("reports an explicitOnly policy that is only mentioned in other text", () => {
+  const root = createRoot();
+  writeVendoredSkill(root, {
+    skill:
+      "---\nname: example-skill\ndescription: Example\ndisable-model-invocation: true\n---\n",
+    openai:
+      "interface:\n  short_description: >\n    allow_implicit_invocation: false\npolicy:\n  allow_implicit_invocation: true\n",
+  });
+
+  expect(harnessErrors(root).join("\n")).toContain(
+    "needs policy.allow_implicit_invocation: false",
+  );
+});
+
+test("reports malformed agents/openai.yaml on an explicitOnly skill", () => {
+  const root = createRoot();
+  writeVendoredSkill(root, {
+    skill:
+      "---\nname: example-skill\ndescription: Example\ndisable-model-invocation: true\n---\n",
+    openai: "policy:\n  allow_implicit_invocation: false\npolicy:\n  x: 1\n",
+  });
+
+  expect(harnessErrors(root).join("\n")).toContain("invalid YAML");
 });

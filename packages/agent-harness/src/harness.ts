@@ -323,7 +323,13 @@ function contentHash(dir: string): string {
 
 function checkExplicitOnly(skillDir: string): void {
   const skillFile = join(skillDir, "SKILL.md");
-  const { data } = matter(readFileSync(skillFile, "utf8"));
+  let data: Record<string, unknown>;
+  try {
+    data = matter(readFileSync(skillFile, "utf8"), {}).data;
+  } catch {
+    // frontmatterName already reports invalid frontmatter.
+    return;
+  }
   if (data["disable-model-invocation"] !== true) {
     reportError(
       `${skillFile}: explicitOnly override needs disable-model-invocation: true`,
@@ -331,10 +337,23 @@ function checkExplicitOnly(skillDir: string): void {
   }
 
   const openaiFile = join(skillDir, "agents", "openai.yaml");
-  const openai = existsSync(openaiFile) ? readFileSync(openaiFile, "utf8") : "";
-  if (!/^\s+allow_implicit_invocation:\s*false\s*$/m.test(openai)) {
+  let policy: unknown;
+  try {
+    const yaml = existsSync(openaiFile) ? readFileSync(openaiFile, "utf8") : "";
+    policy = matter(`---\n${yaml}\n---\n`, {}).data.policy;
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message.split("\n")[0] : error;
+    reportError(`${openaiFile}: invalid YAML (${message})`);
+    return;
+  }
+  const allowed =
+    typeof policy === "object" && policy !== null
+      ? (policy as Record<string, unknown>).allow_implicit_invocation
+      : undefined;
+  if (allowed !== false) {
     reportError(
-      `${openaiFile}: explicitOnly override needs allow_implicit_invocation: false`,
+      `${openaiFile}: explicitOnly override needs policy.allow_implicit_invocation: false`,
     );
   }
 }

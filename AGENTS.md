@@ -120,11 +120,13 @@ selected skills, while `thirdparty/skills.lock.json` records the resolved
 commit, upstream path, and content hash. Skill entries can set `ref` to override
 their source default, and `overrides.explicitOnly` to vendor the skill with
 `disable-model-invocation: true` and Codex `allow_implicit_invocation: false`,
-so agents load it only when named. The lock hashes the patched content, and
-`mise run lint` checks that the flags are present. Agent config installation
-stays offline; run `mise run thirdparty:add-skills -- <source>` to add and
-vendor skills, or `mise run thirdparty:update-skills` explicitly to refresh
-already-configured vendored content.
+so it loads only when the user invokes it: `/name` in Claude, or an explicit
+mention in Codex. The updater refuses YAML it cannot patch safely. The lock
+hashes the patched content, and `mise run lint` checks that the flags are
+present. Agent config installation stays offline; run
+`mise run thirdparty:add-skills -- <source>` to add and vendor skills, or
+`mise run thirdparty:update-skills` explicitly to refresh already-configured
+vendored content.
 
 Legacy commands remain under `plugins/*/commands/`. Each plugin has a
 `.claude-plugin/plugin.json` manifest and auto-discovered `.md` command files,

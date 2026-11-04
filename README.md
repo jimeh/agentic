@@ -124,8 +124,8 @@ multi-select prompt when `--skill` is not provided, then vendors selected skills
 and updates the lockfile. `--skill` matches a skill's frontmatter name or its
 upstream directory name. Individual manifest skill entries can set `ref` to pin
 or test a skill separately from the source default, and
-`"overrides": { "explicitOnly": true }` to vendor a skill that agents load only
-when the user or a prompt names it.
+`"overrides": { "explicitOnly": true }` to vendor a skill that loads only when
+the user invokes it: `/name` in Claude, or an explicit mention in Codex.
 
 Render global instruction files after changing `rules/`:
 
