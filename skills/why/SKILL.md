@@ -15,7 +15,7 @@ apply fixes, commit, push, post comments, or mutate external systems.
 This skill owns repository archaeology. Use ordinary code inspection to explain
 current mechanics. Use `research` for broad external primary-source research
 saved as a Markdown report, and `domain-modeling` for terminology decisions or
-writes to `CONTEXT.md` and ADRs.
+writes to `GLOSSARY.md` and ADRs.
 
 ## Investigation
 

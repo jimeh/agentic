@@ -22,7 +22,9 @@ T3 Code, say so and stop.
   set, such as the pull requests for named features. Record each grant and its
   scope in the ledger. Never bypass branch protection, as with `--admin`.
 - The user chooses each worker's workflow, such as `ship-feature-pr`, per thread
-  or as a standing choice. When none is recorded, ask.
+  or as a standing choice. When none is recorded, ask. A standing choice does
+  not cover documentation, license, or configuration chores; ask or use a
+  lighter workflow for those.
 - Investigate and discuss here; implementation goes to workers.
 
 ## Keep a Ledger
@@ -31,10 +33,12 @@ This thread runs for days and gets compacted. Keep its state in
 `${XDG_STATE_HOME:-$HOME/.local/state}/orchestrate-threads/<owner>-<repo>.md`,
 outside every checkout. Its first line says to reload `orchestrate-threads`
 after a compaction. Record the active threads with their pull requests and
-state, the merge order, merge grants, user decisions marked as standing or
-per-thread (a skipped step, such as a UX review, is per-thread), standing rules
-for briefs, and what awaits cleanup. Reread it whenever your memory of the work
-is uncertain.
+state, the merge order, user decisions marked as standing or per-thread (a
+skipped step, such as a UX review, is per-thread), standing rules for briefs,
+and what awaits cleanup. Keep it to current state: replace entries as they
+change rather than appending history. Merge grants are the exception; append
+each with its scope. Reread the ledger whenever your memory of the work is
+uncertain.
 
 ## Launch a Worker
 
@@ -55,7 +59,11 @@ the change and the user's decisions about it, the workflow and any skipped
 steps, the routing and quoted consents the user gave, standing rules, parallel
 threads, and what it may collide with on this machine: desktop input, fixed
 ports, shared caches, or a single device, serialized through the project's lock
-when it has one. End with this contract:
+when it has one. The worker loads the global rules and its skills itself, so do
+not restate them, prescribe verification beyond what the change specifically
+needs, or invent extra reporting protocols. When every worker hits the same
+environment defect, propose fixing it to the user instead of writing a
+workaround into each brief. End with this contract:
 
 > **Ready** means out of draft, the head contains the current base, required
 > checks and reviews pass, no valid blocking feedback is unresolved, and the
@@ -69,17 +77,23 @@ when it has one. End with this contract:
 >
 > To catch up with the base, rebase onto it as the `rebase` skill describes and
 > force-push with lease to this pull request's branch. The user grants that
-> force-push for this branch only. Review again whatever the base's new commits
-> or the conflict resolution could affect.
+> force-push for this branch only. When the rebase had conflicts or the base
+> changed files this pull request touches, have the affected review check the
+> result; otherwise CI and `git range-diff` are enough.
 >
-> Send questions, blockers, and failures to the coordinator the same way, not to
-> your own thread.
+> Before ready, message the coordinator only for a question, a decision you
+> cannot make within this brief, a blocker, or a failure, the same way and not
+> in your own thread. Send no progress, start, or milestone notes.
 
 ## Relay and Monitor
 
 - Message workers with `t3_thread_send` in `auto` mode, which steers a running
   turn; `queue` can wait hours. Check `t3_queue` when a message seems lost.
 - Relay each ready report with its open threads and hand checks.
+- Do not acknowledge reports. Answer a worker only when it asked something or
+  needs a decision, and let it decide anything its brief already covers.
+- Read a worker's thread only when its report is ambiguous, before a merge, or
+  for a status request.
 - Do not poll; reports wake this thread. For a status request, list the threads
   and read only each one's latest activity. Tell the user about any idle,
   blocked, or failed thread before nudging it.

@@ -12,8 +12,9 @@ license: MIT
 compatibility: Rust 1.70+, Cargo
 metadata:
   author: apollographql
-  version: "1.1.1"
+  version: "1.1.2"
 allowed-tools: Bash(cargo:*) Bash(rustc:*) Bash(rustfmt:*) Bash(clippy:*) Read Write Edit Glob Grep
+disable-model-invocation: true
 ---
 
 # Rust Best Practices

@@ -118,7 +118,12 @@ Third-party skills are source-controlled under `thirdparty/skills/`.
 `thirdparty/skills.manifest.json` defines the reviewed upstream sources and
 selected skills, while `thirdparty/skills.lock.json` records the resolved
 commit, upstream path, and content hash. Skill entries can set `ref` to override
-their source default. Agent config installation stays offline; run
+their source default, and `overrides.explicitOnly` to vendor the skill with
+`disable-model-invocation: true` and Codex `allow_implicit_invocation: false`,
+so it loads only when the user invokes it: `/name` in Claude, or an explicit
+mention in Codex. The updater refuses YAML it cannot patch safely. The lock
+hashes the patched content, and `mise run lint` checks that the flags are
+present. Agent config installation stays offline; run
 `mise run thirdparty:add-skills -- <source>` to add and vendor skills, or
 `mise run thirdparty:update-skills` explicitly to refresh already-configured
 vendored content.
@@ -250,6 +255,15 @@ settle before installation.
 
 2-space indent, `bash` variant, switch case indent, space redirects (`> file`
 not `>file`). See `.editorconfig` for shfmt flags.
+
+## CodeGraph
+
+This repository is indexed by CodeGraph (`.codegraph/`, created by
+`mise run setup`). To locate or understand code, reach for it before grep or
+reading files: the `codegraph_explore` MCP tool when available, otherwise
+`codegraph explore "<symbol names or question>"`. Both return the relevant
+symbols' source and the call paths between them. If the index is missing, run
+`mise run codegraph:setup` or fall back to `rg`.
 
 ## Operational hazards and references
 

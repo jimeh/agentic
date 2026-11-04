@@ -112,6 +112,9 @@ delegation is unavailable or the user declines it, say the plan was not
 reviewed. Check each finding against the code before revising the plan, and
 carry material disagreements into the open questions.
 
+Run one reviewer for one round, then verify the revisions yourself. Ask for a
+second round only when the revision changed the approach.
+
 ## Accept and Hand Over
 
 How the contract is accepted depends on the request:

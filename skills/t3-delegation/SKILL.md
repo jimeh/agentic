@@ -89,10 +89,12 @@ sandbox.
 Set `interactionMode` to `default` for every worker. An omitted value inherits
 the parent's mode, and plan mode adds no sandbox.
 
-Nothing enforces a worker's boundary, so verify it with a checkout snapshot:
-`HEAD`, the branch, and a hash of the staged, unstaged, and untracked content.
-`git status` alone misses a commit and a second edit to an already-modified
-file. This shape captures all three and leaves ignored files out:
+Nothing enforces a worker's boundary, so verify it with a checkout snapshot. For
+a clean checkout, `HEAD`, the branch, and an empty `git status --porcelain` are
+the snapshot. With local changes, add a hash of the staged, unstaged, and
+untracked content, because `git status` alone misses a second edit to an
+already-modified file. This shape captures it and leaves ignored files out;
+never track file modes or inodes:
 
 ```bash
 git rev-parse HEAD

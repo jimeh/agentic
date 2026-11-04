@@ -22,18 +22,15 @@ and cycles are rejected.
 
 ## Layout
 
-| Source        | Output        | Composition             |
-| ------------- | ------------- | ----------------------- |
-| `claude.md`   | `CLAUDE.md`   | base, codegraph         |
-| `codex.md`    | `CODEX.md`    | base, agents, codegraph |
-| `opencode.md` | `OPENCODE.md` | base, agents, codegraph |
+| Source        | Output        | Composition  |
+| ------------- | ------------- | ------------ |
+| `claude.md`   | `CLAUDE.md`   | base         |
+| `codex.md`    | `CODEX.md`    | base, agents |
+| `opencode.md` | `OPENCODE.md` | base, agents |
 
 `base.md` is shared by every target. `agents.md` holds guidance shared by
-non-Claude agents; it is currently empty and exists so Codex and opencode have a
-common place for rules that should not reach Claude. `codegraph.md` holds the
-CodeGraph guidance shared by every target. Shared RTK guidance lives in
-`base.md`, keeping its stdin and shell data-flow safety rule consistent across
-all harnesses.
+non-Claude agents, for rules that should not reach Claude. CodeGraph guidance
+lives in the AGENTS.md of indexed repositories, not in the global rules.
 
 ## Building
 

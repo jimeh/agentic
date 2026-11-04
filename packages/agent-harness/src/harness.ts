@@ -33,6 +33,7 @@ type ThirdpartySkill = {
   name?: string;
   path?: string;
   ref?: string;
+  overrides?: { explicitOnly?: boolean };
 };
 
 type ThirdpartyLock = {
@@ -320,6 +321,43 @@ function contentHash(dir: string): string {
   return `sha256:${hash.digest("hex")}`;
 }
 
+function checkExplicitOnly(skillDir: string): void {
+  const skillFile = join(skillDir, "SKILL.md");
+  let data: Record<string, unknown>;
+  try {
+    data = matter(readFileSync(skillFile, "utf8"), {}).data;
+  } catch {
+    // frontmatterName already reports invalid frontmatter.
+    return;
+  }
+  if (data["disable-model-invocation"] !== true) {
+    reportError(
+      `${skillFile}: explicitOnly override needs disable-model-invocation: true`,
+    );
+  }
+
+  const openaiFile = join(skillDir, "agents", "openai.yaml");
+  let policy: unknown;
+  try {
+    const yaml = existsSync(openaiFile) ? readFileSync(openaiFile, "utf8") : "";
+    policy = matter(`---\n${yaml}\n---\n`, {}).data.policy;
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message.split("\n")[0] : String(error);
+    reportError(`${openaiFile}: invalid YAML (${message})`);
+    return;
+  }
+  const allowed =
+    typeof policy === "object" && policy !== null
+      ? (policy as Record<string, unknown>).allow_implicit_invocation
+      : undefined;
+  if (allowed !== false) {
+    reportError(
+      `${openaiFile}: explicitOnly override needs policy.allow_implicit_invocation: false`,
+    );
+  }
+}
+
 function checkThirdpartySkills(): void {
   const manifestPath = "thirdparty/skills.manifest.json";
   const lockPath = "thirdparty/skills.lock.json";
@@ -424,6 +462,10 @@ function checkThirdpartySkills(): void {
         reportError(
           `${skillFile}: name '${frontmatter}' should match '${name}'`,
         );
+      }
+
+      if (skill.overrides?.explicitOnly) {
+        checkExplicitOnly(skillDir);
       }
 
       const lockEntry = lockSkills[name];

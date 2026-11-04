@@ -12,6 +12,7 @@ import { basename, dirname, join } from "node:path";
 import matter from "gray-matter";
 import { cloneSource, realExec } from "./git";
 import { contentHash } from "./hash";
+import { applyOverrides } from "./overrides";
 import { readJson, writeJson } from "./json";
 import { createEmptyLock, sortedLock } from "./lock";
 import {
@@ -51,6 +52,17 @@ function frontmatterName(skillDir: string): string {
   }
 
   return data.name;
+}
+
+function copySkill(from: string, to: string): void {
+  mkdirSync(dirname(to), { recursive: true });
+  cpSync(from, to, {
+    recursive: true,
+    filter: (src) => {
+      const name = basename(src);
+      return name !== ".git" && name !== "node_modules";
+    },
+  });
 }
 
 function groupedSkillsByRef(source: Source): Map<string, SkillSelection[]> {
@@ -110,7 +122,11 @@ export function updateThirdpartySkills(input: UpdateInput): UpdateResult {
             );
           }
 
-          const nextHash = contentHash(upstreamDir);
+          const stagedDir = join(tempRoot, "staged", skill.name);
+          copySkill(upstreamDir, stagedDir);
+          applyOverrides(stagedDir, skill.overrides);
+
+          const nextHash = contentHash(stagedDir);
           const currentHash = currentLock.skills[skill.name]?.contentHash;
           const vendorDir = join(paths.vendorRoot, skill.name);
 
@@ -133,14 +149,7 @@ export function updateThirdpartySkills(input: UpdateInput): UpdateResult {
             }
 
             rmSync(vendorDir, { recursive: true, force: true });
-            mkdirSync(dirname(vendorDir), { recursive: true });
-            cpSync(upstreamDir, vendorDir, {
-              recursive: true,
-              filter: (src) => {
-                const name = basename(src);
-                return name !== ".git" && name !== "node_modules";
-              },
-            });
+            copySkill(stagedDir, vendorDir);
             logger.log(`updated ${skill.name}`);
           } else {
             logger.log(`unchanged ${skill.name}`);

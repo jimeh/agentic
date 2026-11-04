@@ -2,7 +2,8 @@
 name: harness-engineering
 description: >-
   Audit or improve repository instructions, agent workflows, and feedback tools
-  when the user requests agent-setup or harness work.
+  when the user requests agent-setup or harness work, or set up tooling for a
+  new repository.
 ---
 
 # Harness engineering
@@ -26,6 +27,10 @@ Choose only the guidance the task needs:
 - For skills and global rules, use
   [agent authoring](references/agent-authoring.md). Skill packaging and platform
   metadata belong to the environment's skill-authoring workflow.
+- For a new repository's tooling, start from
+  [task surface](references/tooling-task-surface.md) and
+  [language checks](references/tooling-language-checks.md), then add hooks and
+  CI from the references below as the project needs them.
 - For task or hook changes, consult
   [tooling patterns](references/tooling-patterns.md) and
   [hook placement](references/tooling-hooks-dependencies.md) only as needed.

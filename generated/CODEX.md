@@ -220,10 +220,14 @@ package management, scripts, and one-off package execution; pnpm is the second
 choice. When a repository already has an established package manager and
 lockfile, use it rather than migrating without a specific reason.
 
+When setting up tooling for a new repository, such as its task runner, linters,
+formatters, hooks, and CI, use the `harness-engineering` skill's tooling
+references.
+
 ## Technical Considerations
 
-- If a command fails unexpectedly, verify the working directory with `pwd`.
-- Do not use `git -C`. Verify the current directory and `cd` if needed.
+- Use `cd` rather than `git -C`. After an unexpected command failure, check the
+  working directory with `pwd`.
 
 ## Shell Commands
 
@@ -235,12 +239,6 @@ In zsh, lowercase `path` is a special array tied to `$PATH`. Never assign to
 `path` as a shell variable or use it as a shell loop or read variable; use a
 task-specific name such as `file_path`, `marker_path`, or `target_path`.
 Declaring `local path` still changes `$PATH` inside that function.
-
-Use RTK for eligible leaf commands when it is available. Prefix a command with
-`rtk` only when it does not read from stdin or participate in shell data flow,
-and its output is intended for direct inspection. Run commands without RTK for
-pipelines, heredocs, redirection, command or process substitution, stdin markers
-such as `-` or `/dev/stdin`, interactive input, or whenever uncertain.
 
 ## Skills
 
@@ -313,23 +311,14 @@ changes without editing files.
 - Plans must include testing strategy.
 - End each plan with unresolved questions, if any.
 
-<!-- CODEGRAPH_START -->
+## Agent Messages
 
-## CodeGraph
+Messages to other threads and agents follow the Writing rules: full sentences
+with normal spacing, short commit SHAs, and only the facts the recipient needs
+to act. Do not paste ledgers, hashes, or run IDs that the recipient will not
+use.
 
-In repositories indexed by CodeGraph (a `.codegraph/` directory exists at the
-repo root), reach for it BEFORE grep/find or reading files when you need to
-understand or locate code:
+## Long-Running Commands
 
-- **MCP tool** (when available): `codegraph_explore` answers most code questions
-  in one call — the relevant symbols' verbatim source plus the call paths
-  between them, including dynamic-dispatch hops grep can't follow. Name a file
-  or symbol in the query to read its current line-numbered source. If it's
-  listed but deferred, load it by name via tool search.
-- **Shell** (always works): `codegraph explore "<symbol names or question>"`
-  prints the same output.
-
-If there is no `.codegraph/` directory, skip CodeGraph entirely — indexing is
-the user's decision.
-
-<!-- CODEGRAPH_END -->
+Run a long build, test suite, or server in the background or with a long yield
+time instead of polling it with repeated short yields.

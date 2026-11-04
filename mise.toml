@@ -208,7 +208,9 @@ depends = ["check", "test"]
 
 [tasks.typecheck]
 description = "Type-check TypeScript with oxlint"
-run = "oxlint --type-aware --type-check --no-error-on-unmatched-pattern ."
+# Vendored skills ship templates for other projects, such as React components,
+# that cannot type-check here.
+run = "oxlint --type-aware --type-check --no-error-on-unmatched-pattern --ignore-pattern='thirdparty/**' ."
 
 # Formatting subtasks
 
