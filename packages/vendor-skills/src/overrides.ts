@@ -86,7 +86,7 @@ function assertOnlyChanged(
     edited = parseYamlMap(after);
   } catch (error) {
     const message =
-      error instanceof Error ? error.message.split("\n")[0] : error;
+      error instanceof Error ? error.message.split("\n")[0] : String(error);
     throw new Error(`${file}: cannot apply explicitOnly (${message})`);
   }
 
