@@ -86,10 +86,10 @@ the starting tip covers it.
 
 ## Decision Trail
 
-For long unattended work, consequential choices, or an explicit user request,
-create a private trail path inside the artifact directory, pass the directory
-through Claude's `--add-dir` option, and tell Claude to use the
-`show-me-your-work` skill for material decisions, pivots, risks, and blockers:
+When the user requests a decision trail, create a private trail path inside the
+artifact directory, pass the directory through Claude's `--add-dir` option, and
+tell Claude to use the `show-me-your-work` skill for material decisions, pivots,
+risks, and blockers:
 
 ```bash
 TRAIL="$(mktemp "$ARTIFACT_DIR/decision-trail.tsv.XXXXXX")"

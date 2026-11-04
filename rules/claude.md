@@ -12,5 +12,3 @@ filename: CLAUDE.md
 - Never select Fable 5.1 for a subagent or delegated worker on your own
   judgment. Use it only when the user names Fable for that work, and do not
   extend the request to other delegations in the session.
-
-<!-- include: codegraph.md -->

@@ -62,9 +62,9 @@ Apply the base writing rules. For technical documents, also:
   review summary, or handoff, read
   [references/agent-messages.md](references/agent-messages.md).
 
-For PR and GitHub issue copy, apply this core guidance under write-pr-copy or
-write-issue-copy. Do not load a plan or specification reference merely because
-an issue proposes future work.
+PR and GitHub issue copy needs this skill only when it embeds a substantial
+document; write-pr-copy and write-issue-copy carry the rest. Do not load a plan
+or specification reference merely because an issue proposes future work.
 
 When another skill owns the deliverable or workflow, follow that skill first and
 use this guidance only for gaps it leaves open. Read

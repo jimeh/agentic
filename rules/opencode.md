@@ -6,5 +6,3 @@ filename: OPENCODE.md
 <!-- include: base.md -->
 
 <!-- include: agents.md -->
-
-<!-- include: codegraph.md -->

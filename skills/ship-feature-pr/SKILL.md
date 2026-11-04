@@ -19,9 +19,12 @@ requests unless the user explicitly selects this skill.
 ## Preserve the Delivery Checkout
 
 Treat the checkout active at invocation as the delivery checkout and final local
-home of the feature branch. Record its path, branch or detached head, current
-revision, root-versus-linked status, worktree mapping, and complete dirty-state
-snapshot before mutation.
+home of the feature branch. Record its path, branch or detached head, and
+current revision before mutation. When it starts clean, as a worktree created
+for this run does, `HEAD` plus an empty `git status --porcelain` is the whole
+snapshot. Only when unrelated local changes exist, record them per path as
+`implement-feature` shows. Preservation covers tracked content, the index, and
+untracked files, not filesystem metadata such as modes or inodes.
 
 Preserve unrelated, non-overlapping local work exactly. Stop when existing work
 overlaps the feature, makes a branch move unsafe, or leaves ownership ambiguous.
@@ -32,6 +35,8 @@ constraint makes delivery from the invocation checkout unsafe. Retain whichever
 checkout is the only safe home of the feature branch until handback succeeds.
 
 ## Settle Scope and Evidence
+
+Load each dependent skill when its phase starts, not all of them up front.
 
 Resolve the remote base and run the preflight below, then use `plan-feature` to
 settle and freeze the implementation contract, including its verification map
@@ -46,27 +51,25 @@ the rest as proposed follow-up runs, each with its scope, contract section, and
 dependencies, for the user or a coordinating thread to start. Do not continue
 into them here.
 
-Apply the global testing and verification rules. Keep a compact revision-bound
-evidence ledger: command or observation, scope, outcome, behavior proved, test
-names or count when relevant, and environment limits. Evidence carries forward
-only when its revision is an ancestor and the intervening delta cannot affect
-what it proves.
+Apply the global testing and verification rules. Keep a short evidence list:
+what ran, its outcome, what it proves, and the commit SHA it ran on. Carry it
+into the review brief and the PR description. Evidence carries forward when its
+commit is an ancestor and the later changes cannot affect what it proves.
 
-Use `show-me-your-work` when the user requests a decision trail or when a long,
-multi-phase, or unattended delivery develops material forks, pivots, reversals,
-accepted risks, or blockers that the pull request and evidence ledger would not
-make easy to reconstruct. Keep its trail temporary by default and separate from
-the evidence ledger. Do not log routine commands or commit the trail without
-explicit authorization.
+Use `show-me-your-work` only when the user requests a decision trail.
 
 Before implementation, verify repository and base access plus both channels
-required by `dual-review`. If either engine remains unavailable, stop before
-mutation when practical; if it fails later, retain the draft and report the
-coverage gap. When `ux-review` is likely, also confirm that the app can run in a
-local or test environment, and report that coverage gap the same way when it
-cannot. When its review will need computer use or other real-desktop automation
-and no brief already quotes the user's consent, ask for it now, while the user
-is present; it covers this run's reviews.
+required by `dual-review`; `orchestrator_capabilities` answers the channel check
+inside T3 Code. If either engine remains unavailable, stop before mutation when
+practical; if it fails later, retain the draft and report the coverage gap. When
+`ux-review` is likely, also confirm that the app can run in a local or test
+environment, and report that coverage gap the same way when it cannot. When its
+review will need computer use or other real-desktop automation and no brief
+already quotes the user's consent, ask for it now, while the user is present; it
+covers this run's reviews.
+
+When commits are signed, check early that the signing key is unlocked, and ask
+the user to unlock it before work would stall on it.
 
 Honor explicit user correction budgets. With or without one, apply the Check
 Convergence section of `babysit-pr` to every correction round, including rounds
@@ -110,11 +113,10 @@ concrete suspected defects. CI owns the clean-environment and repository-wide
 gates it actually runs.
 
 In the delivery checkout, use `commit` to create each feature commit with
-explicit feature-owned scope. Before and after each feature commit, compare
-non-feature staged, unstaged, and untracked state with the intake snapshot. Stop
-before push if any unrelated state changed. Integrate isolated results as
-`implement-feature` describes, and keep each implementation worktree and session
-until handback.
+explicit feature-owned scope. When unrelated local changes exist, compare them
+with the intake snapshot before and after each feature commit, and stop before
+push if any changed. Integrate isolated results as `implement-feature`
+describes, and keep each implementation worktree and session until handback.
 
 ## Review the Experience
 
@@ -153,9 +155,9 @@ practical, but treat CI as a delivery gate only on the intended final head.
 ## Run Independent Review
 
 Use `dual-review` against the pushed exact head. Supply the repository, base and
-head revisions, condensed feature contract, evidence ledger, and any UX
-correction commits as a risk area, and ask it to retain resumable reviewer
-sessions for follow-up.
+head revisions, condensed feature contract, evidence list, and any UX correction
+commits as a risk area, and ask it to retain resumable reviewer sessions for
+follow-up.
 
 Accept only complete Codex and Claude coverage of the intended revision. Recheck
 the reconciled findings against the feature contract, then batch all confirmed
@@ -166,7 +168,7 @@ below. A new SHA alone does not invalidate unaffected evidence.
 ## Babysit to Readiness
 
 Hand `babysit-pr` the open draft, reconciled internal findings, reviewed
-revisions and resumable session handles, evidence ledger, correction rounds
+revisions and resumable session handles, evidence list, correction rounds
 already completed with their convergence outcomes, the `ux-review` brief,
 findings, and decisions, any explicit user correction budget, and the
 implementer routing above, which also covers correction batches made while
@@ -179,11 +181,10 @@ Choose follow-up internal review by what the correction invalidates:
 
 - orchestrator verification for obvious documentation, hygiene, mechanical, or
   test-only corrections;
-- the relevant original reviewer for a localized production or subtle fix; and
-- `dual-review` continuation for architecture, public contracts, security,
-  authentication, persistence, concurrency, lifecycle, supported-platform
-  behavior, material scope expansion, or another change that invalidates both
-  reviews.
+- by default, the original reviewer whose findings the correction addresses; and
+- `dual-review` continuation only when the correction changes concurrency,
+  lifecycle, cancellation or timeouts, shared state, persistence, security or
+  authentication, or the architecture or scope of the change.
 
 When a correction changes what a user sees or how they interact with it, name it
 as a UX risk area in the code follow-up review, and decide whether it needs
@@ -204,8 +205,8 @@ accepted, and the delivery checkout safely holds the expected branch with the
 intended upstream.
 
 Remove only workflow-created worktrees and implementation branches, and only
-after the delivery branch is safely handed back. Preserve the intake dirty-state
-baseline. If handback or cleanup is unsafe, retain the branch and draft PR and
+after the delivery branch is safely handed back. Preserve any unrelated local
+changes. If handback or cleanup is unsafe, retain the branch and draft PR and
 report the blocker.
 
 Report the PR URL and base, final head, shipped scope and deviations, review

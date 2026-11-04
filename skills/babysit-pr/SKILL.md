@@ -28,10 +28,10 @@ Resolve the requested PR or the PR for the current branch. Capture its URL,
 base, remote head SHA, head branch, draft state, review decision, merge state,
 checks, reviewers, and repository-specific requirements.
 
-Use the existing PR, branch, and checkout as authoritative. Snapshot local
-staged, unstaged, and untracked work before changing anything. Preserve
-non-overlapping dirt exactly and stop when local work conflicts with the PR
-branch or requested corrections.
+Use the existing PR, branch, and checkout as authoritative. Before changing
+anything, note any local staged, unstaged, or untracked work; a clean checkout
+needs nothing more. Preserve non-overlapping changes and stop when local work
+conflicts with the PR branch or requested corrections.
 
 Translate the user's request into a completion condition. When they simply ask
 to get the PR ready, require the current head to have green required checks, no
@@ -96,12 +96,12 @@ cannot invalidate it. Choose follow-up review by affected risk:
 
 - Inspect and verify obvious documentation, hygiene, mechanical, or test-only
   corrections directly.
-- Ask the relevant reviewer to verify a localized production or subtle fix.
-- Re-run all required independent perspectives only for architecture, public
-  contracts, security, authentication, persistence, concurrency, lifecycle,
-  supported-platform behavior, material scope expansion, or another delta that
-  invalidates all prior reasoning. Use `dual-review` continuation when the
-  caller requires both Codex and Claude coverage.
+- By default, ask the reviewer whose findings the fix addresses to verify it.
+- Re-run all required independent perspectives only when the fix changes
+  concurrency, lifecycle, cancellation or timeouts, shared state, persistence,
+  security or authentication, or the architecture or scope of the change. Use
+  `dual-review` continuation when the caller requires both Codex and Claude
+  coverage.
 
 Scope every follow-up review as `review-code` prescribes for follow-up rounds.
 

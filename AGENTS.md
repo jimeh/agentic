@@ -251,6 +251,15 @@ settle before installation.
 2-space indent, `bash` variant, switch case indent, space redirects (`> file`
 not `>file`). See `.editorconfig` for shfmt flags.
 
+## CodeGraph
+
+This repository is indexed by CodeGraph (`.codegraph/`, created by
+`mise run setup`). To locate or understand code, reach for it before grep or
+reading files: the `codegraph_explore` MCP tool when available, otherwise
+`codegraph explore "<symbol names or question>"`. Both return the relevant
+symbols' source and the call paths between them. If the index is missing, run
+`mise run codegraph:setup` or fall back to `rg`.
+
 ## Operational hazards and references
 
 Do not run agent-config install from a delivery worktree. Test installer
