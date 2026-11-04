@@ -96,3 +96,27 @@ test("selectedSources rejects unknown filters", () => {
     }),
   ).toThrow("unknown skill filter");
 });
+
+test("validateManifest accepts the explicitOnly override", () => {
+  const valid = manifest();
+  valid.sources[0].skills[0].overrides = { explicitOnly: true };
+  expect(() => validateManifest(valid, paths)).not.toThrow();
+});
+
+test("validateManifest rejects unknown or non-boolean overrides", () => {
+  const unknown = manifest();
+  unknown.sources[0].skills[0].overrides = {
+    hidden: true,
+  } as unknown as { explicitOnly: boolean };
+  expect(() => validateManifest(unknown, paths)).toThrow(
+    "unknown override 'hidden'",
+  );
+
+  const wrongType = manifest();
+  wrongType.sources[0].skills[0].overrides = {
+    explicitOnly: "yes",
+  } as unknown as { explicitOnly: boolean };
+  expect(() => validateManifest(wrongType, paths)).toThrow(
+    "override 'explicitOnly' must be a boolean",
+  );
+});

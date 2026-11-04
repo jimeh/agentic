@@ -1,7 +1,7 @@
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, expect, test } from "bun:test";
+import { afterEach, expect, spyOn, test } from "bun:test";
 import { checkAgentHarness } from "./harness";
 
 let tempDirs: string[] = [];
@@ -67,4 +67,70 @@ test("rejects a published plugin without a local manifest", () => {
   ]);
 
   expect(checkAgentHarness(["--root", root])).toBe(1);
+});
+
+function writeVendoredSkill(
+  root: string,
+  files: { skill: string; openai?: string },
+): void {
+  const skillDir = join(root, "thirdparty", "skills", "example-skill");
+  mkdirSync(join(skillDir, "agents"), { recursive: true });
+  writeJson(join(root, "thirdparty", "skills.manifest.json"), {
+    version: 1,
+    sources: [
+      {
+        id: "test-source",
+        type: "git",
+        url: "https://example.com/skills.git",
+        ref: "main",
+        skills: [
+          {
+            name: "example-skill",
+            path: "skills/example-skill",
+            overrides: { explicitOnly: true },
+          },
+        ],
+      },
+    ],
+  });
+  writeJson(join(root, "thirdparty", "skills.lock.json"), {
+    version: 1,
+    skills: {},
+  });
+  writeFileSync(join(skillDir, "SKILL.md"), files.skill);
+  if (files.openai !== undefined) {
+    writeFileSync(join(skillDir, "agents", "openai.yaml"), files.openai);
+  }
+}
+
+function harnessErrors(root: string): string[] {
+  const spy = spyOn(console, "error").mockImplementation(() => {});
+  try {
+    checkAgentHarness(["--root", root]);
+    return spy.mock.calls.map((call) => String(call[0]));
+  } finally {
+    spy.mockRestore();
+  }
+}
+
+test("reports an explicitOnly vendored skill that still loads implicitly", () => {
+  const root = createRoot();
+  writeVendoredSkill(root, {
+    skill: "---\nname: example-skill\ndescription: Example\n---\n",
+  });
+
+  const errors = harnessErrors(root).join("\n");
+  expect(errors).toContain("needs disable-model-invocation: true");
+  expect(errors).toContain("needs allow_implicit_invocation: false");
+});
+
+test("accepts an explicitOnly vendored skill with both flags applied", () => {
+  const root = createRoot();
+  writeVendoredSkill(root, {
+    skill:
+      "---\nname: example-skill\ndescription: Example\ndisable-model-invocation: true\n---\n",
+    openai: "policy:\n  allow_implicit_invocation: false\n",
+  });
+
+  expect(harnessErrors(root).join("\n")).not.toContain("explicitOnly");
 });

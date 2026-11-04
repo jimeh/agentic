@@ -33,6 +33,7 @@ type ThirdpartySkill = {
   name?: string;
   path?: string;
   ref?: string;
+  overrides?: { explicitOnly?: boolean };
 };
 
 type ThirdpartyLock = {
@@ -320,6 +321,24 @@ function contentHash(dir: string): string {
   return `sha256:${hash.digest("hex")}`;
 }
 
+function checkExplicitOnly(skillDir: string): void {
+  const skillFile = join(skillDir, "SKILL.md");
+  const { data } = matter(readFileSync(skillFile, "utf8"));
+  if (data["disable-model-invocation"] !== true) {
+    reportError(
+      `${skillFile}: explicitOnly override needs disable-model-invocation: true`,
+    );
+  }
+
+  const openaiFile = join(skillDir, "agents", "openai.yaml");
+  const openai = existsSync(openaiFile) ? readFileSync(openaiFile, "utf8") : "";
+  if (!/^\s+allow_implicit_invocation:\s*false\s*$/m.test(openai)) {
+    reportError(
+      `${openaiFile}: explicitOnly override needs allow_implicit_invocation: false`,
+    );
+  }
+}
+
 function checkThirdpartySkills(): void {
   const manifestPath = "thirdparty/skills.manifest.json";
   const lockPath = "thirdparty/skills.lock.json";
@@ -424,6 +443,10 @@ function checkThirdpartySkills(): void {
         reportError(
           `${skillFile}: name '${frontmatter}' should match '${name}'`,
         );
+      }
+
+      if (skill.overrides?.explicitOnly) {
+        checkExplicitOnly(skillDir);
       }
 
       const lockEntry = lockSkills[name];

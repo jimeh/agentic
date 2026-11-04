@@ -13,11 +13,18 @@ export type Source = {
   skills: SkillSelection[];
 };
 
+/** Changes applied to an upstream skill when it is vendored. */
+export type SkillOverrides = {
+  /** Load the skill only when the user or a prompt names it. */
+  explicitOnly?: boolean;
+};
+
 /** Single upstream skill directory selected for vendoring. */
 export type SkillSelection = {
   name: string;
   path: string;
   ref?: string;
+  overrides?: SkillOverrides;
 };
 
 /** Lockfile containing resolved upstream metadata for vendored skills. */

@@ -88,7 +88,7 @@
       "ref": "main",
       "resolvedCommit": "c288eb80629dd2309eed81f23d693f66a452d043",
       "upstreamPath": "skills/rust-best-practices",
-      "contentHash": "sha256:436b5791f0fadab205aad521abf430fcbed443f1d53c4a55c5edbd0f34262d86",
+      "contentHash": "sha256:124dffdf864a7ce38f989c1711e66052d8c47dfbbef5c1b697a6b3fe55a678e7",
       "skillsCliVersion": null
     },
     "security-audit": {

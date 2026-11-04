@@ -49,7 +49,10 @@
       "skills": [
         {
           "name": "rust-best-practices",
-          "path": "skills/rust-best-practices"
+          "path": "skills/rust-best-practices",
+          "overrides": {
+            "explicitOnly": true
+          }
         }
       ]
     },

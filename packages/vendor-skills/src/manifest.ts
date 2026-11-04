@@ -1,3 +1,4 @@
+import { validateOverrides } from "./overrides";
 import type { Manifest, Source, VendorOptions, VendorPaths } from "./types";
 
 const slugPattern = /^[a-z0-9]+(-[a-z0-9]+)*$/;
@@ -52,6 +53,10 @@ export function validateManifest(manifest: Manifest, paths: VendorPaths): void {
       ) {
         throw new Error(`${paths.manifestPath}: '${skill.name}' has empty ref`);
       }
+      validateOverrides(
+        skill.overrides,
+        `${paths.manifestPath}: '${skill.name}'`,
+      );
       if (names.has(skill.name)) {
         throw new Error(
           `${paths.manifestPath}: duplicate skill '${skill.name}'`,

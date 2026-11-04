@@ -148,3 +148,135 @@ test("update honors a skill-level ref override", () => {
   expect(lock.skills["example-skill"].ref).toBe(temp.initialCommit);
   expect(content).toBe("hello\n");
 });
+
+function setExplicitOnly(root: string): void {
+  const manifestPath = join(root, "thirdparty", "skills.manifest.json");
+  const manifest = readJson<Manifest>(manifestPath);
+  manifest.sources[0].skills[0].overrides = { explicitOnly: true };
+  write(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+}
+
+function vendored(root: string, ...parts: string[]): string {
+  return readFileSync(
+    join(root, "thirdparty", "skills", "example-skill", ...parts),
+    "utf8",
+  );
+}
+
+test("explicitOnly marks the vendored skill and locks the patched content", () => {
+  const temp = project();
+  setExplicitOnly(temp.root);
+
+  updateThirdpartySkills({
+    root: temp.root,
+    options: { dryRun: false, check: false, filter: null },
+    logger: silentLogger,
+  });
+
+  expect(vendored(temp.root, "SKILL.md")).toBe(
+    [
+      "---",
+      "name: example-skill",
+      "description: Example skill",
+      "disable-model-invocation: true",
+      "---",
+      "",
+      "# Example Skill",
+      "",
+    ].join("\n"),
+  );
+  expect(vendored(temp.root, "agents", "openai.yaml")).toBe(
+    "policy:\n  allow_implicit_invocation: false\n",
+  );
+  expect(
+    readFileSync(
+      join(temp.upstream, "skills", "example-skill", "SKILL.md"),
+      "utf8",
+    ),
+  ).not.toContain("disable-model-invocation");
+
+  const recheck = updateThirdpartySkills({
+    root: temp.root,
+    options: { dryRun: true, check: true, filter: null },
+    logger: silentLogger,
+  });
+  expect(recheck.ok).toBe(true);
+  expect(recheck.changed).toEqual([]);
+});
+
+test("explicitOnly replaces upstream invocation settings in place", () => {
+  const temp = project();
+  const upstreamSkill = join(temp.upstream, "skills", "example-skill");
+  write(
+    join(upstreamSkill, "SKILL.md"),
+    [
+      "---",
+      "name: example-skill",
+      "disable-model-invocation: false",
+      "description: Example skill",
+      "---",
+      "",
+      "# Example Skill",
+      "",
+    ].join("\n"),
+  );
+  write(
+    join(upstreamSkill, "agents", "openai.yaml"),
+    [
+      "interface:",
+      '  display_name: "Example"',
+      "policy:",
+      "  allow_implicit_invocation: true",
+      "",
+    ].join("\n"),
+  );
+  run("git", ["add", "."], temp.upstream);
+  run("git", ["commit", "--quiet", "-m", "add invocation"], temp.upstream);
+  setExplicitOnly(temp.root);
+
+  updateThirdpartySkills({
+    root: temp.root,
+    options: { dryRun: false, check: false, filter: null },
+    logger: silentLogger,
+  });
+
+  const skill = vendored(temp.root, "SKILL.md");
+  expect(skill).toContain("disable-model-invocation: true\n");
+  expect(skill).not.toContain("disable-model-invocation: false");
+  expect(vendored(temp.root, "agents", "openai.yaml")).toBe(
+    [
+      "interface:",
+      '  display_name: "Example"',
+      "policy:",
+      "  allow_implicit_invocation: false",
+      "",
+    ].join("\n"),
+  );
+});
+
+test("adding an override re-vendors an otherwise unchanged skill", () => {
+  const temp = project();
+  updateThirdpartySkills({
+    root: temp.root,
+    options: { dryRun: false, check: false, filter: null },
+    logger: silentLogger,
+  });
+  setExplicitOnly(temp.root);
+
+  const check = updateThirdpartySkills({
+    root: temp.root,
+    options: { dryRun: true, check: true, filter: null },
+    logger: silentLogger,
+  });
+  expect(check.ok).toBe(false);
+  expect(check.changed).toEqual(["example-skill"]);
+
+  updateThirdpartySkills({
+    root: temp.root,
+    options: { dryRun: false, check: false, filter: null },
+    logger: silentLogger,
+  });
+  expect(vendored(temp.root, "SKILL.md")).toContain(
+    "disable-model-invocation: true",
+  );
+});
