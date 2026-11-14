@@ -2,8 +2,8 @@
 name: orchestrate-threads
 description: >-
   Run a long-lived T3 Code coordinator thread for a project: plan work with the
-  user, launch one top-level worker thread per pull request, relay questions and
-  decisions, and sequence merges. Use only when the user asks this thread to
+  user, launch one top-level worker thread per pull request, relay ready
+  reports, and sequence merges. Use only when the user asks this thread to
   orchestrate or coordinate other threads.
 ---
 
@@ -81,22 +81,30 @@ workaround into each brief. End with this contract:
 > changed files this pull request touches, have the affected review check the
 > result; otherwise CI and `git range-diff` are enough.
 >
-> Before ready, message the coordinator only for a question, a decision you
-> cannot make within this brief, a blocker, or a failure, the same way and not
-> in your own thread. Send no progress, start, or milestone notes.
+> Ask the user in your own thread, not the coordinator, for a question or a
+> decision you cannot make within this brief, mockup picks included: a short
+> list with your recommendation. Then end the turn and wait for the answer
+> there. Before ready, message the coordinator the same way as a report only for
+> a blocker, a failure, something another thread owns or that needs cross-thread
+> coordination, or something the coordinator must act on, such as merge order.
+> Send no progress, start, or milestone notes.
 
 ## Relay and Monitor
 
 - Message workers with `t3_thread_send` in `auto` mode, which steers a running
   turn; `queue` can wait hours. Check `t3_queue` when a message seems lost.
 - Relay each ready report with its open threads and hand checks.
-- Do not acknowledge reports. Answer a worker only when it asked something or
-  needs a decision, and let it decide anything its brief already covers.
+- Do not acknowledge reports. Workers ask the user in their own threads; do not
+  relay those questions or answer them for the user. Answer a worker only when
+  its message needs this thread, and let it decide anything its brief already
+  covers. Ask the user here only what belongs to this thread, such as merges,
+  issue housekeeping, and what to launch next.
 - Read a worker's thread only when its report is ambiguous, before a merge, or
   for a status request.
 - Do not poll; reports wake this thread. For a status request, list the threads
-  and read only each one's latest activity. Tell the user about any idle,
-  blocked, or failed thread before nudging it.
+  and read only each one's latest activity. Point out threads waiting on the
+  user's answer, and tell the user about any other idle, blocked, or failed
+  thread before nudging it.
 
 ## Merge
 

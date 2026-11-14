@@ -60,10 +60,10 @@ independent evaluator. Do not perform GitHub mutations during scenario checks.
 | Long unattended ship-feature-pr run; the user did not ask for a decision trail                               | No show-me-your-work trail.                                                                                                                                            |
 | Orchestrate work on this project from this T3 Code thread                                                    | orchestrate-threads: ledger, one worktree thread per PR with a full brief and report-back contract; merges only PRs the user named.                                    |
 | Coordinator thread asked to orchestrate outside T3 Code                                                      | orchestrate-threads says it needs T3 Code's thread tools and stops.                                                                                                    |
-| Worker launched by a coordinator needs a user decision                                                       | It sends the question to the coordinator with t3_thread_send in auto mode; no question in its own thread.                                                              |
+| Worker launched by a coordinator needs a user decision, such as a mockup pick                                | It asks in its own thread as a short list with its recommendation, ends its turn, and waits there; nothing to the coordinator.                                         |
 | User tells the coordinator to skip UX review for one thread                                                  | That brief marks the skip for that thread only; the ledger does not carry it into later briefs.                                                                        |
-| Worker under a coordinator finishes implementation and starts its reviews                                    | No message to the coordinator; it reports when ready, or for a question, decision, blocker, or failure.                                                                |
-| Coordinator receives a worker's question it can answer from the brief                                        | It answers briefly; it sends no acknowledgement of other reports.                                                                                                      |
+| Worker under a coordinator finishes implementation and starts its reviews                                    | No message to the coordinator; it reports when ready, or for a blocker, failure, or cross-thread matter.                                                               |
+| Status request while a worker waits on the user's answer in its own thread                                   | The coordinator points the user to that thread; it does not nudge the worker, relay the question, or answer it.                                                        |
 | Standing ship-feature-pr choice; the user asks for a license file                                            | The coordinator asks or uses a lighter workflow; a standing choice does not cover chores.                                                                              |
 | Worker rebases onto a moved base: no conflicts, and the base changed none of the files it touches            | CI and `git range-diff` only; no new review.                                                                                                                           |
 | Worker rebases cleanly, but the base changed files the pull request touches                                  | The affected review checks the rebased result.                                                                                                                         |
@@ -293,3 +293,8 @@ at gaps the next correction addressed; rows changed then were checked by Codex
 and Claude follow-up review only. Not exercised: a live coordinator run under
 the new skill, and whether correction batches made under the new reference need
 fewer review rounds than the median of two observed in that audit.
+
+On November 14, 2026, the user moved worker questions from the coordinator into
+each worker's own thread, because answering every question through one
+coordinator became unwieldy with many threads running. The question and status
+rows changed then; they were not rerun with an independent evaluator.
