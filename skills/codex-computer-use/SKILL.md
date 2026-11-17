@@ -17,7 +17,7 @@ review. A `ux-review` run may use it as its reviewer transport; that skill's
 brief then replaces the prompting strategy below.
 
 Codex drives an app in the background through its accessibility tree, so the
-user keeps their pointer and keyboard. Use `gpt-6.1-sol`.
+user keeps their pointer and keyboard. Use `gpt-6.2-sol`.
 
 Inside T3 Code, start a Codex child task through `t3-delegation`, in
 `full-access`, with the prompt shape below. Its computer-use tool, `cua_repl`,

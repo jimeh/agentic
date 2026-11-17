@@ -14,7 +14,7 @@ and OS shortcuts.
 - **Electron through Playwright.** Launch the app with `_electron.launch` from
   the project's installed Playwright, or use the agent-browser `electron` skill.
   The renderer is then a page, and the web hazards apply to it.
-- **Codex computer use** with `gpt-6.1-sol`, from any host. It drives one app in
+- **Codex computer use** with `gpt-6.2-sol`, from any host. It drives one app in
   the background through its accessibility tree, sending clicks, keys, text
   selection, and values to that app's elements and taking screenshots of its
   windows, while the user keeps their own pointer and keyboard. Inside T3 Code,

@@ -166,7 +166,7 @@ can fall back to a weaker default.
   replaces that transport's prompting guidance; the transport skill still owns
   invocation, artifacts, and failure handling.
 
-A review that needs computer use runs on Codex with `gpt-6.1-sol`, whatever the
+A review that needs computer use runs on Codex with `gpt-6.2-sol`, whatever the
 parent's engine, because Codex drives the app in the background while the user
 keeps their pointer and keyboard. Claude's computer use takes over both, so a
 Claude reviewer never uses it. Inside T3 Code, start a Codex child task in
